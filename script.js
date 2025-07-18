@@ -19,7 +19,7 @@ const DADOS_INICIAIS = {
 let DADOS = { ...DADOS_INICIAIS };
 
 // URL do arquivo JSON no GitHub Pages
-const JSON_URL = 'https://<seu-usuario>.github.io/<repositório>/api/dados.json';
+const JSON_URL = 'https://suporteati10.github.io/ATI/api/dados.json';
 
 // Funções de saudação
 const getSaudacao = () => {

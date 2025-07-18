@@ -1,5 +1,6 @@
 // Elementos do DOM
 const ELEMENTS = {
+    usuario: document.getElementById("usuario"), // Novo elemento para identificador do usuário
     saudacao: document.getElementById("saudacao"),
     categoria: document.getElementById("categoria"),
     opcoes: document.getElementById("opcoes"),
@@ -17,9 +18,10 @@ const DADOS_INICIAIS = {
 
 // Objeto local para armazenar os dados em memória
 let DADOS = { ...DADOS_INICIAIS };
+let usuarioAtual = ''; // Armazena o identificador do usuário atual
 
-// URL do arquivo JSON no GitHub Pages
-const JSON_URL = 'https://suporteati10.github.io/ATI/api/dados.json';
+// Base da URL do GitHub Pages
+const BASE_URL = 'https://<seu-usuario>.github.io/<repositório>/api';
 
 // Funções de saudação
 const getSaudacao = () => {
@@ -40,17 +42,37 @@ const substituirMarcadores = texto =>
     texto.replace("[SAUDACAO]", getSaudacao())
          .replace("[DESPEDIDA]", getDespedida());
 
-// Carregar dados do GitHub Pages
+// Atualizar usuário e carregar seus dados
+const atualizarUsuario = async () => {
+    usuarioAtual = ELEMENTS.usuario.value.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (!usuarioAtual) {
+        alert("Por favor, insira um nome de usuário válido!");
+        ELEMENTS.usuario.value = "";
+        return;
+    }
+    await carregarTodosDados();
+    await atualizarOpcoes();
+    await responder();
+};
+
+// Carregar dados do GitHub Pages para o usuário
 const carregarTodosDados = async () => {
+    if (!usuarioAtual) return DADOS;
     try {
-        const response = await fetch(JSON_URL);
-        if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+        const response = await fetch(`${BASE_URL}/dados_${usuarioAtual}.json`);
+        if (!response.ok) {
+            if (response.status === 404) {
+                console.log(`Arquivo dados_${usuarioAtual}.json não encontrado, usando dados iniciais.`);
+                return DADOS;
+            }
+            throw new Error(`Erro HTTP: ${response.status}`);
+        }
         const dados = await response.json();
-        DADOS = { ...DADOS_INICIAIS, ...dados }; // Mesclar com dados iniciais
+        DADOS = { ...DADOS_INICIAIS, ...dados };
         return DADOS;
     } catch (error) {
-        console.error("Erro ao carregar dados do GitHub:", error);
-        return DADOS; // Retorna dados locais como fallback
+        console.error(`Erro ao carregar dados do GitHub para ${usuarioAtual}:`, error);
+        return DADOS;
     }
 };
 
@@ -58,12 +80,11 @@ const carregarTodosDados = async () => {
 const salvarNoBanco = (categoria, chave, texto) => {
     DADOS[categoria] = DADOS[categoria] || {};
     DADOS[categoria][chave] = texto;
-    console.log(`Salvo localmente: ${categoria}:${chave}`);
+    console.log(`Salvo localmente: ${categoria}:${chave} para ${usuarioAtual}`);
 };
 
 /* 
  * Exemplo de escrita no GitHub usando a API (requer backend para segurança)
- * Descomente e configure com um backend seguro (não exponha o token no cliente)
 const salvarNoBanco = async (categoria, chave, texto) => {
     try {
         DADOS[categoria] = DADOS[categoria] || {};
@@ -73,22 +94,28 @@ const salvarNoBanco = async (categoria, chave, texto) => {
         const contentBase64 = btoa(unescape(encodeURIComponent(content)));
 
         const octokit = new Octokit({ auth: 'seu-token-aqui' }); // NÃO USE NO CLIENTE
-        const { data } = await octokit.repos.getContent({
-            owner: '<seu-usuario>',
-            repo: '<repositório>',
-            path: 'api/dados.json'
-        });
+        let sha;
+        try {
+            const { data } = await octokit.repos.getContent({
+                owner: '<seu-usuario>',
+                repo: '<repositório>',
+                path: `api/dados_${usuarioAtual}.json`
+            });
+            sha = data.sha;
+        } catch (error) {
+            if (error.status === 404) console.log("Arquivo não existe, será criado.");
+        }
 
         await octokit.repos.createOrUpdateFileContents({
             owner: '<seu-usuario>',
             repo: '<repositório>',
-            path: 'api/dados.json',
-            message: `Atualizar dados ${categoria}:${chave}`,
+            path: `api/dados_${usuarioAtual}.json`,
+            message: `Atualizar dados ${categoria}:${chave} para ${usuarioAtual}`,
             content: contentBase64,
-            sha: data.sha
+            sha
         });
 
-        console.log(`Salvo no GitHub: ${categoria}:${chave}`);
+        console.log(`Salvo no GitHub: ${categoria}:${chave} para ${usuarioAtual}`);
     } catch (error) {
         console.error("Erro ao salvar no GitHub:", error);
         throw error;
@@ -101,14 +128,16 @@ const apagarDoBanco = (id) => {
     const [categoria, chave] = id.split(":");
     if (DADOS[categoria] && DADOS[categoria][chave]) {
         delete DADOS[categoria][chave];
-        console.log(`Apagado localmente: ${id}`);
+        console.log(`Apagado localmente: ${id} para ${usuarioAtual}`);
     }
 };
 
 // Funções principais
 const inicializarDados = async () => {
     try {
-        await carregarTodosDados();
+        if (usuarioAtual) {
+            await carregarTodosDados();
+        }
         if (Object.keys(DADOS).length === Object.keys(DADOS_INICIAIS).length) {
             console.log("Nenhum dado encontrado, usando dados iniciais.");
         }
@@ -125,7 +154,7 @@ const atualizarSaudacao = () => {
 
 const atualizarOpcoes = async () => {
     try {
-        await carregarTodosDados(); // Garante que DADOS está atualizado
+        await carregarTodosDados();
         ELEMENTS.opcoes.innerHTML = '<option value="">Selecione uma opção</option>';
         const categoriaSelecionada = ELEMENTS.categoria.value;
         
@@ -201,7 +230,7 @@ const salvarEdicao = async () => {
     const textoOriginal = ELEMENTS.resposta.value.trim();
     try {
         salvarNoBanco(categoria, chave, textoOriginal);
-        alert("Resposta salva com sucesso!");
+        alert("Resposta salva com sucesso! Exporte para salvar no GitHub.");
         await responder();
     } catch (error) {
         console.error("Erro ao salvar:", error);
@@ -227,7 +256,7 @@ const apagarTexto = async () => {
     ELEMENTS.resposta.value = "";
     ELEMENTS.titulo.value = "";
     await atualizarOpcoes();
-    alert("Resposta apagada com sucesso!");
+    alert("Resposta apagada com sucesso! Exporte para salvar no GitHub.");
 };
 
 const mostrarPopupAdicionar = async () => {
@@ -247,7 +276,7 @@ const mostrarPopupAdicionar = async () => {
     await atualizarOpcoes();
     ELEMENTS.opcoes.value = `${categoria}:${chave}`;
     await responder();
-    alert("Nova resposta adicionada com sucesso!");
+    alert("Nova resposta adicionada com sucesso! Exporte para salvar no GitHub.");
 };
 
 const alterarCategoria = async () => {
@@ -268,20 +297,21 @@ const alterarCategoria = async () => {
     await atualizarOpcoes();
     ELEMENTS.opcoes.value = `${novaCategoria}:${chave}`;
     await responder();
-    alert("Categoria alterada com sucesso!");
+    alert("Categoria alterada com sucesso! Exporte para salvar no GitHub.");
 };
 
 const exportarDados = async () => {
+    if (!usuarioAtual) return alert("Por favor, insira um nome de usuário primeiro!");
     try {
         const json = JSON.stringify(DADOS, null, 2);
         const blob = new Blob([json], { type: "application/json" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `chat_dados_${new Date().toISOString().slice(0,10)}.json`;
+        a.download = `dados_${usuarioAtual}_${new Date().toISOString().slice(0,10)}.json`;
         a.click();
         URL.revokeObjectURL(url);
-        alert("Dados exportados com sucesso! Faça o commit manual do arquivo no GitHub.");
+        alert("Dados exportados com sucesso! Faça o commit manual do arquivo no GitHub como 'api/dados_" + usuarioAtual + ".json'.");
     } catch (error) {
         console.error("Erro ao exportar:", error);
         alert("Erro ao exportar dados!");
@@ -289,6 +319,7 @@ const exportarDados = async () => {
 };
 
 const importarDados = async (event) => {
+    if (!usuarioAtual) return alert("Por favor, insira um nome de usuário primeiro!");
     const file = event.target.files[0];
     if (!file) return;
 
@@ -353,10 +384,7 @@ const executarAcaoEditar = async (acao) => {
 
 const inicializar = async () => {
     try {
-        await inicializarDados();
-        await atualizarOpcoes();
-        await responder();
-        atualizarSaudacao();
+        ELEMENTS.saudacao.textContent = "Por favor, insira seu nome de usuário.";
         ajustarAlturaTextarea();
         setInterval(atualizarSaudacao, 600000);
     } catch (error) {

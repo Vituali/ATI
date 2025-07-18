@@ -15,10 +15,11 @@ const DADOS_INICIAIS = {
     geral: {}
 };
 
-const DB_NAME = "ChatAutomaticoDB";
-const DB_VERSION = 1;
-const STORE_NAME = "respostas";
-let db;
+// Objeto local para armazenar os dados em memória
+let DADOS = { ...DADOS_INICIAIS };
+
+// URL do arquivo JSON no GitHub Pages
+const JSON_URL = 'https://<seu-usuario>.github.io/<repositório>/api/dados.json';
 
 // Funções de saudação
 const getSaudacao = () => {
@@ -39,79 +40,77 @@ const substituirMarcadores = texto =>
     texto.replace("[SAUDACAO]", getSaudacao())
          .replace("[DESPEDIDA]", getDespedida());
 
-// Banco de dados
-const abrirBanco = () => new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-    
-    request.onupgradeneeded = event => {
-        const db = event.target.result;
-        if (!db.objectStoreNames.contains(STORE_NAME)) {
-            const store = db.createObjectStore(STORE_NAME, { keyPath: "id" });
-            store.createIndex("categoria", "categoria", { unique: false });
-        }
-    };
+// Carregar dados do GitHub Pages
+const carregarTodosDados = async () => {
+    try {
+        const response = await fetch(JSON_URL);
+        if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+        const dados = await response.json();
+        DADOS = { ...DADOS_INICIAIS, ...dados }; // Mesclar com dados iniciais
+        return DADOS;
+    } catch (error) {
+        console.error("Erro ao carregar dados do GitHub:", error);
+        return DADOS; // Retorna dados locais como fallback
+    }
+};
 
-    request.onsuccess = event => {
-        db = event.target.result;
-        resolve(db);
-    };
+// Salvar dados localmente (em memória)
+const salvarNoBanco = (categoria, chave, texto) => {
+    DADOS[categoria] = DADOS[categoria] || {};
+    DADOS[categoria][chave] = texto;
+    console.log(`Salvo localmente: ${categoria}:${chave}`);
+};
 
-    request.onerror = event => {
-        console.error("Erro ao abrir o banco:", event.target.error);
-        reject(event.target.error);
-    };
-});
+/* 
+ * Exemplo de escrita no GitHub usando a API (requer backend para segurança)
+ * Descomente e configure com um backend seguro (não exponha o token no cliente)
+const salvarNoBanco = async (categoria, chave, texto) => {
+    try {
+        DADOS[categoria] = DADOS[categoria] || {};
+        DADOS[categoria][chave] = texto;
 
-const salvarNoBanco = (categoria, chave, texto) => new Promise((resolve, reject) => {
-    const transaction = db.transaction([STORE_NAME], "readwrite");
-    const store = transaction.objectStore(STORE_NAME);
-    const id = `${categoria}:${chave}`;
-    const data = { id, categoria, chave, texto };
-    
-    const request = store.put(data);
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
-    transaction.oncomplete = () => console.log(`Salvo: ${id}`);
-    transaction.onerror = () => reject(transaction.error);
-});
+        const content = JSON.stringify(DADOS, null, 2);
+        const contentBase64 = btoa(unescape(encodeURIComponent(content)));
 
-const carregarTodosDados = () => new Promise((resolve, reject) => {
-    const transaction = db.transaction([STORE_NAME], "readonly");
-    const store = transaction.objectStore(STORE_NAME);
-    const request = store.getAll();
-    
-    request.onsuccess = () => {
-        const dados = {};
-        request.result.forEach(item => {
-            if (!dados[item.categoria]) dados[item.categoria] = {};
-            dados[item.categoria][item.chave] = item.texto;
+        const octokit = new Octokit({ auth: 'seu-token-aqui' }); // NÃO USE NO CLIENTE
+        const { data } = await octokit.repos.getContent({
+            owner: '<seu-usuario>',
+            repo: '<repositório>',
+            path: 'api/dados.json'
         });
-        resolve(dados);
-    };
-    request.onerror = () => reject(request.error);
-});
 
-const apagarDoBanco = id => new Promise((resolve, reject) => {
-    const transaction = db.transaction([STORE_NAME], "readwrite");
-    const store = transaction.objectStore(STORE_NAME);
-    const request = store.delete(id);
-    
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
-    transaction.oncomplete = () => console.log(`Apagado: ${id}`);
-});
+        await octokit.repos.createOrUpdateFileContents({
+            owner: '<seu-usuario>',
+            repo: '<repositório>',
+            path: 'api/dados.json',
+            message: `Atualizar dados ${categoria}:${chave}`,
+            content: contentBase64,
+            sha: data.sha
+        });
+
+        console.log(`Salvo no GitHub: ${categoria}:${chave}`);
+    } catch (error) {
+        console.error("Erro ao salvar no GitHub:", error);
+        throw error;
+    }
+};
+*/
+
+// Apagar dados localmente
+const apagarDoBanco = (id) => {
+    const [categoria, chave] = id.split(":");
+    if (DADOS[categoria] && DADOS[categoria][chave]) {
+        delete DADOS[categoria][chave];
+        console.log(`Apagado localmente: ${id}`);
+    }
+};
 
 // Funções principais
 const inicializarDados = async () => {
     try {
-        const dadosExistentes = await carregarTodosDados();
-        if (Object.keys(dadosExistentes).length === 0) {
-            for (const [categoria, respostas] of Object.entries(DADOS_INICIAIS)) {
-                for (const [chave, texto] of Object.entries(respostas)) {
-                    await salvarNoBanco(categoria, chave, texto);
-                }
-            }
-            console.log("Dados iniciais salvos com sucesso.");
+        await carregarTodosDados();
+        if (Object.keys(DADOS).length === Object.keys(DADOS_INICIAIS).length) {
+            console.log("Nenhum dado encontrado, usando dados iniciais.");
         }
     } catch (error) {
         console.error("Erro ao inicializar dados:", error);
@@ -126,11 +125,11 @@ const atualizarSaudacao = () => {
 
 const atualizarOpcoes = async () => {
     try {
-        const dados = await carregarTodosDados();
+        await carregarTodosDados(); // Garante que DADOS está atualizado
         ELEMENTS.opcoes.innerHTML = '<option value="">Selecione uma opção</option>';
         const categoriaSelecionada = ELEMENTS.categoria.value;
         
-        Object.entries(dados).forEach(([categoria, respostas]) => {
+        Object.entries(DADOS).forEach(([categoria, respostas]) => {
             if (!categoriaSelecionada || categoria === categoriaSelecionada) {
                 const optgroup = document.createElement("optgroup");
                 optgroup.label = categoria.charAt(0).toUpperCase() + categoria.slice(1);
@@ -163,9 +162,8 @@ const responder = async () => {
     
     try {
         const [categoria, chave] = opcao.split(":");
-        const dados = await carregarTodosDados();
         ELEMENTS.titulo.value = chave.replace(/_/g, " ").toUpperCase();
-        ELEMENTS.resposta.value = substituirMarcadores(dados[categoria][chave] || "Resposta não encontrada.");
+        ELEMENTS.resposta.value = substituirMarcadores(DADOS[categoria]?.[chave] || "Resposta não encontrada.");
         ajustarAlturaTextarea();
     } catch (error) {
         console.error("Erro ao responder:", error);
@@ -184,12 +182,11 @@ const salvarNovoTitulo = async () => {
     const [categoria, oldChave] = opcaoAntiga.split(":");
     if (novoTitulo === oldChave) return;
 
-    const dados = await carregarTodosDados();
-    if (dados[categoria]?.[novoTitulo]) return alert("Este título já existe nesta categoria!");
+    if (DADOS[categoria]?.[novoTitulo]) return alert("Este título já existe nesta categoria!");
 
-    const texto = dados[categoria][oldChave];
-    await salvarNoBanco(categoria, novoTitulo, texto);
-    await apagarDoBanco(opcaoAntiga);
+    const texto = DADOS[categoria][oldChave];
+    salvarNoBanco(categoria, novoTitulo, texto);
+    apagarDoBanco(opcaoAntiga);
     await atualizarOpcoes();
     ELEMENTS.opcoes.value = `${categoria}:${novoTitulo}`;
     await responder();
@@ -203,7 +200,7 @@ const salvarEdicao = async () => {
     const [categoria, chave] = opcao.split(":");
     const textoOriginal = ELEMENTS.resposta.value.trim();
     try {
-        await salvarNoBanco(categoria, chave, textoOriginal);
+        salvarNoBanco(categoria, chave, textoOriginal);
         alert("Resposta salva com sucesso!");
         await responder();
     } catch (error) {
@@ -226,7 +223,7 @@ const apagarTexto = async () => {
     const opcao = ELEMENTS.opcoes.value;
     if (!opcao || !confirm("Tem certeza que deseja apagar?")) return;
     
-    await apagarDoBanco(opcao);
+    apagarDoBanco(opcao);
     ELEMENTS.resposta.value = "";
     ELEMENTS.titulo.value = "";
     await atualizarOpcoes();
@@ -243,11 +240,10 @@ const mostrarPopupAdicionar = async () => {
     const categoriaPrompt = prompt("Escolha a categoria (financeiro, suporte, geral):", "geral");
     const categoria = CATEGORIAS.includes(categoriaPrompt?.toLowerCase()) ? categoriaPrompt.toLowerCase() : "geral";
     
-    const dados = await carregarTodosDados();
-    if (dados[categoria]?.[chave]) return alert("Esse título já existe nesta categoria!");
+    if (DADOS[categoria]?.[chave]) return alert("Esse título já existe nesta categoria!");
 
     const textoPadrao = "[SAUDACAO] Nova resposta aqui... [DESPEDIDA]";
-    await salvarNoBanco(categoria, chave, textoPadrao);
+    salvarNoBanco(categoria, chave, textoPadrao);
     await atualizarOpcoes();
     ELEMENTS.opcoes.value = `${categoria}:${chave}`;
     await responder();
@@ -264,12 +260,11 @@ const alterarCategoria = async () => {
 
     if (novaCategoria === oldCategoria) return;
 
-    const dados = await carregarTodosDados();
-    if (dados[novaCategoria]?.[chave]) return alert("Este título já existe na categoria selecionada!");
+    if (DADOS[novaCategoria]?.[chave]) return alert("Este título já existe na categoria selecionada!");
 
-    const texto = dados[oldCategoria][chave];
-    await salvarNoBanco(novaCategoria, chave, texto);
-    await apagarDoBanco(opcao);
+    const texto = DADOS[oldCategoria][chave];
+    salvarNoBanco(novaCategoria, chave, texto);
+    apagarDoBanco(opcao);
     await atualizarOpcoes();
     ELEMENTS.opcoes.value = `${novaCategoria}:${chave}`;
     await responder();
@@ -278,8 +273,7 @@ const alterarCategoria = async () => {
 
 const exportarDados = async () => {
     try {
-        const dados = await carregarTodosDados();
-        const json = JSON.stringify(dados, null, 2);
+        const json = JSON.stringify(DADOS, null, 2);
         const blob = new Blob([json], { type: "application/json" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -287,7 +281,7 @@ const exportarDados = async () => {
         a.download = `chat_dados_${new Date().toISOString().slice(0,10)}.json`;
         a.click();
         URL.revokeObjectURL(url);
-        alert("Dados exportados com sucesso!");
+        alert("Dados exportados com sucesso! Faça o commit manual do arquivo no GitHub.");
     } catch (error) {
         console.error("Erro ao exportar:", error);
         alert("Erro ao exportar dados!");
@@ -302,14 +296,10 @@ const importarDados = async (event) => {
         const reader = new FileReader();
         reader.onload = async e => {
             const dadosImportados = JSON.parse(e.target.result);
-            for (const [categoria, respostas] of Object.entries(dadosImportados)) {
-                for (const [chave, texto] of Object.entries(respostas)) {
-                    await salvarNoBanco(categoria, chave, texto);
-                }
-            }
+            DADOS = { ...DADOS_INICIAIS, ...dadosImportados };
             await atualizarOpcoes();
             await responder();
-            alert("Dados importados com sucesso!");
+            alert("Dados importados com sucesso! Considere atualizar o JSON no GitHub.");
         };
         reader.readAsText(file);
     } catch (error) {
@@ -363,7 +353,6 @@ const executarAcaoEditar = async (acao) => {
 
 const inicializar = async () => {
     try {
-        db = await abrirBanco();
         await inicializarDados();
         await atualizarOpcoes();
         await responder();

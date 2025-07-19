@@ -21,7 +21,7 @@ let DADOS = { ...DADOS_INICIAIS };
 let usuarioAtual = ''; // Armazena o identificador do usuário atual
 
 // Base da URL do GitHub Pages
-const BASE_URL = 'https://<seu-usuario>.github.io/<repositório>/api';
+const BASE_URL = 'https://suporteati10.github.io/ATI/api';
 
 // Funções de saudação
 const getSaudacao = () => {

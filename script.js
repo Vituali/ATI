@@ -46,13 +46,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function validarChave(chave) {
     if (!chave || !chave.trim()) {
+      console.error("❌ Chave inválida: vazia ou nula");
       return { valido: false, mensagem: "A chave não pode estar em branco." };
     }
-    const caracteresProibidos = "/[$#[]./]/";
+    const caracteresProibidos = new RegExp("[\\$#\\[\\]\\.\\\/]", "g");
     if (caracteresProibidos.test(chave)) {
+      console.warn(`⚠️ Chave contém caracteres proibidos: ${chave}`);
       return { valido: false, mensagem: "A chave não pode conter $ # [ ] . ou /." };
     }
-    return { valido: true, chaveSanitizada: chave.trim().toLowerCase().replace(/[^a-z0-9_]/g, "_") };
+    const chaveSanitizada = chave.trim().toLowerCase().replace(/[\$#\[\]\.\/]/g, "_");
+    console.log(`✅ Chave válida: ${chave} -> ${chaveSanitizada}`);
+    return { valido: true, chaveSanitizada };
   }
 
   function salvarNoFirebase() {
@@ -65,7 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
       .then(() => console.log(`🔥 Dados salvos no Firebase para ${atendenteAtual}`))
       .catch((error) => {
         console.error("❌ Erro ao salvar no Firebase:", error);
-        alert(`Erro ao salvar: ${error.message}. Verifique as regras do banco de dados ou a conexão.`);
+        alert("Erro ao salvar: " + error.message + ". Verifique as regras do banco de dados ou a conexão.");
       });
   }
 
@@ -83,11 +87,11 @@ document.addEventListener("DOMContentLoaded", function () {
         atualizarSeletorOpcoes();
       } catch (error) {
         console.error("❌ Erro ao carregar dados do Firebase:", error);
-        alert(`Erro ao carregar dados: ${error.message}. Verifique o console.`);
+        alert("Erro ao carregar dados: " + error.message);
       }
     }, (error) => {
       console.error("❌ Erro na conexão com Firebase:", error);
-      alert(`Erro de conexão com o Firebase: ${error.message}.`);
+      alert("Erro de conexão com o Firebase: " + error.message);
     });
   }
 
@@ -132,7 +136,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     const [categoria, chave] = opcao.split(":");
     resposta.value = substituirMarcadores(respostas[categoria]?.[chave] || "Resposta não encontrada.");
-    titulo.value = chave.replace(/_/g, " ").toUpperCase();
+    titulo.value = chave.replace(/_/g, " ");
     ajustarAlturaTextarea();
   };
 
@@ -163,6 +167,7 @@ document.addEventListener("DOMContentLoaded", function () {
     texto.select();
     try {
       document.execCommand("copy");
+      alert("Mensagem copiada!");
     } catch (error) {
       console.error("❌ Erro ao copiar texto:", error);
       alert("Erro ao copiar a mensagem.");
@@ -178,6 +183,9 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!opcao || !confirm("Tem certeza que deseja apagar?")) return;
     const [categoria, chave] = opcao.split(":");
     delete respostas[categoria][chave];
+    if (Object.keys(respostas[categoria]).length === 0) {
+      delete respostas[categoria];
+    }
     salvarNoFirebase();
     atualizarSeletorOpcoes();
     document.getElementById("resposta").value = "";
@@ -191,17 +199,26 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
     const novoTitulo = prompt("Digite o título da nova resposta:");
-    if (!novoTitulo) return;
+    if (!novoTitulo) {
+      console.log("⚠️ Adição cancelada: título vazio");
+      return;
+    }
     const validacao = validarChave(novoTitulo);
     if (!validacao.valido) {
       alert(validacao.mensagem);
+      console.error("❌ Validação do título falhou:", validacao.mensagem);
       return;
     }
     const chave = validacao.chaveSanitizada;
     const categoriaPrompt = prompt("Digite a categoria (ex.: suporte, financeiro, geral):", "geral");
+    if (!categoriaPrompt) {
+      console.log("⚠️ Adição cancelada: categoria vazia");
+      return;
+    }
     const validacaoCategoria = validarChave(categoriaPrompt);
     if (!validacaoCategoria.valido) {
       alert(validacaoCategoria.mensagem);
+      console.error("❌ Validação da categoria falhou:", validacaoCategoria.mensagem);
       return;
     }
     const categoria = validacaoCategoria.chaveSanitizada;
@@ -210,9 +227,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     if (respostas[categoria][chave]) {
       alert("Esse título já existe nesta categoria!");
+      console.warn(`⚠️ Título duplicado: ${chave} em ${categoria}`);
       return;
     }
     respostas[categoria][chave] = "[SAUDACAO] Nova resposta aqui... [DESPEDIDA]";
+    console.log(`📝 Adicionando: ${categoria}:${chave}`);
     salvarNoFirebase();
     atualizarSeletorOpcoes();
     document.getElementById("opcoes").value = `${categoria}:${chave}`;
@@ -228,19 +247,34 @@ document.addEventListener("DOMContentLoaded", function () {
     const opcao = document.getElementById("opcoes").value;
     if (!opcao) {
       alert("Selecione uma resposta primeiro!");
+      console.warn("⚠️ Nenhuma opção selecionada para alterar categoria");
       return;
     }
     const [oldCategoria, chave] = opcao.split(":");
     const novaCategoria = prompt("Digite a nova categoria (ex.: suporte, financeiro, geral):", oldCategoria);
+    if (!novaCategoria) {
+      console.log("⚠️ Alteração cancelada: categoria vazia");
+      return;
+    }
     const validacao = validarChave(novaCategoria);
     if (!validacao.valido) {
       alert(validacao.mensagem);
+      console.error("❌ Validação da nova categoria falhou:", validacao.mensagem);
       return;
     }
     const novaCategoriaKey = validacao.chaveSanitizada;
-    if (novaCategoriaKey === oldCategoria) return;
+    if (novaCategoriaKey === oldCategoria) {
+      console.log("⚠️ Mesma categoria selecionada, nenhuma alteração feita");
+      return;
+    }
+    if (!respostas[oldCategoria] || !respostas[oldCategoria][chave]) {
+      alert("Erro: resposta não encontrada na categoria atual!");
+      console.error(`❌ Resposta não encontrada: ${oldCategoria}:${chave}`);
+      return;
+    }
     if (respostas[novaCategoriaKey]?.[chave]) {
       alert("Este título já existe na categoria selecionada!");
+      console.warn(`⚠️ Título duplicado: ${chave} em ${novaCategoriaKey}`);
       return;
     }
     if (!respostas[novaCategoriaKey]) {
@@ -248,6 +282,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     respostas[novaCategoriaKey][chave] = respostas[oldCategoria][chave];
     delete respostas[oldCategoria][chave];
+    if (Object.keys(respostas[oldCategoria]).length === 0) {
+      delete respostas[oldCategoria];
+    }
+    console.log(`🔄 Movendo ${chave} de ${oldCategoria} para ${novaCategoriaKey}`);
     salvarNoFirebase();
     atualizarSeletorOpcoes();
     document.getElementById("opcoes").value = `${novaCategoriaKey}:${chave}`;
@@ -264,12 +302,19 @@ document.addEventListener("DOMContentLoaded", function () {
     const opcao = document.getElementById("opcoes").value;
     if (!opcao) {
       alert("Selecione uma opção primeiro!");
+      console.warn("⚠️ Nenhuma opção selecionada para editar título");
+      return;
+    }
+    const [categoria, chave] = opcao.split(":");
+    if (!respostas[categoria]?.[chave]) {
+      alert("Erro: resposta não encontrada!");
+      console.error(`❌ Resposta não encontrada: ${categoria}:${chave}`);
       return;
     }
     titleContainer.style.display = titleContainer.style.display === "flex" ? "none" : "flex";
     if (titleContainer.style.display === "flex") {
-      const [categoria, chave] = opcao.split(":");
-      document.getElementById("titulo").value = chave.replace(/_/g, " ").toUpperCase();
+      document.getElementById("titulo").value = chave.replace(/_/g, " ");
+      console.log(`📝 Abrindo edição de título para ${categoria}:${chave}`);
     }
   };
 
@@ -281,23 +326,36 @@ document.addEventListener("DOMContentLoaded", function () {
     const opcaoAntiga = document.getElementById("opcoes").value;
     if (!opcaoAntiga) {
       alert("Selecione uma opção primeiro!");
+      console.warn("⚠️ Nenhuma opção selecionada para salvar título");
       return;
     }
     const novoTitulo = document.getElementById("titulo").value.trim();
     const validacao = validarChave(novoTitulo);
     if (!validacao.valido) {
       alert(validacao.mensagem);
+      console.error("❌ Validação do novo título falhou:", validacao.mensagem);
       return;
     }
     const novoChave = validacao.chaveSanitizada;
     const [categoria, oldChave] = opcaoAntiga.split(":");
-    if (novoChave === oldChave) return;
+    if (!respostas[categoria]?.[oldChave]) {
+      alert("Erro: resposta não encontrada!");
+      console.error(`❌ Resposta não encontrada: ${categoria}:${oldChave}`);
+      return;
+    }
+    if (novoChave === oldChave) {
+      console.log("⚠️ Mesmo título, nenhuma alteração feita");
+      document.getElementById("titleContainer").style.display = "none";
+      return;
+    }
     if (respostas[categoria][novoChave]) {
       alert("Este título já existe nesta categoria!");
+      console.warn(`⚠️ Título duplicado: ${novoChave} em ${categoria}`);
       return;
     }
     respostas[categoria][novoChave] = respostas[categoria][oldChave];
     delete respostas[categoria][oldChave];
+    console.log(`🔄 Renomeando ${categoria}:${oldChave} para ${categoria}:${novoChave}`);
     salvarNoFirebase();
     atualizarSeletorOpcoes();
     document.getElementById("opcoes").value = `${categoria}:${novoChave}`;
@@ -335,7 +393,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // Inicializar
   atualizarSaudacao();
-  setInterval(atualizarSaudacao, 600000); // Atualiza saudação a cada 10 minutos
+  setInterval(atualizarSaudacao, 600000);
 });

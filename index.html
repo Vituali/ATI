@@ -13,6 +13,21 @@
     <p id="saudacao"></p>
     </h2>
     <div class="grupo">
+      <label for="atendente">Atendente:</label>
+      <select id="atendente" onchange="selecionarAtendente()">
+        <option value="">Selecione um atendente</option>
+        <option value="victor">Victor</option>
+        <option value="bruno">Bruno</option>
+        <option value="lucas">Lucas</option>
+        <option value="igor">Igor</option>
+        <option value="diego">Diego</option>
+        <option value="jefferson">jefferson</option>
+        <option value="helio">Helio</option>
+        <option value="marlon">Marlon</option>
+      </select>
+    </div>
+
+    <div class="grupo">
       <label for="opcoes">Escolha uma opção:</label>
       <select id="opcoes" onchange="responder()">
         <option value="">Selecione uma opção</option>

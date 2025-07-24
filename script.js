@@ -22,6 +22,27 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   let respostas = { suporte: {}, financeiro: {}, geral: {} };
+  let atendenteAtual = localStorage.getItem("atendenteAtual") || "";
+  const atendenteSelect = document.getElementById("atendente");
+  if (atendenteSelect) {
+    atendenteSelect.value = atendenteAtual;
+    if (atendenteAtual) {
+      carregarDoFirebase();
+    }
+  }
+
+  window.selecionarAtendente = function() {
+    atendenteAtual = atendenteSelect.value;
+    localStorage.setItem("atendenteAtual", atendenteAtual);
+    if (atendenteAtual) {
+      carregarDoFirebase();
+    } else {
+      document.getElementById("opcoes").innerHTML = '<option value="">Selecione um atendente primeiro</option>';
+      document.getElementById("resposta").value = "";
+      document.getElementById("titulo").value = "";
+      ajustarAlturaTextarea();
+    }
+  };
 
   function validarChave(chave) {
     if (!chave || !chave.trim()) {
@@ -35,23 +56,31 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function salvarNoFirebase() {
-    const dbRef = firebase.ref(db, "respostas");
+    if (!atendenteAtual) {
+      alert("Selecione um atendente antes de salvar!");
+      return;
+    }
+    const dbRef = firebase.ref(db, `respostas/${atendenteAtual}`);
     firebase.set(dbRef, respostas)
-      .then(() => console.log("🔥 Dados salvos no Firebase"))
+      .then(() => console.log(`🔥 Dados salvos no Firebase para ${atendenteAtual}`))
       .catch((error) => {
         console.error("❌ Erro ao salvar no Firebase:", error);
         alert(`Erro ao salvar: ${error.message}. Verifique as regras do banco de dados ou a conexão.`);
       });
   }
 
-  function carregarDoFirebase(callback) {
-    const dbRef = firebase.ref(db, "respostas");
+  function carregarDoFirebase() {
+    if (!atendenteAtual) {
+      console.log("⚠️ Selecione um atendente primeiro");
+      return;
+    }
+    const dbRef = firebase.ref(db, `respostas/${atendenteAtual}`);
     firebase.onValue(dbRef, (snapshot) => {
       try {
         const data = snapshot.val();
         respostas = data || { suporte: {}, financeiro: {}, geral: {} };
-        console.log("📥 Dados carregados do Firebase:", respostas);
-        callback();
+        console.log(`📥 Dados carregados do Firebase para ${atendenteAtual}:`, respostas);
+        atualizarSeletorOpcoes();
       } catch (error) {
         console.error("❌ Erro ao carregar dados do Firebase:", error);
         alert(`Erro ao carregar dados: ${error.message}. Verifique o console.`);
@@ -69,7 +98,8 @@ document.addEventListener("DOMContentLoaded", function () {
       alert("Erro: elemento de opções não encontrado.");
       return;
     }
-    seletor.innerHTML = '<option value="">Selecione uma opção</option>';
+    seletor.innerHTML = atendenteAtual ? '<option value="">Selecione uma opção</option>' : '<option value="">Selecione um atendente primeiro</option>';
+    if (!atendenteAtual) return;
     Object.keys(respostas).sort().forEach(categoria => {
       const optgroup = document.createElement("optgroup");
       optgroup.label = categoria.charAt(0).toUpperCase() + categoria.slice(1);
@@ -90,9 +120,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const opcao = document.getElementById("opcoes").value;
     const resposta = document.getElementById("resposta");
     const titulo = document.getElementById("titulo");
-    if (!opcao) {
-      if (!resposta.value) {
+    if (!opcao || !atendenteAtual) {
+      if (!resposta.value && atendenteAtual) {
         resposta.value = "Selecione uma opção para receber uma resposta automática.";
+      } else if (!atendenteAtual) {
+        resposta.value = "Selecione um atendente primeiro.";
       }
       titulo.value = "";
       ajustarAlturaTextarea();
@@ -105,6 +137,10 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   window.salvarEdicao = function() {
+    if (!atendenteAtual) {
+      alert("Selecione um atendente primeiro!");
+      return;
+    }
     const opcao = document.getElementById("opcoes").value;
     if (!opcao) {
       alert("Selecione uma opção primeiro!");
@@ -134,6 +170,10 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   window.apagarTexto = function() {
+    if (!atendenteAtual) {
+      alert("Selecione um atendente primeiro!");
+      return;
+    }
     const opcao = document.getElementById("opcoes").value;
     if (!opcao || !confirm("Tem certeza que deseja apagar?")) return;
     const [categoria, chave] = opcao.split(":");
@@ -146,6 +186,10 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   window.mostrarPopupAdicionar = function() {
+    if (!atendenteAtual) {
+      alert("Selecione um atendente primeiro!");
+      return;
+    }
     const novoTitulo = prompt("Digite o título da nova resposta:");
     if (!novoTitulo) return;
     const validacao = validarChave(novoTitulo);
@@ -177,6 +221,10 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   window.alterarCategoria = function() {
+    if (!atendenteAtual) {
+      alert("Selecione um atendente primeiro!");
+      return;
+    }
     const opcao = document.getElementById("opcoes").value;
     if (!opcao) {
       alert("Selecione uma resposta primeiro!");
@@ -208,6 +256,10 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   window.toggleEditarTitulo = function() {
+    if (!atendenteAtual) {
+      alert("Selecione um atendente primeiro!");
+      return;
+    }
     const titleContainer = document.getElementById("titleContainer");
     const opcao = document.getElementById("opcoes").value;
     if (!opcao) {
@@ -222,6 +274,10 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   window.salvarNovoTitulo = function() {
+    if (!atendenteAtual) {
+      alert("Selecione um atendente primeiro!");
+      return;
+    }
     const opcaoAntiga = document.getElementById("opcoes").value;
     if (!opcaoAntiga) {
       alert("Selecione uma opção primeiro!");
@@ -282,9 +338,4 @@ document.addEventListener("DOMContentLoaded", function () {
   // Inicializar
   atualizarSaudacao();
   setInterval(atualizarSaudacao, 600000); // Atualiza saudação a cada 10 minutos
-  carregarDoFirebase(() => {
-    atualizarSeletorOpcoes();
-    document.getElementById("resposta").value = "";
-    responder();
-  });
 });

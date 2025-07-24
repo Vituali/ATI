@@ -63,6 +63,7 @@ label {
     display: flex;
     gap: 10px;
     justify-content: center;
+    flex-wrap: wrap;
 }
 
 button {
@@ -140,6 +141,13 @@ select option {
     padding: 10px 15px;
 }
 
+.title-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0;
+}
+
 @media (max-width: 480px) {
     .chatbox {
         padding: 20px;
@@ -162,5 +170,9 @@ select option {
     }
     .controls {
         flex-direction: column;
+    }
+    .title-container {
+        flex-direction: column;
+        gap: 5px;
     }
 }

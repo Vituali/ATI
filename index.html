@@ -1,43 +1,31 @@
+<!-- index.html -->
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Automático</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ATI - Automatizador de Chat</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    select, textarea, input { display: block; margin-top: 10px; width: 100%; }
+    button { margin-top: 10px; }
+  </style>
 </head>
 <body>
-<div class="chatbox" id="chat">
-    <h2>🤖 Automatizador de chat o manizado no mero um 🤖</h2>
-    <p id="saudacao"></p>
-    <select id="categoria" onchange="atualizarOpcoes()">
-        <option value="">Todas as Categorias</option>
-        <option value="financeiro">Financeiro</option>
-        <option value="suporte">Suporte</option>
-        <option value="geral">Geral</option>
-    </select>
-    <select id="opcoes" onchange="responder()"></select>
-    <div class="title-container" id="titleContainer" style="display: none;">
-        <input type="text" id="titulo" placeholder="Título">
-        <button onclick="salvarNovoTitulo()">Alterar Título</button>
-    </div>
-    <textarea class="message" id="resposta" placeholder="Selecione uma opção para receber uma resposta automática."></textarea>
-    <div class="controls">
-        <button onclick="copiarTexto()">Copiar</button>
-        <select id="editarAcoes" onchange="executarAcaoEditar(this.value)">
-            <option value="">Editar</option>
-            <option value="salvar">Salvar</option>
-            <option value="alterarCategoria">Alterar Categoria</option>
-            <option value="apagar">Apagar</option>
-            <option value="adicionar">Adicionar</option>
-            <option value="editarTitulo">Editar Título</option>
-        </select>
-        <button onclick="exportarDados()">Exportar Dados</button>
-    </div>
-</div>
-<script src="script.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js"></script>
+  <h1>ATI - Automatizador</h1>
+
+  <select id="seletor" onchange="mudarTextoSelecionado()"></select>
+
+  <textarea id="texto" rows="4" placeholder="Mensagem..." oninput="atualizarTextoSelecionado()"></textarea>
+
+  <input id="novaOpcao" placeholder="Nova opção">
+  <button onclick="adicionarOpcao()">Adicionar opção</button>
+
+  <button onclick="copiarTexto()">Copiar</button>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js"></script>
 
 <script>
   const firebaseConfig = {
@@ -51,7 +39,71 @@
   };
 
   firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-</script>
+    const db = firebase.database();
+
+    let respostas = {};
+
+    function salvarNoFirebase() {
+      db.ref("respostas").set(respostas)
+        .then(() => console.log("🔥 Salvo no Firebase"))
+        .catch((error) => console.error("❌ Erro:", error));
+    }
+
+    function carregarDoFirebase(callback) {
+      db.ref("respostas").on("value", (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          respostas = data;
+          callback();
+        }
+      });
+    }
+
+    function renderizarSelects() {
+      const select = document.getElementById("seletor");
+      select.innerHTML = "";
+      for (let chave in respostas) {
+        const opt = document.createElement("option");
+        opt.value = chave;
+        opt.innerText = chave;
+        select.appendChild(opt);
+      }
+      mudarTextoSelecionado();
+    }
+
+    function mudarTextoSelecionado() {
+      const seletor = document.getElementById("seletor");
+      const texto = document.getElementById("texto");
+      const chave = seletor.value;
+      texto.value = respostas[chave] || "";
+    }
+
+    function atualizarTextoSelecionado() {
+      const seletor = document.getElementById("seletor");
+      const texto = document.getElementById("texto");
+      const chave = seletor.value;
+      respostas[chave] = texto.value;
+      salvarNoFirebase();
+    }
+
+    function adicionarOpcao() {
+      const input = document.getElementById("novaOpcao");
+      const chave = input.value.trim();
+      if (chave && !respostas[chave]) {
+        respostas[chave] = "";
+        input.value = "";
+        salvarNoFirebase();
+        renderizarSelects();
+      }
+    }
+
+    function copiarTexto() {
+      const texto = document.getElementById("texto");
+      texto.select();
+      document.execCommand("copy");
+    }
+
+    window.onload = () => carregarDoFirebase(renderizarSelects);
+  </script>
 </body>
 </html>

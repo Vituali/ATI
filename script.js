@@ -62,41 +62,27 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  function atualizarSeletorCategorias() {
-    const select = document.getElementById("categoria");
-    if (!select) {
-      console.error("❌ Elemento 'categoria' não encontrado");
-      alert("Erro: elemento de categoria não encontrado.");
-      return;
-    }
-    select.innerHTML = '<option value="">Selecione uma categoria</option>';
-    Object.keys(respostas).sort().forEach(categoria => {
-      const opt = document.createElement("option");
-      opt.value = categoria;
-      opt.innerText = categoria.charAt(0).toUpperCase() + categoria.slice(1);
-      select.appendChild(opt);
-    });
-    atualizarSeletorOpcoes();
-  }
-
   window.atualizarSeletorOpcoes = function() {
-    const categoriaSelect = document.getElementById("categoria");
     const seletor = document.getElementById("opcoes");
-    if (!categoriaSelect || !seletor) {
-      console.error("❌ Elementos 'categoria' ou 'opcoes' não encontrados");
-      alert("Erro: elementos de interface não encontrados.");
+    if (!seletor) {
+      console.error("❌ Elemento 'opcoes' não encontrado");
+      alert("Erro: elemento de opções não encontrado.");
       return;
     }
-    const categoria = categoriaSelect.value;
     seletor.innerHTML = '<option value="">Selecione uma opção</option>';
-    if (categoria && respostas[categoria]) {
+    Object.keys(respostas).sort().forEach(categoria => {
+      const optgroup = document.createElement("optgroup");
+      optgroup.label = categoria.charAt(0).toUpperCase() + categoria.slice(1);
       Object.keys(respostas[categoria]).sort().forEach(chave => {
         const opt = document.createElement("option");
         opt.value = `${categoria}:${chave}`;
         opt.innerText = chave.replace(/_/g, " ").toUpperCase();
-        seletor.appendChild(opt);
+        optgroup.appendChild(opt);
       });
-    }
+      if (optgroup.children.length > 0) {
+        seletor.appendChild(optgroup);
+      }
+    });
     responder();
   };
 
@@ -106,14 +92,14 @@ document.addEventListener("DOMContentLoaded", function () {
     const titulo = document.getElementById("titulo");
     if (!opcao) {
       if (!resposta.value) {
-        resposta.value = "Selecione uma categoria e uma opção para receber uma resposta automática.";
+        resposta.value = "Selecione uma opção para receber uma resposta automática.";
       }
       titulo.value = "";
       ajustarAlturaTextarea();
       return;
     }
     const [categoria, chave] = opcao.split(":");
-    resposta.value = respostas[categoria]?.[chave] || "Resposta não encontrada.";
+    resposta.value = substituirMarcadores(respostas[categoria]?.[chave] || "Resposta não encontrada.");
     titulo.value = chave.replace(/_/g, " ").toUpperCase();
     ajustarAlturaTextarea();
   };
@@ -161,11 +147,6 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   window.mostrarPopupAdicionar = function() {
-    const categoriaSelect = document.getElementById("categoria");
-    if (!categoriaSelect.value) {
-      alert("Selecione uma categoria primeiro!");
-      return;
-    }
     const novoTitulo = prompt("Digite o título da nova resposta:");
     if (!novoTitulo) return;
     const validacao = validarChave(novoTitulo);
@@ -174,7 +155,16 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
     const chave = validacao.chaveSanitizada;
-    const categoria = categoriaSelect.value;
+    const categoriaPrompt = prompt("Digite a categoria (ex.: suporte, financeiro, geral):", "geral");
+    const validacaoCategoria = validarChave(categoriaPrompt);
+    if (!validacaoCategoria.valido) {
+      alert(validacaoCategoria.mensagem);
+      return;
+    }
+    const categoria = validacaoCategoria.chaveSanitizada;
+    if (!respostas[categoria]) {
+      respostas[categoria] = {};
+    }
     if (respostas[categoria][chave]) {
       alert("Esse título já existe nesta categoria!");
       return;
@@ -212,8 +202,6 @@ document.addEventListener("DOMContentLoaded", function () {
     respostas[novaCategoriaKey][chave] = respostas[oldCategoria][chave];
     delete respostas[oldCategoria][chave];
     salvarNoFirebase();
-    atualizarSeletorCategorias();
-    document.getElementById("categoria").value = novaCategoriaKey;
     atualizarSeletorOpcoes();
     document.getElementById("opcoes").value = `${novaCategoriaKey}:${chave}`;
     responder();
@@ -296,7 +284,7 @@ document.addEventListener("DOMContentLoaded", function () {
   atualizarSaudacao();
   setInterval(atualizarSaudacao, 600000); // Atualiza saudação a cada 10 minutos
   carregarDoFirebase(() => {
-    atualizarSeletorCategorias();
+    atualizarSeletorOpcoes();
     document.getElementById("resposta").value = "";
     responder();
   });

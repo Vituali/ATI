@@ -5,105 +5,35 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ATI - Automatizador de Chat</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    select, textarea, input { display: block; margin-top: 10px; width: 100%; }
-    button { margin-top: 10px; }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <h1>ATI - Automatizador</h1>
 
-  <select id="seletor" onchange="mudarTextoSelecionado()"></select>
+  <div class="grupo">
+    <label for="seletor">Escolha uma opção:</label>
+    <select id="seletor" onchange="mudarTextoSelecionado()"></select>
+  </div>
 
-  <textarea id="texto" rows="4" placeholder="Mensagem..." oninput="atualizarTextoSelecionado()"></textarea>
+  <div class="grupo">
+    <label for="texto">Mensagem:</label>
+    <textarea id="texto" rows="5" placeholder="Mensagem..." oninput="atualizarTextoSelecionado()"></textarea>
+  </div>
 
-  <input id="novaOpcao" placeholder="Nova opção">
-  <button onclick="adicionarOpcao()">Adicionar opção</button>
+  <div class="grupo">
+    <label for="novaOpcao">Nova opção:</label>
+    <input id="novaOpcao" placeholder="Nome da nova opção">
+    <button onclick="adicionarOpcao()">Adicionar opção</button>
+  </div>
 
-  <button onclick="copiarTexto()">Copiar</button>
+  <div class="grupo">
+    <button onclick="copiarTexto()">📋 Copiar mensagem</button>
+  </div>
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js"></script>
 
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyB5wO0x-7NFmh6waMKzWzRew4ezfYOmYBI",
-    authDomain: "site-ati-75d83.firebaseapp.com",
-    databaseURL: "https://site-ati-75d83-default-rtdb.firebaseio.com",
-    projectId: "site-ati-75d83",
-    storageBucket: "site-ati-75d83.firebasestorage.app",
-    messagingSenderId: "467986581951",
-    appId: "1:467986581951:web:046a778a0c9b6967d5790a"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    let respostas = {};
-
-    function salvarNoFirebase() {
-      db.ref("respostas").set(respostas)
-        .then(() => console.log("🔥 Salvo no Firebase"))
-        .catch((error) => console.error("❌ Erro:", error));
-    }
-
-    function carregarDoFirebase(callback) {
-      db.ref("respostas").on("value", (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          respostas = data;
-          callback();
-        }
-      });
-    }
-
-    function renderizarSelects() {
-      const select = document.getElementById("seletor");
-      select.innerHTML = "";
-      for (let chave in respostas) {
-        const opt = document.createElement("option");
-        opt.value = chave;
-        opt.innerText = chave;
-        select.appendChild(opt);
-      }
-      mudarTextoSelecionado();
-    }
-
-    function mudarTextoSelecionado() {
-      const seletor = document.getElementById("seletor");
-      const texto = document.getElementById("texto");
-      const chave = seletor.value;
-      texto.value = respostas[chave] || "";
-    }
-
-    function atualizarTextoSelecionado() {
-      const seletor = document.getElementById("seletor");
-      const texto = document.getElementById("texto");
-      const chave = seletor.value;
-      respostas[chave] = texto.value;
-      salvarNoFirebase();
-    }
-
-    function adicionarOpcao() {
-      const input = document.getElementById("novaOpcao");
-      const chave = input.value.trim();
-      if (chave && !respostas[chave]) {
-        respostas[chave] = "";
-        input.value = "";
-        salvarNoFirebase();
-        renderizarSelects();
-      }
-    }
-
-    function copiarTexto() {
-      const texto = document.getElementById("texto");
-      texto.select();
-      document.execCommand("copy");
-    }
-
-    window.onload = () => carregarDoFirebase(renderizarSelects);
-  </script>
+  <script src="main.js"></script>
 </body>
 </html>

@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", function () {
     return;
   }
 
-  let respostas = {};
+  let respostas = { suporte: {}, financeiro: {}, geral: {} }; // Estrutura inicial com categorias
 
   function salvarNoFirebase() {
     const dbRef = firebase.ref(db, "respostas");
@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", function () {
     firebase.onValue(dbRef, (snapshot) => {
       try {
         const data = snapshot.val();
-        respostas = data || {};
+        respostas = data || { suporte: {}, financeiro: {}, geral: {} };
         console.log("📥 Dados carregados do Firebase:", respostas);
         callback();
       } catch (error) {
@@ -53,55 +53,90 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  function renderizarSelects() {
-    const select = document.getElementById("seletor");
+  function atualizarSeletorCategorias() {
+    const select = document.getElementById("categoria");
     if (!select) {
-      console.error("❌ Elemento 'seletor' não encontrado");
-      alert("Erro: elemento de seleção não encontrado.");
+      console.error("❌ Elemento 'categoria' não encontrado");
+      alert("Erro: elemento de categoria não encontrado.");
       return;
     }
-    select.innerHTML = '<option value="">Selecione uma opção</option>';
-    for (let chave in respostas) {
+    select.innerHTML = '<option value="">Selecione uma categoria</option>';
+    for (let categoria in respostas) {
       const opt = document.createElement("option");
-      opt.value = chave;
-      opt.innerText = chave.replace(/_/g, " ").toUpperCase();
+      opt.value = categoria;
+      opt.innerText = categoria.charAt(0).toUpperCase() + categoria.slice(1);
       select.appendChild(opt);
     }
-    mudarTextoSelecionado();
+    atualizarSeletorOpcoes();
   }
 
-  window.mudarTextoSelecionado = function() {
+  window.atualizarSeletorOpcoes = function() {
+    const categoriaSelect = document.getElementById("categoria");
     const seletor = document.getElementById("seletor");
-    const texto = document.getElementById("texto");
-    if (!seletor || !texto) {
-      console.error("❌ Elementos 'seletor' ou 'texto' não encontrados");
+    if (!categoriaSelect || !seletor) {
+      console.error("❌ Elementos 'categoria' ou 'seletor' não encontrados");
       alert("Erro: elementos de interface não encontrados.");
       return;
     }
+    const categoria = categoriaSelect.value;
+    seletor.innerHTML = '<option value="">Selecione uma opção</option>';
+    if (categoria && respostas[categoria]) {
+      for (let chave in respostas[categoria]) {
+        const opt = document.createElement("option");
+        opt.value = chave;
+        opt.innerText = chave.replace(/_/g, " ").toUpperCase();
+        seletor.appendChild(opt);
+      }
+    }
+    mudarTextoSelecionado();
+  };
+
+  window.mudarTextoSelecionado = function() {
+    const categoriaSelect = document.getElementById("categoria");
+    const seletor = document.getElementById("seletor");
+    const texto = document.getElementById("texto");
+    if (!categoriaSelect || !seletor || !texto) {
+      console.error("❌ Elementos 'categoria', 'seletor' ou 'texto' não encontrados");
+      alert("Erro: elementos de interface não encontrados.");
+      return;
+    }
+    const categoria = categoriaSelect.value;
     const chave = seletor.value;
-    texto.value = respostas[chave] || "Selecione uma opção para receber uma resposta automática.";
+    if (categoria && chave && respostas[categoria][chave]) {
+      texto.value = respostas[categoria][chave];
+    } else if (!texto.value) {
+      texto.value = "Selecione uma categoria e uma opção para receber uma resposta automática.";
+    }
     ajustarAlturaTextarea();
   };
 
   window.atualizarTextoSelecionado = function() {
+    const categoriaSelect = document.getElementById("categoria");
     const seletor = document.getElementById("seletor");
     const texto = document.getElementById("texto");
-    if (!seletor || !texto) {
-      console.error("❌ Elementos 'seletor' ou 'texto' não encontrados");
+    if (!categoriaSelect || !seletor || !texto) {
+      console.error("❌ Elementos 'categoria', 'seletor' ou 'texto' não encontrados");
       return;
     }
+    const categoria = categoriaSelect.value;
     const chave = seletor.value;
-    if (chave) {
-      respostas[chave] = texto.value;
+    if (categoria && chave) {
+      respostas[categoria][chave] = texto.value;
       salvarNoFirebase();
     }
   };
 
   window.adicionarOpcao = function() {
+    const categoriaSelect = document.getElementById("categoria");
     const novaOpcaoInput = document.getElementById("novaOpcao");
-    if (!novaOpcaoInput) {
-      console.error("❌ Elemento 'novaOpcao' não encontrado");
-      alert("Erro: campo de nova opção não encontrado.");
+    if (!categoriaSelect || !novaOpcaoInput) {
+      console.error("❌ Elementos 'categoria' ou 'novaOpcao' não encontrados");
+      alert("Erro: campo de categoria ou nova opção não encontrado.");
+      return;
+    }
+    const categoria = categoriaSelect.value;
+    if (!categoria) {
+      alert("Por favor, selecione uma categoria antes de adicionar uma opção.");
       return;
     }
     const novaOpcao = novaOpcaoInput.value.trim().toLowerCase().replace(/ /g, "_");
@@ -109,15 +144,32 @@ document.addEventListener("DOMContentLoaded", function () {
       alert("Por favor, digite uma nova opção válida.");
       return;
     }
-    if (respostas[novaOpcao]) {
-      alert("Essa opção já existe!");
+    if (respostas[categoria][novaOpcao]) {
+      alert("Essa opção já existe nesta categoria!");
       return;
     }
-    respostas[novaOpcao] = "";
-    console.log("➕ Nova opção adicionada localmente:", novaOpcao);
+    respostas[categoria][novaOpcao] = "";
+    console.log(`➕ Nova opção adicionada em ${categoria}:`, novaOpcao);
     salvarNoFirebase();
-    renderizarSelects();
+    atualizarSeletorOpcoes();
     novaOpcaoInput.value = "";
+  };
+
+  window.adicionarCategoria = function() {
+    const novaCategoria = prompt("Digite o nome da nova categoria:");
+    if (!novaCategoria) {
+      alert("Por favor, digite um nome válido para a categoria.");
+      return;
+    }
+    const categoriaKey = novaCategoria.trim().toLowerCase().replace(/ /g, "_");
+    if (respostas[categoriaKey]) {
+      alert("Essa categoria já existe!");
+      return;
+    }
+    respostas[categoriaKey] = {};
+    console.log("➕ Nova categoria adicionada:", categoriaKey);
+    salvarNoFirebase();
+    atualizarSeletorCategorias();
   };
 
   window.copiarTexto = function() {
@@ -158,5 +210,5 @@ document.addEventListener("DOMContentLoaded", function () {
   // Inicializar
   atualizarSaudacao();
   setInterval(atualizarSaudacao, 600000); // Atualiza saudação a cada 10 minutos
-  carregarDoFirebase(renderizarSelects);
+  carregarDoFirebase(atualizarSeletorCategorias);
 });

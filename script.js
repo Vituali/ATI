@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!chave || !chave.trim()) {
       return { valido: false, mensagem: "A chave não pode estar em branco." };
     }
-    const caracteresProibidos = /[$#[]./]/;
+    const caracteresProibidos = "/[$#[]./]/";
     if (caracteresProibidos.test(chave)) {
       return { valido: false, mensagem: "A chave não pode conter $ # [ ] . ou /." };
     }
@@ -37,9 +37,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function salvarNoFirebase() {
     const dbRef = firebase.ref(db, "respostas");
     firebase.set(dbRef, respostas)
-      .then(() => {
-        console.log("🔥 Dados salvos no Firebase");
-      })
+      .then(() => console.log("🔥 Dados salvos no Firebase"))
       .catch((error) => {
         console.error("❌ Erro ao salvar no Firebase:", error);
         alert(`Erro ao salvar: ${error.message}. Verifique as regras do banco de dados ou a conexão.`);
@@ -72,12 +70,12 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
     select.innerHTML = '<option value="">Selecione uma categoria</option>';
-    for (let categoria in respostas) {
+    Object.keys(respostas).sort().forEach(categoria => {
       const opt = document.createElement("option");
       opt.value = categoria;
       opt.innerText = categoria.charAt(0).toUpperCase() + categoria.slice(1);
       select.appendChild(opt);
-    }
+    });
     atualizarSeletorOpcoes();
   }
 
@@ -273,18 +271,33 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  function substituirMarcadores(texto) {
+    const hora = new Date().getHours();
+    const saudacao = hora >= 5 && hora < 12 ? "Bom dia!" :
+                     hora >= 12 && hora < 18 ? "Boa tarde!" : 
+                     "Boa noite!";
+    const despedida = hora >= 5 && hora < 12 ? "Tenha uma excelente manhã!" :
+                     hora >= 12 && hora < 18 ? "Tenha uma excelente tarde!" : 
+                     "Tenha uma excelente noite!";
+    return texto.replace("[SAUDACAO]", saudacao).replace("[DESPEDIDA]", despedida);
+  }
+
   function atualizarSaudacao() {
     const saudacao = document.getElementById("saudacao");
     if (saudacao) {
       const hora = new Date().getHours();
       saudacao.textContent = hora >= 5 && hora < 12 ? "Bom dia!" :
-                            hora >= 12 && hora < 18 ? "Boa tarde!" : 
-                            "Boa noite!";
+                             hora >= 12 && hora < 18 ? "Boa tarde!" : 
+                             "Boa noite!";
     }
   }
 
   // Inicializar
   atualizarSaudacao();
   setInterval(atualizarSaudacao, 600000); // Atualiza saudação a cada 10 minutos
-  carregarDoFirebase(atualizarSeletorCategorias);
+  carregarDoFirebase(() => {
+    atualizarSeletorCategorias();
+    document.getElementById("resposta").value = "";
+    responder();
+  });
 });

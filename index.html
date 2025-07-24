@@ -16,29 +16,32 @@
       <select id="categoria" onchange="atualizarSeletorOpcoes()">
         <option value="">Selecione uma categoria</option>
       </select>
-      <button onclick="adicionarCategoria()">Adicionar categoria</button>
     </div>
 
     <div class="grupo">
-      <label for="seletor">Escolha uma opção:</label>
-      <select id="seletor" onchange="mudarTextoSelecionado()">
+      <label for="opcoes">Escolha uma opção:</label>
+      <select id="opcoes" onchange="responder()">
         <option value="">Selecione uma opção</option>
       </select>
     </div>
 
-    <div class="grupo">
-      <label for="texto">Mensagem:</label>
-      <textarea id="texto" class="message" rows="5" oninput="atualizarTextoSelecionado()"></textarea>
+    <div class="grupo title-container" id="titleContainer" style="display: none;">
+      <label for="titulo">Título:</label>
+      <input type="text" id="titulo" placeholder="Digite o título da opção">
     </div>
 
     <div class="grupo">
-      <label for="novaOpcao">Nova opção:</label>
-      <input type="text" id="novaOpcao" placeholder="Digite uma nova opção">
-      <button onclick="adicionarOpcao()">Adicionar opção</button>
+      <label for="resposta">Mensagem:</label>
+      <textarea id="resposta" class="message" rows="5"></textarea>
     </div>
 
     <div class="grupo controls">
-      <button onclick="copiarTexto()">📋 Copiar mensagem</button>
+      <button onclick="copiarTexto()">📋 Copiar</button>
+      <button onclick="toggleEditarTitulo()">Editar Título</button>
+      <button onclick="salvarEdicao()">Salvar</button>
+      <button onclick="alterarCategoria()">Alterar Categoria</button>
+      <button onclick="apagarTexto()">Apagar</button>
+      <button onclick="mostrarPopupAdicionar()">Adicionar</button>
     </div>
   </div>
 

@@ -10,30 +10,34 @@ document.addEventListener("DOMContentLoaded", function () {
     measurementId: "G-22D5RNGGK6"
   };
 
+  let db;
   try {
-    firebase.initializeApp(firebaseConfig);
+    const app = firebase.initializeApp(firebaseConfig);
+    db = firebase.getDatabase(app);
     console.log("✅ Firebase inicializado com sucesso");
   } catch (error) {
     console.error("❌ Erro ao inicializar Firebase:", error);
-    alert("Erro ao conectar com o banco de dados.");
+    alert("Erro ao conectar com o banco de dados. Verifique a configuração do Firebase e a conexão de rede.");
+    return;
   }
 
-  const db = firebase.database();
   let respostas = {};
 
   function salvarNoFirebase() {
-    db.ref("respostas").set(respostas)
+    const dbRef = firebase.ref(db, "respostas");
+    firebase.set(dbRef, respostas)
       .then(() => {
-        console.log("🔥 Alterações salvas no Firebase");
+        console.log("🔥 Dados salvos no Firebase");
       })
       .catch((error) => {
         console.error("❌ Erro ao salvar no Firebase:", error);
-        alert("Erro ao salvar a nova opção. Verifique o console para mais detalhes.");
+        alert(`Erro ao salvar: ${error.message}. Verifique as regras do banco de dados ou a conexão.`);
       });
   }
 
   function carregarDoFirebase(callback) {
-    db.ref("respostas").on("value", (snapshot) => {
+    const dbRef = firebase.ref(db, "respostas");
+    firebase.onValue(dbRef, (snapshot) => {
       try {
         const data = snapshot.val();
         respostas = data || {};
@@ -41,17 +45,19 @@ document.addEventListener("DOMContentLoaded", function () {
         callback();
       } catch (error) {
         console.error("❌ Erro ao carregar dados do Firebase:", error);
-        alert("Erro ao carregar dados. Verifique o console para mais detalhes.");
+        alert(`Erro ao carregar dados: ${error.message}. Verifique o console.`);
       }
     }, (error) => {
       console.error("❌ Erro na conexão com Firebase:", error);
+      alert(`Erro de conexão com o Firebase: ${error.message}.`);
     });
   }
 
   function renderizarSelects() {
     const select = document.getElementById("seletor");
     if (!select) {
-      console.error("❌ Elemento 'seletor' não encontrado no DOM");
+      console.error("❌ Elemento 'seletor' não encontrado");
+      alert("Erro: elemento de seleção não encontrado.");
       return;
     }
     select.innerHTML = '<option value="">Selecione uma opção</option>';
@@ -68,7 +74,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const seletor = document.getElementById("seletor");
     const texto = document.getElementById("texto");
     if (!seletor || !texto) {
-      console.error("❌ Elementos 'seletor' ou 'texto' não encontrados no DOM");
+      console.error("❌ Elementos 'seletor' ou 'texto' não encontrados");
+      alert("Erro: elementos de interface não encontrados.");
       return;
     }
     const chave = seletor.value;
@@ -80,7 +87,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const seletor = document.getElementById("seletor");
     const texto = document.getElementById("texto");
     if (!seletor || !texto) {
-      console.error("❌ Elementos 'seletor' ou 'texto' não encontrados no DOM");
+      console.error("❌ Elementos 'seletor' ou 'texto' não encontrados");
       return;
     }
     const chave = seletor.value;
@@ -93,7 +100,8 @@ document.addEventListener("DOMContentLoaded", function () {
   function adicionarOpcao() {
     const novaOpcaoInput = document.getElementById("novaOpcao");
     if (!novaOpcaoInput) {
-      console.error("❌ Elemento 'novaOpcao' não encontrado no DOM");
+      console.error("❌ Elemento 'novaOpcao' não encontrado");
+      alert("Erro: campo de nova opção não encontrado.");
       return;
     }
     const novaOpcao = novaOpcaoInput.value.trim().toLowerCase().replace(/ /g, "_");
@@ -115,7 +123,8 @@ document.addEventListener("DOMContentLoaded", function () {
   function copiarTexto() {
     const texto = document.getElementById("texto");
     if (!texto) {
-      console.error("❌ Elemento 'texto' não encontrado no DOM");
+      console.error("❌ Elemento 'texto' não encontrado");
+      alert("Erro: campo de texto não encontrado.");
       return;
     }
     texto.select();
@@ -146,8 +155,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // Initialize
+  // Inicializar
   atualizarSaudacao();
-  setInterval(atualizarSaudacao, 600000); // Update greeting every 10 minutes
+  setInterval(atualizarSaudacao, 600000); // Atualiza saudação a cada 10 minutos
   carregarDoFirebase(renderizarSelects);
 });

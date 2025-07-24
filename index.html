@@ -3,31 +3,34 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ATI - Automatizador</title>
+  <title>🤖 Automatizador</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>ATI - Automatizador</h1>
-  
-  <div class="grupo">
-    <label for="seletor">Escolha uma opção:</label>
-    <select id="seletor" onchange="mudarTextoSelecionado()">
-    </select>
-  </div>
+  <div class="chatbox">
+    <h2 id="saudacao"></h2>
+    
+    <div class="grupo">
+      <label for="seletor">Escolha uma opção:</label>
+      <select id="seletor" onchange="mudarTextoSelecionado()">
+        <option value="">Selecione uma opção</option>
+      </select>
+    </div>
 
-  <div class="grupo">
-    <label for="texto">Mensagem:</label>
-    <textarea id="texto" rows="5" oninput="atualizarTextoSelecionado()"></textarea>
-  </div>
+    <div class="grupo">
+      <label for="texto">Mensagem:</label>
+      <textarea id="texto" class="message" rows="5" oninput="atualizarTextoSelecionado()"></textarea>
+    </div>
 
-  <div class="grupo">
-    <label for="novaOpcao">Nova opção:</label>
-    <input type="text" id="novaOpcao" placeholder="Digite uma nova opção">
-    <button onclick="adicionarOpcao()">Adicionar opção</button>
-  </div>
+    <div class="grupo">
+      <label for="novaOpcao">Nova opção:</label>
+      <input type="text" id="novaOpcao" placeholder="Digite uma nova opção">
+      <button onclick="adicionarOpcao()">Adicionar opção</button>
+    </div>
 
-  <div class="grupo">
-    <button onclick="copiarTexto()">📋 Copiar mensagem</button>
+    <div class="grupo controls">
+      <button onclick="copiarTexto()">📋 Copiar mensagem</button>
+    </div>
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>

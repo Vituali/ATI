@@ -70,7 +70,7 @@ document.addEventListener("DOMContentLoaded", function () {
     mudarTextoSelecionado();
   }
 
-  function mudarTextoSelecionado() {
+  window.mudarTextoSelecionado = function() {
     const seletor = document.getElementById("seletor");
     const texto = document.getElementById("texto");
     if (!seletor || !texto) {
@@ -81,9 +81,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const chave = seletor.value;
     texto.value = respostas[chave] || "Selecione uma opção para receber uma resposta automática.";
     ajustarAlturaTextarea();
-  }
+  };
 
-  function atualizarTextoSelecionado() {
+  window.atualizarTextoSelecionado = function() {
     const seletor = document.getElementById("seletor");
     const texto = document.getElementById("texto");
     if (!seletor || !texto) {
@@ -95,7 +95,7 @@ document.addEventListener("DOMContentLoaded", function () {
       respostas[chave] = texto.value;
       salvarNoFirebase();
     }
-  }
+  };
 
   window.adicionarOpcao = function() {
     const novaOpcaoInput = document.getElementById("novaOpcao");

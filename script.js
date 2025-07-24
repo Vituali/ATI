@@ -97,7 +97,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  function adicionarOpcao() {
+  window.adicionarOpcao = function() {
     const novaOpcaoInput = document.getElementById("novaOpcao");
     if (!novaOpcaoInput) {
       console.error("❌ Elemento 'novaOpcao' não encontrado");
@@ -118,9 +118,9 @@ document.addEventListener("DOMContentLoaded", function () {
     salvarNoFirebase();
     renderizarSelects();
     novaOpcaoInput.value = "";
-  }
+  };
 
-  function copiarTexto() {
+  window.copiarTexto = function() {
     const texto = document.getElementById("texto");
     if (!texto) {
       console.error("❌ Elemento 'texto' não encontrado");
@@ -135,7 +135,7 @@ document.addEventListener("DOMContentLoaded", function () {
       console.error("❌ Erro ao copiar texto:", error);
       alert("Erro ao copiar a mensagem.");
     }
-  }
+  };
 
   function ajustarAlturaTextarea() {
     const textarea = document.getElementById("texto");

@@ -1,56 +1,166 @@
-:root {
-  --cor-principal: #4A90E2;
-  --cor-secundaria: #F5F7FA;
-  --cor-texto: #333;
-}
-
-* {
-  box-sizing: border-box;
-}
-
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: var(--cor-secundaria);
-  color: var(--cor-texto);
-  padding: 40px 20px;
-  max-width: 600px;
-  margin: auto;
+    font-family: "Arial", sans-serif;
+    background: linear-gradient(135deg, #121212 0%, #1a1a1a 100%);
+    color: #ffffff;
+    height: 100vh;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
 }
 
-h1 {
-  text-align: center;
-  color: var(--cor-principal);
+.chatbox {
+    width: 90%;
+    max-width: 600px;
+    background: #1e1e1e;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    padding: 40px;
+    text-align: center;
+    position: relative;
+    margin: 0 auto;
 }
 
-select, textarea, input {
-  width: 100%;
-  padding: 10px;
-  margin-top: 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 1rem;
-}
-
-textarea {
-  resize: vertical;
-}
-
-button {
-  background-color: var(--cor-principal);
-  color: white;
-  border: none;
-  padding: 10px 16px;
-  margin-top: 10px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.2s ease;
-}
-
-button:hover {
-  background-color: #357ABD;
+h2 {
+    color: #00aaff;
+    margin-bottom: 20px;
+    font-size: 28px;
+    text-shadow: 0 2px 4px rgba(0, 170, 255, 0.3);
 }
 
 .grupo {
-  margin-top: 20px;
+    margin: 20px 0;
+}
+
+label {
+    display: block;
+    color: #ffffff;
+    font-size: 16px;
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+.message {
+    margin: 10px 0;
+    padding: 15px;
+    border: 2px solid #444;
+    border-radius: 12px;
+    background: #2a2a2a;
+    color: #ffffff;
+    width: 100%;
+    box-sizing: border-box;
+    font-family: "Arial", sans-serif;
+    font-size: 16px;
+    resize: vertical;
+}
+
+.message:focus {
+    border-color: #00aaff;
+    box-shadow: 0 0 10px rgba(0, 170, 255, 0.3);
+    outline: none;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+button {
+    background: linear-gradient(45deg, #00aaff, #0077cc);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+button:hover {
+    background: linear-gradient(45deg, #0088cc, #005599);
+    transform: scale(1.05);
+}
+
+button::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.4s ease, height 0.4s ease;
+}
+
+button:hover::after {
+    width: 200px;
+    height: 200px;
+}
+
+select, input[type="text"] {
+    padding: 12px 45px 12px 15px;
+    width: 100%;
+    height: 48px;
+    border-radius: 10px;
+    border: 2px solid #444;
+    background: #2a2a2a;
+    color: #ffffff;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+    font-size: 16px;
+}
+
+select:focus, input[type="text"]:focus {
+    border-color: #00aaff;
+    box-shadow: 0 0 8px rgba(0, 170, 255, 0.2);
+    outline: none;
+}
+
+select {
+    position: relative;
+    background: #2a2a2a url('data:image/svg+xml;utf8,<svg fill="%23ffffff" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 15px center;
+    background-size: 20px;
+    cursor: pointer;
+}
+
+select:hover {
+    background: #333 url('data:image/svg+xml;utf8,<svg fill="%2300aaff" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 15px center;
+}
+
+select:focus {
+    background: #333 url('data:image/svg+xml;utf8,<svg fill="%2300aaff" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 15px center;
+}
+
+select option {
+    background: #2a2a2a;
+    color: #ffffff;
+    padding: 10px 15px;
+}
+
+@media (max-width: 480px) {
+    .chatbox {
+        padding: 20px;
+        width: 95%;
+    }
+    h2 {
+        font-size: 24px;
+    }
+    button {
+        padding: 8px 15px;
+        font-size: 12px;
+    }
+    select, input[type="text"] {
+        font-size: 14px;
+        padding: 10px 40px 10px 12px;
+        height: 40px;
+    }
+    select {
+        background-size: 18px;
+    }
+    .controls {
+        flex-direction: column;
+    }
 }

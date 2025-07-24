@@ -1,28 +1,28 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ATI - Automatizador de Chat</title>
-  <link rel="stylesheet" href="style.css">
+  <title>ATI - Automatizador</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <h1>ATI - Automatizador</h1>
-
+  
   <div class="grupo">
     <label for="seletor">Escolha uma opção:</label>
-    <select id="seletor" onchange="mudarTextoSelecionado()"></select>
+    <select id="seletor" onchange="mudarTextoSelecionado()">
+    </select>
   </div>
 
   <div class="grupo">
     <label for="texto">Mensagem:</label>
-    <textarea id="texto" rows="5" placeholder="Mensagem..." oninput="atualizarTextoSelecionado()"></textarea>
+    <textarea id="texto" rows="5" oninput="atualizarTextoSelecionado()"></textarea>
   </div>
 
   <div class="grupo">
     <label for="novaOpcao">Nova opção:</label>
-    <input id="novaOpcao" placeholder="Nome da nova opção">
+    <input type="text" id="novaOpcao" placeholder="Digite uma nova opção">
     <button onclick="adicionarOpcao()">Adicionar opção</button>
   </div>
 
@@ -30,10 +30,8 @@
     <button onclick="copiarTexto()">📋 Copiar mensagem</button>
   </div>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js"></script>
-
-  <script src="main.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>

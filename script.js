@@ -184,6 +184,10 @@ async function carregarDoFirebase() {
     const texto = document.getElementById("resposta").value.trim();
     respostas[categoria][chave] = texto;
     salvarNoFirebase();
+    const opcaoSelecionada = opcao; // Armazenar a opção selecionada
+    atualizarSeletorOpcoes();
+    document.getElementById("opcoes").value = opcaoSelecionada; // Restaurar a seleção
+    responder(); // Atualizar a mensagem e o título
     alert("Resposta salva com sucesso!");
   };
 

@@ -137,6 +137,8 @@ select {
     background: #2a2a2a url('data:image/svg+xml;utf8,<svg fill="%23ffffff" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 15px center;
     background-size: 20px;
     cursor: pointer;
+    padding-right: 45px;
+    transition: background 0.3s ease;
 }
 
 select:hover {
@@ -145,6 +147,12 @@ select:hover {
 
 select:focus {
     background: #333 url('data:image/svg+xml;utf8,<svg fill="%2300aaff" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 15px center;
+    animation: bounceArrow 0.5s ease infinite alternate;
+}
+
+select:valid {
+    border-color: #00aaff;
+    background-color: #333;
 }
 
 select optgroup {
@@ -158,6 +166,8 @@ select option {
     background: #2a2a2a;
     color: #ffffff;
     padding: 10px 15px;
+    white-space: normal;
+    word-wrap: break-word;
 }
 
 .title-container {
@@ -165,6 +175,11 @@ select option {
     align-items: center;
     gap: 10px;
     margin: 10px 0;
+}
+
+@keyframes bounceArrow {
+    0% { background-position: right 15px center; }
+    100% { background-position: right 15px top; }
 }
 
 @media (max-width: 480px) {
@@ -187,11 +202,22 @@ select option {
     select {
         background-size: 18px;
     }
-    .controls {
-        flex-direction: column;
-    }
     .title-container {
         flex-direction: column;
         gap: 5px;
+    }
+    .controls {
+        flex-direction: column;
+        align-items: stretch;
+        position: static;
+    }
+    .custom-file-button {
+        position: static;
+        margin: 10px auto;
+        transform: none;
+    }
+    #editarAcoes {
+        order: 0;
+        width: 100%;
     }
 }

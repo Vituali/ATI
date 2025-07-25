@@ -60,7 +60,8 @@
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
     import { getDatabase, ref, set, onValue } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
-    window.firebase = { initializeApp, getDatabase, ref, set, onValue };
+    import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    window.firebase = { initializeApp, getDatabase, ref, set, onValue, getAuth, signInAnonymously };
   </script>
   <script src="script.js"></script>
 </body>

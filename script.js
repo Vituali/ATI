@@ -11,30 +11,39 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   let db;
-  try {
-    const app = firebase.initializeApp(firebaseConfig);
-    db = firebase.getDatabase(app);
-    console.log("✅ Firebase inicializado com sucesso");
-  } catch (error) {
-    console.error("❌ Erro ao inicializar Firebase:", error);
-    alert("Erro ao conectar com o banco de dados. Verifique a configuração do Firebase e a conexão de rede.");
-    return;
-  }
-
+  let auth;
   let respostas = { suporte: {}, financeiro: {}, geral: {} };
   let atendenteAtual = localStorage.getItem("atendenteAtual") || "";
   const atendenteSelect = document.getElementById("atendente");
-  if (atendenteSelect) {
-    atendenteSelect.value = atendenteAtual;
-    if (atendenteAtual) {
-      carregarDoFirebase();
-    }
+
+  // Inicializar Firebase e autenticação anônima
+  try {
+    const app = firebase.initializeApp(firebaseConfig);
+    db = firebase.getDatabase(app);
+    auth = firebase.getAuth(app);
+    firebase.signInAnonymously(auth).then(() => {
+      console.log("✅ Usuário autenticado anonimamente:", auth.currentUser.uid);
+      if (atendenteSelect) {
+        atendenteSelect.value = atendenteAtual;
+        if (atendenteAtual) {
+          carregarDoFirebase();
+        }
+      }
+    }).catch(error => {
+      console.error("❌ Erro ao autenticar anonimamente:", error);
+      alert("Erro de autenticação: " + error.message);
+    });
+    console.log("✅ Firebase inicializado com sucesso");
+  } catch (error) {
+    console.error("❌ Erro ao inicializar Firebase:", error);
+    alert("Erro ao conectar com o banco de dados: " + error.message);
+    return;
   }
 
   window.selecionarAtendente = function() {
     atendenteAtual = atendenteSelect.value;
     localStorage.setItem("atendenteAtual", atendenteAtual);
-    if (atendenteAtual) {
+    if (atendenteAtual && auth.currentUser) {
       carregarDoFirebase();
     } else {
       document.getElementById("opcoes").innerHTML = '<option value="">Selecione um atendente primeiro</option>';
@@ -49,7 +58,7 @@ document.addEventListener("DOMContentLoaded", function () {
       console.error("❌ Chave inválida: vazia ou nula");
       return { valido: false, mensagem: "A chave não pode estar em branco." };
     }
-    const caracteresProibidos = new RegExp("[\\$#\\[\\]\\.\\\/]", "g");
+    const caracteresProibidos = new RegExp("[\\$#\\[\\]\\/\\.]", "g");
     if (caracteresProibidos.test(chave)) {
       console.warn(`⚠️ Chave contém caracteres proibidos: ${chave}`);
       return { valido: false, mensagem: "A chave não pode conter $ # [ ] . ou /." };
@@ -60,36 +69,36 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function salvarNoFirebase() {
-    if (!atendenteAtual) {
-      alert("Selecione um atendente antes de salvar!");
+    if (!atendenteAtual || !auth.currentUser) {
+      alert("Selecione um atendente e autentique-se primeiro!");
       return;
     }
     const dbRef = firebase.ref(db, `respostas/${atendenteAtual}`);
     firebase.set(dbRef, respostas)
       .then(() => console.log(`🔥 Dados salvos no Firebase para ${atendenteAtual}`))
-      .catch((error) => {
+      .catch(error => {
         console.error("❌ Erro ao salvar no Firebase:", error);
-        alert("Erro ao salvar: " + error.message + ". Verifique as regras do banco de dados ou a conexão.");
+        alert("Erro ao salvar: " + error.message);
       });
   }
 
   function carregarDoFirebase() {
-    if (!atendenteAtual) {
-      console.log("⚠️ Selecione um atendente primeiro");
+    if (!atendenteAtual || !auth.currentUser) {
+      console.log("⚠️ Selecione um atendente e autentique-se primeiro");
       return;
     }
     const dbRef = firebase.ref(db, `respostas/${atendenteAtual}`);
-    firebase.onValue(dbRef, (snapshot) => {
+    firebase.onValue(dbRef, function(snapshot) {
       try {
         const data = snapshot.val();
         respostas = data || { suporte: {}, financeiro: {}, geral: {} };
-        console.log(`📥 Dados carregados do Firebase para ${atendenteAtual}:`, respostas);
+        console.log("📥 Dados carregados do Firebase para " + atendenteAtual + ":", respostas);
         atualizarSeletorOpcoes();
       } catch (error) {
         console.error("❌ Erro ao carregar dados do Firebase:", error);
         alert("Erro ao carregar dados: " + error.message);
       }
-    }, (error) => {
+    }, function(error) {
       console.error("❌ Erro na conexão com Firebase:", error);
       alert("Erro de conexão com o Firebase: " + error.message);
     });
@@ -141,8 +150,8 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   window.salvarEdicao = function() {
-    if (!atendenteAtual) {
-      alert("Selecione um atendente primeiro!");
+    if (!atendenteAtual || !auth.currentUser) {
+      alert("Selecione um atendente e autentique-se primeiro!");
       return;
     }
     const opcao = document.getElementById("opcoes").value;
@@ -175,8 +184,8 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   window.apagarTexto = function() {
-    if (!atendenteAtual) {
-      alert("Selecione um atendente primeiro!");
+    if (!atendenteAtual || !auth.currentUser) {
+      alert("Selecione um atendente e autentique-se primeiro!");
       return;
     }
     const opcao = document.getElementById("opcoes").value;
@@ -194,8 +203,8 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   window.mostrarPopupAdicionar = function() {
-    if (!atendenteAtual) {
-      alert("Selecione um atendente primeiro!");
+    if (!atendenteAtual || !auth.currentUser) {
+      alert("Selecione um atendente e autentique-se primeiro!");
       return;
     }
     const novoTitulo = prompt("Digite o título da nova resposta:");
@@ -240,8 +249,8 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   window.alterarCategoria = function() {
-    if (!atendenteAtual) {
-      alert("Selecione um atendente primeiro!");
+    if (!atendenteAtual || !auth.currentUser) {
+      alert("Selecione um atendente e autentique-se primeiro!");
       return;
     }
     const opcao = document.getElementById("opcoes").value;
@@ -294,8 +303,8 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   window.toggleEditarTitulo = function() {
-    if (!atendenteAtual) {
-      alert("Selecione um atendente primeiro!");
+    if (!atendenteAtual || !auth.currentUser) {
+      alert("Selecione um atendente e autentique-se primeiro!");
       return;
     }
     const titleContainer = document.getElementById("titleContainer");
@@ -319,8 +328,8 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   window.salvarNovoTitulo = function() {
-    if (!atendenteAtual) {
-      alert("Selecione um atendente primeiro!");
+    if (!atendenteAtual || !auth.currentUser) {
+      alert("Selecione um atendente e autentique-se primeiro!");
       return;
     }
     const opcaoAntiga = document.getElementById("opcoes").value;

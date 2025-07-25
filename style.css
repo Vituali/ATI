@@ -120,6 +120,10 @@ select, input[type="text"] {
     box-sizing: border-box;
     transition: all 0.3s ease;
     font-size: 16px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    text-align: left;
 }
 
 select:focus, input[type="text"]:focus {

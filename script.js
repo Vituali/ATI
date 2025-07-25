@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", async function () {
+document.addEventListener("DOMContentLoaded", function () {
   const firebaseConfig = {
     apiKey: "AIzaSyB5wO0x-7NFmh6waMKzWzRew4ezfYOmYBI",
     authDomain: "site-ati-75d83.firebaseapp.com",
@@ -17,21 +17,22 @@ document.addEventListener("DOMContentLoaded", async function () {
   const atendenteSelect = document.getElementById("atendente");
 
   // Inicializar Firebase e autenticação anônima
-try {
+  try {
     const app = firebase.initializeApp(firebaseConfig);
     db = firebase.getDatabase(app);
     auth = firebase.getAuth(app);
-    if (atendenteAtual) {
-      await firebase.signInAnonymously(auth);
-      console.log("✅ Usuário autenticado anonimamente:", auth.currentUser?.uid || "UID não disponível");
+    firebase.signInAnonymously(auth).then(() => {
+      console.log("✅ Usuário autenticado anonimamente:", auth.currentUser.uid);
       if (atendenteSelect) {
         atendenteSelect.value = atendenteAtual;
-        await carregarDoFirebase();
+        if (atendenteAtual) {
+          carregarDoFirebase();
+        }
       }
-    } else {
-      console.log("⚠️ Aguardando seleção de atendente para autenticar");
-      document.getElementById("opcoes").innerHTML = '<option value="">Selecione um atendente primeiro</option>';
-    }
+    }).catch(error => {
+      console.error("❌ Erro ao autenticar anonimamente:", error);
+      alert("Erro de autenticação: " + error.message);
+    });
     console.log("✅ Firebase inicializado com sucesso");
   } catch (error) {
     console.error("❌ Erro ao inicializar Firebase:", error);
@@ -39,22 +40,11 @@ try {
     return;
   }
 
-  window.selecionarAtendente = async function() {
+  window.selecionarAtendente = function() {
     atendenteAtual = atendenteSelect.value;
     localStorage.setItem("atendenteAtual", atendenteAtual);
-    if (atendenteAtual) {
-      try {
-        await firebase.signInAnonymously(auth);
-        console.log("✅ Usuário autenticado anonimamente:", auth.currentUser?.uid || "UID não disponível");
-        await carregarDoFirebase();
-      } catch (error) {
-        console.error("❌ Erro ao autenticar anonimamente:", error);
-        if (error.code === "auth/network-request-failed") {
-          alert("Erro: Falha na rede ao autenticar. Verifique a conexão ou restrições do GitHub Pages.");
-        } else {
-          alert("Erro de autenticação: " + error.message);
-        }
-      }
+    if (atendenteAtual && auth.currentUser) {
+      carregarDoFirebase();
     } else {
       document.getElementById("opcoes").innerHTML = '<option value="">Selecione um atendente primeiro</option>';
       document.getElementById("resposta").value = "";
@@ -92,37 +82,26 @@ try {
       });
   }
 
-async function carregarDoFirebase() {
+  function carregarDoFirebase() {
     if (!atendenteAtual || !auth.currentUser) {
       console.log("⚠️ Selecione um atendente e autentique-se primeiro");
-      alert("Erro: Autenticação necessária. Selecione um atendente para continuar.");
       return;
     }
     const dbRef = firebase.ref(db, `respostas/${atendenteAtual}`);
-    try {
-      await new Promise((resolve, reject) => {
-        firebase.onValue(dbRef, (snapshot) => {
-          try {
-            const data = snapshot.val();
-            respostas = data || { suporte: {}, financeiro: {}, geral: {} };
-            console.log("📥 Dados carregados do Firebase para " + atendenteAtual + ":", respostas);
-            atualizarSeletorOpcoes();
-            resolve();
-          } catch (error) {
-            reject(error);
-          }
-        }, (error) => {
-          reject(error);
-        });
-      });
-    } catch (error) {
-      console.error("❌ Erro na conexão com Firebase:", error);
-      if (error.code === "PERMISSION_DENIED") {
-        alert("Erro: Permissão negada. Verifique se o usuário está autenticado e o domínio está autorizado.");
-      } else {
-        alert("Erro de conexão com o Firebase: " + error.message);
+    firebase.onValue(dbRef, function(snapshot) {
+      try {
+        const data = snapshot.val();
+        respostas = data || { suporte: {}, financeiro: {}, geral: {} };
+        console.log("📥 Dados carregados do Firebase para " + atendenteAtual + ":", respostas);
+        atualizarSeletorOpcoes();
+      } catch (error) {
+        console.error("❌ Erro ao carregar dados do Firebase:", error);
+        alert("Erro ao carregar dados: " + error.message);
       }
-    }
+    }, function(error) {
+      console.error("❌ Erro na conexão com Firebase:", error);
+      alert("Erro de conexão com o Firebase: " + error.message);
+    });
   }
 
   window.atualizarSeletorOpcoes = function() {
@@ -184,10 +163,6 @@ async function carregarDoFirebase() {
     const texto = document.getElementById("resposta").value.trim();
     respostas[categoria][chave] = texto;
     salvarNoFirebase();
-    const opcaoSelecionada = opcao; // Armazenar a opção selecionada
-    atualizarSeletorOpcoes();
-    document.getElementById("opcoes").value = opcaoSelecionada; // Restaurar a seleção
-    responder(); // Atualizar a mensagem e o título
     alert("Resposta salva com sucesso!");
   };
 

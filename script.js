@@ -17,22 +17,31 @@ document.addEventListener("DOMContentLoaded", function () {
   const atendenteSelect = document.getElementById("atendente");
 
   // Inicializar Firebase e autenticação anônima
-  try {
+try {
     const app = firebase.initializeApp(firebaseConfig);
     db = firebase.getDatabase(app);
     auth = firebase.getAuth(app);
-    firebase.signInAnonymously(auth).then(() => {
-      console.log("✅ Usuário autenticado anonimamente:", auth.currentUser.uid);
-      if (atendenteSelect) {
-        atendenteSelect.value = atendenteAtual;
-        if (atendenteAtual) {
+    if (atendenteAtual) {
+      firebase.signInAnonymously(auth).then(() => {
+        console.log("✅ Usuário autenticado anonimamente:", auth.currentUser?.uid || "UID não disponível");
+        if (atendenteSelect) {
+          atendenteSelect.value = atendenteAtual;
           carregarDoFirebase();
         }
-      }
-    }).catch(error => {
-      console.error("❌ Erro ao autenticar anonimamente:", error);
-      alert("Erro de autenticação: " + error.message);
-    });
+      }).catch(error => {
+        console.error("❌ Erro ao autenticar anonimamente:", error);
+        if (error.code === "auth/configuration-not-found") {
+          alert("Erro: Autenticação não configurada no Firebase. Habilite o Firebase Authentication no Console.");
+        } else if (error.code === "auth/network-request-failed") {
+          alert("Erro: Falha na rede ao autenticar. Verifique a conexão ou restrições do GitHub Pages.");
+        } else {
+          alert("Erro de autenticação: " + error.message);
+        }
+      });
+    } else {
+      console.log("⚠️ Aguardando seleção de atendente para autenticar");
+      document.getElementById("opcoes").innerHTML = '<option value="">Selecione um atendente primeiro</option>';
+    }
     console.log("✅ Firebase inicializado com sucesso");
   } catch (error) {
     console.error("❌ Erro ao inicializar Firebase:", error);
@@ -43,8 +52,18 @@ document.addEventListener("DOMContentLoaded", function () {
   window.selecionarAtendente = function() {
     atendenteAtual = atendenteSelect.value;
     localStorage.setItem("atendenteAtual", atendenteAtual);
-    if (atendenteAtual && auth.currentUser) {
-      carregarDoFirebase();
+    if (atendenteAtual) {
+      firebase.signInAnonymously(auth).then(() => {
+        console.log("✅ Usuário autenticado anonimamente:", auth.currentUser?.uid || "UID não disponível");
+        carregarDoFirebase();
+      }).catch(error => {
+        console.error("❌ Erro ao autenticar anonimamente:", error);
+        if (error.code === "auth/network-request-failed") {
+          alert("Erro: Falha na rede ao autenticar. Verifique a conexão ou restrições do GitHub Pages.");
+        } else {
+          alert("Erro de autenticação: " + error.message);
+        }
+      });
     } else {
       document.getElementById("opcoes").innerHTML = '<option value="">Selecione um atendente primeiro</option>';
       document.getElementById("resposta").value = "";
@@ -82,9 +101,10 @@ document.addEventListener("DOMContentLoaded", function () {
       });
   }
 
-  function carregarDoFirebase() {
+function carregarDoFirebase() {
     if (!atendenteAtual || !auth.currentUser) {
       console.log("⚠️ Selecione um atendente e autentique-se primeiro");
+      alert("Erro: Autenticação necessária. Selecione um atendente para continuar.");
       return;
     }
     const dbRef = firebase.ref(db, `respostas/${atendenteAtual}`);
@@ -100,7 +120,11 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }, function(error) {
       console.error("❌ Erro na conexão com Firebase:", error);
-      alert("Erro de conexão com o Firebase: " + error.message);
+      if (error.code === "PERMISSION_DENIED") {
+        alert("Erro: Permissão negada. Verifique se o usuário está autenticado e o domínio está autorizado.");
+      } else {
+        alert("Erro de conexão com o Firebase: " + error.message);
+      }
     });
   }
 

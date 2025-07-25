@@ -176,7 +176,6 @@ document.addEventListener("DOMContentLoaded", function () {
     texto.select();
     try {
       document.execCommand("copy");
-      alert("Mensagem copiada!");
     } catch (error) {
       console.error("❌ Erro ao copiar texto:", error);
       alert("Erro ao copiar a mensagem.");

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 Automatizador de chat o manizado no mero um 🤖</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="conversor de aditivo.css">
+</head>
+<body>
+    <div class="chatbox">
+        <h2>🤖 Automatizador de chat o manizado no mero um 🤖</h2>
+        <div class="grupo">
+            <label for="atendente">Atendente:</label>
+            <select id="atendente" onchange="selecionarAtendente()">
+                <option value="">Selecione um atendente</option>
+                <option value="Victor">Victor</option>
+                <option value="Bruno">Bruno</option>
+                <option value="Lucas">Lucas</option>
+                <option value="Igor">Igor</option>
+                <option value="Diego">Diego</option>
+                <option value="Jefferson">Jefferson</option>
+                <option value="Helio">Helio</option>
+                <option value="Marlon">Marlon</option>
+            </select>
+        </div>
+        <div class="grupo">
+            <label for="opcoes">Escolha uma opção:</label>
+            <select id="opcoes" onchange="responder()">
+                <option value="">Selecione uma opção</option>
+            </select>
+        </div>
+        <div class="grupo title-container" id="titleContainer" style="display: none;">
+            <label for="titulo">Título:</label>
+            <input type="text" id="titulo">
+            <button onclick="salvarNovoTitulo()">Salvar Título</button>
+        </div>
+        <div class="grupo">
+            <label for="resposta">Mensagem:</label>
+            <textarea id="resposta" class="message" readonly></textarea>
+        </div>
+        <div class="controls">
+            <button onclick="copiarTexto()">📋 Copiar</button>
+            <button onclick="toggleEditarTitulo()">Editar Título</button>
+            <button onclick="salvarEdicao()">Salvar</button>
+            <button onclick="alterarCategoria()">Alterar Categoria</button>
+            <button onclick="apagarTexto()">Apagar</button>
+            <button onclick="mostrarPopupAdicionar()">Adicionar</button>
+            <button onclick="typeof abrirModalAditivo === 'function' ? abrirModalAditivo() : alert('Erro: Funcionalidade do Conversor de Aditivo não carregada. Tente recarregar a página.')">Conversor de Aditivo</button>
+        </div>
+        <div style="margin-top: 20px;">
+            <span id="saudacao">Salvar [SAUDACAO] e [DESPEDIDA]</span>
+        </div>
+    </div>
+
+    <!-- Modal para Conversor de Aditivo -->
+    <div id="modalAditivo" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="fecharModalAditivo()">&times;</span>
+            <div class="container">
+                <div id="uploadSection" class="card upload-card fade-in">
+                    <h1>Carregar Aditivo PDF</h1>
+                    <div class="file-upload-wrapper">
+                        <label for="pdfUpload" class="file-label">Escolher Arquivo</label>
+                        <input type="file" id="pdfUpload" class="file-input" accept="application/pdf">
+                        <span id="fileName" class="file-name">Nenhum arquivo selecionado</span>
+                    </div>
+                    <div class="button-wrapper">
+                        <button class="button" onclick="loadPDF()">Carregar e Extrair Dados</button>
+                    </div>
+                </div>
+                <div id="dataSection" class="card fade-in" style="display: none;">
+                    <div class="button-wrapper">
+                        <button class="button back" onclick="backToUpload()">Voltar à Página Inicial</button>
+                    </div>
+                    <h1>Agendamento para Contrato <span id="contratoSpan"></span> - <span id="nomeSpan"></span></h1>
+                    <p><strong>Dados do Aditivo:</strong></p>
+                    <ul>
+                        <li>Contrato: <span id="contrato"></span></li>
+                        <li>Nome: <span id="nome"></span></li>
+                        <li>Endereço Antigo: <span id="oldAddress"></span></li>
+                        <li>Endereço Novo: <span id="newAddress"></span></li>
+                        <li>Motivo: <span id="motivo">MUD ENDEREÇO</span></li>
+                    </ul>
+                    <label for="phone">Número de Telefone:</label>
+                    <input type="text" id="phone" class="input" placeholder="DDD + Número">
+                    <span id="phoneError" class="error"></span>
+                    <label for="technician">Nome do Técnico:</label>
+                    <input type="text" id="technician" class="input">
+                    <label for="equipmentType">Tipo de Comodato:</label>
+                    <select id="equipmentType" class="input">
+                        <option value="alcl">ALCL</option>
+                        <option value="proprio">PROPRIO</option>
+                        <option value="huawei">HUAWEI</option>
+                        <option value="tp link">TP LINK</option>
+                    </select>
+                    <label>
+                        <input type="checkbox" id="selfWithdrawal"> Cliente faz a retirada por conta própria?
+                    </label>
+                    <div id="withdrawalSection">
+                        <label for="withdrawalDate">Data de Retirada (a partir de amanhã):</label>
+                        <input type="date" id="withdrawalDate" class="input">
+                        <label for="withdrawalPeriod">Período de Retirada:</label>
+                        <select id="withdrawalPeriod" class="input">
+                            <option value="Manhã">Manhã</option>
+                            <option value="Tarde">Tarde</option>
+                        </select>
+                    </div>
+                    <label for="installationDate">Data de Instalação (não antes da retirada):</label>
+                    <input type="date" id="installationDate" class="input">
+                    <label for="installationPeriod">Período de Instalação:</label>
+                    <select id="installationPeriod" class="input">
+                        <option value="Manhã">Manhã</option>
+                        <option value="Tarde">Tarde</option>
+                    </select>
+                    <label>
+                        <input type="checkbox" id="renewal"> É Renovação? (Se sim, isento de taxa)
+                    </label>
+                    <div id="taxSection">
+                        <label for="taxValue">Valor da Taxa:</label>
+                        <select id="taxValue" class="input">
+                            <option value="100">100</option>
+                            <option value="65">65</option>
+                            <option value="50">50</option>
+                        </select>
+                    </div>
+                    <label for="signature">Tipo de Assinatura:</label>
+                    <select id="signature" class="input">
+                        <option value="digital">Assinatura Digital</option>
+                        <option value="local">Assinatura no Local</option>
+                    </select>
+                    <div class="button-wrapper">
+                        <button class="button" onclick="generateOS()">Gerar O.S</button>
+                    </div>
+                    <pre id="output" class="output"></pre>
+                    <div id="copyButtons" class="copy-buttons" style="display: none;">
+                        <button class="button copy-btn" onclick="copyWithdrawal()">Copiar Retirada</button>
+                        <button class="button copy-btn" onclick="copyInstallation()">Copiar Instalação</button>
+                        <button class="button copy-btn" onclick="copyOS()">Copiar O.S</button>
+                    </div>
+                </div>
+                <div id="popup" class="popup"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="conversor de aditivo.js" defer></script>
+    <script src="script.js" defer></script>
+</body>
+</html>

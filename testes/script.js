@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", function () {
         firebase.auth().signInAnonymously().then(() => {
             console.log("✅ Usuário autenticado anonimamente:", auth.currentUser.uid);
             if (atendenteSelect) {
-                atendenteSelect.value = atendenteAtual;
+                atendenteSelect.value = atendenteAtual.charAt(0).toUpperCase() + atendenteAtual.slice(1); // Capitalize for UI
                 if (atendenteAtual) {
                     carregarDoFirebase();
                 }
@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     window.selecionarAtendente = function() {
-        atendenteAtual = atendenteSelect.value;
+        atendenteAtual = atendenteSelect.value.toLowerCase(); // Convert to lowercase for Firebase
         localStorage.setItem("atendenteAtual", atendenteAtual);
         if (atendenteAtual && auth.currentUser) {
             carregarDoFirebase();

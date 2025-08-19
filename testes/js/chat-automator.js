@@ -40,12 +40,14 @@ function responder() {
             respostaTextarea.value = "Selecione um atendente primeiro.";
         }
         tituloInput.value = "";
+        respostaTextarea.readOnly = true; // MUDANÇA: Bloqueia a edição
         ajustarAlturaTextarea();
         return;
     }
     const [categoria, chave] = opcao.split(":");
     respostaTextarea.value = substituirMarcadores(respostas[categoria]?.[chave] || "Resposta não encontrada.");
     tituloInput.value = chave.replace(/_/g, " ");
+    respostaTextarea.readOnly = false; // MUDANÇA: Permite a edição
     ajustarAlturaTextarea();
 }
 
@@ -233,6 +235,8 @@ export function initChatAutomator() {
     if (atendenteAtual) {
         carregarDoFirebase();
     }
+    
+    respostaTextarea.readOnly = true;
 
     // Adiciona os event listeners
     atendenteSelect.addEventListener('change', selecionarAtendente);

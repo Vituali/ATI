@@ -26,7 +26,16 @@ body {
     position: relative;
 }
 
-.card {
+#conversorSection {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+    min-height: 100%;
+}
+
+.card, .upload-card {
     background: rgba(27, 38, 59, 0.9);
     border: 1px solid #00b7eb;
     border-radius: 8px;
@@ -36,15 +45,16 @@ body {
     width: 100%;
     max-width: 700px;
     box-sizing: border-box;
+    margin: 20px auto;
 }
 
-.dark .card {
+.dark .card, .dark .upload-card {
     background: rgba(30, 30, 30, 0.9);
     border-color: #4da8ff;
     box-shadow: 0 4px 20px rgba(77, 168, 255, 0.2);
 }
 
-.card:hover {
+.card:hover, .upload-card:hover {
     box-shadow: 0 6px 24px rgba(0, 183, 235, 0.3);
     transform: translateY(-4px);
 }
@@ -205,77 +215,59 @@ select:focus {
     justify-content: center;
 }
 
-.button {
+.chatbox .button, .controls button, .button-wrapper .button, .copy-buttons .copy-btn {
     margin-top: 20px;
     padding: 12px 24px;
-    background: #00b7eb;
+    background: linear-gradient(90deg, #00b7eb, #0077b6);
     color: #0d1b2a;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     font-weight: 700;
     text-transform: uppercase;
-    transition: background 0.3s, transform 0.2s;
+    transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
 }
 
-.button:hover {
-    background: #ff007a;
+.chatbox .button:hover, .controls button:hover, .button-wrapper .button:hover, .copy-buttons .copy-btn:hover {
+    background: linear-gradient(90deg, #ff007a, #c70039);
     transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 0, 122, 0.4);
 }
 
-.dark .button {
-    background: #4da8ff;
+.dark .chatbox .button, .dark .controls button, .dark .button-wrapper .button, .dark .copy-buttons .copy-btn {
+    background: linear-gradient(90deg, #4da8ff, #0077b6);
     color: #e0e0e0;
 }
 
-.dark .button:hover {
-    background: #ff4d4d;
+.dark .chatbox .button:hover, .dark .controls button:hover, .dark .button-wrapper .button:hover, .dark .copy-buttons .copy-btn:hover {
+    background: linear-gradient(90deg, #ff4d4d, #c70039);
+    box-shadow: 0 4px 15px rgba(255, 77, 77, 0.4);
 }
 
 .button.back {
-    background: #ff007a;
+    background: linear-gradient(90deg, #ff007a, #c70039);
     color: #0d1b2a;
 }
 
 .button.back:hover {
-    background: #c70039;
+    background: linear-gradient(90deg, #c70039, #900020);
+    box-shadow: 0 4px 15px rgba(199, 0, 57, 0.4);
 }
 
 .dark .button.back {
-    background: #ff4d4d;
+    background: linear-gradient(90deg, #ff4d4d, #c70039);
 }
 
 .dark .button.back:hover {
-    background: #e03e3e;
+    background: linear-gradient(90deg, #e03e3e, #900020);
+    box-shadow: 0 4px 15px rgba(224, 62, 62, 0.4);
 }
 
 .copy-btn {
     flex: 1;
     margin: 0 5px;
     padding: 10px;
-    background: #00b7eb;
-    color: #0d1b2a;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: 700;
-    text-transform: uppercase;
-    transition: background 0.3s, transform 0.2s;
     font-size: 0.9em;
-}
-
-.copy-btn:hover {
-    background: #ff007a;
-    transform: translateY(-2px);
-}
-
-.dark .copy-btn {
-    background: #4da8ff;
-    color: #e0e0e0;
-}
-
-.dark .copy-btn:hover {
-    background: #ff4d4d;
 }
 
 .output {
@@ -409,7 +401,7 @@ select:focus {
     h2 {
         font-size: 24px;
     }
-    .button, .copy-btn {
+    .chatbox .button, .controls button, .button-wrapper .button, .copy-buttons .copy-btn {
         padding: 8px 15px;
         font-size: 12px;
     }

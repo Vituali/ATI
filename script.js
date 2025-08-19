@@ -19,14 +19,14 @@ document.addEventListener("DOMContentLoaded", function () {
   // Inicializar Firebase e autenticação anônima
   try {
     const app = firebase.initializeApp(firebaseConfig);
-    db = firebase.getDatabase(app);
-    auth = firebase.getAuth(app);
-    firebase.signInAnonymously(auth).then(() => {
+    db = firebase.database(app);
+    auth = firebase.auth(app);
+    auth.signInAnonymously().then(() => {
       console.log("✅ Usuário autenticado anonimamente:", auth.currentUser.uid);
       if (atendenteSelect) {
         atendenteSelect.value = atendenteAtual;
         if (atendenteAtual) {
-          carregarDoFirebase();
+          window.carregarDoFirebase();
         }
       }
     }).catch(error => {
@@ -44,15 +44,29 @@ document.addEventListener("DOMContentLoaded", function () {
     atendenteAtual = atendenteSelect.value;
     localStorage.setItem("atendenteAtual", atendenteAtual);
     if (atendenteAtual && auth.currentUser) {
-      carregarDoFirebase();
+      window.carregarDoFirebase();
     } else {
       document.getElementById("opcoes").innerHTML = '<option value="">Selecione um atendente primeiro</option>';
       document.getElementById("resposta").value = "";
       document.getElementById("titulo").value = "";
-      ajustarAlturaTextarea();
+      window.ajustarAlturaTextarea();
     }
   };
 
+  window.salvarNoFirebase = function() {
+    if (!atendenteAtual || !auth.currentUser) {
+      alert("Selecione um atendente e autentique-se primeiro!");
+      return;
+    }
+    const dbRef = firebase.database().ref(`respostas/${atendenteAtual}`);
+    firebase.database().set(dbRef, respostas)
+      .then(() => console.log(`🔥 Dados salvos no Firebase para ${atendenteAtual}`))
+      .catch(error => {
+        console.error("❌ Erro ao salvar no Firebase:", error);
+        alert("Erro ao salvar: " + error.message);
+      });
+  };
+  
   function validarChave(chave) {
     if (!chave || !chave.trim()) {
       console.error("❌ Chave inválida: vazia ou nula");

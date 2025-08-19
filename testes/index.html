@@ -6,7 +6,6 @@
     <title>🤖 Automatizador de chat o manizado no mero um 🤖</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="conversor de aditivo.css">
     <link rel="icon" href="data:image/x-icon;base64,AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAYmJiAP///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" type="image/x-icon">
 </head>
 <body>
@@ -14,7 +13,7 @@
         <h2>🤖 Automatizador de chat o manizado no mero um 🤖</h2>
         <div class="grupo">
             <label for="atendente">Atendente:</label>
-            <select id="atendente" onchange="selecionarAtendente()">
+            <select id="atendente">
                 <option value="">Selecione um atendente</option>
                 <option value="Victor">Victor</option>
                 <option value="Bruno">Bruno</option>
@@ -28,27 +27,27 @@
         </div>
         <div class="grupo">
             <label for="opcoes">Escolha uma opção:</label>
-            <select id="opcoes" onchange="responder()">
+            <select id="opcoes">
                 <option value="">Selecione uma opção</option>
             </select>
         </div>
         <div class="grupo title-container" id="titleContainer" style="display: none;">
             <label for="titulo">Título:</label>
             <input type="text" id="titulo" class="input">
-            <button class="button neon-button" onclick="salvarNovoTitulo()">Salvar Título</button>
+            <button id="saveTitleBtn" class="button neon-button">Salvar Título</button>
         </div>
         <div class="grupo">
             <label for="resposta">Mensagem:</label>
             <textarea id="resposta" class="input message" readonly></textarea>
         </div>
         <div class="controls">
-            <button class="button neon-button" onclick="copiarTexto()">📋 Copiar</button>
-            <button class="button neon-button" onclick="toggleEditarTitulo()">Editar Título</button>
-            <button class="button neon-button" onclick="salvarEdicao()">Salvar</button>
-            <button class="button neon-button" onclick="alterarCategoria()">Alterar Categoria</button>
-            <button class="button neon-button" onclick="apagarTexto()">Apagar</button>
-            <button class="button neon-button" onclick="mostrarPopupAdicionar()">Adicionar</button>
-            <button class="button neon-button" onclick="typeof abrirModalAditivo === 'function' ? abrirModalAditivo() : alert('Erro: Funcionalidade do Conversor de Aditivo não carregada. Tente recarregar a página.')">Conversor de Aditivo</button>
+            <button id="copyBtn" class="button neon-button">📋 Copiar</button>
+            <button id="editTitleBtn" class="button neon-button">Editar Título</button>
+            <button id="saveEditBtn" class="button neon-button">Salvar</button>
+            <button id="changeCategoryBtn" class="button neon-button">Alterar Categoria</button>
+            <button id="deleteBtn" class="button neon-button">Apagar</button>
+            <button id="addBtn" class="button neon-button">Adicionar</button>
+            <button id="openModalBtn" class="button neon-button">Conversor de Aditivo</button>
         </div>
         <div style="margin-top: 20px;">
             <span id="saudacao">Salvar [SAUDACAO] e [DESPEDIDA]</span>
@@ -56,12 +55,11 @@
         <button id="modeToggle" class="dark-mode-toggle neon-button">🌙</button>
     </div>
 
-    <!-- Modal para Conversor de Aditivo -->
     <div id="modalAditivo" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="fecharModalAditivo()">&times;</span>
+            <span id="closeModalBtn" class="close">&times;</span>
             <div class="container">
-                <div id="uploadSection" class="card upload-card fade-in active">
+                <div id="uploadSection" class="card upload-card active">
                     <h1>Carregar Aditivo PDF</h1>
                     <div class="file-upload-wrapper">
                         <label for="pdfUpload" class="file-label">Escolher Arquivo</label>
@@ -69,12 +67,13 @@
                         <span id="fileName" class="file-name">Nenhum arquivo selecionado</span>
                     </div>
                     <div class="button-wrapper">
-                        <button class="button neon-button" onclick="loadPDF()">Carregar e Extrair Dados</button>
+                        <button id="loadPdfBtn" class="button neon-button">Carregar e Extrair Dados</button>
                     </div>
                 </div>
-                <div id="dataSection" class="card fade-in">
+
+                <div id="dataSection" class="card">
                     <div class="button-wrapper">
-                        <button class="button back neon-button" onclick="backToUpload()">Voltar à Página Inicial</button>
+                        <button id="backToUploadBtn" class="button back neon-button">Voltar à Página Inicial</button>
                     </div>
                     <h1>Agendamento para Contrato <span id="contratoSpan"></span> - <span id="nomeSpan"></span></h1>
                     <p><strong>Dados do Aditivo:</strong></p>
@@ -116,30 +115,19 @@
                         <option value="Manhã">Manhã</option>
                         <option value="Tarde">Tarde</option>
                     </select>
-                    <label>
-                        <input type="checkbox" id="renewal"> É Renovação? (Se sim, isento de taxa)
-                    </label>
-                    <div id="taxSection">
-                        <label for="taxValue">Valor da Taxa:</label>
-                        <select id="taxValue" class="input">
-                            <option value="100">R$ 100</option>
-                            <option value="65">R$ 65</option>
-                            <option value="50">R$ 50</option>
-                        </select>
-                    </div>
-                    <label for="signature">Tipo de Assinatura:</label>
-                    <select id="signature" class="input">
+                    <label for="signatureType">Tipo de Assinatura:</label>
+                    <select id="signatureType" class="input">
                         <option value="digital">Assinatura Digital</option>
                         <option value="local">Assinatura no Local</option>
                     </select>
                     <div class="button-wrapper">
-                        <button class="button neon-button" onclick="generateOS()">Gerar O.S</button>
+                        <button id="generateOsBtn" class="button neon-button">Gerar O.S</button>
                     </div>
                     <pre id="output" class="output"></pre>
                     <div id="copyButtons" class="copy-buttons" style="display: none;">
-                        <button class="button copy-btn neon-button" onclick="copyWithdrawal()">Copiar Retirada</button>
-                        <button class="button copy-btn neon-button" onclick="copyInstallation()">Copiar Instalação</button>
-                        <button class="button copy-btn neon-button" onclick="copyOS()">Copiar O.S</button>
+                        <button id="copyWithdrawalBtn" class="button copy-btn neon-button">Copiar Retirada</button>
+                        <button id="copyInstallationBtn" class="button copy-btn neon-button">Copiar Instalação</button>
+                        <button id="copyOsBtn" class="button copy-btn neon-button">Copiar O.S</button>
                     </div>
                 </div>
                 <div id="popup" class="popup"></div>
@@ -151,7 +139,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script src="conversor de aditivo.js" defer></script>
-    <script src="script.js" defer></script>
+    
+    <script src="js/main.js" type="module"></script>
 </body>
 </html>

@@ -3,28 +3,28 @@
     --bg-color: #1a1a1a; /* Dark mode background */
     --text-color: #e0e0e0; /* Dark mode text */
     --card-bg: #2a2a2a; /* Dark mode card background */
-    --border-color: #00ffcc; /* Neon cyan border */
-    --shadow-color: 0 0 10px #00ffcc, 0 0 20px #00ffcc, 0 0 30px #00ffcc; /* Neon glow */
+    --border-color: #003366; /* Darker blue border */
+    --shadow-color: 0 0 5px #003366, 0 0 10px #003366; /* Subtle neon glow */
     --button-bg: #333; /* Button background */
-    --button-hover: #00ffcc; /* Button hover neon */
+    --button-hover: #003366; /* Button hover darker blue */
     --input-bg: #333; /* Input background */
     --scrollbar-track: #2a2a2a; /* Scrollbar track */
-    --scrollbar-thumb: #00ffcc; /* Scrollbar thumb */
-    --scrollbar-thumb-hover: #00cc99; /* Scrollbar thumb hover */
+    --scrollbar-thumb: #003366; /* Scrollbar thumb */
+    --scrollbar-thumb-hover: #002244; /* Scrollbar thumb hover */
 }
 
 body.light-mode {
     --bg-color: #f0f0f0; /* Light mode background */
     --text-color: #333; /* Light mode text */
     --card-bg: #ffffff; /* Light mode card background */
-    --border-color: #0066cc; /* Blue border for light mode */
-    --shadow-color: 0 0 10px #0066cc, 0 0 20px #0066cc, 0 0 30px #0066cc; /* Blue glow */
+    --border-color: #003366; /* Same darker blue for consistency */
+    --shadow-color: 0 0 5px #003366, 0 0 10px #003366; /* Subtle blue glow */
     --button-bg: #0066cc; /* Light mode button background */
     --button-hover: #003366; /* Light mode button hover */
     --input-bg: #e0e0e0; /* Light mode input background */
     --scrollbar-track: #e0e0e0; /* Light mode scrollbar track */
-    --scrollbar-thumb: #0066cc; /* Light mode scrollbar thumb */
-    --scrollbar-thumb-hover: #003366; /* Light mode scrollbar thumb hover */
+    --scrollbar-thumb: #003366; /* Light mode scrollbar thumb */
+    --scrollbar-thumb-hover: #002244; /* Light mode scrollbar thumb hover */
 }
 
 /* General styles */
@@ -37,6 +37,8 @@ body {
     align-items: center;
     min-height: 100vh;
     margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
     transition: all 0.3s ease;
 }
 
@@ -44,33 +46,34 @@ body {
     background: var(--card-bg);
     border: 2px solid var(--border-color);
     border-radius: 10px;
-    padding: 20px;
-    width: 90%;
-    max-width: 600px;
+    padding: 30px;
+    width: 100%;
+    max-width: 800px; /* Increased size */
     box-shadow: var(--shadow-color);
     transition: all 0.3s ease;
+    position: relative; /* For positioning mode toggle */
 }
 
 h2 {
     text-align: center;
-    text-shadow: var(--shadow-color);
+    text-shadow: 0 0 3px var(--border-color);
     margin-bottom: 20px;
 }
 
 .grupo {
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
 label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
     font-weight: bold;
-    text-shadow: 0 0 5px var(--border-color);
+    text-shadow: 0 0 3px var(--border-color);
 }
 
 select, input[type="text"], textarea {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
     border: 2px solid var(--border-color);
     border-radius: 5px;
     background: var(--input-bg);
@@ -78,17 +81,18 @@ select, input[type="text"], textarea {
     font-size: 16px;
     box-shadow: var(--shadow-color);
     transition: all 0.3s ease;
+    box-sizing: border-box;
 }
 
 textarea {
     resize: none;
-    min-height: 100px;
+    min-height: 150px; /* Increased for better usability */
 }
 
 .controls {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 12px;
     justify-content: center;
 }
 
@@ -96,7 +100,7 @@ textarea {
     background: var(--button-bg);
     color: var(--text-color);
     border: 2px solid var(--border-color);
-    padding: 10px 20px;
+    padding: 12px 24px;
     border-radius: 5px;
     cursor: pointer;
     font-size: 16px;
@@ -106,14 +110,28 @@ textarea {
 
 .neon-button:hover {
     background: var(--button-hover);
-    box-shadow: 0 0 15px var(--button-hover), 0 0 25px var(--button-hover);
+    box-shadow: 0 0 8px var(--button-hover), 0 0 12px var(--button-hover);
     color: #fff;
+}
+
+.mode-toggle {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    padding: 10px;
+    font-size: 24px; /* Larger emoji */
+    border-radius: 50%; /* Circular button */
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #saudacao {
     display: block;
     text-align: center;
-    text-shadow: var(--shadow-color);
+    text-shadow: 0 0 3px var(--border-color);
 }
 
 /* Custom Scrollbar */
@@ -144,6 +162,6 @@ textarea::-webkit-scrollbar-thumb:hover, select::-webkit-scrollbar-thumb:hover, 
 /* Title container */
 .title-container {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     align-items: center;
 }

@@ -11,7 +11,6 @@
 <body>
     <div class="chatbox">
         <h2>🤖 Automatizador de chat o manizado no mero um 🤖</h2>
-        <button id="modeToggle" class="button neon-button">🌙 Alternar Modo</button>
         <div class="grupo">
             <label for="atendente">Atendente:</label>
             <select id="atendente" onchange="selecionarAtendente()">
@@ -35,7 +34,7 @@
         <div class="grupo title-container" id="titleContainer" style="display: none;">
             <label for="titulo">Título:</label>
             <input type="text" id="titulo">
-            <button onclick="salvarNovoTitulo()">Salvar Título</button>
+            <button class="neon-button" onclick="salvarNovoTitulo()">Salvar Título</button>
         </div>
         <div class="grupo">
             <label for="resposta">Mensagem:</label>
@@ -53,6 +52,7 @@
         <div style="margin-top: 20px;">
             <span id="saudacao">Salvar [SAUDACAO] e [DESPEDIDA]</span>
         </div>
+        <button id="modeToggle" class="neon-button mode-toggle">🌙</button>
     </div>
 
     <!-- Modal para Conversor de Aditivo -->

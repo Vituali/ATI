@@ -20,14 +20,14 @@ document.addEventListener("DOMContentLoaded", function () {
     const modeToggle = document.getElementById("modeToggle");
     const currentMode = localStorage.getItem("theme") || "dark";
     document.body.classList.add(currentMode + "-mode");
-    modeToggle.textContent = currentMode === "dark" ? "☀️ Modo Claro" : "🌙 Modo Escuro";
+    modeToggle.textContent = currentMode === "dark" ? "☀️" : "🌙";
 
     modeToggle.addEventListener("click", () => {
         document.body.classList.toggle("light-mode");
         document.body.classList.toggle("dark-mode");
         const newMode = document.body.classList.contains("light-mode") ? "light" : "dark";
         localStorage.setItem("theme", newMode);
-        modeToggle.textContent = newMode === "dark" ? "☀️ Modo Claro" : "🌙 Modo Escuro";
+        modeToggle.textContent = newMode === "dark" ? "☀️" : "🌙";
     });
 
     // Inicializar Firebase e autenticação anônima

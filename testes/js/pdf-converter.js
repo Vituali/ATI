@@ -31,13 +31,13 @@ const taxSection = document.getElementById('taxSection');
 
 
 function abrirModal() {
-    modal.style.display = "block";
+    modal.classList.add('active');
     uploadSection.classList.add('active');
     dataSection.classList.remove('active');
 }
 
 function fecharModal() {
-    modal.style.display = "none";
+    modal.classList.remove('active');
     backToUpload();
 }
 

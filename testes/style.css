@@ -254,6 +254,11 @@ textarea::-webkit-scrollbar-thumb:hover, select::-webkit-scrollbar-thumb:hover, 
     box-sizing: border-box;
 }
 
+.modal.active {
+    display: block;
+    pointer-events: auto;
+}
+
 .modal-content {
     background: var(--card-bg);
     margin: 5% auto;

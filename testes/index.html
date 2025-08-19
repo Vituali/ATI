@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🤖 Automatizador de chat o manizado no mero um 🤖</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="conversor de aditivo.css">
     <link rel="icon" href="data:image/x-icon;base64,AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAYmJiAP///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" type="image/x-icon">
@@ -33,26 +34,26 @@
         </div>
         <div class="grupo title-container" id="titleContainer" style="display: none;">
             <label for="titulo">Título:</label>
-            <input type="text" id="titulo">
-            <button class="neon-button" onclick="salvarNovoTitulo()">Salvar Título</button>
+            <input type="text" id="titulo" class="input">
+            <button class="button neon-button" onclick="salvarNovoTitulo()">Salvar Título</button>
         </div>
         <div class="grupo">
             <label for="resposta">Mensagem:</label>
-            <textarea id="resposta" class="message" readonly></textarea>
+            <textarea id="resposta" class="input message" readonly></textarea>
         </div>
         <div class="controls">
-            <button class="neon-button" onclick="copiarTexto()">📋 Copiar</button>
-            <button class="neon-button" onclick="toggleEditarTitulo()">Editar Título</button>
-            <button class="neon-button" onclick="salvarEdicao()">Salvar</button>
-            <button class="neon-button" onclick="alterarCategoria()">Alterar Categoria</button>
-            <button class="neon-button" onclick="apagarTexto()">Apagar</button>
-            <button class="neon-button" onclick="mostrarPopupAdicionar()">Adicionar</button>
-            <button class="neon-button" onclick="typeof abrirModalAditivo === 'function' ? abrirModalAditivo() : alert('Erro: Funcionalidade do Conversor de Aditivo não carregada. Tente recarregar a página.')">Conversor de Aditivo</button>
+            <button class="button neon-button" onclick="copiarTexto()">📋 Copiar</button>
+            <button class="button neon-button" onclick="toggleEditarTitulo()">Editar Título</button>
+            <button class="button neon-button" onclick="salvarEdicao()">Salvar</button>
+            <button class="button neon-button" onclick="alterarCategoria()">Alterar Categoria</button>
+            <button class="button neon-button" onclick="apagarTexto()">Apagar</button>
+            <button class="button neon-button" onclick="mostrarPopupAdicionar()">Adicionar</button>
+            <button class="button neon-button" onclick="typeof abrirModalAditivo === 'function' ? abrirModalAditivo() : alert('Erro: Funcionalidade do Conversor de Aditivo não carregada. Tente recarregar a página.')">Conversor de Aditivo</button>
         </div>
         <div style="margin-top: 20px;">
             <span id="saudacao">Salvar [SAUDACAO] e [DESPEDIDA]</span>
         </div>
-        <button id="modeToggle" class="neon-button mode-toggle">🌙</button>
+        <button id="modeToggle" class="dark-mode-toggle neon-button">🌙</button>
     </div>
 
     <!-- Modal para Conversor de Aditivo -->
@@ -60,7 +61,7 @@
         <div class="modal-content">
             <span class="close" onclick="fecharModalAditivo()">&times;</span>
             <div class="container">
-                <div id="uploadSection" class="card upload-card fade-in">
+                <div id="uploadSection" class="card upload-card fade-in active">
                     <h1>Carregar Aditivo PDF</h1>
                     <div class="file-upload-wrapper">
                         <label for="pdfUpload" class="file-label">Escolher Arquivo</label>
@@ -71,7 +72,7 @@
                         <button class="button neon-button" onclick="loadPDF()">Carregar e Extrair Dados</button>
                     </div>
                 </div>
-                <div id="dataSection" class="card fade-in" style="display: none;">
+                <div id="dataSection" class="card fade-in">
                     <div class="button-wrapper">
                         <button class="button back neon-button" onclick="backToUpload()">Voltar à Página Inicial</button>
                     </div>
@@ -121,9 +122,9 @@
                     <div id="taxSection">
                         <label for="taxValue">Valor da Taxa:</label>
                         <select id="taxValue" class="input">
-                            <option value="100">100</option>
-                            <option value="65">65</option>
-                            <option value="50">50</option>
+                            <option value="100">R$ 100</option>
+                            <option value="65">R$ 65</option>
+                            <option value="50">R$ 50</option>
                         </select>
                     </div>
                     <label for="signature">Tipo de Assinatura:</label>

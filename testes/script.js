@@ -18,16 +18,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Initialize dark/light mode
     const modeToggle = document.getElementById("modeToggle");
-    const currentMode = localStorage.getItem("theme") || "dark";
-    document.body.classList.add(currentMode + "-mode");
-    modeToggle.textContent = currentMode === "dark" ? "☀️" : "🌙";
+    const isDark = localStorage.getItem("darkMode") === "true";
+    if (isDark) {
+        document.body.classList.add("dark");
+        modeToggle.innerText = "☀️";
+    } else {
+        modeToggle.innerText = "🌙";
+    }
 
     modeToggle.addEventListener("click", () => {
-        document.body.classList.toggle("light-mode");
-        document.body.classList.toggle("dark-mode");
-        const newMode = document.body.classList.contains("light-mode") ? "light" : "dark";
-        localStorage.setItem("theme", newMode);
-        modeToggle.textContent = newMode === "dark" ? "☀️" : "🌙";
+        document.body.classList.toggle("dark");
+        localStorage.setItem("darkMode", document.body.classList.contains("dark"));
+        modeToggle.innerText = document.body.classList.contains("dark") ? "☀️" : "🌙";
+        console.log("Mode toggled to:", document.body.classList.contains("dark") ? "dark" : "light");
     });
 
     // Inicializar Firebase e autenticação anônima
@@ -189,6 +192,7 @@ document.addEventListener("DOMContentLoaded", function () {
         texto.select();
         try {
             document.execCommand("copy");
+            alert("Texto copiado com sucesso!");
         } catch (error) {
             console.error("❌ Erro ao copiar texto:", error);
             alert("Erro ao copiar a mensagem.");
@@ -243,21 +247,65 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
         const categoria = validacaoCategoria.chaveSanitizada;
+        const novaResposta = prompt("Digite a nova resposta:");
+        if (!novaResposta) {
+            console.log("⚠️ Adição cancelada: resposta vazia");
+            return;
+        }
         if (!respostas[categoria]) {
             respostas[categoria] = {};
         }
-        if (respostas[categoria][chave]) {
-            alert("Esse título já existe nesta categoria!");
-            console.warn(`⚠️ Título duplicado: ${chave} em ${categoria}`);
-            return;
-        }
-        respostas[categoria][chave] = "[SAUDACAO] Nova resposta aqui... [DESPEDIDA]";
-        console.log(`📝 Adicionando: ${categoria}:${chave}`);
+        respostas[categoria][chave] = novaResposta;
         salvarNoFirebase();
         atualizarSeletorOpcoes();
-        document.getElementById("opcoes").value = `${categoria}:${chave}`;
+        alert("Resposta adicionada com sucesso!");
+    };
+
+    window.toggleEditarTitulo = function() {
+        const titleContainer = document.getElementById("titleContainer");
+        if (titleContainer.style.display === "none" || !titleContainer.style.display) {
+            titleContainer.style.display = "flex";
+        } else {
+            titleContainer.style.display = "none";
+        }
+    };
+
+    window.salvarNovoTitulo = function() {
+        if (!atendenteAtual || !auth.currentUser) {
+            alert("Selecione um atendente e autentique-se primeiro!");
+            return;
+        }
+        const opcao = document.getElementById("opcoes").value;
+        if (!opcao) {
+            alert("Selecione uma opção primeiro!");
+            return;
+        }
+        const [categoria, chaveAntiga] = opcao.split(":");
+        const novoTitulo = document.getElementById("titulo").value.trim();
+        if (!novoTitulo) {
+            alert("O título não pode estar em branco!");
+            return;
+        }
+        const validacao = validarChave(novoTitulo);
+        if (!validacao.valido) {
+            alert(validacao.mensagem);
+            return;
+        }
+        const novaChave = validacao.chaveSanitizada;
+        if (respostas[categoria][novaChave] && novaChave !== chaveAntiga) {
+            alert("Já existe uma resposta com este título!");
+            return;
+        }
+        const texto = respostas[categoria][chaveAntiga];
+        respostas[categoria][novaChave] = texto;
+        if (novaChave !== chaveAntiga) {
+            delete respostas[categoria][chaveAntiga];
+        }
+        salvarNoFirebase();
+        atualizarSeletorOpcoes();
+        document.getElementById("opcoes").value = `${categoria}:${novaChave}`;
         responder();
-        alert("Nova resposta adicionada com sucesso!");
+        alert("Título atualizado com sucesso!");
     };
 
     window.alterarCategoria = function() {
@@ -267,14 +315,13 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         const opcao = document.getElementById("opcoes").value;
         if (!opcao) {
-            alert("Selecione uma resposta primeiro!");
-            console.warn("⚠️ Nenhuma opção selecionada para alterar categoria");
+            alert("Selecione uma opção primeiro!");
             return;
         }
-        const [oldCategoria, chave] = opcao.split(":");
-        const novaCategoria = prompt("Digite a nova categoria (ex.: suporte, financeiro, geral):", oldCategoria);
+        const [categoriaAntiga, chave] = opcao.split(":");
+        const novaCategoria = prompt("Digite a nova categoria (ex.: suporte, financeiro, geral):", categoriaAntiga);
         if (!novaCategoria) {
-            console.log("⚠️ Alteração cancelada: categoria vazia");
+            console.log("⚠️ Alteração de categoria cancelada");
             return;
         }
         const validacao = validarChave(novaCategoria);
@@ -283,148 +330,57 @@ document.addEventListener("DOMContentLoaded", function () {
             console.error("❌ Validação da nova categoria falhou:", validacao.mensagem);
             return;
         }
-        const novaCategoriaKey = validacao.chaveSanitizada;
-        if (novaCategoriaKey === oldCategoria) {
-            console.log("⚠️ Mesma categoria selecionada, nenhuma alteração feita");
-            return;
-        }
-        if (!respostas[oldCategoria] || !respostas[oldCategoria][chave]) {
-            alert("Erro: resposta não encontrada na categoria atual!");
-            console.error(`❌ Resposta não encontrada: ${oldCategoria}:${chave}`);
-            return;
-        }
-        if (respostas[novaCategoriaKey]?.[chave]) {
-            alert("Este título já existe na categoria selecionada!");
-            console.warn(`⚠️ Título duplicado: ${chave} em ${novaCategoriaKey}`);
-            return;
-        }
-        if (!respostas[novaCategoriaKey]) {
-            respostas[novaCategoriaKey] = {};
-        }
-        respostas[novaCategoriaKey][chave] = respostas[oldCategoria][chave];
-        delete respostas[oldCategoria][chave];
-        if (Object.keys(respostas[oldCategoria]).length === 0) {
-            delete respostas[oldCategoria];
-        }
-        console.log(`🔄 Movendo ${chave} de ${oldCategoria} para ${novaCategoriaKey}`);
-        salvarNoFirebase();
-        atualizarSeletorOpcoes();
-        document.getElementById("opcoes").value = `${novaCategoriaKey}:${chave}`;
-        responder();
-        alert("Categoria alterada com sucesso!");
-    };
-
-    window.toggleEditarTitulo = function() {
-        if (!atendenteAtual || !auth.currentUser) {
-            alert("Selecione um atendente e autentique-se primeiro!");
-            return;
-        }
-        const titleContainer = document.getElementById("titleContainer");
-        const opcao = document.getElementById("opcoes").value;
-        if (!opcao) {
-            alert("Selecione uma opção primeiro!");
-            console.warn("⚠️ Nenhuma opção selecionada para editar título");
-            return;
-        }
-        const [categoria, chave] = opcao.split(":");
-        if (!respostas[categoria]?.[chave]) {
-            alert("Erro: resposta não encontrada!");
-            console.error(`❌ Resposta não encontrada: ${categoria}:${chave}`);
-            return;
-        }
-        titleContainer.style.display = titleContainer.style.display === "flex" ? "none" : "flex";
-        if (titleContainer.style.display === "flex") {
-            document.getElementById("titulo").value = chave.replace(/_/g, " ");
-            console.log(`📝 Abrindo edição de título para ${categoria}:${chave}`);
+        const categoriaSanitizada = validacao.chaveSanitizada;
+        if (categoriaSanitizada !== categoriaAntiga) {
+            if (!respostas[categoriaSanitizada]) {
+                respostas[categoriaSanitizada] = {};
+            }
+            respostas[categoriaSanitizada][chave] = respostas[categoriaAntiga][chave];
+            delete respostas[categoriaAntiga][chave];
+            if (Object.keys(respostas[categoriaAntiga]).length === 0) {
+                delete respostas[categoriaAntiga];
+            }
+            salvarNoFirebase();
+            atualizarSeletorOpcoes();
+            document.getElementById("opcoes").value = `${categoriaSanitizada}:${chave}`;
+            responder();
+            alert("Categoria alterada com sucesso!");
         }
     };
 
-    window.salvarNovoTitulo = function() {
-        if (!atendenteAtual || !auth.currentUser) {
-            alert("Selecione um atendente e autentique-se primeiro!");
-            return;
+    function substituirMarcadores(texto) {
+        let saudacao = "";
+        let despedida = "";
+        if (atendenteAtual) {
+            const saudacaoSalva = localStorage.getItem(`saudacao_${atendenteAtual}`);
+            const despedidaSalva = localStorage.getItem(`despedida_${atendenteAtual}`);
+            saudacao = saudacaoSalva || `Olá, aqui é ${atendenteAtual.charAt(0).toUpperCase() + atendenteAtual.slice(1)}! Como posso ajudar?`;
+            despedida = despedidaSalva || `Atenciosamente, ${atendenteAtual.charAt(0).toUpperCase() + atendenteAtual.slice(1)}`;
         }
-        const opcaoAntiga = document.getElementById("opcoes").value;
-        if (!opcaoAntiga) {
-            alert("Selecione uma opção primeiro!");
-            console.warn("⚠️ Nenhuma opção selecionada para salvar título");
-            return;
-        }
-        const novoTitulo = document.getElementById("titulo").value.trim();
-        const validacao = validarChave(novoTitulo);
-        if (!validacao.valido) {
-            alert(validacao.mensagem);
-            console.error("❌ Validação do novo título falhou:", validacao.mensagem);
-            return;
-        }
-        const novoChave = validacao.chaveSanitizada;
-        const [categoria, oldChave] = opcaoAntiga.split(":");
-        if (!respostas[categoria]?.[oldChave]) {
-            alert("Erro: resposta não encontrada!");
-            console.error(`❌ Resposta não encontrada: ${categoria}:${oldChave}`);
-            return;
-        }
-        if (novoChave === oldChave) {
-            console.log("⚠️ Mesmo título, nenhuma alteração feita");
-            document.getElementById("titleContainer").style.display = "none";
-            return;
-        }
-        if (respostas[categoria][novoChave]) {
-            alert("Este título já existe nesta categoria!");
-            console.warn(`⚠️ Título duplicado: ${novoChave} em ${categoria}`);
-            return;
-        }
-        respostas[categoria][novoChave] = respostas[categoria][oldChave];
-        delete respostas[categoria][oldChave];
-        console.log(`🔄 Renomeando ${categoria}:${oldChave} para ${categoria}:${novoChave}`);
-        salvarNoFirebase();
-        atualizarSeletorOpcoes();
-        document.getElementById("opcoes").value = `${categoria}:${novoChave}`;
-        responder();
-        document.getElementById("titleContainer").style.display = "none";
-        alert("Título alterado com sucesso!");
-    };
+        return texto.replace(/\[SAUDACAO\]/g, saudacao).replace(/\[DESPEDIDA\]/g, despedida);
+    }
 
     window.abrirModalAditivo = function() {
         const modal = document.getElementById("modalAditivo");
         modal.style.display = "block";
+        console.log("Modal opened");
     };
 
     window.fecharModalAditivo = function() {
         const modal = document.getElementById("modalAditivo");
         modal.style.display = "none";
-        backToUpload();
+        backToUpload(); // Reset to upload section
+        console.log("Modal closed");
     };
 
     function ajustarAlturaTextarea() {
         const textarea = document.getElementById("resposta");
-        if (textarea) {
-            textarea.style.height = "auto";
-            textarea.style.height = `${textarea.scrollHeight}px`;
-        }
+        textarea.style.height = "auto";
+        textarea.style.height = `${textarea.scrollHeight}px`;
     }
 
-    function substituirMarcadores(texto) {
-        const hora = new Date().getHours();
-        const saudacao = hora >= 5 && hora < 12 ? "Bom dia!" :
-                         hora >= 12 && hora < 18 ? "Boa tarde!" : 
-                         "Boa noite!";
-        const despedida = hora >= 5 && hora < 12 ? "Tenha uma excelente manhã!" :
-                         hora >= 12 && hora < 18 ? "Tenha uma excelente tarde!" : 
-                         "Tenha uma excelente noite!";
-        return texto.replace("[SAUDACAO]", saudacao).replace("[DESPEDIDA]", despedida);
-    }
-
-    function atualizarSaudacao() {
-        const saudacao = document.getElementById("saudacao");
-        if (saudacao) {
-            const hora = new Date().getHours();
-            saudacao.textContent = hora >= 5 && hora < 12 ? "Bom dia!" :
-                                   hora >= 12 && hora < 18 ? "Boa tarde!" : 
-                                   "Boa noite!";
-        }
-    }
-
-    atualizarSaudacao();
-    setInterval(atualizarSaudacao, 600000);
+    // Ajustar altura do textarea ao carregar
+    const textarea = document.getElementById("resposta");
+    textarea.addEventListener("input", ajustarAlturaTextarea);
+    ajustarAlturaTextarea();
 });

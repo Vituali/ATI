@@ -1,30 +1,37 @@
 /* Root variables for dark and light modes */
 :root {
-    --bg-color: #1a1a1a; /* Dark mode background */
-    --text-color: #e0e0e0; /* Dark mode text */
-    --card-bg: #2a2a2a; /* Dark mode card background */
-    --border-color: #003366; /* Darker blue border */
+    --bg-color: #1a1a1a; /* Dark cyberpunk background */
+    --text-color: #e0e0e0; /* Light text */
+    --card-bg: #252525; /* Slightly lighter card background */
+    --border-color: #003366; /* Darker blue for neon */
     --shadow-color: 0 0 5px #003366, 0 0 10px #003366; /* Subtle neon glow */
-    --button-bg: #333; /* Button background */
-    --button-hover: #003366; /* Button hover darker blue */
-    --input-bg: #333; /* Input background */
-    --scrollbar-track: #2a2a2a; /* Scrollbar track */
+    --button-bg: #2a2a2a; /* Button background */
+    --button-hover: #003366; /* Button hover */
+    --input-bg: #2a2a2a; /* Input background */
+    --scrollbar-track: #252525; /* Scrollbar track */
     --scrollbar-thumb: #003366; /* Scrollbar thumb */
     --scrollbar-thumb-hover: #002244; /* Scrollbar thumb hover */
 }
 
 body.light-mode {
-    --bg-color: #f0f0f0; /* Light mode background */
-    --text-color: #333; /* Light mode text */
-    --card-bg: #ffffff; /* Light mode card background */
+    --bg-color: #e0e0e0; /* Light mode background */
+    --text-color: #333; /* Dark text */
+    --card-bg: #ffffff; /* White card background */
     --border-color: #003366; /* Same darker blue for consistency */
     --shadow-color: 0 0 5px #003366, 0 0 10px #003366; /* Subtle blue glow */
-    --button-bg: #0066cc; /* Light mode button background */
+    --button-bg: #0066cc; /* Light mode button */
     --button-hover: #003366; /* Light mode button hover */
-    --input-bg: #e0e0e0; /* Light mode input background */
-    --scrollbar-track: #e0e0e0; /* Light mode scrollbar track */
+    --input-bg: #f0f0f0; /* Light mode input */
+    --scrollbar-track: #f0f0f0; /* Light mode scrollbar track */
     --scrollbar-thumb: #003366; /* Light mode scrollbar thumb */
     --scrollbar-thumb-hover: #002244; /* Light mode scrollbar thumb hover */
+}
+
+/* Infinite border animation */
+@keyframes neonBorder {
+    0% { border-color: #003366; box-shadow: 0 0 5px #003366, 0 0 10px #003366; }
+    50% { border-color: #0066cc; box-shadow: 0 0 8px #0066cc, 0 0 12px #0066cc; }
+    100% { border-color: #003366; box-shadow: 0 0 5px #003366, 0 0 10px #003366; }
 }
 
 /* General styles */
@@ -48,10 +55,11 @@ body {
     border-radius: 10px;
     padding: 30px;
     width: 100%;
-    max-width: 800px; /* Increased size */
+    max-width: 800px;
     box-shadow: var(--shadow-color);
+    animation: neonBorder 2s infinite;
     transition: all 0.3s ease;
-    position: relative; /* For positioning mode toggle */
+    position: relative;
 }
 
 h2 {
@@ -80,13 +88,14 @@ select, input[type="text"], textarea {
     color: var(--text-color);
     font-size: 16px;
     box-shadow: var(--shadow-color);
+    animation: neonBorder 2s infinite;
     transition: all 0.3s ease;
     box-sizing: border-box;
 }
 
 textarea {
     resize: none;
-    min-height: 150px; /* Increased for better usability */
+    min-height: 150px;
 }
 
 .controls {
@@ -105,6 +114,7 @@ textarea {
     cursor: pointer;
     font-size: 16px;
     box-shadow: var(--shadow-color);
+    animation: neonBorder 2s infinite;
     transition: all 0.3s ease;
 }
 
@@ -119,13 +129,14 @@ textarea {
     bottom: 20px;
     left: 20px;
     padding: 10px;
-    font-size: 24px; /* Larger emoji */
-    border-radius: 50%; /* Circular button */
+    font-size: 24px;
+    border-radius: 50%;
     width: 40px;
     height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
+    animation: neonBorder 2s infinite;
 }
 
 #saudacao {

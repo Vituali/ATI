@@ -1,309 +1,430 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Ensure pdf.js is loaded
-    if (typeof pdfjsLib === 'undefined') {
-        console.error('pdf.js library not loaded');
-        showPopup('Erro ao carregar a biblioteca PDF.js. Tente novamente mais tarde.');
-        return;
+document.addEventListener("DOMContentLoaded", function () {
+    const firebaseConfig = {
+        apiKey: "AIzaSyB5wO0x-7NFmh6waMKzWzRew4ezfYOmYBI",
+        authDomain: "site-ati-75d83.firebaseapp.com",
+        databaseURL: "https://site-ati-75d83-default-rtdb.firebaseio.com",
+        projectId: "site-ati-75d83",
+        storageBucket: "site-ati-75d83.firebasestorage.app",
+        messagingSenderId: "467986581951",
+        appId: "1:467986581951:web:046a778a0c9b6967d5790a",
+        measurementId: "G-22D5RNGGK6"
+    };
+
+    let db;
+    let auth;
+    let respostas = { suporte: {}, financeiro: {}, geral: {} };
+    let atendenteAtual = localStorage.getItem("atendenteAtual") || "";
+    const atendenteSelect = document.getElementById("atendente");
+
+    // Initialize dark/light mode
+    const modeToggle = document.getElementById("modeToggle");
+    const currentMode = localStorage.getItem("theme") || "dark";
+    document.body.classList.add(currentMode + "-mode");
+    modeToggle.textContent = currentMode === "dark" ? "☀️" : "🌙";
+
+    modeToggle.addEventListener("click", () => {
+        document.body.classList.toggle("light-mode");
+        document.body.classList.toggle("dark-mode");
+        const newMode = document.body.classList.contains("light-mode") ? "light" : "dark";
+        localStorage.setItem("theme", newMode);
+        modeToggle.textContent = newMode === "dark" ? "☀️" : "🌙";
+    });
+
+    // Inicializar Firebase e autenticação anônima
+    try {
+        const app = firebase.initializeApp(firebaseConfig);
+        db = firebase.database(app);
+        auth = firebase.auth(app);
+        firebase.auth().signInAnonymously().then(() => {
+            console.log("✅ Usuário autenticado anonimamente:", auth.currentUser.uid);
+            if (atendenteSelect) {
+                atendenteSelect.value = atendenteAtual.charAt(0).toUpperCase() + atendenteAtual.slice(1);
+                if (atendenteAtual) {
+                    carregarDoFirebase();
+                }
+            }
+        }).catch(error => {
+            console.error("❌ Erro ao autenticar anonimamente:", error);
+            alert("Erro de autenticação: " + error.message);
+        });
+        console.log("✅ Firebase inicializado com sucesso");
+    } catch (error) {
+        console.error("❌ Erro ao inicializar Firebase:", error);
+        alert("Erro ao conectar com o banco de dados. Algumas funcionalidades podem estar indisponíveis.");
     }
 
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    window.selecionarAtendente = function() {
+        atendenteAtual = atendenteSelect.value.toLowerCase();
+        localStorage.setItem("atendenteAtual", atendenteAtual);
+        if (atendenteAtual && auth.currentUser) {
+            carregarDoFirebase();
+        } else {
+            document.getElementById("opcoes").innerHTML = '<option value="">Selecione um atendente primeiro</option>';
+            document.getElementById("resposta").value = "";
+            document.getElementById("titulo").value = "";
+            ajustarAlturaTextarea();
+        }
+    };
 
-    const selfWithdrawal = document.getElementById('selfWithdrawal');
-    const withdrawalSection = document.getElementById('withdrawalSection');
-    const withdrawalDate = document.getElementById('withdrawalDate');
-    const installationDate = document.getElementById('installationDate');
-    const renewal = document.getElementById('renewal');
-    const taxSection = document.getElementById('taxSection');
-    const phoneInput = document.getElementById('phone');
-    const technicianInput = document.getElementById('technician');
-    const phoneError = document.getElementById('phoneError');
-    const pdfUpload = document.getElementById('pdfUpload');
-    const fileNameDisplay = document.getElementById('fileName');
+    function validarChave(chave) {
+        if (!chave || !chave.trim()) {
+            console.error("❌ Chave inválida: vazia ou nula");
+            return { valido: false, mensagem: "A chave não pode estar em branco." };
+        }
+        const caracteresProibidos = new RegExp("[\\$#\\[\\]\\/\\.]", "g");
+        if (caracteresProibidos.test(chave)) {
+            console.warn(`⚠️ Chave contém caracteres proibidos: ${chave}`);
+            return { valido: false, mensagem: "A chave não pode conter $ # [ ] . ou /." };
+        }
+        const chaveSanitizada = chave.trim().toLowerCase().replace(/[\$#\[\]\.\/]/g, "_");
+        console.log(`✅ Chave válida: ${chave} -> ${chaveSanitizada}`);
+        return { valido: true, chaveSanitizada };
+    }
 
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const minDate = tomorrow.toISOString().slice(0, 10);
-    withdrawalDate.min = minDate;
-    installationDate.min = minDate;
+    function salvarNoFirebase() {
+        if (!atendenteAtual || !auth.currentUser) {
+            alert("Selecione um atendente e autentique-se primeiro!");
+            return;
+        }
+        const dbRef = firebase.database().ref(`respostas/${atendenteAtual}`);
+        dbRef.set(respostas)
+            .then(() => console.log(`🔥 Dados salvos no Firebase para ${atendenteAtual}`))
+            .catch(error => {
+                console.error("❌ Erro ao salvar no Firebase:", error);
+                alert("Erro ao salvar: " + error.message);
+            });
+    }
 
-    // Auto-abrir date picker
-    [withdrawalDate, installationDate].forEach(dateInput => {
-        dateInput.addEventListener('click', () => {
+    function carregarDoFirebase() {
+        if (!atendenteAtual || !auth.currentUser) {
+            console.log("⚠️ Selecione um atendente e autentique-se primeiro");
+            return;
+        }
+        const dbRef = firebase.database().ref(`respostas/${atendenteAtual}`);
+        dbRef.on('value', function(snapshot) {
             try {
-                dateInput.showPicker();
-            } catch (e) {
-                console.log('showPicker not supported, allowing manual input');
+                const data = snapshot.val();
+                respostas = data || { suporte: {}, financeiro: {}, geral: {} };
+                console.log("📥 Dados carregados do Firebase para " + atendenteAtual + ":", respostas);
+                atualizarSeletorOpcoes();
+            } catch (error) {
+                console.error("❌ Erro ao carregar dados do Firebase:", error);
+                alert("Erro ao carregar dados: " + error.message);
+            }
+        }, function(error) {
+            console.error("❌ Erro na conexão com Firebase:", error);
+            alert("Erro de conexão com o Firebase: " + error.message);
+        });
+    }
+
+    window.atualizarSeletorOpcoes = function() {
+        const seletor = document.getElementById("opcoes");
+        if (!seletor) {
+            console.error("❌ Elemento 'opcoes' não encontrado");
+            alert("Erro: elemento de opções não encontrado.");
+            return;
+        }
+        seletor.innerHTML = atendenteAtual ? '<option value="">Selecione uma opção</option>' : '<option value="">Selecione um atendente primeiro</option>';
+        if (!atendenteAtual) return;
+        Object.keys(respostas).sort().forEach(categoria => {
+            const optgroup = document.createElement("optgroup");
+            optgroup.label = categoria.charAt(0).toUpperCase() + categoria.slice(1);
+            Object.keys(respostas[categoria]).sort().forEach(chave => {
+                const opt = document.createElement("option");
+                opt.value = `${categoria}:${chave}`;
+                opt.innerText = chave.replace(/_/g, " ").toUpperCase();
+                optgroup.appendChild(opt);
+            });
+            if (optgroup.children.length > 0) {
+                seletor.appendChild(optgroup);
             }
         });
-    });
+        responder();
+    };
 
-    // Mostrar nome do arquivo selecionado
-    pdfUpload.addEventListener('change', () => {
-        const file = pdfUpload.files[0];
-        fileNameDisplay.innerText = file ? file.name : 'Nenhum arquivo selecionado';
-    });
-
-    selfWithdrawal.addEventListener('change', () => {
-        if (selfWithdrawal.checked) {
-            withdrawalSection.style.display = 'none';
-            withdrawalDate.required = false;
-            document.getElementById('withdrawalPeriod').required = false;
-        } else {
-            withdrawalSection.style.display = 'block';
-            withdrawalDate.required = true;
-            document.getElementById('withdrawalPeriod').required = true;
-        }
-        updateInstallationMin();
-    });
-
-    renewal.addEventListener('change', () => {
-        taxSection.style.display = renewal.checked ? 'none' : 'block';
-    });
-
-    // Inicializar visibilidade da seção de taxa
-    taxSection.style.display = renewal.checked ? 'none' : 'block';
-
-    withdrawalDate.addEventListener('change', updateInstallationMin);
-
-    function updateInstallationMin() {
-        if (!selfWithdrawal.checked && withdrawalDate.value) {
-            installationDate.min = withdrawalDate.value;
-        } else {
-            installationDate.min = minDate;
-        }
-    }
-
-    // Carregar técnico salvo
-    const savedTechnician = localStorage.getItem('technician');
-    if (savedTechnician) {
-        technicianInput.value = savedTechnician;
-    }
-
-    // Salvar técnico ao mudar
-    technicianInput.addEventListener('input', () => {
-        localStorage.setItem('technician', technicianInput.value);
-    });
-
-    // Validar e formatar telefone ao perder foco
-    phoneInput.addEventListener('blur', () => {
-        const { formatted, isValid } = formatPhone(phoneInput.value);
-        phoneInput.value = formatted;
-        phoneError.textContent = isValid ? '' : 'Número de telefone inválido. Use 8 ou 9 dígitos após o DDD.';
-    });
-});
-
-function showPopup(message) {
-    const popup = document.getElementById('popup');
-    popup.innerText = message;
-    popup.classList.add('show');
-    setTimeout(() => {
-        popup.classList.remove('show');
-    }, 1500);
-}
-
-async function loadPDF() {
-    try {
-        const file = document.getElementById('pdfUpload').files[0];
-        if (!file) {
-            showPopup('Selecione um arquivo PDF.');
-            return;
-        }
-
-        const arrayBuffer = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
-        const page = await pdf.getPage(1);
-        const textContent = await page.getTextContent();
-        let text = textContent.items.map(item => item.str).join(' ');
-
-        // Extrair dados
-        const contratoMatch = text.match(/Aditivo do Contrato (\d+)/);
-        const contrato = contratoMatch ? contratoMatch[1] : '';
-
-        const nameMatch = text.match(/CONTRATADA e ([\s\S]*?),\s*CPF\/CNPJ: ([\d.-]+)/);
-        let fullNome = nameMatch ? nameMatch[1].replace(/\s+/g, ' ').trim() : '';
-        const cpf = nameMatch ? nameMatch[2] : '';
-        const shortNome = fullNome.split(' ')[0].toUpperCase();
-
-        const oldMatch = text.match(/2 - Sobre o\(s\) antigo\(s\) endereco\(s\) de cobrança e instalação\s+([\s\S]*? \/ RJ\.)\s+([\s\S]*? \/ RJ\.)/);
-        const oldInstall = oldMatch ? oldMatch[2] : '';
-
-        const newMatch = text.match(/3 - Sobre o\(s\) novo\(s\) endereco\(s\) de cobrança e instalação\s+([\s\S]*? \/ RJ\.)\s+([\s\S]*? \/ RJ\.)/);
-        const newInstall = newMatch ? newMatch[2] : '';
-
-        // Formatar endereços
-        const formatAddress = (addr) => {
-            const parts = addr.split(',').slice(0, 3).map(part => part.trim());
-            return parts.join(',').toUpperCase();
-        };
-
-        const formattedOld = formatAddress(oldInstall);
-        const formattedNew = formatAddress(newInstall);
-
-        if (!contrato || !fullNome || !formattedOld || !formattedNew) {
-            showPopup('Não foi possível extrair todos os dados do PDF. Verifique o formato.');
-            return;
-        }
-
-        // Preencher spans
-        document.getElementById('contratoSpan').innerText = contrato;
-        document.getElementById('nomeSpan').innerText = fullNome;
-        document.getElementById('contrato').innerText = contrato;
-        document.getElementById('nome').innerText = fullNome;
-        document.getElementById('oldAddress').innerText = formattedOld;
-        document.getElementById('newAddress').innerText = formattedNew;
-
-        // Mostrar seção
-        document.getElementById('uploadSection').style.display = 'none';
-        document.getElementById('dataSection').style.display = 'block';
-        document.getElementById('phoneError').textContent = '';
-
-        window.contrato = contrato;
-        window.shortNome = shortNome;
-        window.formattedOld = formattedOld;
-        window.formattedNew = formattedNew;
-        window.motivo = 'MUD ENDEREÇO';
-    } catch (error) {
-        console.error('Erro ao processar PDF:', error);
-        showPopup('Erro ao processar o PDF. Verifique o arquivo e tente novamente.');
-    }
-}
-
-function backToUpload() {
-    document.getElementById('dataSection').style.display = 'none';
-    document.getElementById('uploadSection').style.display = 'block';
-    document.getElementById('pdfUpload').value = '';
-    document.getElementById('fileName').innerText = 'Nenhum arquivo selecionado';
-    document.getElementById('output').innerText = '';
-    document.getElementById('phone').value = '';
-    document.getElementById('phoneError').textContent = '';
-    document.getElementById('copyButtons').style.display = 'none';
-}
-
-function generateOS() {
-    try {
-        const phoneInput = document.getElementById('phone');
-        const { formatted: phone, isValid } = formatPhone(phoneInput.value.trim());
-        phoneInput.value = phone;
-        if (!isValid) {
-            document.getElementById('phoneError').textContent = 'Número de telefone inválido. Use 8 ou 9 dígitos após o DDD.';
-            return;
-        }
-
-        const technician = document.getElementById('technician').value.trim().toUpperCase();
-        const equipmentType = document.getElementById('equipmentType').value;
-        const isSelfWithdrawal = document.getElementById('selfWithdrawal').checked;
-        const isRenewal = document.getElementById('renewal').checked;
-        const signatureType = document.getElementById('signature').value;
-        const taxValue = isRenewal ? '' : document.getElementById('taxValue').value;
-        const output = document.getElementById('output');
-
-        if (!phone || !technician) {
-            showPopup('Preencha o telefone e o nome do técnico.');
-            return;
-        }
-
-        let equipment = equipmentType === 'alcl' ? 'ALCL' : `FIBERHOME + ${equipmentType.toUpperCase()}`;
-
-        let withdrawalText = '';
-        let scheduleLines = '';
-        let withdrawalDay = '';
-        let withdrawalPeriod = '';
-
-        if (!isSelfWithdrawal) {
-            withdrawalDay = formatDate(document.getElementById('withdrawalDate').value);
-            withdrawalPeriod = document.getElementById('withdrawalPeriod').value;
-            if (!withdrawalDay) {
-                showPopup('Selecione a data de retirada.');
-                return;
+    window.responder = function() {
+        const opcao = document.getElementById("opcoes").value;
+        const resposta = document.getElementById("resposta");
+        const titulo = document.getElementById("titulo");
+        if (!opcao || !atendenteAtual) {
+            if (!resposta.value && atendenteAtual) {
+                resposta.value = "Selecione uma opção para receber uma resposta automática.";
+            } else if (!atendenteAtual) {
+                resposta.value = "Selecione um atendente primeiro.";
             }
-            scheduleLines += `${withdrawalDay} - ${window.contrato} - ${window.shortNome} - ${window.formattedOld} - ${window.motivo} - ${withdrawalPeriod} - ${technician}\n`;
-            withdrawalText = `RETIRAR NO ENDEREÇO ${window.formattedOld} NO DIA ${withdrawalDay} ${withdrawalPeriod}`;
-        } else {
-            withdrawalText = 'CLIENTE FAZ A RETIRADA POR CONTA PRÓPRIA';
-        }
-
-        const installationDay = formatDate(document.getElementById('installationDate').value);
-        const installationPeriod = document.getElementById('installationPeriod').value;
-        if (!installationDay) {
-            showPopup('Selecione a data de instalação.');
+            titulo.value = "";
+            ajustarAlturaTextarea();
             return;
         }
+        const [categoria, chave] = opcao.split(":");
+        resposta.value = substituirMarcadores(respostas[categoria]?.[chave] || "Resposta não encontrada.");
+        titulo.value = chave.replace(/_/g, " ");
+        ajustarAlturaTextarea();
+    };
 
-        if (!isSelfWithdrawal && new Date(document.getElementById('installationDate').value) < new Date(document.getElementById('withdrawalDate').value)) {
-            showPopup('A data de instalação não pode ser antes da data de retirada.');
+    window.salvarEdicao = function() {
+        if (!atendenteAtual || !auth.currentUser) {
+            alert("Selecione um atendente e autentique-se primeiro!");
             return;
         }
+        const opcao = document.getElementById("opcoes").value;
+        if (!opcao) {
+            alert("Selecione uma opção primeiro!");
+            return;
+        }
+        const [categoria, chave] = opcao.split(":");
+        const texto = document.getElementById("resposta").value.trim();
+        respostas[categoria][chave] = texto;
+        salvarNoFirebase();
+        alert("Resposta salva com sucesso!");
+    };
 
-        scheduleLines += `${installationDay} - ${window.contrato} - ${window.shortNome} - ${window.formattedNew} - ${window.motivo} - ${installationPeriod} - ${technician}\n`;
+    window.copiarTexto = function() {
+        const texto = document.getElementById("resposta");
+        if (!texto) {
+            console.error("❌ Elemento 'resposta' não encontrado");
+            alert("Erro: campo de texto não encontrado.");
+            return;
+        }
+        texto.select();
+        try {
+            document.execCommand("copy");
+        } catch (error) {
+            console.error("❌ Erro ao copiar texto:", error);
+            alert("Erro ao copiar a mensagem.");
+        }
+    };
 
-        let taxText = isRenewal ? 'ISENTO DA TAXA DEVIDO A RENOVAÇÃO.' : `TAXA DE R$${taxValue}.`;
-        let signatureText = signatureType === 'local' ? 'TITULAR NO LOCAL PARA ASSINATURA.' : 'ASSINATURA DIGITAL PENDENTE (VERIFICAR).';
+    window.apagarTexto = function() {
+        if (!atendenteAtual || !auth.currentUser) {
+            alert("Selecione um atendente e autentique-se primeiro!");
+            return;
+        }
+        const opcao = document.getElementById("opcoes").value;
+        if (!opcao || !confirm("Tem certeza que deseja apagar?")) return;
+        const [categoria, chave] = opcao.split(":");
+        delete respostas[categoria][chave];
+        if (Object.keys(respostas[categoria]).length === 0) {
+            delete respostas[categoria];
+        }
+        salvarNoFirebase();
+        atualizarSeletorOpcoes();
+        document.getElementById("resposta").value = "";
+        document.getElementById("titulo").value = "";
+        alert("Resposta apagada com sucesso!");
+    };
 
-        const osText = `${phone} ${window.shortNome} | ** ${equipment} ** \n${withdrawalText}\nINSTALAR NO ENDEREÇO ${window.formattedNew} NO DIA ${installationDay} ${installationPeriod}. \n${taxText}\n${signatureText}`;
+    window.mostrarPopupAdicionar = function() {
+        if (!atendenteAtual || !auth.currentUser) {
+            alert("Selecione um atendente e autentique-se primeiro!");
+            return;
+        }
+        const novoTitulo = prompt("Digite o título da nova resposta:");
+        if (!novoTitulo) {
+            console.log("⚠️ Adição cancelada: título vazio");
+            return;
+        }
+        const validacao = validarChave(novoTitulo);
+        if (!validacao.valido) {
+            alert(validacao.mensagem);
+            console.error("❌ Validação do título falhou:", validacao.mensagem);
+            return;
+        }
+        const chave = validacao.chaveSanitizada;
+        const categoriaPrompt = prompt("Digite a categoria (ex.: suporte, financeiro, geral):", "geral");
+        if (!categoriaPrompt) {
+            console.log("⚠️ Adição cancelada: categoria vazia");
+            return;
+        }
+        const validacaoCategoria = validarChave(categoriaPrompt);
+        if (!validacaoCategoria.valido) {
+            alert(validacaoCategoria.mensagem);
+            console.error("❌ Validação da categoria falhou:", validacaoCategoria.mensagem);
+            return;
+        }
+        const categoria = validacaoCategoria.chaveSanitizada;
+        if (!respostas[categoria]) {
+            respostas[categoria] = {};
+        }
+        if (respostas[categoria][chave]) {
+            alert("Esse título já existe nesta categoria!");
+            console.warn(`⚠️ Título duplicado: ${chave} em ${categoria}`);
+            return;
+        }
+        respostas[categoria][chave] = "[SAUDACAO] Nova resposta aqui... [DESPEDIDA]";
+        console.log(`📝 Adicionando: ${categoria}:${chave}`);
+        salvarNoFirebase();
+        atualizarSeletorOpcoes();
+        document.getElementById("opcoes").value = `${categoria}:${chave}`;
+        responder();
+        alert("Nova resposta adicionada com sucesso!");
+    };
 
-        output.innerText = `${scheduleLines}\n${osText}`;
+    window.alterarCategoria = function() {
+        if (!atendenteAtual || !auth.currentUser) {
+            alert("Selecione um atendente e autentique-se primeiro!");
+            return;
+        }
+        const opcao = document.getElementById("opcoes").value;
+        if (!opcao) {
+            alert("Selecione uma resposta primeiro!");
+            console.warn("⚠️ Nenhuma opção selecionada para alterar categoria");
+            return;
+        }
+        const [oldCategoria, chave] = opcao.split(":");
+        const novaCategoria = prompt("Digite a nova categoria (ex.: suporte, financeiro, geral):", oldCategoria);
+        if (!novaCategoria) {
+            console.log("⚠️ Alteração cancelada: categoria vazia");
+            return;
+        }
+        const validacao = validarChave(novaCategoria);
+        if (!validacao.valido) {
+            alert(validacao.mensagem);
+            console.error("❌ Validação da nova categoria falhou:", validacao.mensagem);
+            return;
+        }
+        const novaCategoriaKey = validacao.chaveSanitizada;
+        if (novaCategoriaKey === oldCategoria) {
+            console.log("⚠️ Mesma categoria selecionada, nenhuma alteração feita");
+            return;
+        }
+        if (!respostas[oldCategoria] || !respostas[oldCategoria][chave]) {
+            alert("Erro: resposta não encontrada na categoria atual!");
+            console.error(`❌ Resposta não encontrada: ${oldCategoria}:${chave}`);
+            return;
+        }
+        if (respostas[novaCategoriaKey]?.[chave]) {
+            alert("Este título já existe na categoria selecionada!");
+            console.warn(`⚠️ Título duplicado: ${chave} em ${novaCategoriaKey}`);
+            return;
+        }
+        if (!respostas[novaCategoriaKey]) {
+            respostas[novaCategoriaKey] = {};
+        }
+        respostas[novaCategoriaKey][chave] = respostas[oldCategoria][chave];
+        delete respostas[oldCategoria][chave];
+        if (Object.keys(respostas[oldCategoria]).length === 0) {
+            delete respostas[oldCategoria];
+        }
+        console.log(`🔄 Movendo ${chave} de ${oldCategoria} para ${novaCategoriaKey}`);
+        salvarNoFirebase();
+        atualizarSeletorOpcoes();
+        document.getElementById("opcoes").value = `${novaCategoriaKey}:${chave}`;
+        responder();
+        alert("Categoria alterada com sucesso!");
+    };
 
-        // Mostrar botões de cópia
-        document.getElementById('copyButtons').style.display = 'flex';
+    window.toggleEditarTitulo = function() {
+        if (!atendenteAtual || !auth.currentUser) {
+            alert("Selecione um atendente e autentique-se primeiro!");
+            return;
+        }
+        const titleContainer = document.getElementById("titleContainer");
+        const opcao = document.getElementById("opcoes").value;
+        if (!opcao) {
+            alert("Selecione uma opção primeiro!");
+            console.warn("⚠️ Nenhuma opção selecionada para editar título");
+            return;
+        }
+        const [categoria, chave] = opcao.split(":");
+        if (!respostas[categoria]?.[chave]) {
+            alert("Erro: resposta não encontrada!");
+            console.error(`❌ Resposta não encontrada: ${categoria}:${chave}`);
+            return;
+        }
+        titleContainer.style.display = titleContainer.style.display === "flex" ? "none" : "flex";
+        if (titleContainer.style.display === "flex") {
+            document.getElementById("titulo").value = chave.replace(/_/g, " ");
+            console.log(`📝 Abrindo edição de título para ${categoria}:${chave}`);
+        }
+    };
 
-        // Armazenar textos para cópia
-        window.scheduleLines = scheduleLines;
-        window.withdrawalLine = scheduleLines.split('\n')[0] || '';
-        window.installationLine = scheduleLines.split('\n')[1] || '';
-        window.osText = osText;
-    } catch (error) {
-        console.error('Erro ao gerar O.S:', error);
-        showPopup('Erro ao gerar a O.S. Verifique os dados e tente novamente.');
+    window.salvarNovoTitulo = function() {
+        if (!atendenteAtual || !auth.currentUser) {
+            alert("Selecione um atendente e autentique-se primeiro!");
+            return;
+        }
+        const opcaoAntiga = document.getElementById("opcoes").value;
+        if (!opcaoAntiga) {
+            alert("Selecione uma opção primeiro!");
+            console.warn("⚠️ Nenhuma opção selecionada para salvar título");
+            return;
+        }
+        const novoTitulo = document.getElementById("titulo").value.trim();
+        const validacao = validarChave(novoTitulo);
+        if (!validacao.valido) {
+            alert(validacao.mensagem);
+            console.error("❌ Validação do novo título falhou:", validacao.mensagem);
+            return;
+        }
+        const novoChave = validacao.chaveSanitizada;
+        const [categoria, oldChave] = opcaoAntiga.split(":");
+        if (!respostas[categoria]?.[oldChave]) {
+            alert("Erro: resposta não encontrada!");
+            console.error(`❌ Resposta não encontrada: ${categoria}:${oldChave}`);
+            return;
+        }
+        if (novoChave === oldChave) {
+            console.log("⚠️ Mesmo título, nenhuma alteração feita");
+            document.getElementById("titleContainer").style.display = "none";
+            return;
+        }
+        if (respostas[categoria][novoChave]) {
+            alert("Este título já existe nesta categoria!");
+            console.warn(`⚠️ Título duplicado: ${novoChave} em ${categoria}`);
+            return;
+        }
+        respostas[categoria][novoChave] = respostas[categoria][oldChave];
+        delete respostas[categoria][oldChave];
+        console.log(`🔄 Renomeando ${categoria}:${oldChave} para ${categoria}:${novoChave}`);
+        salvarNoFirebase();
+        atualizarSeletorOpcoes();
+        document.getElementById("opcoes").value = `${categoria}:${novoChave}`;
+        responder();
+        document.getElementById("titleContainer").style.display = "none";
+        alert("Título alterado com sucesso!");
+    };
+
+    window.abrirModalAditivo = function() {
+        const modal = document.getElementById("modalAditivo");
+        modal.style.display = "block";
+    };
+
+    window.fecharModalAditivo = function() {
+        const modal = document.getElementById("modalAditivo");
+        modal.style.display = "none";
+        backToUpload();
+    };
+
+    function ajustarAlturaTextarea() {
+        const textarea = document.getElementById("resposta");
+        if (textarea) {
+            textarea.style.height = "auto";
+            textarea.style.height = `${textarea.scrollHeight}px`;
+        }
     }
-}
 
-function copyWithdrawal() {
-    navigator.clipboard.writeText(window.withdrawalLine).then(() => showPopup('Retirada copiada!'));
-}
-
-function copyInstallation() {
-    navigator.clipboard.writeText(window.installationLine).then(() => showPopup('Instalação copiada!'));
-}
-
-function copyOS() {
-    navigator.clipboard.writeText(window.osText).then(() => showPopup('O.S copiada!'));
-}
-
-function formatDate(dateStr) {
-    if (!dateStr) return '';
-    const [year, month, day] = dateStr.split('-');
-    return `${day}/${month}`;
-}
-
-function formatPhone(input) {
-    // Remover não-dígitos
-    let digits = input.replace(/\D/g, '');
-
-    // Remover +55 ou 55 inicial
-    if (digits.startsWith('55')) {
-        digits = digits.slice(2);
+    function substituirMarcadores(texto) {
+        const hora = new Date().getHours();
+        const saudacao = hora >= 5 && hora < 12 ? "Bom dia!" :
+                         hora >= 12 && hora < 18 ? "Boa tarde!" : 
+                         "Boa noite!";
+        const despedida = hora >= 5 && hora < 12 ? "Tenha uma excelente manhã!" :
+                         hora >= 12 && hora < 18 ? "Tenha uma excelente tarde!" : 
+                         "Tenha uma excelente noite!";
+        return texto.replace("[SAUDACAO]", saudacao).replace("[DESPEDIDA]", despedida);
     }
 
-    // Validar com regex: DDD (2 dígitos) + 8 ou 9 dígitos
-    const phoneRegex = /^(\d{2})(\d{8,9})$/;
-    const match = digits.match(phoneRegex);
-
-    if (!match) {
-        return { formatted: input, isValid: false };
+    function atualizarSaudacao() {
+        const saudacao = document.getElementById("saudacao");
+        if (saudacao) {
+            const hora = new Date().getHours();
+            saudacao.textContent = hora >= 5 && hora < 12 ? "Bom dia!" :
+                                   hora >= 12 && hora < 18 ? "Boa tarde!" : 
+                                   "Boa noite!";
+        }
     }
 
-    const ddd = match[1];
-    const number = match[2];
-
-    let formattedNumber;
-    if (number.length === 9) {
-        // Celular: XXXXX-XXXX
-        formattedNumber = `${number.slice(0, 5)}-${number.slice(5)}`;
-    } else {
-        // Fixo: XXXX-XXXX
-        formattedNumber = `${number.slice(0, 4)}-${number.slice(4)}`;
-    }
-
-    return { formatted: `${ddd} ${formattedNumber}`, isValid: true };
-}
+    atualizarSaudacao();
+    setInterval(atualizarSaudacao, 600000);
+});

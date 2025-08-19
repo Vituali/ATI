@@ -16,6 +16,20 @@ document.addEventListener("DOMContentLoaded", function () {
     let atendenteAtual = localStorage.getItem("atendenteAtual") || "";
     const atendenteSelect = document.getElementById("atendente");
 
+    // Initialize dark/light mode
+    const modeToggle = document.getElementById("modeToggle");
+    const currentMode = localStorage.getItem("theme") || "dark";
+    document.body.classList.add(currentMode + "-mode");
+    modeToggle.textContent = currentMode === "dark" ? "☀️ Modo Claro" : "🌙 Modo Escuro";
+
+    modeToggle.addEventListener("click", () => {
+        document.body.classList.toggle("light-mode");
+        document.body.classList.toggle("dark-mode");
+        const newMode = document.body.classList.contains("light-mode") ? "light" : "dark";
+        localStorage.setItem("theme", newMode);
+        modeToggle.textContent = newMode === "dark" ? "☀️ Modo Claro" : "🌙 Modo Escuro";
+    });
+
     // Inicializar Firebase e autenticação anônima
     try {
         const app = firebase.initializeApp(firebaseConfig);
@@ -24,7 +38,7 @@ document.addEventListener("DOMContentLoaded", function () {
         firebase.auth().signInAnonymously().then(() => {
             console.log("✅ Usuário autenticado anonimamente:", auth.currentUser.uid);
             if (atendenteSelect) {
-                atendenteSelect.value = atendenteAtual.charAt(0).toUpperCase() + atendenteAtual.slice(1); // Capitalize for UI
+                atendenteSelect.value = atendenteAtual.charAt(0).toUpperCase() + atendenteAtual.slice(1);
                 if (atendenteAtual) {
                     carregarDoFirebase();
                 }
@@ -40,7 +54,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     window.selecionarAtendente = function() {
-        atendenteAtual = atendenteSelect.value.toLowerCase(); // Convert to lowercase for Firebase
+        atendenteAtual = atendenteSelect.value.toLowerCase();
         localStorage.setItem("atendenteAtual", atendenteAtual);
         if (atendenteAtual && auth.currentUser) {
             carregarDoFirebase();
@@ -379,7 +393,6 @@ document.addEventListener("DOMContentLoaded", function () {
     window.fecharModalAditivo = function() {
         const modal = document.getElementById("modalAditivo");
         modal.style.display = "none";
-        // Resetar o estado do conversor ao fechar
         backToUpload();
     };
 

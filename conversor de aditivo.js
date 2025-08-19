@@ -8,22 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-    const body = document.body;
-    const darkModeToggle = document.getElementById('darkModeToggle');
-    const isDark = localStorage.getItem('darkMode') === 'true';
-    if (isDark) {
-        body.classList.add('dark');
-        darkModeToggle.innerText = '☀️';
-    } else {
-        darkModeToggle.innerText = '🌙';
-    }
-
-    darkModeToggle.addEventListener('click', () => {
-        body.classList.toggle('dark');
-        localStorage.setItem('darkMode', body.classList.contains('dark'));
-        darkModeToggle.innerText = body.classList.contains('dark') ? '☀️' : '🌙';
-    });
-
     const selfWithdrawal = document.getElementById('selfWithdrawal');
     const withdrawalSection = document.getElementById('withdrawalSection');
     const withdrawalDate = document.getElementById('withdrawalDate');

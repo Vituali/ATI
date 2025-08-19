@@ -115,22 +115,13 @@ function validarChave(chave) {
     if (!chave || !chave.trim()) {
         return { valido: false, mensagem: "A chave não pode estar em branco." };
     }
-    const caracteresProibidos = /[\\$#\\[\\]\\/\\.]/g;
+    // CORREÇÃO AQUI: A expressão regular foi simplificada e corrigida.
+    const caracteresProibidos = /[$#\[\]\/.]/g;
     if (caracteresProibidos.test(chave)) {
         return { valido: false, mensagem: "A chave não pode conter $ # [ ] . ou /." };
     }
-    const chaveSanitizada = chave.trim().toLowerCase().replace(/[\$#\[\]\.\/]/g, "_");
+    const chaveSanitizada = chave.trim().toLowerCase().replace(/[$#\[\]\/.]/g, "_");
     return { valido: true, chaveSanitizada };
-}
-
-// Funções dos botões
-function copiarTexto() {
-    respostaTextarea.select();
-    navigator.clipboard.writeText(respostaTextarea.value).then(() => {
-        showPopup("Texto copiado com sucesso!");
-    }).catch(err => {
-        showPopup("Erro ao copiar texto.");
-    });
 }
 
 function toggleEditarTitulo() {

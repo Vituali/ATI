@@ -147,7 +147,6 @@ async function loadPDF() {
 
         const elements = {
             contratoSpan: document.getElementById('contratoSpan'),
-            nomeSpan: document.getElementById('nomeSpan'),
             contrato: document.getElementById('contrato'),
             nome: document.getElementById('nome'),
             oldAddress: document.getElementById('oldAddress'),
@@ -163,7 +162,6 @@ async function loadPDF() {
         }
 
         elements.contratoSpan.innerText = contrato;
-        elements.nomeSpan.innerText = fullNome;
         elements.contrato.innerText = contrato;
         elements.nome.innerText = fullNome;
         elements.oldAddress.innerText = formattedOld;

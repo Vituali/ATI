@@ -19,6 +19,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const pdfUpload = document.getElementById('pdfUpload');
     const fileNameDisplay = document.getElementById('fileName');
 
+    if (!selfWithdrawal || !withdrawalSection || !withdrawalDate || !installationDate || !renewal || !taxSection || !phoneInput || !technicianInput || !phoneError || !pdfUpload || !fileNameDisplay) {
+        console.error('Um ou mais elementos DOM não foram encontrados.');
+        showPopup('Erro interno: elementos da página não encontrados.');
+        return;
+    }
+
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -88,11 +94,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function showPopup(message) {
     const popup = document.getElementById('popup');
-    popup.innerText = message;
-    popup.classList.add('show');
-    setTimeout(() => {
-        popup.classList.remove('show');
-    }, 1500);
+    if (popup) {
+        popup.innerText = message;
+        popup.classList.add('show');
+        setTimeout(() => {
+            popup.classList.remove('show');
+        }, 1500);
+    }
 }
 
 async function loadPDF() {
@@ -124,6 +132,7 @@ async function loadPDF() {
         const newInstall = newMatch ? newMatch[2] : '';
 
         const formatAddress = (addr) => {
+            if (!addr) return '';
             const parts = addr.split(',').slice(0, 3).map(part => part.trim());
             return parts.join(',').toUpperCase();
         };
@@ -136,12 +145,29 @@ async function loadPDF() {
             return;
         }
 
-        document.getElementById('contratoSpan').innerText = contrato;
-        document.getElementById('nomeSpan').innerText = fullNome;
-        document.getElementById('contrato').innerText = contrato;
-        document.getElementById('nome').innerText = fullNome;
-        document.getElementById('oldAddress').innerText = formattedOld;
-        document.getElementById('newAddress').innerText = formattedNew;
+        const elements = {
+            contratoSpan: document.getElementById('contratoSpan'),
+            nomeSpan: document.getElementById('nomeSpan'),
+            contrato: document.getElementById('contrato'),
+            nome: document.getElementById('nome'),
+            oldAddress: document.getElementById('oldAddress'),
+            newAddress: document.getElementById('newAddress')
+        };
+
+        for (const [key, element] of Object.entries(elements)) {
+            if (!element) {
+                console.error(`Elemento ${key} não encontrado.`);
+                showPopup('Erro interno: um ou mais elementos da página não foram encontrados.');
+                return;
+            }
+        }
+
+        elements.contratoSpan.innerText = contrato;
+        elements.nomeSpan.innerText = fullNome;
+        elements.contrato.innerText = contrato;
+        elements.nome.innerText = fullNome;
+        elements.oldAddress.innerText = formattedOld;
+        elements.newAddress.innerText = formattedNew;
 
         document.getElementById('uploadSection').style.display = 'none';
         document.getElementById('dataSection').style.display = 'block';
@@ -159,14 +185,27 @@ async function loadPDF() {
 }
 
 function backToUpload() {
-    document.getElementById('dataSection').style.display = 'none';
-    document.getElementById('uploadSection').style.display = 'block';
-    document.getElementById('pdfUpload').value = '';
-    document.getElementById('fileName').innerText = 'Nenhum arquivo selecionado';
-    document.getElementById('output').innerText = '';
-    document.getElementById('phone').value = '';
-    document.getElementById('phoneError').textContent = '';
-    document.getElementById('copyButtons').style.display = 'none';
+    const dataSection = document.getElementById('dataSection');
+    const uploadSection = document.getElementById('uploadSection');
+    const pdfUpload = document.getElementById('pdfUpload');
+    const fileName = document.getElementById('fileName');
+    const output = document.getElementById('output');
+    const phone = document.getElementById('phone');
+    const phoneError = document.getElementById('phoneError');
+    const copyButtons = document.getElementById('copyButtons');
+
+    if (dataSection && uploadSection && pdfUpload && fileName && output && phone && phoneError && copyButtons) {
+        dataSection.style.display = 'none';
+        uploadSection.style.display = 'block';
+        pdfUpload.value = '';
+        fileName.innerText = 'Nenhum arquivo selecionado';
+        output.innerText = '';
+        phone.value = '';
+        phoneError.textContent = '';
+        copyButtons.style.display = 'none';
+    } else {
+        showPopup('Erro interno: elementos da página não encontrados.');
+    }
 }
 
 function generateOS() {

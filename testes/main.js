@@ -15,7 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
         darkModeToggle.innerText = body.classList.contains('dark') ? '☀️' : '🌙';
     });
 
-    // Mostrar seção inicial (chat)
     showSection('chat');
 });
 

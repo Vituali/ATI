@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
   const firebaseConfig = {
-    apiKey: "AIzaSyB5wO0x-7NFmh6waMKzWz Rew4ezfYOmYBI",
+    apiKey: "AIzaSyB5wO0x-7NFmh6waMKzWzRew4ezfYOmYBI",
     authDomain: "site-ati-75d83.firebaseapp.com",
     databaseURL: "https://site-ati-75d83-default-rtdb.firebaseio.com",
     projectId: "site-ati-75d83",
@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   try {
     const app = firebase.initializeApp(firebaseConfig);
-    db = firebase.getDatabase(app);
+    db = firebase.database(app);
     auth = firebase.getAuth(app);
     firebase.signInAnonymously(auth).then(() => {
       console.log("✅ Usuário autenticado anonimamente:", auth.currentUser.uid);
@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", function () {
     return;
   }
 
-  window.selecionarAtendente = function() {
+  function selecionarAtendente() {
     atendenteAtual = atendenteSelect.value;
     localStorage.setItem("atendenteAtual", atendenteAtual);
     if (atendenteAtual && auth.currentUser) {
@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("titulo").value = "";
       ajustarAlturaTextarea();
     }
-  };
+  }
 
   function validarChave(chave) {
     if (!chave || !chave.trim()) {
@@ -103,7 +103,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  window.atualizarSeletorOpcoes = function() {
+  function atualizarSeletorOpcoes() {
     const seletor = document.getElementById("opcoes");
     if (!seletor) {
       console.error("❌ Elemento 'opcoes' não encontrado");
@@ -126,9 +126,9 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
     responder();
-  };
+  }
 
-  window.responder = function() {
+  function responder() {
     const opcao = document.getElementById("opcoes").value;
     const resposta = document.getElementById("resposta");
     const titulo = document.getElementById("titulo");
@@ -146,9 +146,9 @@ document.addEventListener("DOMContentLoaded", function () {
     resposta.value = substituirMarcadores(respostas[categoria]?.[chave] || "Resposta não encontrada.");
     titulo.value = chave.replace(/_/g, " ");
     ajustarAlturaTextarea();
-  };
+  }
 
-  window.salvarEdicao = function() {
+  function salvarEdicao() {
     if (!atendenteAtual || !auth.currentUser) {
       alert("Selecione um atendente e autentique-se primeiro!");
       return;
@@ -163,9 +163,9 @@ document.addEventListener("DOMContentLoaded", function () {
     respostas[categoria][chave] = texto;
     salvarNoFirebase();
     alert("Resposta salva com sucesso!");
-  };
+  }
 
-  window.copiarTexto = function() {
+  function copiarTexto() {
     const texto = document.getElementById("resposta");
     if (!texto) {
       console.error("❌ Elemento 'resposta' não encontrado");
@@ -179,9 +179,9 @@ document.addEventListener("DOMContentLoaded", function () {
       console.error("❌ Erro ao copiar texto:", error);
       alert("Erro ao copiar a mensagem.");
     }
-  };
+  }
 
-  window.apagarTexto = function() {
+  function apagarTexto() {
     if (!atendenteAtual || !auth.currentUser) {
       alert("Selecione um atendente e autentique-se primeiro!");
       return;
@@ -198,9 +198,9 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("resposta").value = "";
     document.getElementById("titulo").value = "";
     alert("Resposta apagada com sucesso!");
-  };
+  }
 
-  window.mostrarPopupAdicionar = function() {
+  function mostrarPopupAdicionar() {
     if (!atendenteAtual || !auth.currentUser) {
       alert("Selecione um atendente e autentique-se primeiro!");
       return;
@@ -244,9 +244,9 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("opcoes").value = `${categoria}:${chave}`;
     responder();
     alert("Nova resposta adicionada com sucesso!");
-  };
+  }
 
-  window.alterarCategoria = function() {
+  function alterarCategoria() {
     if (!atendenteAtual || !auth.currentUser) {
       alert("Selecione um atendente e autentique-se primeiro!");
       return;
@@ -298,9 +298,9 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("opcoes").value = `${novaCategoriaKey}:${chave}`;
     responder();
     alert("Categoria alterada com sucesso!");
-  };
+  }
 
-  window.toggleEditarTitulo = function() {
+  function toggleEditarTitulo() {
     if (!atendenteAtual || !auth.currentUser) {
       alert("Selecione um atendente e autentique-se primeiro!");
       return;
@@ -323,9 +323,9 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("titulo").value = chave.replace(/_/g, " ");
       console.log(`📝 Abrindo edição de título para ${categoria}:${chave}`);
     }
-  };
+  }
 
-  window.salvarNovoTitulo = function() {
+  function salvarNovoTitulo() {
     if (!atendenteAtual || !auth.currentUser) {
       alert("Selecione um atendente e autentique-se primeiro!");
       return;
@@ -369,7 +369,7 @@ document.addEventListener("DOMContentLoaded", function () {
     responder();
     document.getElementById("titleContainer").style.display = "none";
     alert("Título alterado com sucesso!");
-  };
+  }
 
   function ajustarAlturaTextarea() {
     const textarea = document.getElementById("resposta");

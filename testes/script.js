@@ -72,8 +72,8 @@ document.addEventListener("DOMContentLoaded", function () {
       alert("Selecione um atendente e autentique-se primeiro!");
       return;
     }
-    const dbRef = firebase.database().ref(`respostas/${atendenteAtual}`);
-    firebase.database().set(dbRef, respostas)
+    const dbRef = firebase.ref(db, `respostas/${atendenteAtual}`);
+    firebase.set(dbRef, respostas)
       .then(() => console.log(`🔥 Dados salvos no Firebase para ${atendenteAtual}`))
       .catch(error => {
         console.error("❌ Erro ao salvar no Firebase:", error);
@@ -86,8 +86,8 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log("⚠️ Selecione um atendente e autentique-se primeiro");
       return;
     }
-    const dbRef = firebase.database().ref(`respostas/${atendenteAtual}`);
-    firebase.database().on('value', function(snapshot) {
+    const dbRef = firebase.ref(db, `respostas/${atendenteAtual}`);
+    firebase.onValue(dbRef, function(snapshot) {
       try {
         const data = snapshot.val();
         respostas = data || { suporte: {}, financeiro: {}, geral: {} };

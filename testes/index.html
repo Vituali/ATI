@@ -3,169 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🤖 Automatizador de Chat & Conversor de Aditivo</title>
+    <title>Automatizador de Chat & Conversor de Aditivo</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <!-- Adicionando scripts do Firebase v8 -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <!-- Adicionando pdf.js para o conversor -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body>
     <div class="dark-mode-toggle" id="darkModeToggle">🌙</div>
+    <div class="popup" id="popup"></div>
+
     <div class="chatbox">
-        <h1>🤖 Automatizador de Chat & Conversor de Aditivo</h1>
-        <div class="navigation">
-            <button class="button" onclick="showSection('chat')">Chat</button>
-            <button class="button" onclick="showSection('conversor')">Conversor de Aditivo</button>
+        <!-- Barra lateral para navegação -->
+        <div class="sidebar">
+            <button class="sidebar-button active" onclick="showSection('chat')">Chat</button>
+            <button class="sidebar-button" onclick="showSection('conversor')">Conversor de Aditivo</button>
         </div>
 
-        <section id="chatSection">
-            <div class="grupo">
-                <label for="atendente">Atendente:</label>
-                <select id="atendente" onchange="selecionarAtendente()">
-                    <option value="">Selecione um atendente</option>
-                    <option value="Victor">Victor</option>
-                    <option value="Bruno">Bruno</option>
-                    <option value="Lucas">Lucas</option>
-                    <option value="Igor">Igor</option>
-                    <option value="Diego">Diego</option>
-                    <option value="Jefferson">Jefferson</option>
-                    <option value="Helio">Helio</option>
-                    <option value="Marlon">Marlon</option>
-                </select>
-            </div>
-
-            <div class="grupo">
-                <label for="opcoes">Escolha uma opção:</label>
-                <select id="opcoes" onchange="responder()">
-                    <option value="">Selecione uma opção</option>
-                </select>
-            </div>
-
-            <div class="grupo">
-                <label for="titulo">Título:</label>
-                <div class="title-container" id="titleContainer" style="display: none;">
-                    <input type="text" id="titulo" class="input">
-                    <button class="button" onclick="salvarNovoTitulo()">Salvar Título</button>
-                </div>
-            </div>
-
-            <div class="grupo">
-                <label for="resposta">Mensagem:</label>
-                <textarea id="resposta" class="message"></textarea>
-            </div>
-
-            <div class="controls">
-                <button class="button" onclick="copiarTexto()">📋 Copiar</button>
-                <button class="button" onclick="toggleEditarTitulo()">Editar Título</button>
-                <button class="button" onclick="salvarEdicao()">Salvar</button>
-                <button class="button" onclick="alterarCategoria()">Alterar Categoria</button>
-                <button class="button" onclick="apagarTexto()">Apagar</button>
-                <button class="button" onclick="mostrarPopupAdicionar()">Adicionar</button>
-            </div>
-
-            <div class="grupo">
-                <p id="saudacao">Salvar <span style="font-weight: bold;">Boa noite</span> e <span style="font-weight: bold;">Tenha uma excelente noite</span> como [SAUDACAO] e [DESPEDIDA]</p>
-            </div>
-        </section>
-
-        <section id="conversorSection" style="display: none;">
-            <div class="upload-card">
-                <h2>Carregar Aditivo PDF</h2>
-                <label for="pdfUpload">Escolher Arquivo</label>
-                <input type="file" id="pdfUpload" accept="application/pdf" class="input">
-                <span id="fileName">Nenhum arquivo selecionado</span>
-                <button class="button" onclick="loadPDF()">Carregar e Extrair Dados</button>
-            </div>
-
-            <div class="card">
-                <button class="button" onclick="showSection('chat')">Voltar à Página Inicial</button>
-                <h2>Agendamento para Contrato - <span id="contract"></span></h2>
-                <div class="grupo">
-                    <label>Dados do Aditivo:</label>
-                    <p>Contrato: <span id="contractDisplay"></span></p>
-                    <p>Nome: <span id="name"></span></p>
-                    <p>Endereço Antigo: <span id="oldAddress"></span></p>
-                    <p>Endereço Novo: <span id="newAddress"></span></p>
-                    <p>Motivo: <span id="reason">MUD ENDEREÇO</span></p>
-                </div>
-                <div class="grupo">
-                    <label for="phone">Número de Telefone:</label>
-                    <input type="text" id="phone" class="input" required>
-                    <span id="phoneError" class="error"></span>
-                </div>
-                <div class="grupo">
-                    <label for="technician">Nome do Técnico:</label>
-                    <input type="text" id="technician" class="input" required>
-                </div>
-                <div class="grupo">
-                    <label for="equipment">Tipo de Comodato:</label>
-                    <select id="equipment" class="input">
-                        <option value="alcl">ALCL</option>
-                        <option value="proprio">PROPRIO</option>
-                        <option value="huawei">HUAWEI</option>
-                        <option value="tplink">TP LINK</option>
+        <div class="content">
+            <div id="chatSection">
+                <h1>🤖 Automatizador de Chat & Conversor de Aditivo</h1>
+                <div class="card">
+                    <label for="atendente">Atendente:</label>
+                    <select id="atendente" onchange="selecionarAtendente()">
+                        <option value="">Selecione um atendente</option>
+                        <option value="victor">Victor</option>
+                        <option value="bruno">Bruno</option>
+                        <option value="lucas">Lucas</option>
+                        <option value="igor">Igor</option>
+                        <option value="diego">Diego</option>
+                        <option value="jefferson">Jefferson</option>
+                        <option value="helio">Helio</option>
+                        <option value="marlon">Marlon</option>
                     </select>
-                </div>
-                <div class="grupo">
-                    <label>
-                        <input type="checkbox" id="selfWithdrawal"> Cliente faz a retirada por conta própria?
-                    </label>
-                </div>
-                <div class="grupo" id="withdrawalSection">
-                    <label for="withdrawalDate">Data de Retirada (a partir de amanhã):</label>
-                    <input type="date" id="withdrawalDate" class="input" required>
-                    <label for="withdrawalPeriod">Período de Retirada:</label>
-                    <select id="withdrawalPeriod" class="input" required>
-                        <option value="Manhã">Manhã</option>
-                        <option value="Tarde">Tarde</option>
+
+                    <label for="opcoes">Escolha uma opção:</label>
+                    <select id="opcoes" onchange="responder()">
+                        <option value="">Selecione uma opção</option>
                     </select>
-                </div>
-                <div class="grupo">
-                    <label for="installationDate">Data de Instalação (não antes da retirada):</label>
-                    <input type="date" id="installationDate" class="input" required>
-                    <label for="installationPeriod">Período de Instalação:</label>
-                    <select id="installationPeriod" class="input" required>
-                        <option value="Manhã">Manhã</option>
-                        <option value="Tarde">Tarde</option>
-                    </select>
-                </div>
-                <div class="grupo">
-                    <label>
-                        <input type="checkbox" id="renewal"> É Renovação? (Se sim, isento de taxa)
-                    </label>
-                </div>
-                <div class="grupo" id="taxSection">
-                    <label for="taxValue">Valor da Taxa:</label>
-                    <select id="taxValue" class="input">
-                        <option value="100">100</option>
-                        <option value="65">65</option>
-                        <option value="50">50</option>
-                    </select>
-                </div>
-                <div class="grupo">
-                    <label for="signature">Tipo de Assinatura:</label>
-                    <select id="signature" class="input">
-                        <option value="digital">Assinatura Digital</option>
-                        <option value="local">Assinatura no Local</option>
-                    </select>
-                </div>
-                <div class="grupo">
-                    <button class="button" onclick="gerarOS()">Gerar O.S</button>
-                </div>
-                <div class="grupo">
-                    <pre id="output" class="output"></pre>
-                </div>
-                <div class="copy-buttons" id="copyButtons" style="display: none;">
-                    <button class="copy-btn" onclick="copyWithdrawal()">Copiar Retirada</button>
-                    <button class="copy-btn" onclick="copyInstallation()">Copiar Instalação</button>
-                    <button class="copy-btn" onclick="copyOS()">Copiar O.S</button>
+
+                    <div class="title-container" id="titleContainer" style="display: none;">
+                        <label for="titulo">Título:</label>
+                        <input type="text" id="titulo" class="input">
+                        <button class="button" onclick="salvarNovoTitulo()">Salvar Título</button>
+                    </div>
+
+                    <label for="resposta">Mensagem:</label>
+                    <textarea id="resposta" class="message" oninput="ajustarAlturaTextarea()"></textarea>
+
+                    <div class="controls">
+                        <button class="button" onclick="copiarTexto()">📋 Copiar</button>
+                        <button class="button" onclick="toggleEditarTitulo()">Editar Título</button>
+                        <button class="button" onclick="salvarEdicao()">Salvar</button>
+                        <button class="button" onclick="alterarCategoria()">Alterar Categoria</button>
+                        <button class="button" onclick="apagarTexto()">Apagar</button>
+                        <button class="button" onclick="mostrarPopupAdicionar()">Adicionar</button>
+                    </div>
+
+                    <p id="saudacao">Salvar <span>Boa noite</span> e <span>Tenha uma excelente noite</span> como [SAUDACAO] e [DESPEDIDA]</p>
                 </div>
             </div>
-        </section>
+
+            <div id="conversorSection" style="display: none;">
+                <h1>Conversor de Aditivo</h1>
+                <div class="upload-card" id="uploadSection">
+                    <h2>Carregar Aditivo PDF</h2>
+                    <div class="file-upload-wrapper">
+                        <label for="pdfUpload" class="file-label">Escolher Arquivo</label>
+                        <input type="file" id="pdfUpload" class="file-input" accept=".pdf">
+                        <span class="file-name" id="fileName">Nenhum arquivo selecionado</span>
+                    </div>
+                    <button class="button" onclick="loadPDF()">Carregar e Extrair Dados</button>
+                </div>
+
+                <div class="card" id="dataSection" style="display: none;">
+                    <button class="button back" onclick="backToUpload()">Voltar à Página Inicial</button>
+                    <h1>Agendamento para Contrato - <span id="contratoSpan"></span></h1>
+                    <div class="grupo">
+                        <h3>Dados do Aditivo:</h3>
+                        <p><strong>Contrato:</strong> <span id="contrato"></span></p>
+                        <p><strong>Nome:</strong> <span id="nome"></span></p>
+                        <p><strong>Endereço Antigo:</strong> <span id="oldAddress"></span></p>
+                        <p><strong>Endereço Novo:</strong> <span id="newAddress"></span></p>
+                        <p><strong>Motivo:</strong> MUD ENDEREÇO</p>
+                    </div>
+
+                    <div class="grupo">
+                        <label for="phone">Número de Telefone:</label>
+                        <input type="text" id="phone" class="input" required>
+                        <span id="phoneError" class="error"></span>
+                    </div>
+
+                    <div class="grupo">
+                        <label for="technician">Nome do Técnico:</label>
+                        <input type="text" id="technician" class="input" required>
+                    </div>
+
+                    <div class="grupo">
+                        <label for="equipmentType">Tipo de Comodato:</label>
+                        <select id="equipmentType" class="input">
+                            <option value="alcl">ALCL</option>
+                            <option value="proprio">PROPRIO</option>
+                            <option value="huawei">HUAWEI</option>
+                            <option value="tplink">TP LINK</option>
+                        </select>
+                    </div>
+
+                    <div class="grupo">
+                        <label><input type="checkbox" id="selfWithdrawal"> Cliente faz a retirada por conta própria?</label>
+                    </div>
+
+                    <div class="grupo" id="withdrawalSection">
+                        <label for="withdrawalDate">Data de Retirada (a partir de amanhã):</label>
+                        <input type="date" id="withdrawalDate" class="input" required>
+                        <label for="withdrawalPeriod">Período de Retirada:</label>
+                        <select id="withdrawalPeriod" class="input" required>
+                            <option value="Manhã">Manhã</option>
+                            <option value="Tarde">Tarde</option>
+                        </select>
+                    </div>
+
+                    <div class="grupo">
+                        <label for="installationDate">Data de Instalação (não antes da retirada):</label>
+                        <input type="date" id="installationDate" class="input" required>
+                        <label for="installationPeriod">Período de Instalação:</label>
+                        <select id="installationPeriod" class="input" required>
+                            <option value="Manhã">Manhã</option>
+                            <option value="Tarde">Tarde</option>
+                        </select>
+                    </div>
+
+                    <div class="grupo">
+                        <label><input type="checkbox" id="renewal"> É Renovação? (Se sim, isento de taxa)</label>
+                    </div>
+
+                    <div class="grupo" id="taxSection">
+                        <label for="taxValue">Valor da Taxa:</label>
+                        <select id="taxValue" class="input">
+                            <option value="100">100</option>
+                            <option value="65">65</option>
+                            <option value="50">50</option>
+                        </select>
+                    </div>
+
+                    <div class="grupo">
+                        <label for="signature">Tipo de Assinatura:</label>
+                        <select id="signature" class="input">
+                            <option value="digital">Assinatura Digital</option>
+                            <option value="local">Assinatura no Local</option>
+                        </select>
+                    </div>
+
+                    <div class="button-wrapper">
+                        <button class="button" onclick="generateOS()">Gerar O.S</button>
+                    </div>
+
+                    <div class="output" id="output"></div>
+
+                    <div class="copy-buttons" id="copyButtons" style="display: none;">
+                        <button class="copy-btn" onclick="copyWithdrawal()">Copiar Retirada</button>
+                        <button class="copy-btn" onclick="copyInstallation()">Copiar Instalação</button>
+                        <button class="copy-btn" onclick="copyOS()">Copiar O.S</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div id="popup" class="popup"></div>
+
     <script src="main.js"></script>
     <script src="conversor.js"></script>
     <script src="script.js"></script>

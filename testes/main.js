@@ -1,24 +1,32 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const body = document.body;
-    const darkModeToggle = document.getElementById('darkModeToggle');
-    const isDark = localStorage.getItem('darkMode') === 'true';
-    if (isDark) {
-        body.classList.add('dark');
-        darkModeToggle.innerText = '☀️';
-    } else {
-        darkModeToggle.innerText = '🌙';
-    }
+document.addEventListener("DOMContentLoaded", function() {
+    // Verificar o tema salvo no localStorage
+    const isDarkMode = localStorage.getItem("darkMode") === "true";
+    document.body.classList.toggle("dark-mode", isDarkMode);
+    document.body.classList.toggle("light-mode", !isDarkMode);
+    const toggleButton = document.getElementById("darkModeToggle");
+    toggleButton.textContent = isDarkMode ? "🌞" : "🌙";
 
-    darkModeToggle.addEventListener('click', () => {
-        body.classList.toggle('dark');
-        localStorage.setItem('darkMode', body.classList.contains('dark'));
-        darkModeToggle.innerText = body.classList.contains('dark') ? '☀️' : '🌙';
+    // Função para alternar entre modo claro e escuro
+    toggleButton.addEventListener("click", function() {
+        const isDarkMode = document.body.classList.contains("dark-mode");
+        document.body.classList.toggle("dark-mode", !isDarkMode);
+        document.body.classList.toggle("light-mode", isDarkMode);
+        localStorage.setItem("darkMode", !isDarkMode);
+        toggleButton.textContent = isDarkMode ? "🌙" : "🌞";
     });
 
-    showSection('chat');
-});
+    // Função para mostrar a seção selecionada
+    window.showSection = function(section) {
+        document.getElementById("chatSection").style.display = section === "chat" ? "block" : "none";
+        document.getElementById("conversorSection").style.display = section === "conversor" ? "block" : "none";
 
-function showSection(section) {
-    document.getElementById('chatSection').style.display = section === 'chat' ? 'block' : 'none';
-    document.getElementById('conversorSection').style.display = section === 'conversor' ? 'block' : 'none';
-}
+        // Atualizar classe active nos botões da barra lateral
+        const buttons = document.querySelectorAll(".sidebar-button");
+        buttons.forEach(button => {
+            button.classList.toggle("active", button.getAttribute("onclick") === `showSection('${section}')`);
+        });
+    };
+
+    // Mostrar a seção de chat por padrão
+    window.showSection("chat");
+});

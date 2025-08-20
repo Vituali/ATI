@@ -18,8 +18,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
   try {
     const app = firebase.initializeApp(firebaseConfig);
-    db = firebase.database(app);
     auth = firebase.auth(app);
+    db = firebase.database(app);
+    // Verificar se o módulo do banco de dados está carregado
+    if (!firebase.database) {
+      console.error("❌ Módulo do Firebase Realtime Database não carregado");
+      alert("Erro: Módulo do banco de dados Firebase não carregado.");
+      return;
+    }
     auth.signInAnonymously().then(() => {
       console.log("✅ Usuário autenticado anonimamente:", auth.currentUser.uid);
       if (atendenteSelect) {
@@ -40,7 +46,8 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   window.selecionarAtendente = function() {
-    atendenteAtual = atendenteSelect.value;
+    // Garantir que atendenteAtual seja sempre em letras minúsculas para corresponder ao banco de dados
+    atendenteAtual = atendenteSelect.value.toLowerCase();
     localStorage.setItem("atendenteAtual", atendenteAtual);
     if (atendenteAtual && auth.currentUser) {
       window.carregarDoFirebase();
@@ -72,8 +79,8 @@ document.addEventListener("DOMContentLoaded", function () {
       alert("Selecione um atendente e autentique-se primeiro!");
       return;
     }
-    const dbRef = firebase.database().ref(`respostas/${atendenteAtual}`);
-    firebase.database().set(dbRef, respostas)
+    const dbRef = db.ref(`respostas/${atendenteAtual}`);
+    dbRef.set(respostas)
       .then(() => console.log(`🔥 Dados salvos no Firebase para ${atendenteAtual}`))
       .catch(error => {
         console.error("❌ Erro ao salvar no Firebase:", error);
@@ -86,8 +93,9 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log("⚠️ Selecione um atendente e autentique-se primeiro");
       return;
     }
-    const dbRef = firebase.database().ref(`respostas/${atendenteAtual}`);
-    firebase.database().on('value', function(snapshot) {
+    // Usar a instância db para criar a referência ao banco de dados
+    const dbRef = db.ref(`respostas/${atendenteAtual}`);
+    dbRef.on('value', function(snapshot) {
       try {
         const data = snapshot.val();
         respostas = data || { suporte: {}, financeiro: {}, geral: {} };

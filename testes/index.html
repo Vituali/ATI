@@ -94,7 +94,7 @@
                         <button class="button" onclick="apagarTexto()">Apagar</button>
                         <button class="button" onclick="mostrarPopupAdicionar()">Adicionar</button>
                     </div>
-                    <p id="saudacaoDespedidaText">Salvar <span id="saudacaoSpan"></span> e <span id="despedidaSpan"></span> como [SAUDACAO] E [DESPEDIDA]</p> 
+                    <p id="saudacaoDespedidaText">Salvar <span id="saudacaoSpan"></span> e <span id="despedidaSpan"></span></p>
                 </div>
             </div>
 
@@ -124,6 +124,22 @@
                             <p><strong>Endereço Antigo:</strong> <span id="oldAddress"></span></p>
                             <p><strong>Endereço Novo:</strong> <span id="newAddress"></span></p>
                             <p><strong>Motivo:</strong> <span id="motivo">MUD ENDEREÇO</span></p>
+                            <div class="inline-group">
+                                <div>
+                                    <label for="phone">Número de Telefone:</label>
+                                    <input type="text" id="phone">
+                                    <span id="phoneError" class="error"></span>
+                                </div>
+                                <div>
+                                    <label for="equipmentType">Tipo de Comodato:</label>
+                                    <select id="equipmentType">
+                                        <option value="alcl">ALCL</option>
+                                        <option value="proprio">PROPRIO</option>
+                                        <option value="huawei">HUAWEI</option>
+                                        <option value="tp link">TP LINK</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="dual-grid">
@@ -190,20 +206,6 @@
                                 <select id="signature">
                                     <option value="digital">Assinatura Digital</option>
                                     <option value="local">Assinatura no Local</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label for="phone">Número de Telefone:</label>
-                                <input type="text" id="phone">
-                                <span id="phoneError" class="error"></span>
-                            </div>
-                            <div>
-                                <label for="equipmentType">Tipo de Comodato:</label>
-                                <select id="equipmentType">
-                                    <option value="alcl">ALCL</option>
-                                    <option value="proprio">PROPRIO</option>
-                                    <option value="huawei">HUAWEI</option>
-                                    <option value="tp link">TP LINK</option>
                                 </select>
                             </div>
                         </div>

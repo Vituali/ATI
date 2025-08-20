@@ -1,13 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Configurar workerSrc do pdf.js
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-    // Inicializar apenas quando a seção do conversor estiver visível
     if (document.getElementById('conversorSection').style.display === 'block') {
         initializeConversor();
     }
 
-    // Re-inicializar quando a seção do conversor for exibida
     window.showSection = (function(originalShowSection) {
         return function(section) {
             originalShowSection(section);
@@ -41,7 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
             taxValue: document.getElementById('taxValue')
         };
 
-        // Verificar se todos os elementos existem
         for (const [key, element] of Object.entries(elements)) {
             if (!element) {
                 console.error(`Elemento ${key} não encontrado.`);
@@ -52,7 +48,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const { selfWithdrawal, withdrawalSection, withdrawalDate, installationDate, renewal, migration, renewalMessage, migrationMessage, phoneInput, phoneError, pdfUpload, fileNameDisplay, taxValue } = elements;
 
-        // Definir data mínima
         const today = new Date();
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
@@ -60,7 +55,6 @@ document.addEventListener('DOMContentLoaded', () => {
         withdrawalDate.min = minDate;
         installationDate.min = minDate;
 
-        // Evento para abrir seletor de data
         [withdrawalDate, installationDate].forEach(dateInput => {
             dateInput.addEventListener('click', () => {
                 try {
@@ -71,13 +65,11 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // Evento para upload de PDF
         pdfUpload.addEventListener('change', () => {
             const file = pdfUpload.files[0];
             fileNameDisplay.textContent = file ? file.name : 'Nenhum arquivo selecionado';
         });
 
-        // Evento para checkbox de retirada
         selfWithdrawal.addEventListener('change', () => {
             if (selfWithdrawal.checked) {
                 withdrawalSection.style.display = 'none';
@@ -91,7 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
             updateInstallationMin();
         });
 
-        // Evento para checkboxes de renovação e migração
         const updateTaxField = () => {
             const isExempt = renewal.checked || migration.checked;
             taxValue.disabled = isExempt;
@@ -100,12 +91,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isExempt) {
                 taxValue.value = 'isento';
             }
+            renewal.disabled = migration.checked;
+            migration.disabled = renewal.checked;
         };
 
         renewal.addEventListener('change', updateTaxField);
         migration.addEventListener('change', updateTaxField);
 
-        // Atualizar data mínima de instalação
         withdrawalDate.addEventListener('change', updateInstallationMin);
 
         function updateInstallationMin() {
@@ -116,15 +108,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Validação do telefone
         phoneInput.addEventListener('blur', () => {
             const { formatted, isValid } = formatPhone(phoneInput.value);
             phoneInput.value = formatted;
             phoneError.textContent = isValid ? '' : 'Número de telefone inválido. Use 8 ou 9 dígitos após o DDD.';
         });
 
-        // Preencher número de telefone inicial
         phoneInput.value = '(21) 21212-1212';
+        updateTaxField();
     }
 });
 

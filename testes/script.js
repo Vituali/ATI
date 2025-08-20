@@ -16,6 +16,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let atendenteAtual = localStorage.getItem("atendenteAtual") || "";
     const atendenteSelect = document.getElementById("atendente");
     const atendenteToggle = document.getElementById("atendenteToggle");
+    let originalCustomization = {};
 
     try {
         const app = firebase.initializeApp(firebaseConfig);
@@ -33,6 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 updateAtendenteToggleText();
                 window.carregarDoFirebase();
             }
+            loadCustomization();
         }).catch(error => {
             console.error("❌ Erro ao autenticar anonimamente:", error);
             alert("Erro de autenticação: " + error.message);
@@ -422,6 +424,115 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         if (despedidaSpan) {
             despedidaSpan.textContent = despedidaText;
+        }
+    };
+
+    window.loadCustomization = function() {
+        const themeToggle = document.getElementById("themeToggle");
+        const neonBorders = document.getElementById("neonBorders");
+        const iconColor = document.getElementById("iconColor");
+        const borderColor = document.getElementById("borderColor");
+
+        const savedTheme = localStorage.getItem("theme") || "light";
+        const savedNeon = localStorage.getItem("neonBorders") === "true";
+        const savedIconColor = localStorage.getItem("iconColor") || "#002640";
+        const savedBorderColor = localStorage.getItem("borderColor") || "#002640";
+
+        themeToggle.checked = savedTheme === "dark";
+        neonBorders.checked = savedNeon;
+        iconColor.value = savedIconColor;
+        borderColor.value = savedBorderColor;
+
+        applyCustomization(savedTheme, savedNeon, savedIconColor, savedBorderColor);
+    };
+
+    window.applyCustomization = function(theme, neon, iconColor, borderColor) {
+        document.body.classList.remove("light-mode", "dark-mode", "no-neon");
+        document.body.classList.add(theme === "dark" ? "dark-mode" : "light-mode");
+        if (!neon) {
+            document.body.classList.add("no-neon");
+        }
+        document.querySelectorAll(".sidebar-button .icon").forEach(icon => {
+            icon.style.color = iconColor;
+        });
+        document.querySelectorAll(".card, .upload-card, input, select, textarea").forEach(el => {
+            el.style.borderColor = borderColor;
+        });
+    };
+
+    window.openCustomizationPopup = function() {
+        originalCustomization = {
+            theme: localStorage.getItem("theme") || "light",
+            neonBorders: localStorage.getItem("neonBorders") === "true",
+            iconColor: localStorage.getItem("iconColor") || "#002640",
+            borderColor: localStorage.getItem("borderColor") || "#002640"
+        };
+        document.getElementById("customizationPopup").style.display = "block";
+
+        const themeToggle = document.getElementById("themeToggle");
+        const neonBorders = document.getElementById("neonBorders");
+        const iconColor = document.getElementById("iconColor");
+        const borderColor = document.getElementById("borderColor");
+
+        themeToggle.addEventListener("change", () => {
+            window.applyCustomization(themeToggle.checked ? "dark" : "light", neonBorders.checked, iconColor.value, borderColor.value);
+        });
+        neonBorders.addEventListener("change", () => {
+            window.applyCustomization(themeToggle.checked ? "dark" : "light", neonBorders.checked, iconColor.value, borderColor.value);
+        });
+        iconColor.addEventListener("input", () => {
+            window.applyCustomization(themeToggle.checked ? "dark" : "light", neonBorders.checked, iconColor.value, borderColor.value);
+        });
+        borderColor.addEventListener("input", () => {
+            window.applyCustomization(themeToggle.checked ? "dark" : "light", neonBorders.checked, iconColor.value, borderColor.value);
+        });
+    };
+
+    window.saveCustomization = function() {
+        const themeToggle = document.getElementById("themeToggle");
+        const neonBorders = document.getElementById("neonBorders");
+        const iconColor = document.getElementById("iconColor");
+        const borderColor = document.getElementById("borderColor");
+
+        localStorage.setItem("theme", themeToggle.checked ? "dark" : "light");
+        localStorage.setItem("neonBorders", neonBorders.checked);
+        localStorage.setItem("iconColor", iconColor.value);
+        localStorage.setItem("borderColor", borderColor.value);
+
+        document.getElementById("customizationPopup").style.display = "none";
+    };
+
+    window.closeCustomizationPopup = function() {
+        document.getElementById("customizationPopup").style.display = "none";
+        window.applyCustomization(originalCustomization.theme, originalCustomization.neonBorders, originalCustomization.iconColor, originalCustomization.borderColor);
+
+        const themeToggle = document.getElementById("themeToggle");
+        const neonBorders = document.getElementById("neonBorders");
+        const iconColor = document.getElementById("iconColor");
+        const borderColor = document.getElementById("borderColor");
+
+        themeToggle.checked = originalCustomization.theme === "dark";
+        neonBorders.checked = originalCustomization.neonBorders;
+        iconColor.value = originalCustomization.iconColor;
+        borderColor.value = originalCustomization.borderColor;
+    };
+
+    window.openAtendentePopup = function() {
+        document.getElementById("atendentePopup").style.display = "block";
+    };
+
+    window.closeAtendentePopup = function() {
+        document.getElementById("atendentePopup").style.display = "none";
+    };
+
+    window.showPopup = function(message) {
+        const popup = document.getElementById("popup");
+        if (popup) {
+            popup.innerText = message;
+            popup.classList.add("show");
+            setTimeout(() => {
+                popup.classList.remove("show");
+            }, 1500);
         }
     };
 

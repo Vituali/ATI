@@ -200,6 +200,7 @@ body {
     max-width: 800px;
     width: 100%;
     min-height: 200px;
+    box-sizing: border-box;
 }
 
 .dark-mode .card, .dark-mode .upload-card {
@@ -239,11 +240,6 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 10px;
-}
-
-.upload-card .button {
-    display: block;
-    margin: 0 auto;
 }
 
 /* Estilo dos botões */
@@ -623,6 +619,8 @@ input:checked + .slider:before {
     flex-direction: column;
     justify-content: flex-start;
     min-height: 200px;
+    box-sizing: border-box;
+    align-self: stretch;
 }
 
 .dual-grid .card .grupo {

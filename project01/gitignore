@@ -1,0 +1,209 @@
+# ==========================================
+# .gitignore para ATI - Auxiliar de Atendimentos
+# ==========================================
+
+# ==========================================
+# Jekyll
+# ==========================================
+_site/
+.sass-cache/
+.jekyll-cache/
+.jekyll-metadata
+.bundle/
+vendor/
+
+# ==========================================
+# Node.js
+# ==========================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+.npm/
+.yarn/
+
+# ==========================================
+# Dependências Ruby
+# ==========================================
+Gemfile.lock
+.bundle/
+vendor/
+
+# ==========================================
+# IDEs e Editores
+# ==========================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.sublime-project
+.sublime-workspace
+
+# ==========================================
+# Sistemas Operacionais
+# ==========================================
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# ==========================================
+# Logs
+# ==========================================
+*.log
+logs/
+*.log.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# ==========================================
+# Arquivos Temporários
+# ==========================================
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*.orig
+*.rej
+*.swp
+*.swo
+*~
+
+# ==========================================
+# Configurações Locais
+# ==========================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Configurações específicas do desenvolvedor
+config.local.js
+firebase-config.local.js
+
+# ==========================================
+# Build e Distribuição
+# ==========================================
+dist/
+build/
+out/
+.next/
+.nuxt/
+.cache/
+
+# ==========================================
+# Testes
+# ==========================================
+coverage/
+*.cover
+.nyc_output/
+.coverage
+.pytest_cache/
+htmlcov/
+
+# ==========================================
+# Arquivos de desenvolvimento
+# ==========================================
+TODO.md
+NOTES.md
+development/
+dev/
+test-files/
+debug/
+
+# ==========================================
+# Arquivos específicos do ATI
+# ==========================================
+# Backups de configuração Firebase
+firebase-config-backup.js
+credenciais-*.json
+
+# Arquivos de teste de PDF
+test-pdfs/
+sample-pdfs/
+
+# Dados de desenvolvimento
+dev-data/
+mock-data/
+
+# Screenshots e assets temporários
+screenshots/
+temp-assets/
+
+# ==========================================
+# Compressão
+# ==========================================
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# ==========================================
+# Certificados e Chaves
+# ==========================================
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# ==========================================
+# Documentação gerada
+# ==========================================
+docs/build/
+documentation/generated/
+
+# ==========================================
+# Cache de ferramentas
+# ==========================================
+.parcel-cache/
+.cache/
+.eslintcache
+.stylelintcache
+
+# ==========================================
+# Arquivos de sistema
+# ==========================================
+.fuse_hidden*
+.nfs*
+
+# ==========================================
+# Específico do projeto ATI
+# ==========================================
+# Não versionar arquivos de configuração local
+assets/js/firebase-config.local.js
+
+# Arquivos de dados sensíveis
+user-data/
+client-data/
+
+# Arquivos de log específicos
+atendimento-logs/
+conversor-logs/

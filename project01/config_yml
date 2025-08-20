@@ -1,0 +1,134 @@
+# _config.yml - Configuração Jekyll para ATI
+
+# Site settings
+title: "ATI - Auxiliar de Atendimentos"
+description: "Sistema automatizado para atendimentos com chat humanizado e conversor de aditivos contratuais"
+author: "Equipe ATI"
+email: "contato@ati.com"
+baseurl: "" # Subpasta do site, ex: /meu-projeto
+url: "https://seuusuario.github.io" # URL base do site
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+theme: minima
+encoding: utf-8
+
+# Plugins
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+# SEO settings
+logo: "/assets/images/favicon.ico"
+social:
+  name: "ATI"
+  links:
+    - "https://github.com/seuusuario/ati"
+
+# Collections (se precisar no futuro)
+collections:
+  docs:
+    output: true
+    permalink: /:collection/:name/
+
+# Defaults
+defaults:
+  - scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: "default"
+  - scope:
+      path: ""
+      type: "docs"
+    values:
+      layout: "doc"
+
+# Exclusões do build
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+  - node_modules/
+  - package.json
+  - package-lock.json
+  - yarn.lock
+  - .git/
+  - .gitignore
+  - .sass-cache/
+  - .jekyll-cache/
+  - .jekyll-metadata
+  - vendor/
+  - docs/desenvolvimento/
+  - "*.tmp"
+  - "*.bak"
+
+# Inclusões específicas
+include:
+  - _pages
+  - assets/
+
+# Sass/SCSS settings
+sass:
+  sass_dir: assets/css
+  style: compressed # Para produção use 'compressed'
+
+# Markdown settings
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    css_class: 'highlight'
+    span:
+      line_numbers: false
+    block:
+      line_numbers: false
+
+# Timezone
+timezone: America/Sao_Paulo
+
+# Configurações de desenvolvimento
+livereload: true
+incremental: true
+
+# Future posts
+future: false
+
+# Pagination (se necessário)
+paginate: 10
+paginate_path: "/page:num/"
+
+# Configurações do Feed
+feed:
+  posts_limit: 20
+  excerpt_separator: "\n\n"
+
+# Configurações de SEO
+twitter:
+  username: "seutwitter"
+  card: "summary"
+
+facebook:
+  app_id: "seuappid"
+  publisher: "suapagina"
+
+# Google Analytics (opcional)
+google_analytics: "UA-XXXXXXX-X"
+
+# Configurações personalizadas do ATI
+ati:
+  version: "2.0.0"
+  firebase:
+    project_id: "site-ati-75d83"
+  features:
+    - "Chat Automatizado"
+    - "Conversor de Aditivos"
+    - "Temas Personalizáveis"
+    - "Layout Responsivo"
+  supported_browsers:
+    - "Chrome 90+"
+    - "Firefox 88+"
+    - "Safari 14+"
+    - "Edge 90+"

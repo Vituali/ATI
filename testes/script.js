@@ -16,6 +16,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let atendenteAtual = localStorage.getItem("atendenteAtual") || "";
     const atendenteSelect = document.getElementById("atendente");
     const atendenteToggle = document.getElementById("atendenteToggle");
+    const darkModeToggle = document.getElementById("darkModeToggle");
     let originalCustomization = {};
 
     try {
@@ -438,10 +439,10 @@ document.addEventListener("DOMContentLoaded", function () {
         const savedIconColor = localStorage.getItem("iconColor") || "#002640";
         const savedBorderColor = localStorage.getItem("borderColor") || "#002640";
 
-        themeToggle.checked = savedTheme === "dark";
-        neonBorders.checked = savedNeon;
-        iconColor.value = savedIconColor;
-        borderColor.value = savedBorderColor;
+        if (themeToggle) themeToggle.checked = savedTheme === "dark";
+        if (neonBorders) neonBorders.checked = savedNeon;
+        if (iconColor) iconColor.value = savedIconColor;
+        if (borderColor) borderColor.value = savedBorderColor;
 
         applyCustomization(savedTheme, savedNeon, savedIconColor, savedBorderColor);
     };
@@ -455,10 +456,17 @@ document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll(".sidebar-button .icon").forEach(icon => {
             icon.style.color = iconColor;
         });
-        document.querySelectorAll(".card, .upload-card, input, select, textarea").forEach(el => {
+        document.querySelectorAll(".card, .upload-card, input, select, textarea, .popup").forEach(el => {
             el.style.borderColor = borderColor;
         });
+        updateDarkModeToggleIcon(theme);
     };
+
+    function updateDarkModeToggleIcon(theme) {
+        if (darkModeToggle) {
+            darkModeToggle.textContent = theme === "dark" ? "☀️" : "🌙";
+        }
+    }
 
     window.openCustomizationPopup = function() {
         originalCustomization = {
@@ -467,25 +475,54 @@ document.addEventListener("DOMContentLoaded", function () {
             iconColor: localStorage.getItem("iconColor") || "#002640",
             borderColor: localStorage.getItem("borderColor") || "#002640"
         };
-        document.getElementById("customizationPopup").style.display = "block";
+
+        const customizationPopup = document.getElementById("customizationPopup");
+        if (customizationPopup) {
+            customizationPopup.style.display = "block";
+        } else {
+            console.error("❌ Elemento 'customizationPopup' não encontrado");
+            alert("Erro: popup de personalização não encontrado.");
+            return;
+        }
 
         const themeToggle = document.getElementById("themeToggle");
         const neonBorders = document.getElementById("neonBorders");
         const iconColor = document.getElementById("iconColor");
         const borderColor = document.getElementById("borderColor");
 
-        themeToggle.addEventListener("change", () => {
-            window.applyCustomization(themeToggle.checked ? "dark" : "light", neonBorders.checked, iconColor.value, borderColor.value);
-        });
-        neonBorders.addEventListener("change", () => {
-            window.applyCustomization(themeToggle.checked ? "dark" : "light", neonBorders.checked, iconColor.value, borderColor.value);
-        });
-        iconColor.addEventListener("input", () => {
-            window.applyCustomization(themeToggle.checked ? "dark" : "light", neonBorders.checked, iconColor.value, borderColor.value);
-        });
-        borderColor.addEventListener("input", () => {
-            window.applyCustomization(themeToggle.checked ? "dark" : "light", neonBorders.checked, iconColor.value, borderColor.value);
-        });
+        if (!themeToggle || !neonBorders || !iconColor || !borderColor) {
+            console.error("❌ Elementos do popup de personalização não encontrados");
+            alert("Erro: elementos do popup de personalização não encontrados.");
+            return;
+        }
+
+        // Inicializar valores do popup
+        themeToggle.checked = originalCustomization.theme === "dark";
+        neonBorders.checked = originalCustomization.neonBorders;
+        iconColor.value = originalCustomization.iconColor;
+        borderColor.value = originalCustomization.borderColor;
+
+        // Função para aplicar personalização em tempo real
+        const applyInRealTime = () => {
+            window.applyCustomization(
+                themeToggle.checked ? "dark" : "light",
+                neonBorders.checked,
+                iconColor.value,
+                borderColor.value
+            );
+        };
+
+        // Remover eventos antigos para evitar múltiplos listeners
+        themeToggle.removeEventListener("change", applyInRealTime);
+        neonBorders.removeEventListener("change", applyInRealTime);
+        iconColor.removeEventListener("input", applyInRealTime);
+        borderColor.removeEventListener("input", applyInRealTime);
+
+        // Adicionar eventos para aplicar alterações em tempo real
+        themeToggle.addEventListener("change", applyInRealTime);
+        neonBorders.addEventListener("change", applyInRealTime);
+        iconColor.addEventListener("input", applyInRealTime);
+        borderColor.addEventListener("input", applyInRealTime);
     };
 
     window.saveCustomization = function() {
@@ -494,35 +531,65 @@ document.addEventListener("DOMContentLoaded", function () {
         const iconColor = document.getElementById("iconColor");
         const borderColor = document.getElementById("borderColor");
 
-        localStorage.setItem("theme", themeToggle.checked ? "dark" : "light");
-        localStorage.setItem("neonBorders", neonBorders.checked);
-        localStorage.setItem("iconColor", iconColor.value);
-        localStorage.setItem("borderColor", borderColor.value);
+        if (!themeToggle || !neonBorders || !iconColor || !borderColor) {
+            console.error("❌ Elementos do popup de personalização não encontrados");
+            alert("Erro: elementos do popup de personalização não encontrados.");
+            return;
+        }
 
+        const newTheme = themeToggle.checked ? "dark" : "light";
+        const newNeon = neonBorders.checked;
+        const newIconColor = iconColor.value;
+        const newBorderColor = borderColor.value;
+
+        localStorage.setItem("theme", newTheme);
+        localStorage.setItem("neonBorders", newNeon);
+        localStorage.setItem("iconColor", newIconColor);
+        localStorage.setItem("borderColor", newBorderColor);
+
+        window.applyCustomization(newTheme, newNeon, newIconColor, newBorderColor);
         document.getElementById("customizationPopup").style.display = "none";
+        window.showPopup("Personalização salva com sucesso!");
     };
 
     window.closeCustomizationPopup = function() {
-        document.getElementById("customizationPopup").style.display = "none";
-        window.applyCustomization(originalCustomization.theme, originalCustomization.neonBorders, originalCustomization.iconColor, originalCustomization.borderColor);
+        const customizationPopup = document.getElementById("customizationPopup");
+        if (customizationPopup) {
+            customizationPopup.style.display = "none";
+        }
+        window.applyCustomization(
+            originalCustomization.theme,
+            originalCustomization.neonBorders,
+            originalCustomization.iconColor,
+            originalCustomization.borderColor
+        );
 
         const themeToggle = document.getElementById("themeToggle");
         const neonBorders = document.getElementById("neonBorders");
         const iconColor = document.getElementById("iconColor");
         const borderColor = document.getElementById("borderColor");
 
-        themeToggle.checked = originalCustomization.theme === "dark";
-        neonBorders.checked = originalCustomization.neonBorders;
-        iconColor.value = originalCustomization.iconColor;
-        borderColor.value = originalCustomization.borderColor;
+        if (themeToggle) themeToggle.checked = originalCustomization.theme === "dark";
+        if (neonBorders) neonBorders.checked = originalCustomization.neonBorders;
+        if (iconColor) iconColor.value = originalCustomization.iconColor;
+        if (borderColor) borderColor.value = originalCustomization.borderColor;
     };
 
     window.openAtendentePopup = function() {
-        document.getElementById("atendentePopup").style.display = "block";
+        const atendentePopup = document.getElementById("atendentePopup");
+        if (atendentePopup) {
+            atendentePopup.style.display = "block";
+        } else {
+            console.error("❌ Elemento 'atendentePopup' não encontrado");
+            alert("Erro: popup de atendente não encontrado.");
+        }
     };
 
     window.closeAtendentePopup = function() {
-        document.getElementById("atendentePopup").style.display = "none";
+        const atendentePopup = document.getElementById("atendentePopup");
+        if (atendentePopup) {
+            atendentePopup.style.display = "none";
+        }
     };
 
     window.showPopup = function(message) {
@@ -535,6 +602,13 @@ document.addEventListener("DOMContentLoaded", function () {
             }, 1500);
         }
     };
+
+    // Adicionar evento ao darkModeToggle para abrir o popup de personalização
+    if (darkModeToggle) {
+        darkModeToggle.addEventListener("click", () => {
+            window.openCustomizationPopup();
+        });
+    }
 
     window.atualizarSaudacao();
     setInterval(window.atualizarSaudacao, 600000);

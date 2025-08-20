@@ -1,3 +1,7 @@
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+import { getDatabase, ref, set, onValue } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
+
 document.addEventListener("DOMContentLoaded", function () {
     const firebaseConfig = {
         apiKey: "AIzaSyB5wO0x-7NFmh6waMKzWzRew4ezfYOmYBI",
@@ -20,15 +24,10 @@ document.addEventListener("DOMContentLoaded", function () {
     let originalCustomization = {};
 
     try {
-        const app = firebase.initializeApp(firebaseConfig);
-        auth = firebase.auth(app);
-        db = firebase.database(app);
-        if (!firebase.database) {
-            console.error("❌ Módulo do Firebase Realtime Database não carregado");
-            alert("Erro: Módulo do banco de dados Firebase não carregado.");
-            return;
-        }
-        auth.signInAnonymously().then(() => {
+        const app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getDatabase(app);
+        signInAnonymously(auth).then(() => {
             console.log("✅ Usuário autenticado anonimamente:", auth.currentUser.uid);
             if (atendenteSelect && atendenteAtual) {
                 atendenteSelect.value = atendenteAtual;
@@ -67,6 +66,7 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("titulo").value = "";
             window.ajustarAlturaTextarea();
         }
+        closeAtendentePopup();
     };
 
     window.validarChave = function(chave) {
@@ -89,8 +89,8 @@ document.addEventListener("DOMContentLoaded", function () {
             alert("Selecione um atendente e autentique-se primeiro!");
             return;
         }
-        const dbRef = db.ref(`respostas/${atendenteAtual}`);
-        dbRef.set(respostas)
+        const dbRef = ref(db, `respostas/${atendenteAtual}`);
+        set(dbRef, respostas)
             .then(() => console.log(`🔥 Dados salvos no Firebase para ${atendenteAtual}`))
             .catch(error => {
                 console.error("❌ Erro ao salvar no Firebase:", error);
@@ -103,8 +103,8 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("⚠️ Selecione um atendente e autentique-se primeiro");
             return;
         }
-        const dbRef = db.ref(`respostas/${atendenteAtual}`);
-        dbRef.on('value', function(snapshot) {
+        const dbRef = ref(db, `respostas/${atendenteAtual}`);
+        onValue(dbRef, (snapshot) => {
             try {
                 const data = snapshot.val();
                 respostas = data || { suporte: {}, financeiro: {}, geral: {} };
@@ -114,7 +114,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 console.error("❌ Erro ao carregar dados do Firebase:", error);
                 alert("Erro ao carregar dados: " + error.message);
             }
-        }, function(error) {
+        }, (error) => {
             console.error("❌ Erro na conexão com Firebase:", error);
             alert("Erro de conexão com o Firebase: " + error.message);
         });
@@ -346,6 +346,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const saudacaoElements = document.querySelectorAll("#saudacao");
         const saudacaoSpan = document.getElementById("saudacaoSpan");
         const despedidaSpan = document.getElementById("despedidaSpan");
+        const saudacaoDespedidaText = document.getElementById("saudacaoDespedidaText");
         const hora = new Date().getHours();
         const saudacaoText = hora >= 5 && hora < 12 ? "bom dia" :
                              hora >= 12 && hora < 18 ? "boa tarde" : 
@@ -361,6 +362,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         if (despedidaSpan) {
             despedidaSpan.textContent = despedidaText;
+        }
+        if (saudacaoDespedidaText) {
+            saudacaoDespedidaText.textContent = saudacaoText;
         }
     };
 
@@ -390,21 +394,122 @@ document.addEventListener("DOMContentLoaded", function () {
             document.body.classList.add("no-neon");
         }
 
-        // Atualizar cores de ícones
-        document.querySelectorAll(".sidebar-button .icon, .bottom-toggle .icon, .dark-mode-toggle .icon").forEach(icon => {
-            icon.style.color = iconColor;
-        });
+        const style = document.createElement("style");
+        style.id = "custom-styles";
+        const isLight = getLuminance(iconColor) > 0.5;
+        const outlineColor = isLight ? "#000000" : "#FFFFFF";
+        const sidebarBorderColor = lightenColor(borderColor, 20);
 
-        // Atualizar cores de bordas
-        document.querySelectorAll(".card, .upload-card, input, select, textarea, .popup, .customization-popup").forEach(el => {
-            el.style.borderColor = borderColor;
-        });
-
-        // Atualizar botão de toggle de modo escuro
-        if (darkModeToggle) {
-            darkModeToggle.innerHTML = theme === "dark" ? '<span class="icon">🌞</span><span class="text">Modo Claro</span>' : '<span class="icon">🌙</span><span class="text">Modo Escuro</span>';
-        }
+        style.textContent = `
+            .sidebar-button, .toggle-sidebar, .bottom-toggle, .dark-mode-toggle {
+                color: ${iconColor} !important;
+            }
+            .dark-mode .sidebar-button, .dark-mode .toggle-sidebar, .dark-mode .bottom-toggle, .dark-mode .dark-mode-toggle {
+                color: ${iconColor} !important;
+            }
+            .sidebar-button:hover, .bottom-toggle:hover, .dark-mode-toggle:hover {
+                color: ${lightenColor(iconColor, 20)} !important;
+            }
+            .dark-mode .sidebar-button:hover, .dark-mode .bottom-toggle:hover, .dark-mode .dark-mode-toggle:hover {
+                color: ${lightenColor(iconColor, 20)} !important;
+            }
+            .sidebar-button.active {
+                background: ${iconColor} !important;
+                color: ${outlineColor} !important;
+            }
+            .dark-mode .sidebar-button.active {
+                background: ${iconColor} !important;
+                color: ${outlineColor} !important;
+            }
+            .sidebar {
+                border-right: 1px solid ${sidebarBorderColor} !important;
+            }
+            .dark-mode .sidebar {
+                border-right: 1px solid ${sidebarBorderColor} !important;
+            }
+            .card, .upload-card, .popup, .customization-popup, .output {
+                border: 1px solid ${borderColor} !important;
+            }
+            .dark-mode .card, .dark-mode .upload-card, .dark-mode .popup, .dark-mode .customization-popup, .dark-mode .output {
+                border: 1px solid ${borderColor} !important;
+            }
+            input, select, textarea {
+                border: 1px solid ${borderColor} !important;
+            }
+            .dark-mode input, .dark-mode select, .dark-mode textarea {
+                border: 1px solid ${borderColor} !important;
+            }
+            .button, .copy-btn, .file-label {
+                background: ${borderColor} !important;
+                box-shadow: ${neon ? `0 0 10px ${hexToRgba(borderColor, 0.5)}` : "none"} !important;
+            }
+            .dark-mode .button, .dark-mode .copy-btn, .dark-mode .file-label {
+                background: ${borderColor} !important;
+                box-shadow: ${neon ? `0 0 10px ${hexToRgba(borderColor, 0.5)}` : "none"} !important;
+            }
+            .button:hover, .copy-btn:hover, .file-label:hover {
+                background: ${lightenColor(borderColor, 20)} !important;
+                box-shadow: ${neon ? `0 0 15px ${hexToRgba(borderColor, 0.7)}` : "none"} !important;
+            }
+            .dark-mode .button:hover, .dark-mode .copy-btn:hover, .dark-mode .file-label:hover {
+                background: ${lightenColor(borderColor, 20)} !important;
+                box-shadow: ${neon ? `0 0 15px ${hexToRgba(borderColor, 0.7)}` : "none"} !important;
+            }
+            .card, .upload-card {
+                box-shadow: ${neon ? `0 0 15px ${hexToRgba(borderColor, 0.3)}` : "none"} !important;
+            }
+            .dark-mode .card, .dark-mode .upload-card {
+                box-shadow: ${neon ? `0 0 15px ${hexToRgba(borderColor, 0.3)}` : "none"} !important;
+            }
+            input:focus, select:focus, textarea:focus {
+                box-shadow: ${neon ? `0 0 10px ${hexToRgba(borderColor, 0.5)}` : "none"} !important;
+            }
+            .dark-mode input:focus, .dark-mode select:focus, .dark-mode textarea:focus {
+                box-shadow: ${neon ? `0 0 10px ${hexToRgba(borderColor, 0.5)}` : "none"} !important;
+            }
+            .customization-popup, .popup, #atendentePopup {
+                box-shadow: ${neon ? `0 0 15px ${hexToRgba(borderColor, 0.5)}` : "none"} !important;
+            }
+            .dark-mode .customization-popup, .dark-mode .popup, .dark-mode #atendentePopup {
+                box-shadow: ${neon ? `0 0 15px ${hexToRgba(borderColor, 0.5)}` : "none"} !important;
+            }
+            h1, h2, h3 {
+                color: ${iconColor} !important;
+            }
+            .dark-mode h1, .dark-mode h2, .dark-mode h3 {
+                color: ${iconColor} !important;
+            }
+        `;
+        const existingStyle = document.getElementById("custom-styles");
+        if (existingStyle) existingStyle.remove();
+        document.head.appendChild(style);
     };
+
+    function lightenColor(hex, percent) {
+        hex = hex.replace("#", "");
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
+        const increase = percent / 100;
+        return `#${Math.min(255, Math.round(r + (255 - r) * increase)).toString(16).padStart(2, "0")}${Math.min(255, Math.round(g + (255 - g) * increase)).toString(16).padStart(2, "0")}${Math.min(255, Math.round(b + (255 - b) * increase)).toString(16).padStart(2, "0")}`;
+    }
+
+    function hexToRgba(hex, alpha) {
+        hex = hex.replace("#", "");
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    function getLuminance(hex) {
+        hex = hex.replace("#", "");
+        const r = parseInt(hex.substring(0, 2), 16) / 255;
+        const g = parseInt(hex.substring(2, 4), 16) / 255;
+        const b = parseInt(hex.substring(4, 6), 16) / 255;
+        const a = [r, g, b].map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+        return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
+    }
 
     window.openCustomizationPopup = function() {
         originalCustomization = {
@@ -425,13 +530,11 @@ document.addEventListener("DOMContentLoaded", function () {
         iconColor.value = originalCustomization.iconColor;
         borderColor.value = originalCustomization.borderColor;
 
-        // Remover eventos antigos
         themeToggle.removeEventListener("change", applyInRealTime);
         neonBorders.removeEventListener("change", applyInRealTime);
         iconColor.removeEventListener("input", applyInRealTime);
         borderColor.removeEventListener("input", applyInRealTime);
 
-        // Adicionar eventos para aplicação em tempo real
         themeToggle.addEventListener("change", applyInRealTime);
         neonBorders.addEventListener("change", applyInRealTime);
         iconColor.addEventListener("input", applyInRealTime);
@@ -508,7 +611,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     };
 
-    // Adicionar evento ao darkModeToggle para abrir o popup de personalização
     if (darkModeToggle) {
         darkModeToggle.addEventListener("click", () => {
             window.openCustomizationPopup();

@@ -17,16 +17,7 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById("neonBorders").checked = neonBorders;
     applyCustomizations();
 
-    // Update theme
-    window.updateTheme = function() {
-        const isDarkMode = document.getElementById("themeToggle").checked;
-        document.body.classList.toggle("dark-mode", isDarkMode);
-        document.body.classList.toggle("light-mode", !isDarkMode);
-        toggleButton.innerHTML = isDarkMode ? '<span class="icon">🌞</span><span class="text">Modo Claro</span>' : '<span class="icon">🌙</span><span class="text">Modo Escuro</span>';
-        applyCustomizations();
-    };
-
-    // Open customization popup
+    // Explicitly attach to window for onclick
     window.openCustomizationPopup = function() {
         originalCustomization = {
             theme: localStorage.getItem("darkMode") === "true" ? "dark" : "light",
@@ -34,7 +25,13 @@ document.addEventListener("DOMContentLoaded", function() {
             iconColor: localStorage.getItem("iconColor") || "#002640",
             borderColor: localStorage.getItem("borderColor") || "#002640"
         };
-        document.getElementById("customizationPopup").style.display = "block";
+        const popup = document.getElementById("customizationPopup");
+        if (popup) {
+            popup.style.display = "block";
+        } else {
+            console.error("❌ Elemento 'customizationPopup' não encontrado");
+            window.showPopup("Erro: Popup de personalização não encontrado.");
+        }
 
         const themeToggle = document.getElementById("themeToggle");
         const neonBorders = document.getElementById("neonBorders");
@@ -65,7 +62,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Close customization popup
     window.closeCustomizationPopup = function() {
-        document.getElementById("customizationPopup").style.display = "none";
+        const popup = document.getElementById("customizationPopup");
+        if (popup) {
+            popup.style.display = "none";
+        }
         applyCustomizations(
             originalCustomization.theme === "dark",
             originalCustomization.neonBorders,
@@ -194,6 +194,15 @@ document.addEventListener("DOMContentLoaded", function() {
         document.head.appendChild(style);
     }
 
+    // Update theme
+    window.updateTheme = function() {
+        const isDarkMode = document.getElementById("themeToggle").checked;
+        document.body.classList.toggle("dark-mode", isDarkMode);
+        document.body.classList.toggle("light-mode", !isDarkMode);
+        toggleButton.innerHTML = isDarkMode ? '<span class="icon">🌞</span><span class="text">Modo Claro</span>' : '<span class="icon">🌙</span><span class="text">Modo Escuro</span>';
+        applyCustomizations();
+    };
+
     // Utility: Lighten color
     function lightenColor(hex, percent) {
         hex = hex.replace("#", "");
@@ -221,10 +230,5 @@ document.addEventListener("DOMContentLoaded", function() {
         const b = parseInt(hex.substring(4, 6), 16) / 255;
         const a = [r, g, b].map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
         return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
-    }
-
-    // Add event listener to darkModeToggle
-    if (toggleButton) {
-        toggleButton.addEventListener("click", window.openCustomizationPopup);
     }
 });

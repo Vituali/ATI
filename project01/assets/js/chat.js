@@ -4,22 +4,42 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Show section
     window.showSection = function(section) {
-        document.getElementById("chatSection").style.display = section === "chat" ? "block" : "none";
-        document.getElementById("conversorSection").style.display = section === "conversor" ? "block" : "none";
-        const buttons = document.querySelectorAll(".sidebar-button");
-        buttons.forEach(button => {
-            button.classList.toggle("active", button.getAttribute("onclick") === `showSection('${section}')`);
-        });
+        const chatSection = document.getElementById("chatSection");
+        const conversorSection = document.getElementById("conversorSection");
+        if (chatSection && conversorSection) {
+            chatSection.style.display = section === "chat" ? "block" : "none";
+            conversorSection.style.display = section === "conversor" ? "block" : "none";
+            const buttons = document.querySelectorAll(".sidebar-button");
+            buttons.forEach(button => {
+                button.classList.toggle("active", button.getAttribute("onclick") === `showSection('${section}')`);
+            });
+        } else {
+            console.error("❌ Seções 'chatSection' ou 'conversorSection' não encontradas");
+            window.showPopup("Erro: Seções da página não encontradas.");
+        }
     };
 
     // Open atendente popup
     window.openAtendentePopup = function() {
-        document.getElementById("atendentePopup").style.display = "block";
+        console.log("openAtendentePopup called"); // Debug log
+        const popup = document.getElementById("atendentePopup");
+        if (popup) {
+            popup.style.display = "block";
+            popup.focus(); // Ensure popup is focusable
+            console.log("✅ Atendente popup opened");
+        } else {
+            console.error("❌ Elemento 'atendentePopup' não encontrado");
+            window.showPopup("Erro: Popup de atendente não encontrado.");
+        }
     };
 
     // Close atendente popup
     window.closeAtendentePopup = function() {
-        document.getElementById("atendentePopup").style.display = "none";
+        const popup = document.getElementById("atendentePopup");
+        if (popup) {
+            popup.style.display = "none";
+            console.log("✅ Atendente popup closed");
+        }
     };
 
     // Update option selector
@@ -71,7 +91,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Save edited response
     window.salvarEdicao = function() {
-        if (!atendenteAtual || !firebase.auth().currentUser) {
+        if (!atendenteAtual || !window.firebaseAuth().currentUser) {
             window.showPopup("Selecione um atendente e autentique-se primeiro!");
             return;
         }
@@ -105,7 +125,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Delete text
     window.apagarTexto = function() {
-        if (!atendenteAtual || !firebase.auth().currentUser) {
+        if (!atendenteAtual || !window.firebaseAuth().currentUser) {
             window.showPopup("Selecione um atendente e autentique-se primeiro!");
             return;
         }
@@ -125,7 +145,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Add new response
     window.mostrarPopupAdicionar = function() {
-        if (!atendenteAtual || !firebase.auth().currentUser) {
+        if (!atendenteAtual || !window.firebaseAuth().currentUser) {
             window.showPopup("Selecione um atendente e autentique-se primeiro!");
             return;
         }
@@ -172,7 +192,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Change category
     window.alterarCategoria = function() {
-        if (!atendenteAtual || !firebase.auth().currentUser) {
+        if (!atendenteAtual || !window.firebaseAuth().currentUser) {
             window.showPopup("Selecione um atendente e autentique-se primeiro!");
             return;
         }
@@ -227,7 +247,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Toggle title edit
     window.toggleEditarTitulo = function() {
-        if (!atendenteAtual || !firebase.auth().currentUser) {
+        if (!atendenteAtual || !window.firebaseAuth().currentUser) {
             window.showPopup("Selecione um atendente e autentique-se primeiro!");
             return;
         }
@@ -253,7 +273,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Save new title
     window.salvarNovoTitulo = function() {
-        if (!atendenteAtual || !firebase.auth().currentUser) {
+        if (!atendenteAtual || !window.firebaseAuth().currentUser) {
             window.showPopup("Selecione um atendente e autentique-se primeiro!");
             return;
         }

@@ -1,20 +1,7 @@
 document.addEventListener("DOMContentLoaded", function() {
-    // Initialize sidebar state
-    const sidebar = document.getElementById("sidebar");
-    const isSidebarExpanded = localStorage.getItem("sidebarExpanded") === "true";
-    if (isSidebarExpanded) {
-        sidebar.classList.add("expanded");
-    }
-
-    // Toggle sidebar
-    const toggleSidebar = document.getElementById("toggleSidebar");
-    toggleSidebar.addEventListener("click", function() {
-        sidebar.classList.toggle("expanded");
-        localStorage.setItem("sidebarExpanded", sidebar.classList.contains("expanded"));
-    });
-
-    // Shared utility: Show popup message
+    // Show popup notification
     window.showPopup = function(message) {
+        console.log("showPopup called with message:", message); // Debug log
         const popup = document.getElementById("popup");
         if (popup) {
             popup.innerText = message;
@@ -22,10 +9,12 @@ document.addEventListener("DOMContentLoaded", function() {
             setTimeout(() => {
                 popup.classList.remove("show");
             }, 1500);
+        } else {
+            console.error("❌ Elemento 'popup' não encontrado");
         }
     };
 
-    // Shared utility: Adjust textarea height
+    // Adjust textarea height
     window.ajustarAlturaTextarea = function() {
         const textarea = document.getElementById("resposta");
         if (textarea) {
@@ -34,42 +23,46 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     };
 
-    // Shared utility: Replace placeholders
+    // Replace placeholders
     window.substituirMarcadores = function(texto) {
-        const hora = new Date().getHours();
-        const saudacao = hora >= 5 && hora < 12 ? "bom dia" :
-                         hora >= 12 && hora < 18 ? "boa tarde" : 
-                         "boa noite";
-        const despedida = hora >= 5 && hora < 12 ? "tenha uma excelente manhã" :
-                         hora >= 12 && hora < 18 ? "tenha uma excelente tarde" : 
-                         "tenha uma excelente noite";
+        const now = new Date();
+        const hour = now.getHours();
+        let saudacao, despedida;
+        if (hour >= 5 && hour < 12) {
+            saudacao = "Bom dia";
+            despedida = "Tenha uma excelente manhã";
+        } else if (hour >= 12 && hour < 18) {
+            saudacao = "Boa tarde";
+            despedida = "Tenha uma excelente tarde";
+        } else {
+            saudacao = "Boa noite";
+            despedida = "Tenha uma excelente noite";
+        }
         return texto.replace(/\[saudacao\]/gi, saudacao).replace(/\[despedida\]/gi, despedida);
     };
 
-    // Shared utility: Update greeting
+    // Update greeting based on time
     window.atualizarSaudacao = function() {
         const saudacaoElements = document.querySelectorAll("#saudacao");
-        const saudacaoSpan = document.getElementById("saudacaoSpan");
-        const despedidaSpan = document.getElementById("despedidaSpan");
-        const hora = new Date().getHours();
-        const saudacaoText = hora >= 5 && hora < 12 ? "bom dia" :
-                             hora >= 12 && hora < 18 ? "boa tarde" : 
-                             "boa noite";
-        const despedidaText = hora >= 5 && hora < 12 ? "tenha uma excelente manhã" :
-                              hora >= 12 && hora < 18 ? "tenha uma excelente tarde" : 
-                              "tenha uma excelente noite";
         saudacaoElements.forEach(element => {
-            element.textContent = saudacaoText;
+            element.textContent = window.substituirMarcadores("[saudacao]");
         });
-        if (saudacaoSpan) {
-            saudacaoSpan.textContent = saudacaoText;
-        }
-        if (despedidaSpan) {
-            despedidaSpan.textContent = despedidaText;
+    };
+
+    // Toggle sidebar
+    window.toggleSidebar = function() {
+        console.log("toggleSidebar called"); // Debug log
+        const sidebar = document.getElementById("sidebar");
+        if (sidebar) {
+            sidebar.classList.toggle("expanded");
+            console.log("✅ Sidebar toggled:", sidebar.classList.contains("expanded") ? "expanded" : "collapsed");
+        } else {
+            console.error("❌ Elemento 'sidebar' não encontrado");
+            window.showPopup("Erro: Sidebar não encontrada.");
         }
     };
 
-    // Initialize greeting update
+    // Initialize greeting
     window.atualizarSaudacao();
-    setInterval(window.atualizarSaudacao, 600000);
+    setInterval(window.atualizarSaudacao, 60000); // Update every minute
 });

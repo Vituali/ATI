@@ -54,12 +54,14 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     window.selecionarAtendente = function() {
+        console.log("selecionarAtendente called"); // Debug log
         if (!atendenteSelect) return;
         atendenteAtual = atendenteSelect.value.toLowerCase();
         localStorage.setItem("atendenteAtual", atendenteAtual);
         updateAtendenteToggleText();
         window.closeAtendentePopup();
         if (atendenteAtual && auth.currentUser) {
+            console.log("✅ Carregando dados do Firebase para atendente:", atendenteAtual);
             window.carregarDoFirebase();
         } else {
             document.getElementById("opcoes").innerHTML = '<option value="">Selecione um atendente primeiro</option>';

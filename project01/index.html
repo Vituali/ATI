@@ -58,9 +58,8 @@
         <button class="button" onclick="selecionarAtendente()">✅ Fechar</button>
     </div>
 
-    <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
-        <button class="toggle-sidebar" id="toggleSidebar">☰</button>
+        <button class="toggle-sidebar" id="toggleSidebar" onclick="toggleSidebar()">☰</button>
         <button class="sidebar-button" onclick="showSection('chat')">
             <span class="icon">💬</span> <span class="text">Chat</span>
         </button>
@@ -70,7 +69,7 @@
         <button class="bottom-toggle" onclick="openAtendentePopup()">
             <span class="icon">👤</span> <span class="text">Selecionar Atendente</span>
         </button>
-        <button class="bottom-toggle" id="darkModeToggle">
+        <button class="bottom-toggle" id="darkModeToggle" onclick="openCustomizationPopup()">
             <span class="icon">🌙</span> <span class="text">Personalizar</span>
         </button>
     </div>

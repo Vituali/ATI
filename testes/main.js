@@ -26,6 +26,16 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById("customizationPopup").style.display = "none";
     };
 
+    // Função para abrir o popup de atendente
+    window.openAtendentePopup = function() {
+        document.getElementById("atendentePopup").style.display = "block";
+    };
+
+    // Função para fechar o popup de atendente
+    window.closeAtendentePopup = function() {
+        document.getElementById("atendentePopup").style.display = "none";
+    };
+
     // Função para salvar personalizações
     window.saveCustomization = function() {
         const iconColor = document.getElementById("iconColor").value;
@@ -53,21 +63,23 @@ document.addEventListener("DOMContentLoaded", function() {
         // Calcular cor de outline contrastante
         const isLight = getLuminance(iconColor) > 0.5;
         const outlineColor = isLight ? "#000000" : "#FFFFFF";
+        // Calcular cor da borda da sidebar para contrastar com o texto
+        const sidebarBorderColor = lightenColor(borderColor, 10);
 
         // Aplicar cor dos ícones e outline dinâmico
         const style = document.createElement("style");
         style.id = "custom-styles";
         style.textContent = `
-            .sidebar-button, .toggle-sidebar, .dark-mode-toggle {
+            .sidebar-button, .toggle-sidebar, .dark-mode-toggle, #atendenteToggle {
                 color: ${iconColor} !important;
             }
-            .dark-mode .sidebar-button, .dark-mode .toggle-sidebar, .dark-mode .dark-mode-toggle {
+            .dark-mode .sidebar-button, .dark-mode .toggle-sidebar, .dark-mode .dark-mode-toggle, .dark-mode #atendenteToggle {
                 color: ${iconColor} !important;
             }
-            .sidebar-button:hover {
+            .sidebar-button:hover, #atendenteToggle:hover {
                 color: ${lightenColor(iconColor, 20)} !important;
             }
-            .dark-mode .sidebar-button:hover {
+            .dark-mode .sidebar-button:hover, .dark-mode #atendenteToggle:hover {
                 color: ${lightenColor(iconColor, 20)} !important;
             }
             .sidebar-button.active {
@@ -83,10 +95,10 @@ document.addEventListener("DOMContentLoaded", function() {
                 outline: 1px solid ${outlineColor} !important;
             }
             .sidebar {
-                border-right: 1px solid ${borderColor} !important;
+                border-right: 1px solid ${sidebarBorderColor} !important;
             }
             .dark-mode .sidebar {
-                border-right: 1px solid ${borderColor} !important;
+                border-right: 1px solid ${sidebarBorderColor} !important;
             }
             .card, .upload-card, .popup, .customization-popup, .output {
                 border: 1px solid ${borderColor} !important;
@@ -128,10 +140,10 @@ document.addEventListener("DOMContentLoaded", function() {
             .dark-mode input:focus, .dark-mode select:focus, .dark-mode textarea:focus {
                 box-shadow: ${neonBorders ? `0 0 10px ${hexToRgba(borderColor, 0.5)}` : "none"} !important;
             }
-            .customization-popup, .popup {
+            .customization-popup, .popup, #atendentePopup {
                 box-shadow: ${neonBorders ? `0 0 15px ${hexToRgba(borderColor, 0.5)}` : "none"} !important;
             }
-            .dark-mode .customization-popup, .dark-mode .popup {
+            .dark-mode .customization-popup, .dark-mode .popup, .dark-mode #atendentePopup {
                 box-shadow: ${neonBorders ? `0 0 15px ${hexToRgba(borderColor, 0.5)}` : "none"} !important;
             }
             h1, h2, h3 {

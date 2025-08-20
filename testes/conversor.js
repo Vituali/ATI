@@ -1,95 +1,131 @@
 document.addEventListener('DOMContentLoaded', () => {
-    if (typeof pdfjsLib === 'undefined') {
-        console.error('pdf.js library not loaded');
-        showPopup('Erro ao carregar a biblioteca PDF.js. Tente novamente mais tarde.');
-        return;
-    }
-
+    // Configurar workerSrc do pdf.js
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-    const selfWithdrawal = document.getElementById('selfWithdrawal');
-    const withdrawalSection = document.getElementById('withdrawalSection');
-    const withdrawalDate = document.getElementById('withdrawalDate');
-    const installationDate = document.getElementById('installationDate');
-    const renewal = document.getElementById('renewal');
-    const taxSection = document.getElementById('taxSection');
-    const phoneInput = document.getElementById('phone');
-    const technicianInput = document.getElementById('technician');
-    const phoneError = document.getElementById('phoneError');
-    const pdfUpload = document.getElementById('pdfUpload');
-    const fileNameDisplay = document.getElementById('fileName');
-
-    if (!selfWithdrawal || !withdrawalSection || !withdrawalDate || !installationDate || !renewal || !taxSection || !phoneInput || !technicianInput || !phoneError || !pdfUpload || !fileNameDisplay) {
-        console.error('Um ou mais elementos DOM não foram encontrados.');
-        showPopup('Erro interno: elementos da página não encontrados.');
-        return;
+    // Inicializar apenas quando a seção do conversor estiver visível
+    if (document.getElementById('conversorSection').style.display === 'block') {
+        initializeConversor();
     }
 
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const minDate = tomorrow.toISOString().slice(0, 10);
-    withdrawalDate.min = minDate;
-    installationDate.min = minDate;
-
-    [withdrawalDate, installationDate].forEach(dateInput => {
-        dateInput.addEventListener('click', () => {
-            try {
-                dateInput.showPicker();
-            } catch (e) {
-                console.log('showPicker not supported, allowing manual input');
+    // Re-inicializar quando a seção do conversor for exibida
+    window.showSection = (function(originalShowSection) {
+        return function(section) {
+            originalShowSection(section);
+            if (section === 'conversor') {
+                initializeConversor();
             }
+        };
+    })(window.showSection || function(section) {
+        document.getElementById('chatSection').style.display = section === 'chat' ? 'block' : 'none';
+        document.getElementById('conversorSection').style.display = section === 'conversor' ? 'block' : 'none';
+        const buttons = document.querySelectorAll('.sidebar-button');
+        buttons.forEach(button => {
+            button.classList.toggle('active', button.getAttribute('onclick') === `showSection('${section}')`);
         });
     });
 
-    pdfUpload.addEventListener('change', () => {
-        const file = pdfUpload.files[0];
-        fileNameDisplay.innerText = file ? file.name : 'Nenhum arquivo selecionado';
-    });
+    function initializeConversor() {
+        const elements = {
+            selfWithdrawal: document.getElementById('selfWithdrawal'),
+            withdrawalSection: document.getElementById('withdrawalSection'),
+            withdrawalDate: document.getElementById('withdrawalDate'),
+            installationDate: document.getElementById('installationDate'),
+            renewal: document.getElementById('renewal'),
+            migration: document.getElementById('migration'),
+            renewalMessage: document.getElementById('renewalMessage'),
+            migrationMessage: document.getElementById('migrationMessage'),
+            phoneInput: document.getElementById('phone'),
+            phoneError: document.getElementById('phoneError'),
+            pdfUpload: document.getElementById('pdfUpload'),
+            fileNameDisplay: document.getElementById('fileName'),
+            taxValue: document.getElementById('taxValue')
+        };
 
-    selfWithdrawal.addEventListener('change', () => {
-        if (selfWithdrawal.checked) {
-            withdrawalSection.style.display = 'none';
-            withdrawalDate.required = false;
-            document.getElementById('withdrawalPeriod').required = false;
-        } else {
-            withdrawalSection.style.display = 'block';
-            withdrawalDate.required = true;
-            document.getElementById('withdrawalPeriod').required = true;
+        // Verificar se todos os elementos existem
+        for (const [key, element] of Object.entries(elements)) {
+            if (!element) {
+                console.error(`Elemento ${key} não encontrado.`);
+                showPopup('Erro interno: elemento da página não encontrado.');
+                return;
+            }
         }
-        updateInstallationMin();
-    });
 
-    renewal.addEventListener('change', () => {
-        taxSection.style.display = renewal.checked ? 'none' : 'block';
-    });
+        const { selfWithdrawal, withdrawalSection, withdrawalDate, installationDate, renewal, migration, renewalMessage, migrationMessage, phoneInput, phoneError, pdfUpload, fileNameDisplay, taxValue } = elements;
 
-    taxSection.style.display = renewal.checked ? 'none' : 'block';
+        // Definir data mínima
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const minDate = tomorrow.toISOString().slice(0, 10);
+        withdrawalDate.min = minDate;
+        installationDate.min = minDate;
 
-    withdrawalDate.addEventListener('change', updateInstallationMin);
+        // Evento para abrir seletor de data
+        [withdrawalDate, installationDate].forEach(dateInput => {
+            dateInput.addEventListener('click', () => {
+                try {
+                    dateInput.showPicker();
+                } catch (e) {
+                    console.log('showPicker not supported, allowing manual input:', e);
+                }
+            });
+        });
 
-    function updateInstallationMin() {
-        if (!selfWithdrawal.checked && withdrawalDate.value) {
-            installationDate.min = withdrawalDate.value;
-        } else {
-            installationDate.min = minDate;
+        // Evento para upload de PDF
+        pdfUpload.addEventListener('change', () => {
+            const file = pdfUpload.files[0];
+            fileNameDisplay.textContent = file ? file.name : 'Nenhum arquivo selecionado';
+        });
+
+        // Evento para checkbox de retirada
+        selfWithdrawal.addEventListener('change', () => {
+            if (selfWithdrawal.checked) {
+                withdrawalSection.style.display = 'none';
+                withdrawalDate.required = false;
+                document.getElementById('withdrawalPeriod').required = false;
+            } else {
+                withdrawalSection.style.display = 'block';
+                withdrawalDate.required = true;
+                document.getElementById('withdrawalPeriod').required = true;
+            }
+            updateInstallationMin();
+        });
+
+        // Evento para checkboxes de renovação e migração
+        const updateTaxField = () => {
+            const isExempt = renewal.checked || migration.checked;
+            taxValue.disabled = isExempt;
+            renewalMessage.style.display = renewal.checked ? 'block' : 'none';
+            migrationMessage.style.display = migration.checked ? 'block' : 'none';
+            if (isExempt) {
+                taxValue.value = 'isento';
+            }
+        };
+
+        renewal.addEventListener('change', updateTaxField);
+        migration.addEventListener('change', updateTaxField);
+
+        // Atualizar data mínima de instalação
+        withdrawalDate.addEventListener('change', updateInstallationMin);
+
+        function updateInstallationMin() {
+            if (!selfWithdrawal.checked && withdrawalDate.value) {
+                installationDate.min = withdrawalDate.value;
+            } else {
+                installationDate.min = minDate;
+            }
         }
+
+        // Validação do telefone
+        phoneInput.addEventListener('blur', () => {
+            const { formatted, isValid } = formatPhone(phoneInput.value);
+            phoneInput.value = formatted;
+            phoneError.textContent = isValid ? '' : 'Número de telefone inválido. Use 8 ou 9 dígitos após o DDD.';
+        });
+
+        // Preencher número de telefone inicial
+        phoneInput.value = '(21) 21212-1212';
     }
-
-    const savedTechnician = localStorage.getItem('technician');
-    if (savedTechnician) {
-        technicianInput.value = savedTechnician;
-    }
-
-    technicianInput.addEventListener('input', () => {
-        localStorage.setItem('technician', technicianInput.value);
-    });
-
-    phoneInput.addEventListener('blur', () => {
-        const { formatted, isValid } = formatPhone(phoneInput.value);
-        phoneInput.value = formatted;
-        phoneError.textContent = isValid ? '' : 'Número de telefone inválido. Use 8 ou 9 dígitos após o DDD.';
-    });
 });
 
 function showPopup(message) {
@@ -110,6 +146,9 @@ async function loadPDF() {
             showPopup('Selecione um arquivo PDF.');
             return;
         }
+
+        const fileNameDisplay = document.getElementById('fileName');
+        fileNameDisplay.textContent = file.name;
 
         const arrayBuffer = await file.arrayBuffer();
         const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
@@ -156,7 +195,7 @@ async function loadPDF() {
         for (const [key, element] of Object.entries(elements)) {
             if (!element) {
                 console.error(`Elemento ${key} não encontrado.`);
-                showPopup('Erro interno: um ou mais elementos da página não foram encontrados.');
+                showPopup('Erro interno: elemento da página não encontrado.');
                 return;
             }
         }
@@ -196,9 +235,9 @@ function backToUpload() {
         dataSection.style.display = 'none';
         uploadSection.style.display = 'block';
         pdfUpload.value = '';
-        fileName.innerText = 'Nenhum arquivo selecionado';
-        output.innerText = '';
-        phone.value = '';
+        fileName.textContent = 'Nenhum arquivo selecionado';
+        output.textContent = '';
+        phone.value = '(21) 21212-1212';
         phoneError.textContent = '';
         copyButtons.style.display = 'none';
     } else {
@@ -216,20 +255,21 @@ function generateOS() {
             return;
         }
 
-        const technician = document.getElementById('technician').value.trim().toUpperCase();
-        const equipmentType = document.getElementById('equipmentType').value;
+        const technician = localStorage.getItem('atendenteAtual')?.toUpperCase() || '';
+        const equipmentType = document.getElementById('equipmentType').value.toUpperCase();
         const isSelfWithdrawal = document.getElementById('selfWithdrawal').checked;
         const isRenewal = document.getElementById('renewal').checked;
-        const signatureType = document.getElementById('signature').value;
-        const taxValue = isRenewal ? '' : document.getElementById('taxValue').value;
+        const isMigration = document.getElementById('migration').checked;
+        const signatureType = document.getElementById('signature').value.toUpperCase();
+        const taxValue = (isRenewal || isMigration) ? 'ISENTO' : document.getElementById('taxValue').value.toUpperCase();
         const output = document.getElementById('output');
 
         if (!phone || !technician) {
-            showPopup('Preencha o telefone e o nome do técnico.');
+            showPopup('Preencha o telefone e selecione um atendente.');
             return;
         }
 
-        let equipment = equipmentType === 'alcl' ? 'ALCL' : `FIBERHOME + ${equipmentType.toUpperCase()}`;
+        let equipment = equipmentType === 'ALCL' ? 'ALCL' : `FIBERHOME + ${equipmentType}`;
 
         let withdrawalText = '';
         let scheduleLines = '';
@@ -238,7 +278,7 @@ function generateOS() {
 
         if (!isSelfWithdrawal) {
             withdrawalDay = formatDate(document.getElementById('withdrawalDate').value);
-            withdrawalPeriod = document.getElementById('withdrawalPeriod').value;
+            withdrawalPeriod = document.getElementById('withdrawalPeriod').value.toUpperCase();
             if (!withdrawalDay) {
                 showPopup('Selecione a data de retirada.');
                 return;
@@ -250,7 +290,7 @@ function generateOS() {
         }
 
         const installationDay = formatDate(document.getElementById('installationDate').value);
-        const installationPeriod = document.getElementById('installationPeriod').value;
+        const installationPeriod = document.getElementById('installationPeriod').value.toUpperCase();
         if (!installationDay) {
             showPopup('Selecione a data de instalação.');
             return;
@@ -263,19 +303,19 @@ function generateOS() {
 
         scheduleLines += `${installationDay} - ${window.contrato} - ${window.shortNome} - ${window.formattedNew} - ${window.motivo} - ${installationPeriod} - ${technician}\n`;
 
-        let taxText = isRenewal ? 'ISENTO DA TAXA DEVIDO A RENOVAÇÃO.' : `TAXA DE R$${taxValue}.`;
-        let signatureText = signatureType === 'local' ? 'TITULAR NO LOCAL PARA ASSINATURA.' : 'ASSINATURA DIGITAL PENDENTE (VERIFICAR).';
+        let taxText = isRenewal ? 'ISENTO DA TAXA POR RENOVAÇÃO.' : isMigration ? 'ISENTO DA TAXA POR MIGRAÇÃO.' : `TAXA DE R$${taxValue}.`;
+        let signatureText = signatureType === 'LOCAL' ? 'TITULAR NO LOCAL PARA ASSINATURA.' : 'ASSINATURA DIGITAL PENDENTE (VERIFICAR).';
 
-        const osText = `${phone} ${window.shortNome} | ** ${equipment} ** \n${withdrawalText}\nINSTALAR NO ENDEREÇO ${window.formattedNew} NO DIA ${installationDay} ${installationPeriod}. \n${taxText}\n${signatureText}`;
+        const osText = `${phone} ${window.shortNome} | ** ${equipment} ** \n${withdrawalText}\nINSTALAR NO ENDEREÇO ${window.formattedNew} NO DIA ${installationDay} ${installationPeriod}.\n${taxText}\n${signatureText}\n[despedida]`;
 
-        output.innerText = `${scheduleLines}\n${osText}`;
+        output.innerText = window.substituirMarcadores(`${scheduleLines}\n${osText}`);
 
         document.getElementById('copyButtons').style.display = 'flex';
 
-        window.scheduleLines = scheduleLines;
+        window.scheduleLines = scheduleLines.toUpperCase();
         window.withdrawalLine = scheduleLines.split('\n')[0] || '';
         window.installationLine = scheduleLines.split('\n')[1] || '';
-        window.osText = osText;
+        window.osText = window.substituirMarcadores(osText);
     } catch (error) {
         console.error('Erro ao gerar O.S:', error);
         showPopup('Erro ao gerar a O.S. Verifique os dados e tente novamente.');
@@ -283,40 +323,43 @@ function generateOS() {
 }
 
 function copyWithdrawal() {
-    navigator.clipboard.writeText(window.withdrawalLine).then(() => showPopup('Retirada copiada!'));
+    if (!window.withdrawalLine) {
+        showPopup('Nenhuma linha de retirada para copiar.');
+        return;
+    }
+    navigator.clipboard.writeText(window.withdrawalLine).then(() => showPopup('Retirada copiada!')).catch(() => showPopup('Erro ao copiar retirada.'));
 }
 
 function copyInstallation() {
-    navigator.clipboard.writeText(window.installationLine).then(() => showPopup('Instalação copiada!'));
+    if (!window.installationLine) {
+        showPopup('Nenhuma linha de instalação para copiar.');
+        return;
+    }
+    navigator.clipboard.writeText(window.installationLine).then(() => showPopup('Instalação copiada!')).catch(() => showPopup('Erro ao copiar instalação.'));
 }
 
 function copyOS() {
-    navigator.clipboard.writeText(window.osText).then(() => showPopup('O.S copiada!'));
+    if (!window.osText) {
+        showPopup('Nenhuma O.S para copiar.');
+        return;
+    }
+    navigator.clipboard.writeText(window.osText).then(() => showPopup('O.S copiada!')).catch(() => showPopup('Erro ao copiar O.S.'));
+}
+
+function formatPhone(phone) {
+    const cleaned = phone.replace(/\D/g, '');
+    const isValid = /^[1-9]{2}(9?\d{8})$/.test(cleaned);
+    let formatted = cleaned;
+    if (cleaned.length === 10) {
+        formatted = `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 6)}-${cleaned.slice(6)}`;
+    } else if (cleaned.length === 11) {
+        formatted = `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 3)} ${cleaned.slice(3, 7)}-${cleaned.slice(7)}`;
+    }
+    return { formatted, isValid };
 }
 
 function formatDate(dateStr) {
     if (!dateStr) return '';
     const [year, month, day] = dateStr.split('-');
-    return `${day}/${month}`;
-}
-
-function formatPhone(input) {
-    let digits = input.replace(/\D/g, '');
-    if (digits.startsWith('55')) {
-        digits = digits.slice(2);
-    }
-    const phoneRegex = /^(\d{2})(\d{8,9})$/;
-    const match = digits.match(phoneRegex);
-    if (!match) {
-        return { formatted: input, isValid: false };
-    }
-    const ddd = match[1];
-    const number = match[2];
-    let formattedNumber;
-    if (number.length === 9) {
-        formattedNumber = `${number.slice(0, 5)}-${number.slice(5)}`;
-    } else {
-        formattedNumber = `${number.slice(0, 4)}-${number.slice(4)}`;
-    }
-    return { formatted: `${ddd} ${formattedNumber}`, isValid: true };
+    return `${day}/${month}/${year}`;
 }

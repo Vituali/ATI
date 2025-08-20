@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function() {
     document.body.classList.toggle("dark-mode", isDarkMode);
     document.body.classList.toggle("light-mode", !isDarkMode);
     const toggleButton = document.getElementById("darkModeToggle");
-    toggleButton.textContent = isDarkMode ? "🌞" : "🌙";
+    toggleButton.innerHTML = isDarkMode ? '<span class="icon">🌞</span><span class="text">Modo Claro</span>' : '<span class="icon">🌙</span><span class="text">Modo Escuro</span>';
     document.getElementById("themeToggle").checked = isDarkMode;
 
     // Verificar personalizações salvas
@@ -14,16 +14,35 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById("iconColor").value = iconColor;
     document.getElementById("borderColor").value = borderColor;
     document.getElementById("neonBorders").checked = neonBorders;
-    applyCustomizations(iconColor, borderColor, neonBorders);
+    applyCustomizations();
+
+    // Função para atualizar o tema em tempo real
+    window.updateTheme = function() {
+        const isDarkMode = document.getElementById("themeToggle").checked;
+        document.body.classList.toggle("dark-mode", isDarkMode);
+        document.body.classList.toggle("light-mode", !isDarkMode);
+        toggleButton.innerHTML = isDarkMode ? '<span class="icon">🌞</span><span class="text">Modo Claro</span>' : '<span class="icon">🌙</span><span class="text">Modo Escuro</span>';
+        applyCustomizations();
+    };
 
     // Função para abrir o popup de personalização
-    toggleButton.addEventListener("click", function() {
+    window.openCustomizationPopup = function() {
         document.getElementById("customizationPopup").style.display = "block";
-    });
+    };
 
     // Função para fechar o popup de personalização
     window.closeCustomizationPopup = function() {
         document.getElementById("customizationPopup").style.display = "none";
+    };
+
+    // Função para abrir o popup de atendente
+    window.openAtendentePopup = function() {
+        document.getElementById("atendentePopup").style.display = "block";
+    };
+
+    // Função para fechar o popup de atendente
+    window.closeAtendentePopup = function() {
+        document.getElementById("atendentePopup").style.display = "none";
     };
 
     // Função para salvar personalizações
@@ -40,43 +59,54 @@ document.addEventListener("DOMContentLoaded", function() {
 
         document.body.classList.toggle("dark-mode", isDarkMode);
         document.body.classList.toggle("light-mode", !isDarkMode);
-        toggleButton.textContent = isDarkMode ? "🌞" : "🌙";
+        toggleButton.innerHTML = isDarkMode ? '<span class="icon">🌞</span><span class="text">Modo Claro</span>' : '<span class="icon">🌙</span><span class="text">Modo Escuro</span>';
 
-        applyCustomizations(iconColor, borderColor, neonBorders);
-        document.getElementById("customizationPopup").style.display = "none";
+        applyCustomizations();
+        closeCustomizationPopup();
     };
 
     // Função para aplicar personalizações
-    function applyCustomizations(iconColor, borderColor, neonBorders) {
+    function applyCustomizations() {
+        const iconColor = document.getElementById("iconColor").value;
+        const borderColor = document.getElementById("borderColor").value;
+        const neonBorders = document.getElementById("neonBorders").checked;
         document.body.classList.toggle("no-neon", !neonBorders);
 
-        // Aplicar cor dos ícones
+        // Calcular cor de outline contrastante
+        const isLight = getLuminance(iconColor) > 0.5;
+        const outlineColor = isLight ? "#000000" : "#FFFFFF";
+        const contrastColor = outlineColor;
+        const sidebarBorderColor = lightenColor(borderColor, 20);
+
+        // Aplicar estilos dinâmicos
         const style = document.createElement("style");
         style.id = "custom-styles";
         style.textContent = `
-            .sidebar-button, .toggle-sidebar, .dark-mode-toggle {
+            .sidebar-button, .toggle-sidebar, .bottom-toggle {
                 color: ${iconColor} !important;
             }
-            .dark-mode .sidebar-button, .dark-mode .toggle-sidebar, .dark-mode .dark-mode-toggle {
+            .dark-mode .sidebar-button, .dark-mode .toggle-sidebar, .dark-mode .bottom-toggle {
                 color: ${iconColor} !important;
             }
-            .sidebar-button:hover {
+            .sidebar-button:hover, .bottom-toggle:hover {
                 color: ${lightenColor(iconColor, 20)} !important;
             }
-            .dark-mode .sidebar-button:hover {
+            .dark-mode .sidebar-button:hover, .dark-mode .bottom-toggle:hover {
                 color: ${lightenColor(iconColor, 20)} !important;
             }
             .sidebar-button.active {
                 background: ${iconColor} !important;
+                color: ${contrastColor} !important;
             }
             .dark-mode .sidebar-button.active {
                 background: ${iconColor} !important;
+                color: ${contrastColor} !important;
             }
             .sidebar {
-                border-right: 1px solid ${borderColor} !important;
+                border-right: 1px solid ${sidebarBorderColor} !important;
             }
             .dark-mode .sidebar {
-                border-right: 1px solid ${borderColor} !important;
+                border-right: 1px solid ${sidebarBorderColor} !important;
             }
             .card, .upload-card, .popup, .customization-popup, .output {
                 border: 1px solid ${borderColor} !important;
@@ -118,10 +148,10 @@ document.addEventListener("DOMContentLoaded", function() {
             .dark-mode input:focus, .dark-mode select:focus, .dark-mode textarea:focus {
                 box-shadow: ${neonBorders ? `0 0 10px ${hexToRgba(borderColor, 0.5)}` : "none"} !important;
             }
-            .customization-popup, .popup {
+            .customization-popup, .popup, #atendentePopup {
                 box-shadow: ${neonBorders ? `0 0 15px ${hexToRgba(borderColor, 0.5)}` : "none"} !important;
             }
-            .dark-mode .customization-popup, .dark-mode .popup {
+            .dark-mode .customization-popup, .dark-mode .popup, .dark-mode #atendentePopup {
                 box-shadow: ${neonBorders ? `0 0 15px ${hexToRgba(borderColor, 0.5)}` : "none"} !important;
             }
             h1, h2, h3 {
@@ -155,6 +185,16 @@ document.addEventListener("DOMContentLoaded", function() {
         return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
 
+    // Função para calcular a luminosidade de uma cor
+    function getLuminance(hex) {
+        hex = hex.replace("#", "");
+        const r = parseInt(hex.substring(0, 2), 16) / 255;
+        const g = parseInt(hex.substring(2, 4), 16) / 255;
+        const b = parseInt(hex.substring(4, 6), 16) / 255;
+        const a = [r, g, b].map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+        return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
+    }
+
     // Verificar o estado da barra lateral no localStorage
     const sidebar = document.getElementById("sidebar");
     const isSidebarExpanded = localStorage.getItem("sidebarExpanded") === "true";
@@ -180,6 +220,20 @@ document.addEventListener("DOMContentLoaded", function() {
             button.classList.toggle("active", button.getAttribute("onclick") === `showSection('${section}')`);
         });
     };
+
+    // Função para selecionar atendente
+    window.selecionarAtendente = function() {
+        const atendente = document.getElementById("atendente").value;
+        localStorage.setItem("atendenteSelecionado", atendente);
+        closeAtendentePopup();
+        // Aqui você pode adicionar lógica adicional, como atualizar a interface com o atendente selecionado
+    };
+
+    // Carregar atendente salvo
+    const atendenteSalvo = localStorage.getItem("atendenteSelecionado");
+    if (atendenteSalvo) {
+        document.getElementById("atendente").value = atendenteSalvo;
+    }
 
     // Mostrar a seção de chat por padrão
     window.showSection("chat");

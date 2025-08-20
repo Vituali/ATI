@@ -1,0 +1,61 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Orbitron', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.chatbox {
+    display: flex;
+    width: 100%;
+    max-width: 1200px;
+    min-height: 100vh;
+    margin: 0 auto;
+}
+
+.sidebar {
+    width: 60px;
+    background: linear-gradient(180deg, #E5E7EB, #D1D5DB);
+    padding: 10px;
+    transition: width 0.3s;
+    border-right: 1px solid #1B6A6C;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.sidebar.expanded {
+    width: 200px;
+}
+
+.content {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.grupo, .controls, .dual-grid {
+    width: 100%;
+    max-width: 800px;
+    text-align: center;
+}
+
+.inline-group {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.inline-group > div {
+    flex: 1;
+    min-width: 200px;
+}

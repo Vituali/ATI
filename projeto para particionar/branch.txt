@@ -1,0 +1,21 @@
+projeto/
+├── index.html
+├── _config.yml
+├── .gitignore
+├── README.md
+├── assets/
+│   ├── css/
+│   │   ├── main.css          # @imports e configurações base
+│   │   ├── layout.css        # Sidebar, content, grid
+│   │   ├── components.css    # Buttons, forms, cards, popups
+│   │   └── themes.css        # Light/dark/neon themes
+│   ├── js/
+│   │   ├── main.js
+│   │   ├── script.js
+│   │   ├── darkmode.js
+│   │   ├── conversor.js
+│   │   └── chat.js 
+│   └── images/
+│       └── favicon.ico
+└── docs/
+    └── manual.md

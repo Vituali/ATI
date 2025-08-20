@@ -1,7 +1,3 @@
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
-import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
-import { getDatabase, ref, set, onValue } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
-
 document.addEventListener("DOMContentLoaded", function () {
     const firebaseConfig = {
         apiKey: "AIzaSyB5wO0x-7NFmh6waMKzWzRew4ezfYOmYBI",
@@ -24,10 +20,15 @@ document.addEventListener("DOMContentLoaded", function () {
     let originalCustomization = {};
 
     try {
-        const app = initializeApp(firebaseConfig);
-        auth = getAuth(app);
-        db = getDatabase(app);
-        signInAnonymously(auth).then(() => {
+        const app = firebase.initializeApp(firebaseConfig);
+        auth = firebase.auth(app);
+        db = firebase.database(app);
+        if (!firebase.database) {
+            console.error("❌ Módulo do Firebase Realtime Database não carregado");
+            alert("Erro: Módulo do banco de dados Firebase não carregado.");
+            return;
+        }
+        auth.signInAnonymously().then(() => {
             console.log("✅ Usuário autenticado anonimamente:", auth.currentUser.uid);
             if (atendenteSelect && atendenteAtual) {
                 atendenteSelect.value = atendenteAtual;
@@ -66,7 +67,6 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("titulo").value = "";
             window.ajustarAlturaTextarea();
         }
-        closeAtendentePopup();
     };
 
     window.validarChave = function(chave) {
@@ -89,8 +89,8 @@ document.addEventListener("DOMContentLoaded", function () {
             alert("Selecione um atendente e autentique-se primeiro!");
             return;
         }
-        const dbRef = ref(db, `respostas/${atendenteAtual}`);
-        set(dbRef, respostas)
+        const dbRef = db.ref(`respostas/${atendenteAtual}`);
+        dbRef.set(respostas)
             .then(() => console.log(`🔥 Dados salvos no Firebase para ${atendenteAtual}`))
             .catch(error => {
                 console.error("❌ Erro ao salvar no Firebase:", error);
@@ -103,8 +103,8 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("⚠️ Selecione um atendente e autentique-se primeiro");
             return;
         }
-        const dbRef = ref(db, `respostas/${atendenteAtual}`);
-        onValue(dbRef, (snapshot) => {
+        const dbRef = db.ref(`respostas/${atendenteAtual}`);
+        dbRef.on('value', function(snapshot) {
             try {
                 const data = snapshot.val();
                 respostas = data || { suporte: {}, financeiro: {}, geral: {} };
@@ -114,7 +114,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 console.error("❌ Erro ao carregar dados do Firebase:", error);
                 alert("Erro ao carregar dados: " + error.message);
             }
-        }, (error) => {
+        }, function(error) {
             console.error("❌ Erro na conexão com Firebase:", error);
             alert("Erro de conexão com o Firebase: " + error.message);
         });
@@ -248,20 +248,84 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!respostas[categoria]) {
             respostas[categoria] = {};
         }
-        respostas[categoria][chave] = "";
-        document.getElementById("opcoes").value = `${categoria}:${chave}`;
-        document.getElementById("resposta").value = "";
-        document.getElementById("titulo").value = chave.replace(/_/g, " ");
+        if (respostas[categoria][chave]) {
+            alert("Esse título já existe nesta categoria!");
+            console.warn(`⚠️ Título duplicado: ${chave} em ${categoria}`);
+            return;
+        }
+        respostas[categoria][chave] = "Beleza! 🎉 Nova resposta adicionada! 🎉 Precisando de algo mais, estamos à disposição. [despedida]";
+        console.log(`📝 Adicionando: ${categoria}:${chave}`);
+        window.salvarNoFirebase();
         window.atualizarSeletorOpcoes();
-        window.ajustarAlturaTextarea();
+        document.getElementById("opcoes").value = `${categoria}:${chave}`;
+        window.responder();
+        alert("Nova resposta adicionada com sucesso!");
     };
 
-    window.editarTitulo = function() {
+    window.alterarCategoria = function() {
+        if (!atendenteAtual || !auth.currentUser) {
+            alert("Selecione um atendente e autentique-se primeiro!");
+            return;
+        }
+        const opcao = document.getElementById("opcoes").value;
+        if (!opcao) {
+            alert("Selecione uma resposta primeiro!");
+            console.warn("⚠️ Nenhuma opção selecionada para alterar categoria");
+            return;
+        }
+        const [oldCategoria, chave] = opcao.split(":");
+        const novaCategoria = prompt("Digite a nova categoria (ex.: suporte, financeiro, geral):", oldCategoria);
+        if (!novaCategoria) {
+            console.log("⚠️ Alteração cancelada: categoria vazia");
+            return;
+        }
+        const validacao = window.validarChave(novaCategoria);
+        if (!validacao.valido) {
+            alert(validacao.mensagem);
+            console.error("❌ Validação da nova categoria falhou:", validacao.mensagem);
+            return;
+        }
+        const novaCategoriaKey = validacao.chaveSanitizada;
+        if (novaCategoriaKey === oldCategoria) {
+            console.log("⚠️ Mesma categoria selecionada, nenhuma alteração feita");
+            return;
+        }
+        if (!respostas[oldCategoria] || !respostas[oldCategoria][chave]) {
+            alert("Erro: resposta não encontrada na categoria atual!");
+            console.error(`❌ Resposta não encontrada: ${oldCategoria}:${chave}`);
+            return;
+        }
+        if (respostas[novaCategoriaKey]?.[chave]) {
+            alert("Este título já existe na categoria selecionada!");
+            console.warn(`⚠️ Título duplicado: ${chave} em ${novaCategoriaKey}`);
+            return;
+        }
+        if (!respostas[novaCategoriaKey]) {
+            respostas[novaCategoriaKey] = {};
+        }
+        respostas[novaCategoriaKey][chave] = respostas[oldCategoria][chave];
+        delete respostas[oldCategoria][chave];
+        if (Object.keys(respostas[oldCategoria]).length === 0) {
+            delete respostas[oldCategoria];
+        }
+        console.log(`🔄 Movendo ${chave} de ${oldCategoria} para ${novaCategoriaKey}`);
+        window.salvarNoFirebase();
+        window.atualizarSeletorOpcoes();
+        document.getElementById("opcoes").value = `${novaCategoriaKey}:${chave}`;
+        window.responder();
+        alert("Categoria alterada com sucesso!");
+    };
+
+    window.toggleEditarTitulo = function() {
+        if (!atendenteAtual || !auth.currentUser) {
+            alert("Selecione um atendente e autentique-se primeiro!");
+            return;
+        }
         const titleContainer = document.getElementById("titleContainer");
         const opcao = document.getElementById("opcoes").value;
         if (!opcao) {
             alert("Selecione uma opção primeiro!");
-            console.warn("⚠️ Nenhuma opção selecionada para edição de título");
+            console.warn("⚠️ Nenhuma opção selecionada para editar título");
             return;
         }
         const [categoria, chave] = opcao.split(":");
@@ -346,7 +410,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const saudacaoElements = document.querySelectorAll("#saudacao");
         const saudacaoSpan = document.getElementById("saudacaoSpan");
         const despedidaSpan = document.getElementById("despedidaSpan");
-        const saudacaoDespedidaText = document.getElementById("saudacaoDespedidaText");
         const hora = new Date().getHours();
         const saudacaoText = hora >= 5 && hora < 12 ? "bom dia" :
                              hora >= 12 && hora < 18 ? "boa tarde" : 
@@ -363,9 +426,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (despedidaSpan) {
             despedidaSpan.textContent = despedidaText;
         }
-        if (saudacaoDespedidaText) {
-            saudacaoDespedidaText.textContent = saudacaoText;
-        }
     };
 
     window.loadCustomization = function() {
@@ -374,7 +434,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const iconColor = document.getElementById("iconColor");
         const borderColor = document.getElementById("borderColor");
 
-        const savedTheme = localStorage.getItem("darkMode") === "true" ? "dark" : "light";
+        const savedTheme = localStorage.getItem("theme") || "light";
         const savedNeon = localStorage.getItem("neonBorders") === "true";
         const savedIconColor = localStorage.getItem("iconColor") || "#002640";
         const savedBorderColor = localStorage.getItem("borderColor") || "#002640";
@@ -394,126 +454,25 @@ document.addEventListener("DOMContentLoaded", function () {
             document.body.classList.add("no-neon");
         }
 
-        const style = document.createElement("style");
-        style.id = "custom-styles";
-        const isLight = getLuminance(iconColor) > 0.5;
-        const outlineColor = isLight ? "#000000" : "#FFFFFF";
-        const sidebarBorderColor = lightenColor(borderColor, 20);
+        // Atualizar cores de ícones
+        document.querySelectorAll(".sidebar-button .icon").forEach(icon => {
+            icon.style.color = iconColor;
+        });
 
-        style.textContent = `
-            .sidebar-button, .toggle-sidebar, .bottom-toggle, .dark-mode-toggle {
-                color: ${iconColor} !important;
-            }
-            .dark-mode .sidebar-button, .dark-mode .toggle-sidebar, .dark-mode .bottom-toggle, .dark-mode .dark-mode-toggle {
-                color: ${iconColor} !important;
-            }
-            .sidebar-button:hover, .bottom-toggle:hover, .dark-mode-toggle:hover {
-                color: ${lightenColor(iconColor, 20)} !important;
-            }
-            .dark-mode .sidebar-button:hover, .dark-mode .bottom-toggle:hover, .dark-mode .dark-mode-toggle:hover {
-                color: ${lightenColor(iconColor, 20)} !important;
-            }
-            .sidebar-button.active {
-                background: ${iconColor} !important;
-                color: ${outlineColor} !important;
-            }
-            .dark-mode .sidebar-button.active {
-                background: ${iconColor} !important;
-                color: ${outlineColor} !important;
-            }
-            .sidebar {
-                border-right: 1px solid ${sidebarBorderColor} !important;
-            }
-            .dark-mode .sidebar {
-                border-right: 1px solid ${sidebarBorderColor} !important;
-            }
-            .card, .upload-card, .popup, .customization-popup, .output {
-                border: 1px solid ${borderColor} !important;
-            }
-            .dark-mode .card, .dark-mode .upload-card, .dark-mode .popup, .dark-mode .customization-popup, .dark-mode .output {
-                border: 1px solid ${borderColor} !important;
-            }
-            input, select, textarea {
-                border: 1px solid ${borderColor} !important;
-            }
-            .dark-mode input, .dark-mode select, .dark-mode textarea {
-                border: 1px solid ${borderColor} !important;
-            }
-            .button, .copy-btn, .file-label {
-                background: ${borderColor} !important;
-                box-shadow: ${neon ? `0 0 10px ${hexToRgba(borderColor, 0.5)}` : "none"} !important;
-            }
-            .dark-mode .button, .dark-mode .copy-btn, .dark-mode .file-label {
-                background: ${borderColor} !important;
-                box-shadow: ${neon ? `0 0 10px ${hexToRgba(borderColor, 0.5)}` : "none"} !important;
-            }
-            .button:hover, .copy-btn:hover, .file-label:hover {
-                background: ${lightenColor(borderColor, 20)} !important;
-                box-shadow: ${neon ? `0 0 15px ${hexToRgba(borderColor, 0.7)}` : "none"} !important;
-            }
-            .dark-mode .button:hover, .dark-mode .copy-btn:hover, .dark-mode .file-label:hover {
-                background: ${lightenColor(borderColor, 20)} !important;
-                box-shadow: ${neon ? `0 0 15px ${hexToRgba(borderColor, 0.7)}` : "none"} !important;
-            }
-            .card, .upload-card {
-                box-shadow: ${neon ? `0 0 15px ${hexToRgba(borderColor, 0.3)}` : "none"} !important;
-            }
-            .dark-mode .card, .dark-mode .upload-card {
-                box-shadow: ${neon ? `0 0 15px ${hexToRgba(borderColor, 0.3)}` : "none"} !important;
-            }
-            input:focus, select:focus, textarea:focus {
-                box-shadow: ${neon ? `0 0 10px ${hexToRgba(borderColor, 0.5)}` : "none"} !important;
-            }
-            .dark-mode input:focus, .dark-mode select:focus, .dark-mode textarea:focus {
-                box-shadow: ${neon ? `0 0 10px ${hexToRgba(borderColor, 0.5)}` : "none"} !important;
-            }
-            .customization-popup, .popup, #atendentePopup {
-                box-shadow: ${neon ? `0 0 15px ${hexToRgba(borderColor, 0.5)}` : "none"} !important;
-            }
-            .dark-mode .customization-popup, .dark-mode .popup, .dark-mode #atendentePopup {
-                box-shadow: ${neon ? `0 0 15px ${hexToRgba(borderColor, 0.5)}` : "none"} !important;
-            }
-            h1, h2, h3 {
-                color: ${iconColor} !important;
-            }
-            .dark-mode h1, .dark-mode h2, .dark-mode h3 {
-                color: ${iconColor} !important;
-            }
-        `;
-        const existingStyle = document.getElementById("custom-styles");
-        if (existingStyle) existingStyle.remove();
-        document.head.appendChild(style);
+        // Atualizar cores de bordas
+        document.querySelectorAll(".card, .upload-card, input, select, textarea, .popup").forEach(el => {
+            el.style.borderColor = borderColor;
+        });
+
+        // Atualizar ícone do darkModeToggle
+        if (darkModeToggle) {
+            darkModeToggle.textContent = theme === "dark" ? "☀️" : "🌙";
+        }
     };
-
-    function lightenColor(hex, percent) {
-        hex = hex.replace("#", "");
-        const r = parseInt(hex.substring(0, 2), 16);
-        const g = parseInt(hex.substring(2, 4), 16);
-        const b = parseInt(hex.substring(4, 6), 16);
-        const increase = percent / 100;
-        return `#${Math.min(255, Math.round(r + (255 - r) * increase)).toString(16).padStart(2, "0")}${Math.min(255, Math.round(g + (255 - g) * increase)).toString(16).padStart(2, "0")}${Math.min(255, Math.round(b + (255 - b) * increase)).toString(16).padStart(2, "0")}`;
-    }
-
-    function hexToRgba(hex, alpha) {
-        hex = hex.replace("#", "");
-        const r = parseInt(hex.substring(0, 2), 16);
-        const g = parseInt(hex.substring(2, 4), 16);
-        const b = parseInt(hex.substring(4, 6), 16);
-        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-    }
-
-    function getLuminance(hex) {
-        hex = hex.replace("#", "");
-        const r = parseInt(hex.substring(0, 2), 16) / 255;
-        const g = parseInt(hex.substring(2, 4), 16) / 255;
-        const b = parseInt(hex.substring(4, 6), 16) / 255;
-        const a = [r, g, b].map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
-        return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
-    }
 
     window.openCustomizationPopup = function() {
         originalCustomization = {
-            theme: localStorage.getItem("darkMode") === "true" ? "dark" : "light",
+            theme: localStorage.getItem("theme") || "light",
             neonBorders: localStorage.getItem("neonBorders") === "true",
             iconColor: localStorage.getItem("iconColor") || "#002640",
             borderColor: localStorage.getItem("borderColor") || "#002640"
@@ -530,11 +489,13 @@ document.addEventListener("DOMContentLoaded", function () {
         iconColor.value = originalCustomization.iconColor;
         borderColor.value = originalCustomization.borderColor;
 
+        // Remover eventos antigos
         themeToggle.removeEventListener("change", applyInRealTime);
         neonBorders.removeEventListener("change", applyInRealTime);
         iconColor.removeEventListener("input", applyInRealTime);
         borderColor.removeEventListener("input", applyInRealTime);
 
+        // Adicionar eventos para aplicação em tempo real
         themeToggle.addEventListener("change", applyInRealTime);
         neonBorders.addEventListener("change", applyInRealTime);
         iconColor.addEventListener("input", applyInRealTime);
@@ -556,7 +517,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const iconColor = document.getElementById("iconColor");
         const borderColor = document.getElementById("borderColor");
 
-        localStorage.setItem("darkMode", themeToggle.checked);
+        localStorage.setItem("theme", themeToggle.checked ? "dark" : "light");
         localStorage.setItem("neonBorders", neonBorders.checked);
         localStorage.setItem("iconColor", iconColor.value);
         localStorage.setItem("borderColor", borderColor.value);
@@ -611,6 +572,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     };
 
+    // Adicionar evento ao darkModeToggle para abrir o popup de personalização
     if (darkModeToggle) {
         darkModeToggle.addEventListener("click", () => {
             window.openCustomizationPopup();

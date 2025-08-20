@@ -1,4 +1,10 @@
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+import { getDatabase, ref, set, onValue } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
+
 document.addEventListener("DOMContentLoaded", function () {
+    console.log("✅ script.js loaded");
+
     const firebaseConfig = {
         apiKey: "AIzaSyB5wO0x-7NFmh6waMKzWzRew4ezfYOmYBI",
         authDomain: "site-ati-75d83.firebaseapp.com",
@@ -16,19 +22,12 @@ document.addEventListener("DOMContentLoaded", function () {
     let atendenteAtual = localStorage.getItem("atendenteAtual") || "";
     const atendenteSelect = document.getElementById("atendente");
     const atendenteToggle = document.getElementById("atendenteToggle");
-    const darkModeToggle = document.getElementById("darkModeToggle");
-    let originalCustomization = {};
 
     try {
-        const app = firebase.initializeApp(firebaseConfig);
-        auth = firebase.auth(app);
-        db = firebase.database(app);
-        if (!firebase.database) {
-            console.error("❌ Módulo do Firebase Realtime Database não carregado");
-            alert("Erro: Módulo do banco de dados Firebase não carregado.");
-            return;
-        }
-        auth.signInAnonymously().then(() => {
+        const app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getDatabase(app);
+        signInAnonymously(auth).then(() => {
             console.log("✅ Usuário autenticado anonimamente:", auth.currentUser.uid);
             if (atendenteSelect && atendenteAtual) {
                 atendenteSelect.value = atendenteAtual;
@@ -38,12 +37,11 @@ document.addEventListener("DOMContentLoaded", function () {
             loadCustomization();
         }).catch(error => {
             console.error("❌ Erro ao autenticar anonimamente:", error);
-            alert("Erro de autenticação: " + error.message);
+            window.showPopup("Erro de autenticação: " + error.message);
         });
-        console.log("✅ Firebase inicializado com sucesso");
     } catch (error) {
         console.error("❌ Erro ao inicializar Firebase:", error);
-        alert("Erro ao conectar com o banco de dados: " + error.message);
+        window.showPopup("Erro ao conectar com o banco de dados: " + error.message);
         return;
     }
 
@@ -67,34 +65,32 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("titulo").value = "";
             window.ajustarAlturaTextarea();
         }
+        window.closeAtendentePopup();
     };
 
     window.validarChave = function(chave) {
         if (!chave || !chave.trim()) {
-            console.error("❌ Chave inválida: vazia ou nula");
             return { valido: false, mensagem: "A chave não pode estar em branco." };
         }
         const caracteresProibidos = new RegExp("[\\$#\\[\\]\\/\\.]", "g");
         if (caracteresProibidos.test(chave)) {
-            console.warn(`⚠️ Chave contém caracteres proibidos: ${chave}`);
             return { valido: false, mensagem: "A chave não pode conter $ # [ ] . ou /." };
         }
         const chaveSanitizada = chave.trim().toLowerCase().replace(/[\$#\[\]\.\/]/g, "_");
-        console.log(`✅ Chave válida: ${chave} -> ${chaveSanitizada}`);
         return { valido: true, chaveSanitizada };
     };
 
     window.salvarNoFirebase = function() {
         if (!atendenteAtual || !auth.currentUser) {
-            alert("Selecione um atendente e autentique-se primeiro!");
+            window.showPopup("Selecione um atendente e autentique-se primeiro!");
             return;
         }
-        const dbRef = db.ref(`respostas/${atendenteAtual}`);
-        dbRef.set(respostas)
+        const dbRef = ref(db, `respostas/${atendenteAtual}`);
+        set(dbRef, respostas)
             .then(() => console.log(`🔥 Dados salvos no Firebase para ${atendenteAtual}`))
             .catch(error => {
                 console.error("❌ Erro ao salvar no Firebase:", error);
-                alert("Erro ao salvar: " + error.message);
+                window.showPopup("Erro ao salvar: " + error.message);
             });
     };
 
@@ -103,8 +99,8 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("⚠️ Selecione um atendente e autentique-se primeiro");
             return;
         }
-        const dbRef = db.ref(`respostas/${atendenteAtual}`);
-        dbRef.on('value', function(snapshot) {
+        const dbRef = ref(db, `respostas/${atendenteAtual}`);
+        onValue(dbRef, (snapshot) => {
             try {
                 const data = snapshot.val();
                 respostas = data || { suporte: {}, financeiro: {}, geral: {} };
@@ -112,21 +108,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 window.atualizarSeletorOpcoes();
             } catch (error) {
                 console.error("❌ Erro ao carregar dados do Firebase:", error);
-                alert("Erro ao carregar dados: " + error.message);
+                window.showPopup("Erro ao carregar dados: " + error.message);
             }
-        }, function(error) {
+        }, (error) => {
             console.error("❌ Erro na conexão com Firebase:", error);
-            alert("Erro de conexão com o Firebase: " + error.message);
+            window.showPopup("Erro de conexão com o Firebase: " + error.message);
         });
     };
 
     window.atualizarSeletorOpcoes = function() {
         const seletor = document.getElementById("opcoes");
-        if (!seletor) {
-            console.error("❌ Elemento 'opcoes' não encontrado");
-            alert("Erro: elemento de opções não encontrado.");
-            return;
-        }
+        if (!seletor) return;
         seletor.innerHTML = atendenteAtual ? '<option value="">Selecione uma opção</option>' : '<option value="">Selecione um atendente primeiro</option>';
         if (!atendenteAtual) return;
         Object.keys(respostas).sort().forEach(categoria => {
@@ -167,39 +159,35 @@ document.addEventListener("DOMContentLoaded", function () {
 
     window.salvarEdicao = function() {
         if (!atendenteAtual || !auth.currentUser) {
-            alert("Selecione um atendente e autentique-se primeiro!");
+            window.showPopup("Selecione um atendente e autentique-se primeiro!");
             return;
         }
         const opcao = document.getElementById("opcoes").value;
         if (!opcao) {
-            alert("Selecione uma opção primeiro!");
+            window.showPopup("Selecione uma opção primeiro!");
             return;
         }
         const [categoria, chave] = opcao.split(":");
         const texto = document.getElementById("resposta").value.trim();
         respostas[categoria][chave] = texto;
         window.salvarNoFirebase();
-        alert("Resposta salva com sucesso!");
+        window.showPopup("Resposta salva com sucesso!");
     };
 
     window.copiarTexto = function() {
         const texto = document.getElementById("resposta");
-        if (!texto) {
-            console.error("❌ Elemento 'resposta' não encontrado");
-            alert("Erro: campo de texto não encontrado.");
-            return;
-        }
+        if (!texto) return;
         navigator.clipboard.writeText(texto.value).then(() => {
-            showPopup('Texto copiado!');
+            window.showPopup('Texto copiado!');
         }).catch(error => {
             console.error("❌ Erro ao copiar texto:", error);
-            alert("Erro ao copiar a mensagem.");
+            window.showPopup("Erro ao copiar a mensagem.");
         });
     };
 
     window.apagarTexto = function() {
         if (!atendenteAtual || !auth.currentUser) {
-            alert("Selecione um atendente e autentique-se primeiro!");
+            window.showPopup("Selecione um atendente e autentique-se primeiro!");
             return;
         }
         const opcao = document.getElementById("opcoes").value;
@@ -213,178 +201,97 @@ document.addEventListener("DOMContentLoaded", function () {
         window.atualizarSeletorOpcoes();
         document.getElementById("resposta").value = "";
         document.getElementById("titulo").value = "";
-        alert("Resposta apagada com sucesso!");
+        window.showPopup("Resposta apagada com sucesso!");
     };
 
     window.mostrarPopupAdicionar = function() {
         if (!atendenteAtual || !auth.currentUser) {
-            alert("Selecione um atendente e autentique-se primeiro!");
+            window.showPopup("Selecione um atendente e autentique-se primeiro!");
             return;
         }
         const novoTitulo = prompt("Digite o título da nova resposta:");
-        if (!novoTitulo) {
-            console.log("⚠️ Adição cancelada: título vazio");
-            return;
-        }
+        if (!novoTitulo) return;
         const validacao = window.validarChave(novoTitulo);
         if (!validacao.valido) {
-            alert(validacao.mensagem);
-            console.error("❌ Validação do título falhou:", validacao.mensagem);
+            window.showPopup(validacao.mensagem);
             return;
         }
         const chave = validacao.chaveSanitizada;
         const categoriaPrompt = prompt("Digite a categoria (ex.: suporte, financeiro, geral):", "geral");
-        if (!categoriaPrompt) {
-            console.log("⚠️ Adição cancelada: categoria vazia");
-            return;
-        }
+        if (!categoriaPrompt) return;
         const validacaoCategoria = window.validarChave(categoriaPrompt);
         if (!validacaoCategoria.valido) {
-            alert(validacaoCategoria.mensagem);
-            console.error("❌ Validação da categoria falhou:", validacaoCategoria.mensagem);
+            window.showPopup(validacaoCategoria.mensagem);
             return;
         }
         const categoria = validacaoCategoria.chaveSanitizada;
         if (!respostas[categoria]) {
             respostas[categoria] = {};
         }
-        if (respostas[categoria][chave]) {
-            alert("Esse título já existe nesta categoria!");
-            console.warn(`⚠️ Título duplicado: ${chave} em ${categoria}`);
-            return;
-        }
-        respostas[categoria][chave] = "Beleza! 🎉 Nova resposta adicionada! 🎉 Precisando de algo mais, estamos à disposição. [despedida]";
-        console.log(`📝 Adicionando: ${categoria}:${chave}`);
-        window.salvarNoFirebase();
-        window.atualizarSeletorOpcoes();
+        respostas[categoria][chave] = "";
         document.getElementById("opcoes").value = `${categoria}:${chave}`;
-        window.responder();
-        alert("Nova resposta adicionada com sucesso!");
-    };
-
-    window.alterarCategoria = function() {
-        if (!atendenteAtual || !auth.currentUser) {
-            alert("Selecione um atendente e autentique-se primeiro!");
-            return;
-        }
-        const opcao = document.getElementById("opcoes").value;
-        if (!opcao) {
-            alert("Selecione uma resposta primeiro!");
-            console.warn("⚠️ Nenhuma opção selecionada para alterar categoria");
-            return;
-        }
-        const [oldCategoria, chave] = opcao.split(":");
-        const novaCategoria = prompt("Digite a nova categoria (ex.: suporte, financeiro, geral):", oldCategoria);
-        if (!novaCategoria) {
-            console.log("⚠️ Alteração cancelada: categoria vazia");
-            return;
-        }
-        const validacao = window.validarChave(novaCategoria);
-        if (!validacao.valido) {
-            alert(validacao.mensagem);
-            console.error("❌ Validação da nova categoria falhou:", validacao.mensagem);
-            return;
-        }
-        const novaCategoriaKey = validacao.chaveSanitizada;
-        if (novaCategoriaKey === oldCategoria) {
-            console.log("⚠️ Mesma categoria selecionada, nenhuma alteração feita");
-            return;
-        }
-        if (!respostas[oldCategoria] || !respostas[oldCategoria][chave]) {
-            alert("Erro: resposta não encontrada na categoria atual!");
-            console.error(`❌ Resposta não encontrada: ${oldCategoria}:${chave}`);
-            return;
-        }
-        if (respostas[novaCategoriaKey]?.[chave]) {
-            alert("Este título já existe na categoria selecionada!");
-            console.warn(`⚠️ Título duplicado: ${chave} em ${novaCategoriaKey}`);
-            return;
-        }
-        if (!respostas[novaCategoriaKey]) {
-            respostas[novaCategoriaKey] = {};
-        }
-        respostas[novaCategoriaKey][chave] = respostas[oldCategoria][chave];
-        delete respostas[oldCategoria][chave];
-        if (Object.keys(respostas[oldCategoria]).length === 0) {
-            delete respostas[oldCategoria];
-        }
-        console.log(`🔄 Movendo ${chave} de ${oldCategoria} para ${novaCategoriaKey}`);
-        window.salvarNoFirebase();
+        document.getElementById("resposta").value = "";
+        document.getElementById("titulo").value = chave.replace(/_/g, " ");
         window.atualizarSeletorOpcoes();
-        document.getElementById("opcoes").value = `${novaCategoriaKey}:${chave}`;
-        window.responder();
-        alert("Categoria alterada com sucesso!");
+        window.ajustarAlturaTextarea();
     };
 
-    window.toggleEditarTitulo = function() {
-        if (!atendenteAtual || !auth.currentUser) {
-            alert("Selecione um atendente e autentique-se primeiro!");
-            return;
-        }
+    window.editarTitulo = function() {
         const titleContainer = document.getElementById("titleContainer");
         const opcao = document.getElementById("opcoes").value;
         if (!opcao) {
-            alert("Selecione uma opção primeiro!");
-            console.warn("⚠️ Nenhuma opção selecionada para editar título");
+            window.showPopup("Selecione uma opção primeiro!");
             return;
         }
         const [categoria, chave] = opcao.split(":");
         if (!respostas[categoria]?.[chave]) {
-            alert("Erro: resposta não encontrada!");
-            console.error(`❌ Resposta não encontrada: ${categoria}:${chave}`);
+            window.showPopup("Erro: resposta não encontrada!");
             return;
         }
         titleContainer.style.display = titleContainer.style.display === "flex" ? "none" : "flex";
         if (titleContainer.style.display === "flex") {
             document.getElementById("titulo").value = chave.replace(/_/g, " ");
-            console.log(`📝 Abrindo edição de título para ${categoria}:${chave}`);
         }
     };
 
     window.salvarNovoTitulo = function() {
         if (!atendenteAtual || !auth.currentUser) {
-            alert("Selecione um atendente e autentique-se primeiro!");
+            window.showPopup("Selecione um atendente e autentique-se primeiro!");
             return;
         }
         const opcaoAntiga = document.getElementById("opcoes").value;
         if (!opcaoAntiga) {
-            alert("Selecione uma opção primeiro!");
-            console.warn("⚠️ Nenhuma opção selecionada para salvar título");
+            window.showPopup("Selecione uma opção primeiro!");
             return;
         }
         const novoTitulo = document.getElementById("titulo").value.trim();
         const validacao = window.validarChave(novoTitulo);
         if (!validacao.valido) {
-            alert(validacao.mensagem);
-            console.error("❌ Validação do novo título falhou:", validacao.mensagem);
+            window.showPopup(validacao.mensagem);
             return;
         }
         const novoChave = validacao.chaveSanitizada;
         const [categoria, oldChave] = opcaoAntiga.split(":");
         if (!respostas[categoria]?.[oldChave]) {
-            alert("Erro: resposta não encontrada!");
-            console.error(`❌ Resposta não encontrada: ${categoria}:${oldChave}`);
+            window.showPopup("Erro: resposta não encontrada!");
             return;
         }
         if (novoChave === oldChave) {
-            console.log("⚠️ Mesmo título, nenhuma alteração feita");
             document.getElementById("titleContainer").style.display = "none";
             return;
         }
         if (respostas[categoria][novoChave]) {
-            alert("Este título já existe nesta categoria!");
-            console.warn(`⚠️ Título duplicado: ${novoChave} em ${categoria}`);
+            window.showPopup("Este título já existe nesta categoria!");
             return;
         }
         respostas[categoria][novoChave] = respostas[categoria][oldChave];
         delete respostas[categoria][oldChave];
-        console.log(`🔄 Renomeando ${categoria}:${oldChave} para ${categoria}:${novoChave}`);
         window.salvarNoFirebase();
         window.atualizarSeletorOpcoes();
         document.getElementById("opcoes").value = `${categoria}:${novoChave}`;
         window.responder();
         document.getElementById("titleContainer").style.display = "none";
-        alert("Título alterado com sucesso!");
+        window.showPopup("Título alterado com sucesso!");
     };
 
     window.ajustarAlturaTextarea = function() {
@@ -410,6 +317,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const saudacaoElements = document.querySelectorAll("#saudacao");
         const saudacaoSpan = document.getElementById("saudacaoSpan");
         const despedidaSpan = document.getElementById("despedidaSpan");
+        const saudacaoDespedidaText = document.getElementById("saudacaoDespedidaText");
         const hora = new Date().getHours();
         const saudacaoText = hora >= 5 && hora < 12 ? "bom dia" :
                              hora >= 12 && hora < 18 ? "boa tarde" : 
@@ -426,6 +334,9 @@ document.addEventListener("DOMContentLoaded", function () {
         if (despedidaSpan) {
             despedidaSpan.textContent = despedidaText;
         }
+        if (saudacaoDespedidaText) {
+            saudacaoDespedidaText.textContent = saudacaoText;
+        }
     };
 
     window.loadCustomization = function() {
@@ -434,17 +345,17 @@ document.addEventListener("DOMContentLoaded", function () {
         const iconColor = document.getElementById("iconColor");
         const borderColor = document.getElementById("borderColor");
 
-        const savedTheme = localStorage.getItem("theme") || "light";
+        const savedTheme = localStorage.getItem("darkMode") === "true" ? "dark" : "light";
         const savedNeon = localStorage.getItem("neonBorders") === "true";
-        const savedIconColor = localStorage.getItem("iconColor") || "#002640";
-        const savedBorderColor = localStorage.getItem("borderColor") || "#002640";
+        const savedIconColor = localStorage.getItem("iconColor") || "#1B6A6C";
+        const savedBorderColor = localStorage.getItem("borderColor") || "#1B6A6C";
 
         if (themeToggle) themeToggle.checked = savedTheme === "dark";
         if (neonBorders) neonBorders.checked = savedNeon;
         if (iconColor) iconColor.value = savedIconColor;
         if (borderColor) borderColor.value = savedBorderColor;
 
-        applyCustomization(savedTheme, savedNeon, savedIconColor, savedBorderColor);
+        window.applyCustomization(savedTheme, savedNeon, savedIconColor, savedBorderColor);
     };
 
     window.applyCustomization = function(theme, neon, iconColor, borderColor) {
@@ -454,28 +365,129 @@ document.addEventListener("DOMContentLoaded", function () {
             document.body.classList.add("no-neon");
         }
 
-        // Atualizar cores de ícones
-        document.querySelectorAll(".sidebar-button .icon").forEach(icon => {
-            icon.style.color = iconColor;
-        });
+        const style = document.createElement("style");
+        style.id = "custom-styles";
+        const isLight = getLuminance(iconColor) > 0.5;
+        const outlineColor = isLight ? "#000000" : "#FFFFFF";
+        const sidebarBorderColor = lightenColor(borderColor, 20);
 
-        // Atualizar cores de bordas
-        document.querySelectorAll(".card, .upload-card, input, select, textarea, .popup").forEach(el => {
-            el.style.borderColor = borderColor;
-        });
-
-        // Atualizar ícone do darkModeToggle
-        if (darkModeToggle) {
-            darkModeToggle.textContent = theme === "dark" ? "☀️" : "🌙";
-        }
+        style.textContent = `
+            .sidebar-button, .toggle-sidebar, .bottom-toggle, .dark-mode-toggle {
+                color: ${iconColor} !important;
+            }
+            .dark-mode .sidebar-button, .dark-mode .toggle-sidebar, .dark-mode .bottom-toggle, .dark-mode .dark-mode-toggle {
+                color: ${iconColor} !important;
+            }
+            .sidebar-button:hover, .bottom-toggle:hover, .dark-mode-toggle:hover {
+                color: ${lightenColor(iconColor, 20)} !important;
+            }
+            .dark-mode .sidebar-button:hover, .dark-mode .bottom-toggle:hover, .dark-mode .dark-mode-toggle:hover {
+                color: ${lightenColor(iconColor, 20)} !important;
+            }
+            .sidebar-button.active {
+                background: ${iconColor} !important;
+                color: ${outlineColor} !important;
+            }
+            .dark-mode .sidebar-button.active {
+                background: ${iconColor} !important;
+                color: ${outlineColor} !important;
+            }
+            .sidebar {
+                border-right: 1px solid ${sidebarBorderColor} !important;
+            }
+            .dark-mode .sidebar {
+                border-right: 1px solid ${sidebarBorderColor} !important;
+            }
+            .card, .upload-card, .popup, .customization-popup, .output {
+                border: 1px solid ${borderColor} !important;
+            }
+            .dark-mode .card, .dark-mode .upload-card, .dark-mode .popup, .dark-mode .customization-popup, .dark-mode .output {
+                border: 1px solid ${borderColor} !important;
+            }
+            input, select, textarea {
+                border: 1px solid ${borderColor} !important;
+            }
+            .dark-mode input, .dark-mode select, .dark-mode textarea {
+                border: 1px solid ${borderColor} !important;
+            }
+            .button, .copy-btn, .file-label {
+                background: ${borderColor} !important;
+                box-shadow: ${neon ? `0 0 8px ${hexToRgba(borderColor, 0.4)}` : "none"} !important;
+            }
+            .dark-mode .button, .dark-mode .copy-btn, .dark-mode .file-label {
+                background: ${borderColor} !important;
+                box-shadow: ${neon ? `0 0 8px ${hexToRgba(borderColor, 0.4)}` : "none"} !important;
+            }
+            .button:hover, .copy-btn:hover, .file-label:hover {
+                background: ${lightenColor(borderColor, 20)} !important;
+                box-shadow: ${neon ? `0 0 12px ${hexToRgba(borderColor, 0.6)}` : "none"} !important;
+            }
+            .dark-mode .button:hover, .dark-mode .copy-btn:hover, .dark-mode .file-label:hover {
+                background: ${lightenColor(borderColor, 20)} !important;
+                box-shadow: ${neon ? `0 0 12px ${hexToRgba(borderColor, 0.6)}` : "none"} !important;
+            }
+            .card, .upload-card {
+                box-shadow: ${neon ? `0 0 8px ${hexToRgba(borderColor, 0.2)}` : "none"} !important;
+            }
+            .dark-mode .card, .dark-mode .upload-card {
+                box-shadow: ${neon ? `0 0 8px ${hexToRgba(borderColor, 0.2)}` : "none"} !important;
+            }
+            input:focus, select:focus, textarea:focus {
+                box-shadow: ${neon ? `0 0 8px ${hexToRgba(borderColor, 0.4)}` : "none"} !important;
+            }
+            .dark-mode input:focus, .dark-mode select:focus, .dark-mode textarea:focus {
+                box-shadow: ${neon ? `0 0 8px ${hexToRgba(borderColor, 0.4)}` : "none"} !important;
+            }
+            .customization-popup, .popup, #atendentePopup {
+                box-shadow: ${neon ? `0 0 10px ${hexToRgba(borderColor, 0.4)}` : "none"} !important;
+            }
+            .dark-mode .customization-popup, .dark-mode .popup, .dark-mode #atendentePopup {
+                box-shadow: ${neon ? `0 0 10px ${hexToRgba(borderColor, 0.4)}` : "none"} !important;
+            }
+            h1, h2, h3 {
+                color: ${iconColor} !important;
+            }
+            .dark-mode h1, .dark-mode h2, .dark-mode h3 {
+                color: ${iconColor} !important;
+            }
+        `;
+        const existingStyle = document.getElementById("custom-styles");
+        if (existingStyle) existingStyle.remove();
+        document.head.appendChild(style);
     };
+
+    function lightenColor(hex, percent) {
+        hex = hex.replace("#", "");
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
+        const increase = percent / 100;
+        return `#${Math.min(255, Math.round(r + (255 - r) * increase)).toString(16).padStart(2, "0")}${Math.min(255, Math.round(g + (255 - g) * increase)).toString(16).padStart(2, "0")}${Math.min(255, Math.round(b + (255 - b) * increase)).toString(16).padStart(2, "0")}`;
+    }
+
+    function hexToRgba(hex, alpha) {
+        hex = hex.replace("#", "");
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    function getLuminance(hex) {
+        hex = hex.replace("#", "");
+        const r = parseInt(hex.substring(0, 2), 16) / 255;
+        const g = parseInt(hex.substring(2, 4), 16) / 255;
+        const b = parseInt(hex.substring(4, 6), 16) / 255;
+        const a = [r, g, b].map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+        return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
+    }
 
     window.openCustomizationPopup = function() {
         originalCustomization = {
-            theme: localStorage.getItem("theme") || "light",
+            theme: localStorage.getItem("darkMode") === "true" ? "dark" : "light",
             neonBorders: localStorage.getItem("neonBorders") === "true",
-            iconColor: localStorage.getItem("iconColor") || "#002640",
-            borderColor: localStorage.getItem("borderColor") || "#002640"
+            iconColor: localStorage.getItem("iconColor") || "#1B6A6C",
+            borderColor: localStorage.getItem("borderColor") || "#1B6A6C"
         };
         document.getElementById("customizationPopup").style.display = "block";
 
@@ -489,13 +501,11 @@ document.addEventListener("DOMContentLoaded", function () {
         iconColor.value = originalCustomization.iconColor;
         borderColor.value = originalCustomization.borderColor;
 
-        // Remover eventos antigos
         themeToggle.removeEventListener("change", applyInRealTime);
         neonBorders.removeEventListener("change", applyInRealTime);
         iconColor.removeEventListener("input", applyInRealTime);
         borderColor.removeEventListener("input", applyInRealTime);
 
-        // Adicionar eventos para aplicação em tempo real
         themeToggle.addEventListener("change", applyInRealTime);
         neonBorders.addEventListener("change", applyInRealTime);
         iconColor.addEventListener("input", applyInRealTime);
@@ -517,7 +527,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const iconColor = document.getElementById("iconColor");
         const borderColor = document.getElementById("borderColor");
 
-        localStorage.setItem("theme", themeToggle.checked ? "dark" : "light");
+        localStorage.setItem("darkMode", themeToggle.checked);
         localStorage.setItem("neonBorders", neonBorders.checked);
         localStorage.setItem("iconColor", iconColor.value);
         localStorage.setItem("borderColor", borderColor.value);
@@ -553,26 +563,7 @@ document.addEventListener("DOMContentLoaded", function () {
         borderColor.value = originalCustomization.borderColor;
     };
 
-    window.openAtendentePopup = function() {
-        document.getElementById("atendentePopup").style.display = "block";
-    };
-
-    window.closeAtendentePopup = function() {
-        document.getElementById("atendentePopup").style.display = "none";
-    };
-
-    window.showPopup = function(message) {
-        const popup = document.getElementById("popup");
-        if (popup) {
-            popup.innerText = message;
-            popup.classList.add("show");
-            setTimeout(() => {
-                popup.classList.remove("show");
-            }, 1500);
-        }
-    };
-
-    // Adicionar evento ao darkModeToggle para abrir o popup de personalização
+    const darkModeToggle = document.getElementById("darkModeToggle");
     if (darkModeToggle) {
         darkModeToggle.addEventListener("click", () => {
             window.openCustomizationPopup();

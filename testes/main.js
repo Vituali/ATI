@@ -22,7 +22,6 @@ document.addEventListener("DOMContentLoaded", function() {
         document.body.classList.toggle("dark-mode", isDarkMode);
         document.body.classList.toggle("light-mode", !isDarkMode);
         toggleButton.innerHTML = isDarkMode ? '<span class="icon">🌞</span><span class="text">Modo Claro</span>' : '<span class="icon">🌙</span><span class="text">Modo Escuro</span>';
-        localStorage.setItem("darkMode", isDarkMode);
         applyCustomizations();
     };
 
@@ -227,6 +226,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const atendente = document.getElementById("atendente").value;
         localStorage.setItem("atendenteSelecionado", atendente);
         closeAtendentePopup();
+        // Aqui você pode adicionar lógica adicional, como atualizar a interface com o atendente selecionado
     };
 
     // Carregar atendente salvo

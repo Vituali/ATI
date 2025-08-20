@@ -15,6 +15,20 @@ document.addEventListener("DOMContentLoaded", function() {
         toggleButton.textContent = isDarkMode ? "🌙" : "🌞";
     });
 
+    // Verificar o estado da barra lateral no localStorage
+    const sidebar = document.getElementById("sidebar");
+    const isSidebarExpanded = localStorage.getItem("sidebarExpanded") === "true";
+    if (isSidebarExpanded) {
+        sidebar.classList.add("expanded");
+    }
+
+    // Função para alternar a barra lateral
+    const toggleSidebar = document.getElementById("toggleSidebar");
+    toggleSidebar.addEventListener("click", function() {
+        sidebar.classList.toggle("expanded");
+        localStorage.setItem("sidebarExpanded", sidebar.classList.contains("expanded"));
+    });
+
     // Função para mostrar a seção selecionada
     window.showSection = function(section) {
         document.getElementById("chatSection").style.display = section === "chat" ? "block" : "none";

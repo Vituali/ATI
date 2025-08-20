@@ -4,17 +4,18 @@ body {
     margin: 0;
     padding: 0;
     transition: background-color 0.3s, color 0.3s;
+    background: linear-gradient(135deg, #E5E7EB 0%, #D1D5DB 100%); /* Gradiente claro */
 }
 
-/* Tema claro (sol, vibe de escritório) */
+/* Tema claro (vibe de escritório futurista) */
 .light-mode {
-    background-color: #F5F7FA; /* Cinza bem claro */
-    color: #333333; /* Texto cinza escuro */
+    background: linear-gradient(135deg, #E5E7EB 0%, #D1D5DB 100%); /* Cinza claro com gradiente */
+    color: #1A1A1A; /* Texto quase preto */
 }
 
-/* Tema escuro (lua) */
+/* Tema escuro (cyberpunk) */
 .dark-mode {
-    background-color: #1A1A1A; /* Cinza escuro */
+    background: linear-gradient(135deg, #0F1419 0%, #1A1A1A 100%); /* Fundo escuro com gradiente */
     color: #D1D5DB; /* Texto cinza claro */
 }
 
@@ -26,10 +27,10 @@ body {
 
 /* Barra lateral */
 .sidebar {
-    width: 200px;
-    background-color: #FFFFFF; /* Fundo branco no modo claro */
-    border-right: 1px solid #D1D5DB; /* Borda cinza claro */
-    padding: 20px;
+    width: 60px; /* Largura recolhida */
+    background: linear-gradient(180deg, #2D2D2D 0%, #1A1A1A 100%); /* Gradiente metálico */
+    border-right: 1px solid #00D4FF; /* Borda ciano neon */
+    padding: 20px 10px;
     position: fixed;
     top: 0;
     left: 0;
@@ -37,110 +38,174 @@ body {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    transition: background-color 0.3s, border-color 0.3s;
+    transition: width 0.3s ease;
+    overflow: hidden;
+}
+
+.sidebar.expanded {
+    width: 200px; /* Largura expandida */
 }
 
 .dark-mode .sidebar {
-    background-color: #2D2D2D; /* Fundo cinza escuro no modo escuro */
-    border-right: 1px solid #4B5563; /* Borda cinza médio */
+    background: linear-gradient(180deg, #1A1A1A 0%, #0F1419 100%); /* Gradiente escuro */
+    border-right: 1px solid #A100F2; /* Borda roxa neon no modo escuro */
+}
+
+/* Botão de toggle da barra lateral */
+.toggle-sidebar {
+    background: transparent;
+    color: #00D4FF; /* Ciano neon */
+    border: none;
+    padding: 10px;
+    font-size: 24px;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.dark-mode .toggle-sidebar {
+    color: #A100F2; /* Roxo neon no modo escuro */
+}
+
+.toggle-sidebar:hover {
+    color: #66E6FF; /* Ciano mais claro no hover */
+}
+
+.dark-mode .toggle-sidebar:hover {
+    color: #C466F2; /* Roxo mais claro no hover */
 }
 
 /* Botões da barra lateral */
 .sidebar-button {
-    background-color: #4A90E2; /* Azul suave no modo claro */
-    color: white;
+    background: transparent;
+    color: #00D4FF; /* Ciano neon */
     border: none;
     padding: 10px;
     border-radius: 5px;
     cursor: pointer;
+    font-family: 'Orbitron', sans-serif;
     font-size: 16px;
-    transition: background-color 0.3s, transform 0.2s;
-    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background-color 0.3s, color 0.3s, transform 0.2s;
 }
 
 .dark-mode .sidebar-button {
-    background-color: #2563EB; /* Azul escuro no modo escuro */
+    color: #A100F2; /* Roxo neon no modo escuro */
+}
+
+.sidebar-button .icon {
+    font-size: 20px;
+    display: inline-block;
+}
+
+.sidebar-button .text {
+    display: none;
+}
+
+.sidebar.expanded .sidebar-button .text {
+    display: inline-block;
 }
 
 .sidebar-button:hover {
-    background-color: #357ABD; /* Azul mais escuro no hover (modo claro) */
+    background: rgba(0, 212, 255, 0.2); /* Fundo ciano translúcido no hover */
+    color: #66E6FF; /* Ciano mais claro */
 }
 
 .dark-mode .sidebar-button:hover {
-    background-color: #1E40AF; /* Azul mais escuro no hover (modo escuro) */
+    background: rgba(161, 0, 242, 0.2); /* Fundo roxo translúcido no hover */
+    color: #C466F2; /* Roxo mais claro */
 }
 
 .sidebar-button.active {
-    background-color: #2563EB; /* Azul escuro para botão ativo (modo claro) */
-    font-weight: bold;
+    background: #00D4FF; /* Ciano neon para botão ativo */
+    color: #1A1A1A; /* Texto escuro para contraste */
+    box-shadow: 0 0 10px #00D4FF; /* Sombra neon */
 }
 
 .dark-mode .sidebar-button.active {
-    background-color: #1E40AF; /* Azul mais escuro para botão ativo (modo escuro) */
+    background: #A100F2; /* Roxo neon para botão ativo */
+    box-shadow: 0 0 10px #A100F2; /* Sombra neon roxa */
 }
 
 /* Conteúdo principal */
 .content {
-    margin-left: 220px; /* Espaço para a barra lateral */
+    margin-left: 80px; /* Espaço para barra recolhida */
     padding: 20px;
     flex: 1;
+    transition: margin-left 0.3s ease;
+}
+
+.sidebar.expanded ~ .content {
+    margin-left: 220px; /* Espaço para barra expandida */
 }
 
 /* Estilo do card */
 .card, .upload-card {
-    background-color: white;
+    background: linear-gradient(135deg, #FFFFFF 0%, #F5F7FA 100%); /* Gradiente branco no modo claro */
+    border: 1px solid #00D4FF; /* Borda ciano neon */
     border-radius: 10px;
     padding: 20px;
     margin: 20px 0;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.3); /* Sombra neon sutil */
 }
 
 .dark-mode .card, .dark-mode .upload-card {
-    background-color: #2D2D2D; /* Cinza escuro no modo escuro */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    background: linear-gradient(135deg, #2D2D2D 0%, #1A1A1A 100%); /* Gradiente escuro */
+    border: 1px solid #A100F2; /* Borda roxa neon */
+    box-shadow: 0 0 15px rgba(161, 0, 242, 0.3); /* Sombra neon roxa */
 }
 
 /* Estilo dos botões */
 .button, .copy-btn {
-    background-color: #4A90E2; /* Azul suave no modo claro */
-    color: white;
+    background: #00D4FF; /* Ciano neon no modo claro */
+    color: #1A1A1A; /* Texto escuro */
     border: none;
     padding: 10px 20px;
     border-radius: 5px;
     cursor: pointer;
+    font-family: 'Orbitron', sans-serif;
     font-size: 16px;
     margin: 5px;
-    transition: background-color 0.3s, transform 0.2s;
+    transition: background-color 0.3s, box-shadow 0.3s, transform 0.2s;
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.5); /* Sombra neon */
 }
 
 .dark-mode .button, .dark-mode .copy-btn {
-    background-color: #2563EB; /* Azul escuro no modo escuro */
+    background: #A100F2; /* Roxo neon no modo escuro */
+    box-shadow: 0 0 10px rgba(161, 0, 242, 0.5); /* Sombra neon roxa */
 }
 
 .button:hover, .copy-btn:hover {
-    background-color: #357ABD; /* Azul mais escuro no hover (modo claro) */
+    background: #66E6FF; /* Ciano mais claro no hover */
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.7);
     transform: scale(1.05);
 }
 
 .dark-mode .button:hover, .dark-mode .copy-btn:hover {
-    background-color: #1E40AF; /* Azul mais escuro no hover (modo escuro) */
+    background: #C466F2; /* Roxo mais claro no hover */
+    box-shadow: 0 0 15px rgba(161, 0, 242, 0.7);
 }
 
 /* Estilo do botão voltar */
 .back {
-    background-color: #6B7280; /* Cinza no modo claro */
+    background: #6B7280; /* Cinza metálico no modo claro */
+    box-shadow: 0 0 10px rgba(107, 114, 128, 0.5);
 }
 
 .dark-mode .back {
-    background-color: #4B5563; /* Cinza mais escuro no modo escuro */
+    background: #4B5563; /* Cinza metálico escuro */
+    box-shadow: 0 0 10px rgba(75, 85, 99, 0.5);
 }
 
 .back:hover {
-    background-color: #4B5563; /* Cinza mais escuro no hover (modo claro) */
+    background: #4B5563; /* Cinza mais escuro no hover */
+    box-shadow: 0 0 15px rgba(107, 114, 128, 0.7);
 }
 
 .dark-mode .back:hover {
-    background-color: #374151; /* Cinza ainda mais escuro no hover (modo escuro) */
+    background: #374151; /* Cinza ainda mais escuro */
+    box-shadow: 0 0 15px rgba(75, 85, 99, 0.7);
 }
 
 /* Estilo dos inputs e selects */
@@ -148,18 +213,28 @@ input, select, textarea {
     width: 100%;
     padding: 10px;
     margin: 10px 0;
-    border: 1px solid #D1D5DB; /* Borda cinza claro no modo claro */
+    border: 1px solid #00D4FF; /* Borda ciano neon */
     border-radius: 5px;
     font-size: 16px;
-    background-color: white;
-    color: #333333;
+    background: #FFFFFF; /* Fundo branco no modo claro */
+    color: #1A1A1A;
     box-sizing: border-box;
+    transition: border-color 0.3s, box-shadow 0.3s;
 }
 
 .dark-mode input, .dark-mode select, .dark-mode textarea {
-    border: 1px solid #4B5563; /* Borda cinza médio no modo escuro */
-    background-color: #2D2D2D; /* Fundo cinza escuro */
+    border: 1px solid #A100F2; /* Borda roxa neon */
+    background: #2D2D2D; /* Fundo escuro */
     color: #D1D5DB; /* Texto cinza claro */
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.5); /* Brilho neon no foco */
+}
+
+.dark-mode input:focus, .dark-mode select:focus, .dark-mode textarea:focus {
+    box-shadow: 0 0 10px rgba(161, 0, 242, 0.5); /* Brilho neon roxo */
 }
 
 /* Estilo do textarea */
@@ -181,28 +256,33 @@ textarea {
 }
 
 .file-label {
-    background-color: #4A90E2; /* Azul suave no modo claro */
-    color: white;
+    background: #00D4FF; /* Ciano neon */
+    color: #1A1A1A;
     padding: 10px 20px;
     border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    font-family: 'Orbitron', sans-serif;
+    transition: background-color 0.3s, box-shadow 0.3s;
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
 }
 
 .dark-mode .file-label {
-    background-color: #2563EB; /* Azul escuro no modo escuro */
+    background: #A100F2; /* Roxo neon */
+    box-shadow: 0 0 10px rgba(161, 0, 242, 0.5);
 }
 
 .file-label:hover {
-    background-color: #357ABD; /* Azul mais escuro no hover (modo claro) */
+    background: #66E6FF; /* Ciano mais claro */
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.7);
 }
 
 .dark-mode .file-label:hover {
-    background-color: #1E40AF; /* Azul mais escuro no hover (modo escuro) */
+    background: #C466F2; /* Roxo mais claro */
+    box-shadow: 0 0 15px rgba(161, 0, 242, 0.7);
 }
 
 .file-name {
-    color: #333333;
+    color: #1A1A1A;
 }
 
 .dark-mode .file-name {
@@ -218,14 +298,16 @@ textarea {
     font-size: 24px;
     padding: 10px;
     border-radius: 50%;
-    background-color: #FFFFFF;
-    border: 1px solid #D1D5DB;
-    transition: background-color 0.3s, border-color 0.3s;
+    background: linear-gradient(135deg, #FFFFFF 0%, #F5F7FA 100%);
+    border: 1px solid #00D4FF;
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+    transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
 }
 
 .dark-mode .dark-mode-toggle {
-    background-color: #2D2D2D;
-    border: 1px solid #4B5563;
+    background: linear-gradient(135deg, #2D2D2D 0%, #1A1A1A 100%);
+    border: 1px solid #A100F2;
+    box-shadow: 0 0 10px rgba(161, 0, 242, 0.5);
 }
 
 /* Estilo do popup */
@@ -235,15 +317,18 @@ textarea {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background-color: white;
+    background: linear-gradient(135deg, #FFFFFF 0%, #F5F7FA 100%);
     padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    border: 1px solid #00D4FF;
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
     z-index: 1000;
 }
 
 .dark-mode .popup {
-    background-color: #2D2D2D;
+    background: linear-gradient(135deg, #2D2D2D 0%, #1A1A1A 100%);
+    border: 1px solid #A100F2;
+    box-shadow: 0 0 15px rgba(161, 0, 242, 0.5);
 }
 
 /* Estilo do grupo */
@@ -255,19 +340,22 @@ textarea {
     display: block;
     margin-bottom: 5px;
     font-weight: bold;
+    font-family: 'Orbitron', sans-serif;
 }
 
 /* Estilo do output */
 .output {
     white-space: pre-wrap;
-    background-color: #F5F5F5;
+    background: linear-gradient(135deg, #F5F7FA 0%, #E5E7EB 100%);
     padding: 10px;
     border-radius: 5px;
+    border: 1px solid #00D4FF;
     margin-top: 20px;
 }
 
 .dark-mode .output {
-    background-color: #2D2D2D;
+    background: linear-gradient(135deg, #2D2D2D 0%, #1A1A1A 100%);
+    border: 1px solid #A100F2;
 }
 
 /* Estilo do contêiner de título */
@@ -297,17 +385,31 @@ textarea {
     font-size: 14px;
 }
 
+/* Estilo dos títulos */
+h1, h2, h3 {
+    font-family: 'Orbitron', sans-serif;
+    color: #00D4FF; /* Ciano neon */
+}
+
+.dark-mode h1, .dark-mode h2, .dark-mode h3 {
+    color: #A100F2; /* Roxo neon */
+}
+
 /* Media query para responsividade */
 @media (max-width: 768px) {
     .sidebar {
-        width: 60px;
-        padding: 10px;
+        width: 50px;
+    }
+    .sidebar.expanded {
+        width: 150px;
+    }
+    .content {
+        margin-left: 70px;
+    }
+    .sidebar.expanded ~ .content {
+        margin-left: 170px;
     }
     .sidebar-button {
         font-size: 14px;
-        padding: 8px;
-    }
-    .content {
-        margin-left: 80px;
     }
 }

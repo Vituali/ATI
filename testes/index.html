@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Automatizador de Chat & Conversor de Aditivo</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Fonte Orbitron para estilo cyberpunk -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <!-- Adicionando scripts do Firebase v8 -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -12,15 +14,16 @@
     <!-- Adicionando pdf.js para o conversor -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
-<body>
+<body class="light-mode">
     <div class="dark-mode-toggle" id="darkModeToggle">🌙</div>
     <div class="popup" id="popup"></div>
 
     <div class="chatbox">
-        <!-- Barra lateral para navegação -->
-        <div class="sidebar">
-            <button class="sidebar-button active" onclick="showSection('chat')">Chat</button>
-            <button class="sidebar-button" onclick="showSection('conversor')">Conversor de Aditivo</button>
+        <!-- Barra lateral com toggle -->
+        <div class="sidebar" id="sidebar">
+            <button class="toggle-sidebar" id="toggleSidebar">☰</button>
+            <button class="sidebar-button active" onclick="showSection('chat')"><span class="icon">🗨️</span><span class="text">Chat</span></button>
+            <button class="sidebar-button" onclick="showSection('conversor')"><span class="icon">📄</span><span class="text">Conversor de Aditivo</span></button>
         </div>
 
         <div class="content">

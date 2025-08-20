@@ -3,17 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATI - Auxiliar de atendimentos</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <title>Automatizador de Chat</title>
+    <link rel="stylesheet" href="css/main.css">
+    <!-- Firebase SDK v10.14.1 -->
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <script type="module" src="script.js" defer></script>
+    <script type="module" src="conversor.js" defer></script>
+    <script type="module" src="main.js" defer></script>
 </head>
-<body class="light-mode">
+<body>
+    <div id="popup" class="popup"></div>
+
     <div id="customizationPopup" class="customization-popup" style="display: none;">
-        <h2>Personalizar Cores</h2>
+        <h3>Personalizar Cores</h3>
         <div class="customization-group">
             <div class="theme-options">
                 <label>Modo Escuro:</label>
@@ -29,11 +34,11 @@
             </div>
         </div>
         <div class="customization-group">
-            <label for="iconColor">Cor dos Ícones:</label>
+            <label>Cor dos Ícones:</label>
             <input type="color" id="iconColor">
         </div>
         <div class="customization-group">
-            <label for="borderColor">Cor das Bordas:</label>
+            <label>Cor das Bordas:</label>
             <input type="color" id="borderColor">
         </div>
         <div class="customization-buttons">
@@ -42,176 +47,172 @@
         </div>
     </div>
 
+    <div id="atendentePopup" class="popup" style="display: none;">
+        <h3>Selecionar Atendente</h3>
+        <select id="atendente">
+            <option value="">Selecione um atendente</option>
+            <option value="victor">Victor</option>
+            <option value="bruno">Bruno</option>
+            <option value="lucas">Lucas</option>
+            <option value="igor">Igor</option>
+            <option value="diego">Diego</option>
+            <option value="jefferson">Jefferson</option>
+            <option value="helio">Helio</option>
+            <option value="marlon">Marlon</option>
+        </select>
+        <button class="button" onclick="selecionarAtendente()">Selecionar</button>
+        <button class="button" onclick="closeAtendentePopup()">Fechar</button>
+    </div>
+
     <div class="chatbox">
         <div id="sidebar" class="sidebar">
             <button id="toggleSidebar" class="toggle-sidebar">☰</button>
             <button class="sidebar-button" onclick="showSection('chat')"><span class="icon">🗨️</span><span class="text">Chat</span></button>
             <button class="sidebar-button" onclick="showSection('conversor')"><span class="icon">📄</span><span class="text">Conversor de Aditivo</span></button>
-            <button id="atendenteToggle" class="sidebar-button" onclick="openAtendentePopup()">👤<span class="text">Selecionar Atendente</span></button>
-            <button id="darkModeToggle" class="dark-mode-toggle">🌙</button>
-        </div>
-
-        <div id="atendentePopup" class="customization-popup" style="display: none;">
-            <h2>Selecionar Atendente</h2>
-            <select id="atendente" onchange="selecionarAtendente()">
-                <option value="">Selecione um atendente</option>
-                <option value="victor">Victor</option>
-                <option value="bruno">Bruno</option>
-                <option value="lucas">Lucas</option>
-                <option value="igor">Igor</option>
-                <option value="diego">Diego</option>
-                <option value="jefferson">Jefferson</option>
-                <option value="helio">Helio</option>
-                <option value="marlon">Marlon</option>
-            </select>
-            <button class="button" onclick="closeAtendentePopup()">Fechar</button>
+            <button id="atendenteToggle" class="bottom-toggle" onclick="openAtendentePopup()"><span class="icon">👤</span><span class="text">Selecionar Atendente</span></button>
+            <button id="darkModeToggle" class="dark-mode-toggle"><span class="icon">🌙</span><span class="text">Modo Escuro</span></button>
         </div>
 
         <div class="content">
-            <div id="chatSection" style="display: none;">
-                <h1 id="saudacao"></h1>
-                <h2>🤖 Automatizador de Chat o manizado no mero un 🤖</h2>
+            <div id="chatSection" style="display: block;">
                 <div class="card">
+                    <h1>🤖 Automatizador de Chat 🤖</h1>
                     <div class="grupo">
-                        <label for="opcoes">Escolha uma opção:</label>
+                        <label>Escolha uma opção:</label>
                         <select id="opcoes" onchange="responder()">
                             <option value="">Selecione uma opção</option>
                         </select>
                     </div>
                     <div id="titleContainer" class="title-container" style="display: none;">
-                        <input type="text" id="titulo" placeholder="Título da resposta">
+                        <input type="text" id="titulo" placeholder="Novo Título">
                         <button class="button" onclick="salvarNovoTitulo()">Salvar Título</button>
                     </div>
                     <div class="grupo">
-                        <label for="resposta">Mensagem:</label>
-                        <textarea id="resposta" rows="4"></textarea>
+                        <label>Mensagem:</label>
+                        <textarea id="resposta" oninput="ajustarAlturaTextarea()"></textarea>
                     </div>
                     <div class="controls">
                         <button class="button copy-btn" onclick="copiarTexto()">📋 Copiar</button>
-                        <button class="button" onclick="toggleEditarTitulo()">Editar Título</button>
+                        <button class="button" onclick="editarTitulo()">Editar Título</button>
                         <button class="button" onclick="salvarEdicao()">Salvar</button>
-                        <button class="button" onclick="alterarCategoria()">Alterar Categoria</button>
                         <button class="button" onclick="apagarTexto()">Apagar</button>
                         <button class="button" onclick="mostrarPopupAdicionar()">Adicionar</button>
                     </div>
-                    <p id="saudacaoDespedidaText">Salvar <span id="saudacaoSpan"></span> e <span id="despedidaSpan"></span> como [SAUDACAO] E [DESPEDIDA] para alterar automaticamente com o horário</p>
+                    <p>Salve e use como [SAUDACAO] E [DESPEDIDA] para alterar automaticamente com o horário</p>
                 </div>
             </div>
 
             <div id="conversorSection" style="display: none;">
-                <h1 id="saudacao"></h1>
-                <h2>Conversor de Aditivo</h2>
-                <div id="uploadSection" class="upload-card">
-                    <div class="upload-content">
-                        <h3>Carregar Aditivo PDF</h3>
+                <div class="upload-card">
+                    <h2>Conversor de Aditivo</h2>
+                    <div id="uploadSection" class="upload-content">
+                        <h4>Carregar Aditivo PDF</h4>
                         <div class="file-upload-wrapper">
+                            <input type="file" id="pdfUpload" class="file-input" accept=".pdf">
                             <label for="pdfUpload" class="file-label">Escolher Arquivo</label>
-                            <input type="file" id="pdfUpload" class="file-input" accept="application/pdf">
-                            <span id="fileName" class="file-name">Nenhum arquivo selecionado</span>
+                            <span class="file-name" id="fileName">Nenhum arquivo selecionado</span>
                         </div>
                         <button class="button" onclick="loadPDF()">Carregar e Extrair Dados</button>
                     </div>
                 </div>
 
-                <div id="dataSection" style="display: none;">
+                <div class="dual-grid" id="dataSection" style="display: none;">
                     <button class="button back" onclick="backToUpload()">Voltar à Página Inicial</button>
-                    <h3>Agendamento para Contrato - <span id="contratoSpan"></span></h3>
+                    <h3>Agendamento para Contrato <span id="contrato"></span> - <span id="saudacaoDespedidaText">[saudacao]</span></h3>
                     <div class="card">
                         <h4>Dados Gerais</h4>
                         <div class="grupo">
-                            <p><strong>Contrato:</strong> <span id="contrato"></span></p>
-                            <p><strong>Nome:</strong> <span id="nome"></span></p>
-                            <p><strong>Endereço Antigo:</strong> <span id="oldAddress"></span></p>
-                            <p><strong>Endereço Novo:</strong> <span id="newAddress"></span></p>
-                            <p><strong>Motivo:</strong> <span id="motivo">MUD ENDEREÇO</span></p>
+                            <p>Contrato: <span id="contratoSpan"></span></p>
+                            <p>Nome: <span id="nome"></span></p>
+                            <p>Endereço Antigo: <span id="oldAddress"></span></p>
+                            <p>Endereço Novo: <span id="newAddress"></span></p>
+                            <p>Motivo: MUD ENDEREÇO</p>
                             <div class="inline-group">
                                 <div>
-                                    <label for="phone">Número de Telefone:</label>
+                                    <label>Número de Telefone:</label>
                                     <input type="text" id="phone">
                                     <span id="phoneError" class="error"></span>
                                 </div>
                                 <div>
-                                    <label for="equipmentType">Tipo de Comodato:</label>
+                                    <label>Tipo de Comodato:</label>
                                     <select id="equipmentType">
-                                        <option value="alcl">ALCL</option>
-                                        <option value="proprio">PROPRIO</option>
-                                        <option value="huawei">HUAWEI</option>
-                                        <option value="tp link">TP LINK</option>
+                                        <option value="ALCL">ALCL</option>
+                                        <option value="PROPRIO">PROPRIO</option>
+                                        <option value="HUAWEI">HUAWEI</option>
+                                        <option value="TP LINK">TP LINK</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="dual-grid">
-                        <div class="card">
-                            <h4>Retirada</h4>
-                            <div class="grupo checkbox-group">
+                    <div class="card">
+                        <h4>Retirada</h4>
+                        <div class="grupo">
+                            <div class="checkbox-group">
                                 <label class="checkbox-label">
                                     <input type="checkbox" id="selfWithdrawal">
                                     <span class="checkbox-custom"></span>
                                     Cliente faz a retirada por conta própria?
                                 </label>
                             </div>
-                            <div id="withdrawalSection" class="grupo">
-                                <label for="withdrawalDate">Data de Retirada (a partir de amanhã):</label>
+                            <div id="withdrawalSection">
+                                <label>Data de Retirada (a partir de amanhã):</label>
                                 <input type="date" id="withdrawalDate">
-                                <label for="withdrawalPeriod">Período de Retirada:</label>
+                                <label>Período de Retirada:</label>
                                 <select id="withdrawalPeriod">
                                     <option value="Manhã">Manhã</option>
                                     <option value="Tarde">Tarde</option>
                                 </select>
                             </div>
                         </div>
-                        <div class="card">
-                            <h4>Instalação</h4>
-                            <div class="grupo">
-                                <label for="installationDate">Data de Instalação (não antes da retirada):</label>
-                                <input type="date" id="installationDate">
-                                <label for="installationPeriod">Período de Instalação:</label>
-                                <select id="installationPeriod">
-                                    <option value="Manhã">Manhã</option>
-                                    <option value="Tarde">Tarde</option>
-                                </select>
-                            </div>
+                        <h4>Instalação</h4>
+                        <div class="grupo">
+                            <label>Data de Instalação (não antes da retirada):</label>
+                            <input type="date" id="installationDate">
+                            <label>Período de Instalação:</label>
+                            <select id="installationPeriod">
+                                <option value="Manhã">Manhã</option>
+                                <option value="Tarde">Tarde</option>
+                            </select>
                         </div>
                     </div>
                     <div class="card">
                         <h4>Detalhes do Contrato</h4>
-                        <div class="grupo checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="renewal">
-                                <span class="checkbox-custom"></span>
-                                É Renovação? (Se sim, isento de taxa)
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="migration">
-                                <span class="checkbox-custom"></span>
-                                É Migração? (Se sim, isento de taxa)
-                            </label>
-                            <p id="renewalMessage" style="display: none; color: #1A3C5A;">Taxa isenta devido à renovação.</p>
-                            <p id="migrationMessage" style="display: none; color: #1A3C5A;">Taxa isenta devido à migração.</p>
+                        <div class="grupo">
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="renewal">
+                                    <span class="checkbox-custom"></span>
+                                    É Renovação? (Se sim, isento de taxa)
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="migration">
+                                    <span class="checkbox-custom"></span>
+                                    É Migração? (Se sim, isento de taxa)
+                                </label>
+                            </div>
+                            <p id="renewalMessage" style="display: none;">Taxa isenta devido à renovação.</p>
+                            <p id="migrationMessage" style="display: none;">Taxa isenta devido à migração.</p>
                         </div>
-                        <div class="inline-group">
-                            <div>
-                                <label for="taxValue">Valor da Taxa:</label>
-                                <select id="taxValue">
-                                    <option value="100">100</option>
-                                    <option value="65">65</option>
-                                    <option value="50">50</option>
-                                    <option value="isento">Isento</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label for="signature">Tipo de Assinatura:</label>
-                                <select id="signature">
-                                    <option value="digital">Assinatura Digital</option>
-                                    <option value="local">Assinatura no Local</option>
-                                </select>
-                            </div>
+                        <div class="grupo">
+                            <label>Valor da Taxa:</label>
+                            <select id="taxValue">
+                                <option value="100">100</option>
+                                <option value="65">65</option>
+                                <option value="50">50</option>
+                                <option value="Isento">Isento</option>
+                            </select>
+                        </div>
+                        <div class="grupo">
+                            <label>Tipo de Assinatura:</label>
+                            <select id="signature">
+                                <option value="Assinatura Digital">Assinatura Digital</option>
+                                <option value="Assinatura no Local">Assinatura no Local</option>
+                            </select>
                         </div>
                     </div>
                     <button class="button" onclick="generateOS()">Gerar O.S</button>
-                    <div id="output" class="output"></div>
+                    <div class="output" id="output"></div>
                     <div id="copyButtons" class="copy-buttons" style="display: none;">
                         <button class="button copy-btn" onclick="copyWithdrawal()">Copiar Retirada</button>
                         <button class="button copy-btn" onclick="copyInstallation()">Copiar Instalação</button>
@@ -221,11 +222,5 @@
             </div>
         </div>
     </div>
-
-    <div id="popup" class="popup"></div>
-
-    <script src="main.js"></script>
-    <script src="script.js"></script>
-    <script src="conversor.js"></script>
 </body>
 </html>

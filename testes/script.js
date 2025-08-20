@@ -248,84 +248,20 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!respostas[categoria]) {
             respostas[categoria] = {};
         }
-        if (respostas[categoria][chave]) {
-            alert("Esse título já existe nesta categoria!");
-            console.warn(`⚠️ Título duplicado: ${chave} em ${categoria}`);
-            return;
-        }
-        respostas[categoria][chave] = "Beleza! 🎉 Nova resposta adicionada! 🎉 Precisando de algo mais, estamos à disposição. [despedida]";
-        console.log(`📝 Adicionando: ${categoria}:${chave}`);
-        window.salvarNoFirebase();
-        window.atualizarSeletorOpcoes();
+        respostas[categoria][chave] = "";
         document.getElementById("opcoes").value = `${categoria}:${chave}`;
-        window.responder();
-        alert("Nova resposta adicionada com sucesso!");
-    };
-
-    window.alterarCategoria = function() {
-        if (!atendenteAtual || !auth.currentUser) {
-            alert("Selecione um atendente e autentique-se primeiro!");
-            return;
-        }
-        const opcao = document.getElementById("opcoes").value;
-        if (!opcao) {
-            alert("Selecione uma resposta primeiro!");
-            console.warn("⚠️ Nenhuma opção selecionada para alterar categoria");
-            return;
-        }
-        const [oldCategoria, chave] = opcao.split(":");
-        const novaCategoria = prompt("Digite a nova categoria (ex.: suporte, financeiro, geral):", oldCategoria);
-        if (!novaCategoria) {
-            console.log("⚠️ Alteração cancelada: categoria vazia");
-            return;
-        }
-        const validacao = window.validarChave(novaCategoria);
-        if (!validacao.valido) {
-            alert(validacao.mensagem);
-            console.error("❌ Validação da nova categoria falhou:", validacao.mensagem);
-            return;
-        }
-        const novaCategoriaKey = validacao.chaveSanitizada;
-        if (novaCategoriaKey === oldCategoria) {
-            console.log("⚠️ Mesma categoria selecionada, nenhuma alteração feita");
-            return;
-        }
-        if (!respostas[oldCategoria] || !respostas[oldCategoria][chave]) {
-            alert("Erro: resposta não encontrada na categoria atual!");
-            console.error(`❌ Resposta não encontrada: ${oldCategoria}:${chave}`);
-            return;
-        }
-        if (respostas[novaCategoriaKey]?.[chave]) {
-            alert("Este título já existe na categoria selecionada!");
-            console.warn(`⚠️ Título duplicado: ${chave} em ${novaCategoriaKey}`);
-            return;
-        }
-        if (!respostas[novaCategoriaKey]) {
-            respostas[novaCategoriaKey] = {};
-        }
-        respostas[novaCategoriaKey][chave] = respostas[oldCategoria][chave];
-        delete respostas[oldCategoria][chave];
-        if (Object.keys(respostas[oldCategoria]).length === 0) {
-            delete respostas[oldCategoria];
-        }
-        console.log(`🔄 Movendo ${chave} de ${oldCategoria} para ${novaCategoriaKey}`);
-        window.salvarNoFirebase();
+        document.getElementById("resposta").value = "";
+        document.getElementById("titulo").value = chave.replace(/_/g, " ");
         window.atualizarSeletorOpcoes();
-        document.getElementById("opcoes").value = `${novaCategoriaKey}:${chave}`;
-        window.responder();
-        alert("Categoria alterada com sucesso!");
+        window.ajustarAlturaTextarea();
     };
 
-    window.toggleEditarTitulo = function() {
-        if (!atendenteAtual || !auth.currentUser) {
-            alert("Selecione um atendente e autentique-se primeiro!");
-            return;
-        }
+    window.editarTitulo = function() {
         const titleContainer = document.getElementById("titleContainer");
         const opcao = document.getElementById("opcoes").value;
         if (!opcao) {
             alert("Selecione uma opção primeiro!");
-            console.warn("⚠️ Nenhuma opção selecionada para editar título");
+            console.warn("⚠️ Nenhuma opção selecionada para edição de título");
             return;
         }
         const [categoria, chave] = opcao.split(":");
@@ -434,7 +370,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const iconColor = document.getElementById("iconColor");
         const borderColor = document.getElementById("borderColor");
 
-        const savedTheme = localStorage.getItem("theme") || "light";
+        const savedTheme = localStorage.getItem("darkMode") === "true" ? "dark" : "light";
         const savedNeon = localStorage.getItem("neonBorders") === "true";
         const savedIconColor = localStorage.getItem("iconColor") || "#002640";
         const savedBorderColor = localStorage.getItem("borderColor") || "#002640";
@@ -453,76 +389,62 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!neon) {
             document.body.classList.add("no-neon");
         }
-        document.querySelectorAll(".sidebar-button .icon").forEach(icon => {
+
+        // Atualizar cores de ícones
+        document.querySelectorAll(".sidebar-button .icon, .bottom-toggle .icon, .dark-mode-toggle .icon").forEach(icon => {
             icon.style.color = iconColor;
         });
-        document.querySelectorAll(".card, .upload-card, input, select, textarea, .popup").forEach(el => {
+
+        // Atualizar cores de bordas
+        document.querySelectorAll(".card, .upload-card, input, select, textarea, .popup, .customization-popup").forEach(el => {
             el.style.borderColor = borderColor;
         });
-        updateDarkModeToggleIcon(theme);
-    };
 
-    function updateDarkModeToggleIcon(theme) {
+        // Atualizar botão de toggle de modo escuro
         if (darkModeToggle) {
-            darkModeToggle.textContent = theme === "dark" ? "☀️" : "🌙";
+            darkModeToggle.innerHTML = theme === "dark" ? '<span class="icon">🌞</span><span class="text">Modo Claro</span>' : '<span class="icon">🌙</span><span class="text">Modo Escuro</span>';
         }
-    }
+    };
 
     window.openCustomizationPopup = function() {
         originalCustomization = {
-            theme: localStorage.getItem("theme") || "light",
+            theme: localStorage.getItem("darkMode") === "true" ? "dark" : "light",
             neonBorders: localStorage.getItem("neonBorders") === "true",
             iconColor: localStorage.getItem("iconColor") || "#002640",
             borderColor: localStorage.getItem("borderColor") || "#002640"
         };
-
-        const customizationPopup = document.getElementById("customizationPopup");
-        if (customizationPopup) {
-            customizationPopup.style.display = "block";
-        } else {
-            console.error("❌ Elemento 'customizationPopup' não encontrado");
-            alert("Erro: popup de personalização não encontrado.");
-            return;
-        }
+        document.getElementById("customizationPopup").style.display = "block";
 
         const themeToggle = document.getElementById("themeToggle");
         const neonBorders = document.getElementById("neonBorders");
         const iconColor = document.getElementById("iconColor");
         const borderColor = document.getElementById("borderColor");
 
-        if (!themeToggle || !neonBorders || !iconColor || !borderColor) {
-            console.error("❌ Elementos do popup de personalização não encontrados");
-            alert("Erro: elementos do popup de personalização não encontrados.");
-            return;
-        }
-
-        // Inicializar valores do popup
         themeToggle.checked = originalCustomization.theme === "dark";
         neonBorders.checked = originalCustomization.neonBorders;
         iconColor.value = originalCustomization.iconColor;
         borderColor.value = originalCustomization.borderColor;
 
-        // Função para aplicar personalização em tempo real
-        const applyInRealTime = () => {
+        // Remover eventos antigos
+        themeToggle.removeEventListener("change", applyInRealTime);
+        neonBorders.removeEventListener("change", applyInRealTime);
+        iconColor.removeEventListener("input", applyInRealTime);
+        borderColor.removeEventListener("input", applyInRealTime);
+
+        // Adicionar eventos para aplicação em tempo real
+        themeToggle.addEventListener("change", applyInRealTime);
+        neonBorders.addEventListener("change", applyInRealTime);
+        iconColor.addEventListener("input", applyInRealTime);
+        borderColor.addEventListener("input", applyInRealTime);
+
+        function applyInRealTime() {
             window.applyCustomization(
                 themeToggle.checked ? "dark" : "light",
                 neonBorders.checked,
                 iconColor.value,
                 borderColor.value
             );
-        };
-
-        // Remover eventos antigos para evitar múltiplos listeners
-        themeToggle.removeEventListener("change", applyInRealTime);
-        neonBorders.removeEventListener("change", applyInRealTime);
-        iconColor.removeEventListener("input", applyInRealTime);
-        borderColor.removeEventListener("input", applyInRealTime);
-
-        // Adicionar eventos para aplicar alterações em tempo real
-        themeToggle.addEventListener("change", applyInRealTime);
-        neonBorders.addEventListener("change", applyInRealTime);
-        iconColor.addEventListener("input", applyInRealTime);
-        borderColor.addEventListener("input", applyInRealTime);
+        }
     };
 
     window.saveCustomization = function() {
@@ -531,32 +453,24 @@ document.addEventListener("DOMContentLoaded", function () {
         const iconColor = document.getElementById("iconColor");
         const borderColor = document.getElementById("borderColor");
 
-        if (!themeToggle || !neonBorders || !iconColor || !borderColor) {
-            console.error("❌ Elementos do popup de personalização não encontrados");
-            alert("Erro: elementos do popup de personalização não encontrados.");
-            return;
-        }
+        localStorage.setItem("darkMode", themeToggle.checked);
+        localStorage.setItem("neonBorders", neonBorders.checked);
+        localStorage.setItem("iconColor", iconColor.value);
+        localStorage.setItem("borderColor", borderColor.value);
 
-        const newTheme = themeToggle.checked ? "dark" : "light";
-        const newNeon = neonBorders.checked;
-        const newIconColor = iconColor.value;
-        const newBorderColor = borderColor.value;
+        window.applyCustomization(
+            themeToggle.checked ? "dark" : "light",
+            neonBorders.checked,
+            iconColor.value,
+            borderColor.value
+        );
 
-        localStorage.setItem("theme", newTheme);
-        localStorage.setItem("neonBorders", newNeon);
-        localStorage.setItem("iconColor", newIconColor);
-        localStorage.setItem("borderColor", newBorderColor);
-
-        window.applyCustomization(newTheme, newNeon, newIconColor, newBorderColor);
         document.getElementById("customizationPopup").style.display = "none";
         window.showPopup("Personalização salva com sucesso!");
     };
 
     window.closeCustomizationPopup = function() {
-        const customizationPopup = document.getElementById("customizationPopup");
-        if (customizationPopup) {
-            customizationPopup.style.display = "none";
-        }
+        document.getElementById("customizationPopup").style.display = "none";
         window.applyCustomization(
             originalCustomization.theme,
             originalCustomization.neonBorders,
@@ -569,27 +483,18 @@ document.addEventListener("DOMContentLoaded", function () {
         const iconColor = document.getElementById("iconColor");
         const borderColor = document.getElementById("borderColor");
 
-        if (themeToggle) themeToggle.checked = originalCustomization.theme === "dark";
-        if (neonBorders) neonBorders.checked = originalCustomization.neonBorders;
-        if (iconColor) iconColor.value = originalCustomization.iconColor;
-        if (borderColor) borderColor.value = originalCustomization.borderColor;
+        themeToggle.checked = originalCustomization.theme === "dark";
+        neonBorders.checked = originalCustomization.neonBorders;
+        iconColor.value = originalCustomization.iconColor;
+        borderColor.value = originalCustomization.borderColor;
     };
 
     window.openAtendentePopup = function() {
-        const atendentePopup = document.getElementById("atendentePopup");
-        if (atendentePopup) {
-            atendentePopup.style.display = "block";
-        } else {
-            console.error("❌ Elemento 'atendentePopup' não encontrado");
-            alert("Erro: popup de atendente não encontrado.");
-        }
+        document.getElementById("atendentePopup").style.display = "block";
     };
 
     window.closeAtendentePopup = function() {
-        const atendentePopup = document.getElementById("atendentePopup");
-        if (atendentePopup) {
-            atendentePopup.style.display = "none";
-        }
+        document.getElementById("atendentePopup").style.display = "none";
     };
 
     window.showPopup = function(message) {

@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function() {
     document.body.classList.toggle("dark-mode", isDarkMode);
     document.body.classList.toggle("light-mode", !isDarkMode);
     const toggleButton = document.getElementById("darkModeToggle");
-    toggleButton.textContent = isDarkMode ? "🌞" : "🌙";
+    toggleButton.innerHTML = isDarkMode ? '<span class="icon">🌞</span><span class="text">Modo Claro</span>' : '<span class="icon">🌙</span><span class="text">Modo Escuro</span>';
     document.getElementById("themeToggle").checked = isDarkMode;
 
     // Verificar personalizações salvas
@@ -14,12 +14,22 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById("iconColor").value = iconColor;
     document.getElementById("borderColor").value = borderColor;
     document.getElementById("neonBorders").checked = neonBorders;
-    applyCustomizations(iconColor, borderColor, neonBorders);
+    applyCustomizations();
+
+    // Função para atualizar o tema em tempo real
+    window.updateTheme = function() {
+        const isDarkMode = document.getElementById("themeToggle").checked;
+        document.body.classList.toggle("dark-mode", isDarkMode);
+        document.body.classList.toggle("light-mode", !isDarkMode);
+        toggleButton.innerHTML = isDarkMode ? '<span class="icon">🌞</span><span class="text">Modo Claro</span>' : '<span class="icon">🌙</span><span class="text">Modo Escuro</span>';
+        localStorage.setItem("darkMode", isDarkMode);
+        applyCustomizations();
+    };
 
     // Função para abrir o popup de personalização
-    toggleButton.addEventListener("click", function() {
+    window.openCustomizationPopup = function() {
         document.getElementById("customizationPopup").style.display = "block";
-    });
+    };
 
     // Função para fechar o popup de personalização
     window.closeCustomizationPopup = function() {
@@ -50,49 +60,48 @@ document.addEventListener("DOMContentLoaded", function() {
 
         document.body.classList.toggle("dark-mode", isDarkMode);
         document.body.classList.toggle("light-mode", !isDarkMode);
-        toggleButton.textContent = isDarkMode ? "🌞" : "🌙";
+        toggleButton.innerHTML = isDarkMode ? '<span class="icon">🌞</span><span class="text">Modo Claro</span>' : '<span class="icon">🌙</span><span class="text">Modo Escuro</span>';
 
-        applyCustomizations(iconColor, borderColor, neonBorders);
-        document.getElementById("customizationPopup").style.display = "none";
+        applyCustomizations();
+        closeCustomizationPopup();
     };
 
     // Função para aplicar personalizações
-    function applyCustomizations(iconColor, borderColor, neonBorders) {
+    function applyCustomizations() {
+        const iconColor = document.getElementById("iconColor").value;
+        const borderColor = document.getElementById("borderColor").value;
+        const neonBorders = document.getElementById("neonBorders").checked;
         document.body.classList.toggle("no-neon", !neonBorders);
 
         // Calcular cor de outline contrastante
         const isLight = getLuminance(iconColor) > 0.5;
         const outlineColor = isLight ? "#000000" : "#FFFFFF";
-        // Calcular cor da borda da sidebar para contrastar com o texto
-        const sidebarBorderColor = lightenColor(borderColor, 10);
+        const contrastColor = outlineColor;
+        const sidebarBorderColor = lightenColor(borderColor, 20);
 
-        // Aplicar cor dos ícones e outline dinâmico
+        // Aplicar estilos dinâmicos
         const style = document.createElement("style");
         style.id = "custom-styles";
         style.textContent = `
-            .sidebar-button, .toggle-sidebar, .dark-mode-toggle, #atendenteToggle {
+            .sidebar-button, .toggle-sidebar, .bottom-toggle {
                 color: ${iconColor} !important;
             }
-            .dark-mode .sidebar-button, .dark-mode .toggle-sidebar, .dark-mode .dark-mode-toggle, .dark-mode #atendenteToggle {
+            .dark-mode .sidebar-button, .dark-mode .toggle-sidebar, .dark-mode .bottom-toggle {
                 color: ${iconColor} !important;
             }
-            .sidebar-button:hover, #atendenteToggle:hover {
+            .sidebar-button:hover, .bottom-toggle:hover {
                 color: ${lightenColor(iconColor, 20)} !important;
             }
-            .dark-mode .sidebar-button:hover, .dark-mode #atendenteToggle:hover {
+            .dark-mode .sidebar-button:hover, .dark-mode .bottom-toggle:hover {
                 color: ${lightenColor(iconColor, 20)} !important;
             }
             .sidebar-button.active {
                 background: ${iconColor} !important;
+                color: ${contrastColor} !important;
             }
             .dark-mode .sidebar-button.active {
                 background: ${iconColor} !important;
-            }
-            .sidebar-button.active .text {
-                outline: 1px solid ${outlineColor} !important;
-            }
-            .dark-mode .sidebar-button.active .text {
-                outline: 1px solid ${outlineColor} !important;
+                color: ${contrastColor} !important;
             }
             .sidebar {
                 border-right: 1px solid ${sidebarBorderColor} !important;
@@ -212,6 +221,19 @@ document.addEventListener("DOMContentLoaded", function() {
             button.classList.toggle("active", button.getAttribute("onclick") === `showSection('${section}')`);
         });
     };
+
+    // Função para selecionar atendente
+    window.selecionarAtendente = function() {
+        const atendente = document.getElementById("atendente").value;
+        localStorage.setItem("atendenteSelecionado", atendente);
+        closeAtendentePopup();
+    };
+
+    // Carregar atendente salvo
+    const atendenteSalvo = localStorage.getItem("atendenteSelecionado");
+    if (atendenteSalvo) {
+        document.getElementById("atendente").value = atendenteSalvo;
+    }
 
     // Mostrar a seção de chat por padrão
     window.showSection("chat");

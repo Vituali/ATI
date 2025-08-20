@@ -1,68 +1,214 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chat Automático</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automatizador de Chat & Conversor de Aditivo</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Fonte Orbitron para estilo cyberpunk -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Adicionando scripts do Firebase v8 -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <!-- Adicionando pdf.js para o conversor -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
-<body>
-  <div class="chatbox">
-    <h2>🤖 Automatizador de chat o manizado no mero um 🤖
-    <p id="saudacao"></p>
-    </h2>
-    <div class="grupo">
-      <label for="atendente">Atendente:</label>
-      <select id="atendente" onchange="selecionarAtendente()">
-        <option value="">Selecione um atendente</option>
-        <option value="victor">Victor</option>
-        <option value="bruno">Bruno</option>
-        <option value="lucas">Lucas</option>
-        <option value="igor">Igor</option>
-        <option value="diego">Diego</option>
-        <option value="jefferson">Jefferson</option>
-        <option value="helio">Helio</option>
-        <option value="marlon">Marlon</option>
-      </select>
+<body class="light-mode">
+    <div class="popup" id="popup"></div>
+    <div class="customization-popup" id="customizationPopup" style="display: none;">
+        <h3>Personalizar Cores</h3>
+        <div class="customization-group">
+            <label for="themeToggle">Modo Escuro:</label>
+            <label class="switch">
+                <input type="checkbox" id="themeToggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="customization-group">
+            <label for="iconColor">Cor dos Ícones:</label>
+            <input type="color" id="iconColor" value="#002640">
+        </div>
+        <div class="customization-group">
+            <label for="borderColor">Cor das Bordas:</label>
+            <input type="color" id="borderColor" value="#002640">
+        </div>
+        <div class="customization-group">
+            <label for="neonBorders">Ativar Bordas Neon:</label>
+            <label class="switch">
+                <input type="checkbox" id="neonBorders" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="customization-buttons">
+            <button class="button" onclick="saveCustomization()">Salvar</button>
+            <button class="button" onclick="closeCustomizationPopup()">Cancelar</button>
+        </div>
     </div>
 
-    <div class="grupo">
-      <label for="opcoes">Escolha uma opção:</label>
-      <select id="opcoes" onchange="responder()">
-        <option value="">Selecione uma opção</option>
-      </select>
+    <div class="chatbox">
+        <!-- Barra lateral com toggle -->
+        <div class="sidebar" id="sidebar">
+            <button class="toggle-sidebar" id="toggleSidebar">☰</button>
+            <button class="sidebar-button active" onclick="showSection('chat')"><span class="icon">🗨️</span><span class="text">Chat</span></button>
+            <button class="sidebar-button" onclick="showSection('conversor')"><span class="icon">📄</span><span class="text">Conversor de Aditivo</span></button>
+            <div class="dark-mode-toggle" id="darkModeToggle">🌙</div>
+        </div>
+
+        <div class="content">
+            <div id="chatSection">
+                <h1>🤖 Automatizador de Chat & Conversor de Aditivo</h1>
+                <div class="card">
+                    <label for="atendente">Atendente:</label>
+                    <select id="atendente" onchange="selecionarAtendente()">
+                        <option value="">Selecione um atendente</option>
+                        <option value="victor">Victor</option>
+                        <option value="bruno">Bruno</option>
+                        <option value="lucas">Lucas</option>
+                        <option value="igor">Igor</option>
+                        <option value="diego">Diego</option>
+                        <option value="jefferson">Jefferson</option>
+                        <option value="helio">Helio</option>
+                        <option value="marlon">Marlon</option>
+                    </select>
+
+                    <label for="opcoes">Escolha uma opção:</label>
+                    <select id="opcoes" onchange="responder()">
+                        <option value="">Selecione uma opção</option>
+                    </select>
+
+                    <div class="title-container" id="titleContainer" style="display: none;">
+                        <label for="titulo">Título:</label>
+                        <input type="text" id="titulo" class="input">
+                        <button class="button" onclick="salvarNovoTitulo()">Salvar Título</button>
+                    </div>
+
+                    <label for="resposta">Mensagem:</label>
+                    <textarea id="resposta" class="message" oninput="ajustarAlturaTextarea()"></textarea>
+
+                    <div class="controls">
+                        <button class="button" onclick="copiarTexto()">📋 Copiar</button>
+                        <button class="button" onclick="toggleEditarTitulo()">Editar Título</button>
+                        <button class="button" onclick="salvarEdicao()">Salvar</button>
+                        <button class="button" onclick="alterarCategoria()">Alterar Categoria</button>
+                        <button class="button" onclick="apagarTexto()">Apagar</button>
+                        <button class="button" onclick="mostrarPopupAdicionar()">Adicionar</button>
+                    </div>
+
+                    <p id="saudacao">Salvar <span>Boa noite</span> e <span>Tenha uma excelente noite</span> como [SAUDACAO] e [DESPEDIDA]</p>
+                </div>
+            </div>
+
+            <div id="conversorSection" style="display: none;">
+                <h1>Conversor de Aditivo</h1>
+                <div class="upload-card" id="uploadSection">
+                    <div class="upload-content">
+                        <h2>Carregar Aditivo PDF</h2>
+                        <div class="file-upload-wrapper">
+                            <label for="pdfUpload" class="file-label">Escolher Arquivo</label>
+                            <input type="file" id="pdfUpload" class="file-input" accept=".pdf">
+                            <span class="file-name" id="fileName">Nenhum arquivo selecionado</span>
+                        </div>
+                        <button class="button" onclick="loadPDF()">Carregar e Extrair Dados</button>
+                    </div>
+                </div>
+
+                <div class="card" id="dataSection" style="display: none;">
+                    <button class="button back" onclick="backToUpload()">Voltar à Página Inicial</button>
+                    <h1>Agendamento para Contrato - <span id="contratoSpan"></span></h1>
+                    <div class="grupo">
+                        <h3>Dados do Aditivo:</h3>
+                        <p><strong>Contrato:</strong> <span id="contrato"></span></p>
+                        <p><strong>Nome:</strong> <span id="nome"></span></p>
+                        <p><strong>Endereço Antigo:</strong> <span id="oldAddress"></span></p>
+                        <p><strong>Endereço Novo:</strong> <span id="newAddress"></span></p>
+                        <p><strong>Motivo:</strong> MUD ENDEREÇO</p>
+                    </div>
+
+                    <div class="grupo">
+                        <label for="phone">Número de Telefone:</label>
+                        <input type="text" id="phone" class="input" required>
+                        <span id="phoneError" class="error"></span>
+                    </div>
+
+                    <div class="grupo">
+                        <label for="technician">Nome do Técnico:</label>
+                        <input type="text" id="technician" class="input" required>
+                    </div>
+
+                    <div class="grupo">
+                        <label for="equipmentType">Tipo de Comodato:</label>
+                        <select id="equipmentType" class="input">
+                            <option value="alcl">ALCL</option>
+                            <option value="proprio">PROPRIO</option>
+                            <option value="huawei">HUAWEI</option>
+                            <option value="tplink">TP LINK</option>
+                        </select>
+                    </div>
+
+                    <div class="grupo">
+                        <label><input type="checkbox" id="selfWithdrawal"> Cliente faz a retirada por conta própria?</label>
+                    </div>
+
+                    <div class="grupo" id="withdrawalSection">
+                        <label for="withdrawalDate">Data de Retirada (a partir de amanhã):</label>
+                        <input type="date" id="withdrawalDate" class="input" required>
+                        <label for="withdrawalPeriod">Período de Retirada:</label>
+                        <select id="withdrawalPeriod" class="input" required>
+                            <option value="Manhã">Manhã</option>
+                            <option value="Tarde">Tarde</option>
+                        </select>
+                    </div>
+
+                    <div class="grupo">
+                        <label for="installationDate">Data de Instalação (não antes da retirada):</label>
+                        <input type="date" id="installationDate" class="input" required>
+                        <label for="installationPeriod">Período de Instalação:</label>
+                        <select id="installationPeriod" class="input" required>
+                            <option value="Manhã">Manhã</option>
+                            <option value="Tarde">Tarde</option>
+                        </select>
+                    </div>
+
+                    <div class="grupo">
+                        <label><input type="checkbox" id="renewal"> É Renovação? (Se sim, isento de taxa)</label>
+                    </div>
+
+                    <div class="grupo" id="taxSection">
+                        <label for="taxValue">Valor da Taxa:</label>
+                        <select id="taxValue" class="input">
+                            <option value="100">100</option>
+                            <option value="65">65</option>
+                            <option value="50">50</option>
+                        </select>
+                    </div>
+
+                    <div class="grupo">
+                        <label for="signature">Tipo de Assinatura:</label>
+                        <select id="signature" class="input">
+                            <option value="digital">Assinatura Digital</option>
+                            <option value="local">Assinatura no Local</option>
+                        </select>
+                    </div>
+
+                    <div class="button-wrapper">
+                        <button class="button" onclick="generateOS()">Gerar O.S</button>
+                    </div>
+
+                    <div class="output" id="output"></div>
+
+                    <div class="copy-buttons" id="copyButtons" style="display: none;">
+                        <button class="copy-btn" onclick="copyWithdrawal()">Copiar Retirada</button>
+                        <button class="copy-btn" onclick="copyInstallation()">Copiar Instalação</button>
+                        <button class="copy-btn" onclick="copyOS()">Copiar O.S</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="grupo title-container" id="titleContainer" style="display: none;">
-      <label for="titulo">Título:</label>
-      <input type="text" id="titulo" placeholder="Digite o título da opção">
-      <button onclick="salvarNovoTitulo()">Salvar Título</button>
-    </div>
-
-    <div class="grupo">
-      <label for="resposta">Mensagem:</label>
-      <textarea id="resposta" class="message" rows="5"></textarea>
-    </div>
-
-    <div class="grupo controls">
-      <button onclick="copiarTexto()">📋 Copiar</button>
-      <button onclick="toggleEditarTitulo()">Editar Título</button>
-      <button onclick="salvarEdicao()">Salvar</button>
-      <button onclick="alterarCategoria()">Alterar Categoria</button>
-      <button onclick="apagarTexto()">Apagar</button>
-      <button onclick="mostrarPopupAdicionar()">Adicionar</button>
-    </div>
-    <h3> <font color="red">Salvar Boa noite e Tenha uma excelente noite como [SAUDACAO] e [DESPEDIDA]</font>
-    </h3>
-  </div>
-
-  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-    import { getDatabase, ref, set, onValue } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
-    import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-    window.firebase = { initializeApp, getDatabase, ref, set, onValue, getAuth, signInAnonymously };
-  </script>
-  <script src="script.js"></script>
+    <script src="main.js"></script>
+    <script src="conversor.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>

@@ -15,8 +15,36 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body class="light-mode">
-    <div class="dark-mode-toggle" id="darkModeToggle">🌙</div>
     <div class="popup" id="popup"></div>
+    <div class="customization-popup" id="customizationPopup" style="display: none;">
+        <h3>Personalizar Cores</h3>
+        <div class="customization-group">
+            <label for="themeToggle">Modo Escuro:</label>
+            <label class="switch">
+                <input type="checkbox" id="themeToggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="customization-group">
+            <label for="iconColor">Cor dos Ícones:</label>
+            <input type="color" id="iconColor" value="#002640">
+        </div>
+        <div class="customization-group">
+            <label for="borderColor">Cor das Bordas:</label>
+            <input type="color" id="borderColor" value="#002640">
+        </div>
+        <div class="customization-group">
+            <label for="neonBorders">Ativar Bordas Neon:</label>
+            <label class="switch">
+                <input type="checkbox" id="neonBorders" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="customization-buttons">
+            <button class="button" onclick="saveCustomization()">Salvar</button>
+            <button class="button" onclick="closeCustomizationPopup()">Cancelar</button>
+        </div>
+    </div>
 
     <div class="chatbox">
         <!-- Barra lateral com toggle -->
@@ -24,6 +52,7 @@
             <button class="toggle-sidebar" id="toggleSidebar">☰</button>
             <button class="sidebar-button active" onclick="showSection('chat')"><span class="icon">🗨️</span><span class="text">Chat</span></button>
             <button class="sidebar-button" onclick="showSection('conversor')"><span class="icon">📄</span><span class="text">Conversor de Aditivo</span></button>
+            <div class="dark-mode-toggle" id="darkModeToggle">🌙</div>
         </div>
 
         <div class="content">
@@ -73,13 +102,15 @@
             <div id="conversorSection" style="display: none;">
                 <h1>Conversor de Aditivo</h1>
                 <div class="upload-card" id="uploadSection">
-                    <h2>Carregar Aditivo PDF</h2>
-                    <div class="file-upload-wrapper">
-                        <label for="pdfUpload" class="file-label">Escolher Arquivo</label>
-                        <input type="file" id="pdfUpload" class="file-input" accept=".pdf">
-                        <span class="file-name" id="fileName">Nenhum arquivo selecionado</span>
+                    <div class="upload-content">
+                        <h2>Carregar Aditivo PDF</h2>
+                        <div class="file-upload-wrapper">
+                            <label for="pdfUpload" class="file-label">Escolher Arquivo</label>
+                            <input type="file" id="pdfUpload" class="file-input" accept=".pdf">
+                            <span class="file-name" id="fileName">Nenhum arquivo selecionado</span>
+                        </div>
+                        <button class="button" onclick="loadPDF()">Carregar e Extrair Dados</button>
                     </div>
-                    <button class="button" onclick="loadPDF()">Carregar e Extrair Dados</button>
                 </div>
 
                 <div class="card" id="dataSection" style="display: none;">

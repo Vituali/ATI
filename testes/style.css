@@ -4,18 +4,18 @@ body {
     margin: 0;
     padding: 0;
     transition: background-color 0.3s, color 0.3s;
-    background: linear-gradient(135deg, #E5E7EB 0%, #D1D5DB 100%); /* Gradiente claro */
+    background: linear-gradient(135deg, #E5F0F8 0%, #D1E0F0 100%); /* Gradiente claro */
 }
 
-/* Tema claro (vibe de escritório futurista) */
+/* Tema claro */
 .light-mode {
-    background: linear-gradient(135deg, #E5E7EB 0%, #D1D5DB 100%); /* Cinza claro com gradiente */
-    color: #1A1A1A; /* Texto quase preto */
+    background: linear-gradient(135deg, #E5F0F8 0%, #D1E0F0 100%); /* Fundo azul claro */
+    color: #1A3C5A; /* Texto azul escuro claro */
 }
 
-/* Tema escuro (cyberpunk) */
+/* Tema escuro */
 .dark-mode {
-    background: linear-gradient(135deg, #0F1419 0%, #1A1A1A 100%); /* Fundo escuro com gradiente */
+    background: linear-gradient(135deg, #2A2A2A 0%, #1A1A1A 100%); /* Fundo cinza escuro */
     color: #D1D5DB; /* Texto cinza claro */
 }
 
@@ -28,8 +28,8 @@ body {
 /* Barra lateral */
 .sidebar {
     width: 60px; /* Largura recolhida */
-    background: linear-gradient(180deg, #2D2D2D 0%, #1A1A1A 100%); /* Gradiente metálico */
-    border-right: 1px solid #00D4FF; /* Borda ciano neon */
+    background: linear-gradient(180deg, #E5F0F8 0%, #D1E0F0 100%); /* Gradiente claro */
+    border-right: 1px solid #002640; /* Borda azul escura */
     padding: 20px 10px;
     position: fixed;
     top: 0;
@@ -38,46 +38,49 @@ body {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    transition: width 0.3s ease;
+    transition: width 0.3s ease, background 0.3s;
     overflow: hidden;
+}
+
+.dark-mode .sidebar {
+    background: linear-gradient(180deg, #2A2A2A 0%, #1A1A1A 100%); /* Gradiente escuro */
+    border-right: 1px solid #464646; /* Borda cinza */
 }
 
 .sidebar.expanded {
     width: 200px; /* Largura expandida */
 }
 
-.dark-mode .sidebar {
-    background: linear-gradient(180deg, #1A1A1A 0%, #0F1419 100%); /* Gradiente escuro */
-    border-right: 1px solid #A100F2; /* Borda roxa neon no modo escuro */
-}
-
 /* Botão de toggle da barra lateral */
 .toggle-sidebar {
     background: transparent;
-    color: #00D4FF; /* Ciano neon */
+    color: #002640; /* Azul escuro */
     border: none;
     padding: 10px;
     font-size: 24px;
     cursor: pointer;
     transition: color 0.3s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .dark-mode .toggle-sidebar {
-    color: #A100F2; /* Roxo neon no modo escuro */
+    color: #464646; /* Cinza no modo escuro */
 }
 
 .toggle-sidebar:hover {
-    color: #66E6FF; /* Ciano mais claro no hover */
+    color: #1A3C5A; /* Azul mais claro no hover */
 }
 
 .dark-mode .toggle-sidebar:hover {
-    color: #C466F2; /* Roxo mais claro no hover */
+    color: #6B7280; /* Cinza mais claro no hover */
 }
 
 /* Botões da barra lateral */
 .sidebar-button {
     background: transparent;
-    color: #00D4FF; /* Ciano neon */
+    color: #002640; /* Azul escuro */
     border: none;
     padding: 10px;
     border-radius: 5px;
@@ -85,13 +88,14 @@ body {
     font-family: 'Orbitron', sans-serif;
     font-size: 16px;
     display: flex;
+    justify-content: center;
     align-items: center;
     gap: 10px;
     transition: background-color 0.3s, color 0.3s, transform 0.2s;
 }
 
 .dark-mode .sidebar-button {
-    color: #A100F2; /* Roxo neon no modo escuro */
+    color: #464646; /* Cinza no modo escuro */
 }
 
 .sidebar-button .icon {
@@ -108,24 +112,64 @@ body {
 }
 
 .sidebar-button:hover {
-    background: rgba(0, 212, 255, 0.2); /* Fundo ciano translúcido no hover */
-    color: #66E6FF; /* Ciano mais claro */
+    background: rgba(0, 38, 64, 0.2); /* Fundo azul escuro translúcido */
+    color: #1A3C5A; /* Azul mais claro */
 }
 
 .dark-mode .sidebar-button:hover {
-    background: rgba(161, 0, 242, 0.2); /* Fundo roxo translúcido no hover */
-    color: #C466F2; /* Roxo mais claro */
+    background: rgba(70, 70, 70, 0.2); /* Fundo cinza translúcido */
+    color: #6B7280; /* Cinza mais claro */
 }
 
 .sidebar-button.active {
-    background: #00D4FF; /* Ciano neon para botão ativo */
-    color: #1A1A1A; /* Texto escuro para contraste */
-    box-shadow: 0 0 10px #00D4FF; /* Sombra neon */
+    background: #002640; /* Azul escuro */
+    color: #FFFFFF; /* Texto branco */
+    box-shadow: 0 0 10px rgba(0, 38, 64, 0.5); /* Sombra neon */
 }
 
 .dark-mode .sidebar-button.active {
-    background: #A100F2; /* Roxo neon para botão ativo */
-    box-shadow: 0 0 10px #A100F2; /* Sombra neon roxa */
+    background: #464646; /* Cinza */
+    box-shadow: 0 0 10px rgba(70, 70, 70, 0.5); /* Sombra neon cinza */
+}
+
+.no-neon .sidebar-button.active {
+    box-shadow: none; /* Desativar sombra neon */
+}
+
+.sidebar-button.active .text {
+    outline: 1px solid #000000; /* Borda preta para contraste no modo claro */
+}
+
+.dark-mode .sidebar-button.active .text {
+    outline: 1px solid #FFFFFF; /* Borda branca para contraste no modo escuro */
+}
+
+/* Toggle de modo noturno */
+.dark-mode-toggle {
+    background: transparent;
+    color: #002640; /* Azul escuro */
+    border: none;
+    padding: 10px;
+    font-size: 24px;
+    cursor: pointer;
+    transition: color 0.3s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    align-self: flex-end; /* Fixar no final da sidebar */
+    flex-shrink: 0; /* Evitar compressão */
+}
+
+.dark-mode .dark-mode-toggle {
+    color: #464646; /* Cinza no modo escuro */
+}
+
+.dark-mode-toggle:hover {
+    color: #1A3C5A; /* Azul mais claro */
+}
+
+.dark-mode .dark-mode-toggle:hover {
+    color: #6B7280; /* Cinza mais claro */
 }
 
 /* Conteúdo principal */
@@ -142,24 +186,53 @@ body {
 
 /* Estilo do card */
 .card, .upload-card {
-    background: linear-gradient(135deg, #FFFFFF 0%, #F5F7FA 100%); /* Gradiente branco no modo claro */
-    border: 1px solid #00D4FF; /* Borda ciano neon */
+    background: linear-gradient(135deg, #FFFFFF 0%, #F5F7FA 100%); /* Gradiente branco */
+    border: 1px solid #002640; /* Borda azul escura */
     border-radius: 10px;
     padding: 20px;
     margin: 20px 0;
-    box-shadow: 0 0 15px rgba(0, 212, 255, 0.3); /* Sombra neon sutil */
+    box-shadow: 0 0 15px rgba(0, 38, 64, 0.3); /* Sombra neon */
 }
 
 .dark-mode .card, .dark-mode .upload-card {
-    background: linear-gradient(135deg, #2D2D2D 0%, #1A1A1A 100%); /* Gradiente escuro */
-    border: 1px solid #A100F2; /* Borda roxa neon */
-    box-shadow: 0 0 15px rgba(161, 0, 242, 0.3); /* Sombra neon roxa */
+    background: linear-gradient(135deg, #2A2A2A 0%, #1A1A1A 100%); /* Gradiente escuro */
+    border: 1px solid #464646; /* Borda cinza */
+    box-shadow: 0 0 15px rgba(70, 70, 70, 0.3); /* Sombra neon cinza */
+}
+
+.no-neon .card, .no-neon .upload-card {
+    box-shadow: none; /* Desativar sombra neon */
+}
+
+/* Estilo da seção de upload */
+.upload-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.upload-content h2 {
+    text-align: center;
+    margin: 0;
+}
+
+.file-upload-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.upload-card .button {
+    display: block;
+    margin: 0 auto;
 }
 
 /* Estilo dos botões */
 .button, .copy-btn {
-    background: #00D4FF; /* Ciano neon no modo claro */
-    color: #1A1A1A; /* Texto escuro */
+    background: #002640; /* Azul escuro */
+    color: #FFFFFF; /* Texto branco */
     border: none;
     padding: 10px 20px;
     border-radius: 5px;
@@ -168,28 +241,36 @@ body {
     font-size: 16px;
     margin: 5px;
     transition: background-color 0.3s, box-shadow 0.3s, transform 0.2s;
-    box-shadow: 0 0 10px rgba(0, 212, 255, 0.5); /* Sombra neon */
+    box-shadow: 0 0 10px rgba(0, 38, 64, 0.5); /* Sombra neon */
 }
 
 .dark-mode .button, .dark-mode .copy-btn {
-    background: #A100F2; /* Roxo neon no modo escuro */
-    box-shadow: 0 0 10px rgba(161, 0, 242, 0.5); /* Sombra neon roxa */
+    background: #464646; /* Cinza */
+    box-shadow: 0 0 10px rgba(70, 70, 70, 0.5); /* Sombra neon cinza */
+}
+
+.no-neon .button, .no-neon .copy-btn {
+    box-shadow: none; /* Desativar sombra neon */
 }
 
 .button:hover, .copy-btn:hover {
-    background: #66E6FF; /* Ciano mais claro no hover */
-    box-shadow: 0 0 15px rgba(0, 212, 255, 0.7);
+    background: #1A3C5A; /* Azul mais claro */
+    box-shadow: 0 0 15px rgba(0, 38, 64, 0.7);
     transform: scale(1.05);
 }
 
 .dark-mode .button:hover, .dark-mode .copy-btn:hover {
-    background: #C466F2; /* Roxo mais claro no hover */
-    box-shadow: 0 0 15px rgba(161, 0, 242, 0.7);
+    background: #6B7280; /* Cinza mais claro */
+    box-shadow: 0 0 15px rgba(70, 70, 70, 0.7);
+}
+
+.no-neon .button:hover, .no-neon .copy-btn:hover {
+    box-shadow: none;
 }
 
 /* Estilo do botão voltar */
 .back {
-    background: #6B7280; /* Cinza metálico no modo claro */
+    background: #6B7280; /* Cinza metálico */
     box-shadow: 0 0 10px rgba(107, 114, 128, 0.5);
 }
 
@@ -198,8 +279,12 @@ body {
     box-shadow: 0 0 10px rgba(75, 85, 99, 0.5);
 }
 
+.no-neon .back {
+    box-shadow: none;
+}
+
 .back:hover {
-    background: #4B5563; /* Cinza mais escuro no hover */
+    background: #4B5563; /* Cinza mais escuro */
     box-shadow: 0 0 15px rgba(107, 114, 128, 0.7);
 }
 
@@ -208,33 +293,41 @@ body {
     box-shadow: 0 0 15px rgba(75, 85, 99, 0.7);
 }
 
+.no-neon .back:hover {
+    box-shadow: none;
+}
+
 /* Estilo dos inputs e selects */
 input, select, textarea {
     width: 100%;
     padding: 10px;
     margin: 10px 0;
-    border: 1px solid #00D4FF; /* Borda ciano neon */
+    border: 1px solid #002640; /* Borda azul escura */
     border-radius: 5px;
     font-size: 16px;
-    background: #FFFFFF; /* Fundo branco no modo claro */
-    color: #1A1A1A;
+    background: #FFFFFF; /* Fundo branco */
+    color: #1A3C5A; /* Texto azul claro */
     box-sizing: border-box;
     transition: border-color 0.3s, box-shadow 0.3s;
 }
 
 .dark-mode input, .dark-mode select, .dark-mode textarea {
-    border: 1px solid #A100F2; /* Borda roxa neon */
-    background: #2D2D2D; /* Fundo escuro */
+    border: 1px solid #464646; /* Borda cinza */
+    background: #2A2A2A; /* Fundo escuro */
     color: #D1D5DB; /* Texto cinza claro */
 }
 
 input:focus, select:focus, textarea:focus {
     outline: none;
-    box-shadow: 0 0 10px rgba(0, 212, 255, 0.5); /* Brilho neon no foco */
+    box-shadow: 0 0 10px rgba(0, 38, 64, 0.5); /* Brilho neon */
 }
 
 .dark-mode input:focus, .dark-mode select:focus, .dark-mode textarea:focus {
-    box-shadow: 0 0 10px rgba(161, 0, 242, 0.5); /* Brilho neon roxo */
+    box-shadow: 0 0 10px rgba(70, 70, 70, 0.5); /* Brilho neon cinza */
+}
+
+.no-neon input:focus, .no-neon select:focus, .no-neon textarea:focus {
+    box-shadow: none;
 }
 
 /* Estilo do textarea */
@@ -246,9 +339,9 @@ textarea {
 /* Estilo do upload de arquivo */
 .file-upload-wrapper {
     display: flex;
+    flex-direction: column;
     align-items: center;
     gap: 10px;
-    margin: 10px 0;
 }
 
 .file-input {
@@ -256,61 +349,162 @@ textarea {
 }
 
 .file-label {
-    background: #00D4FF; /* Ciano neon */
-    color: #1A1A1A;
+    background: #002640; /* Azul escuro */
+    color: #FFFFFF;
     padding: 10px 20px;
     border-radius: 5px;
     cursor: pointer;
     font-family: 'Orbitron', sans-serif;
     transition: background-color 0.3s, box-shadow 0.3s;
-    box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+    box-shadow: 0 0 10px rgba(0, 38, 64, 0.5);
 }
 
 .dark-mode .file-label {
-    background: #A100F2; /* Roxo neon */
-    box-shadow: 0 0 10px rgba(161, 0, 242, 0.5);
+    background: #464646; /* Cinza */
+    box-shadow: 0 0 10px rgba(70, 70, 70, 0.5);
+}
+
+.no-neon .file-label {
+    box-shadow: none;
 }
 
 .file-label:hover {
-    background: #66E6FF; /* Ciano mais claro */
-    box-shadow: 0 0 15px rgba(0, 212, 255, 0.7);
+    background: #1A3C5A; /* Azul mais claro */
+    box-shadow: 0 0 15px rgba(0, 38, 64, 0.7);
 }
 
 .dark-mode .file-label:hover {
-    background: #C466F2; /* Roxo mais claro */
-    box-shadow: 0 0 15px rgba(161, 0, 242, 0.7);
+    background: #6B7280; /* Cinza mais claro */
+    box-shadow: 0 0 15px rgba(70, 70, 70, 0.7);
+}
+
+.no-neon .file-label:hover {
+    box-shadow: none;
 }
 
 .file-name {
-    color: #1A1A1A;
+    color: #1A3C5A;
+    text-align: center;
 }
 
 .dark-mode .file-name {
     color: #D1D5DB;
 }
 
-/* Estilo do toggle de modo escuro */
-.dark-mode-toggle {
+/* Estilo do popup de personalização */
+.customization-popup {
     position: fixed;
-    top: 20px;
-    right: 20px;
-    cursor: pointer;
-    font-size: 24px;
-    padding: 10px;
-    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     background: linear-gradient(135deg, #FFFFFF 0%, #F5F7FA 100%);
-    border: 1px solid #00D4FF;
-    box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
-    transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid #002640;
+    box-shadow: 0 0 15px rgba(0, 38, 64, 0.5);
+    z-index: 1000;
+    width: 300px;
 }
 
-.dark-mode .dark-mode-toggle {
-    background: linear-gradient(135deg, #2D2D2D 0%, #1A1A1A 100%);
-    border: 1px solid #A100F2;
-    box-shadow: 0 0 10px rgba(161, 0, 242, 0.5);
+.dark-mode .customization-popup {
+    background: linear-gradient(135deg, #2A2A2A 0%, #1A1A1A 100%);
+    border: 1px solid #464646;
+    box-shadow: 0 0 15px rgba(70, 70, 70, 0.5);
 }
 
-/* Estilo do popup */
+.no-neon .customization-popup {
+    box-shadow: none;
+}
+
+.customization-group {
+    margin: 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.customization-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-family: 'Orbitron', sans-serif;
+    color: #1A3C5A;
+}
+
+.dark-mode .customization-group label {
+    color: #D1D5DB;
+}
+
+.customization-group input[type="color"] {
+    width: 50px;
+    height: 50px;
+    padding: 2px;
+    border: 2px solid #002640;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.dark-mode .customization-group input[type="color"] {
+    border: 2px solid #464646;
+}
+
+/* Estilo do interruptor */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #002640; /* Azul escuro */
+}
+
+.dark-mode input:checked + .slider {
+    background-color: #464646; /* Cinza */
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+.customization-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+/* Estilo do popup existente */
 .popup {
     display: none;
     position: fixed;
@@ -320,15 +514,19 @@ textarea {
     background: linear-gradient(135deg, #FFFFFF 0%, #F5F7FA 100%);
     padding: 20px;
     border-radius: 10px;
-    border: 1px solid #00D4FF;
-    box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+    border: 1px solid #002640;
+    box-shadow: 0 0 15px rgba(0, 38, 64, 0.5);
     z-index: 1000;
 }
 
 .dark-mode .popup {
-    background: linear-gradient(135deg, #2D2D2D 0%, #1A1A1A 100%);
-    border: 1px solid #A100F2;
-    box-shadow: 0 0 15px rgba(161, 0, 242, 0.5);
+    background: linear-gradient(135deg, #2A2A2A 0%, #1A1A1A 100%);
+    border: 1px solid #464646;
+    box-shadow: 0 0 15px rgba(70, 70, 70, 0.5);
+}
+
+.no-neon .popup {
+    box-shadow: none;
 }
 
 /* Estilo do grupo */
@@ -341,21 +539,26 @@ textarea {
     margin-bottom: 5px;
     font-weight: bold;
     font-family: 'Orbitron', sans-serif;
+    color: #1A3C5A;
+}
+
+.dark-mode .grupo label {
+    color: #D1D5DB;
 }
 
 /* Estilo do output */
 .output {
     white-space: pre-wrap;
-    background: linear-gradient(135deg, #F5F7FA 0%, #E5E7EB 100%);
+    background: linear-gradient(135deg, #F5F7FA 0%, #E5F0F8 100%);
     padding: 10px;
     border-radius: 5px;
-    border: 1px solid #00D4FF;
+    border: 1px solid #002640;
     margin-top: 20px;
 }
 
 .dark-mode .output {
-    background: linear-gradient(135deg, #2D2D2D 0%, #1A1A1A 100%);
-    border: 1px solid #A100F2;
+    background: linear-gradient(135deg, #2A2A2A 0%, #1A1A1A 100%);
+    border: 1px solid #464646;
 }
 
 /* Estilo do contêiner de título */
@@ -388,11 +591,12 @@ textarea {
 /* Estilo dos títulos */
 h1, h2, h3 {
     font-family: 'Orbitron', sans-serif;
-    color: #00D4FF; /* Ciano neon */
+    color: #002640; /* Azul escuro */
+    text-align: center;
 }
 
 .dark-mode h1, .dark-mode h2, .dark-mode h3 {
-    color: #A100F2; /* Roxo neon */
+    color: #464646; /* Cinza */
 }
 
 /* Media query para responsividade */
@@ -411,5 +615,12 @@ h1, h2, h3 {
     }
     .sidebar-button {
         font-size: 14px;
+    }
+    .customization-popup {
+        width: 250px;
+    }
+    .customization-group input[type="color"] {
+        width: 40px;
+        height: 40px;
     }
 }

@@ -16,11 +16,16 @@ document.addEventListener("DOMContentLoaded", function () {
   let atendenteAtual = localStorage.getItem("atendenteAtual") || "";
   const atendenteSelect = document.getElementById("atendente");
 
-  // Inicializar Firebase e autenticação anônima
   try {
     const app = firebase.initializeApp(firebaseConfig);
-    db = firebase.database(app);
     auth = firebase.auth(app);
+    db = firebase.database(app);
+    // Verificar se o módulo do banco de dados está carregado
+    if (!firebase.database) {
+      console.error("❌ Módulo do Firebase Realtime Database não carregado");
+      alert("Erro: Módulo do banco de dados Firebase não carregado.");
+      return;
+    }
     auth.signInAnonymously().then(() => {
       console.log("✅ Usuário autenticado anonimamente:", auth.currentUser.uid);
       if (atendenteSelect) {
@@ -41,7 +46,8 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   window.selecionarAtendente = function() {
-    atendenteAtual = atendenteSelect.value;
+    // Garantir que atendenteAtual seja sempre em letras minúsculas para corresponder ao banco de dados
+    atendenteAtual = atendenteSelect.value.toLowerCase();
     localStorage.setItem("atendenteAtual", atendenteAtual);
     if (atendenteAtual && auth.currentUser) {
       window.carregarDoFirebase();
@@ -53,21 +59,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   };
 
-  window.salvarNoFirebase = function() {
-    if (!atendenteAtual || !auth.currentUser) {
-      alert("Selecione um atendente e autentique-se primeiro!");
-      return;
-    }
-    const dbRef = firebase.database().ref(`respostas/${atendenteAtual}`);
-    firebase.database().set(dbRef, respostas)
-      .then(() => console.log(`🔥 Dados salvos no Firebase para ${atendenteAtual}`))
-      .catch(error => {
-        console.error("❌ Erro ao salvar no Firebase:", error);
-        alert("Erro ao salvar: " + error.message);
-      });
-  };
-  
-  function validarChave(chave) {
+  window.validarChave = function(chave) {
     if (!chave || !chave.trim()) {
       console.error("❌ Chave inválida: vazia ou nula");
       return { valido: false, mensagem: "A chave não pode estar em branco." };
@@ -80,34 +72,35 @@ document.addEventListener("DOMContentLoaded", function () {
     const chaveSanitizada = chave.trim().toLowerCase().replace(/[\$#\[\]\.\/]/g, "_");
     console.log(`✅ Chave válida: ${chave} -> ${chaveSanitizada}`);
     return { valido: true, chaveSanitizada };
-  }
+  };
 
-  function salvarNoFirebase() {
+  window.salvarNoFirebase = function() {
     if (!atendenteAtual || !auth.currentUser) {
       alert("Selecione um atendente e autentique-se primeiro!");
       return;
     }
-    const dbRef = firebase.ref(db, `respostas/${atendenteAtual}`);
-    firebase.set(dbRef, respostas)
+    const dbRef = db.ref(`respostas/${atendenteAtual}`);
+    dbRef.set(respostas)
       .then(() => console.log(`🔥 Dados salvos no Firebase para ${atendenteAtual}`))
       .catch(error => {
         console.error("❌ Erro ao salvar no Firebase:", error);
         alert("Erro ao salvar: " + error.message);
       });
-  }
+  };
 
-  function carregarDoFirebase() {
+  window.carregarDoFirebase = function() {
     if (!atendenteAtual || !auth.currentUser) {
       console.log("⚠️ Selecione um atendente e autentique-se primeiro");
       return;
     }
-    const dbRef = firebase.ref(db, `respostas/${atendenteAtual}`);
-    firebase.onValue(dbRef, function(snapshot) {
+    // Usar a instância db para criar a referência ao banco de dados
+    const dbRef = db.ref(`respostas/${atendenteAtual}`);
+    dbRef.on('value', function(snapshot) {
       try {
         const data = snapshot.val();
         respostas = data || { suporte: {}, financeiro: {}, geral: {} };
         console.log("📥 Dados carregados do Firebase para " + atendenteAtual + ":", respostas);
-        atualizarSeletorOpcoes();
+        window.atualizarSeletorOpcoes();
       } catch (error) {
         console.error("❌ Erro ao carregar dados do Firebase:", error);
         alert("Erro ao carregar dados: " + error.message);
@@ -116,7 +109,7 @@ document.addEventListener("DOMContentLoaded", function () {
       console.error("❌ Erro na conexão com Firebase:", error);
       alert("Erro de conexão com o Firebase: " + error.message);
     });
-  }
+  };
 
   window.atualizarSeletorOpcoes = function() {
     const seletor = document.getElementById("opcoes");
@@ -140,7 +133,7 @@ document.addEventListener("DOMContentLoaded", function () {
         seletor.appendChild(optgroup);
       }
     });
-    responder();
+    window.responder();
   };
 
   window.responder = function() {
@@ -154,13 +147,13 @@ document.addEventListener("DOMContentLoaded", function () {
         resposta.value = "Selecione um atendente primeiro.";
       }
       titulo.value = "";
-      ajustarAlturaTextarea();
+      window.ajustarAlturaTextarea();
       return;
     }
     const [categoria, chave] = opcao.split(":");
-    resposta.value = substituirMarcadores(respostas[categoria]?.[chave] || "Resposta não encontrada.");
+    resposta.value = window.substituirMarcadores(respostas[categoria]?.[chave] || "Resposta não encontrada.");
     titulo.value = chave.replace(/_/g, " ");
-    ajustarAlturaTextarea();
+    window.ajustarAlturaTextarea();
   };
 
   window.salvarEdicao = function() {
@@ -176,7 +169,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const [categoria, chave] = opcao.split(":");
     const texto = document.getElementById("resposta").value.trim();
     respostas[categoria][chave] = texto;
-    salvarNoFirebase();
+    window.salvarNoFirebase();
     alert("Resposta salva com sucesso!");
   };
 
@@ -208,8 +201,8 @@ document.addEventListener("DOMContentLoaded", function () {
     if (Object.keys(respostas[categoria]).length === 0) {
       delete respostas[categoria];
     }
-    salvarNoFirebase();
-    atualizarSeletorOpcoes();
+    window.salvarNoFirebase();
+    window.atualizarSeletorOpcoes();
     document.getElementById("resposta").value = "";
     document.getElementById("titulo").value = "";
     alert("Resposta apagada com sucesso!");
@@ -225,7 +218,7 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log("⚠️ Adição cancelada: título vazio");
       return;
     }
-    const validacao = validarChave(novoTitulo);
+    const validacao = window.validarChave(novoTitulo);
     if (!validacao.valido) {
       alert(validacao.mensagem);
       console.error("❌ Validação do título falhou:", validacao.mensagem);
@@ -237,7 +230,7 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log("⚠️ Adição cancelada: categoria vazia");
       return;
     }
-    const validacaoCategoria = validarChave(categoriaPrompt);
+    const validacaoCategoria = window.validarChave(categoriaPrompt);
     if (!validacaoCategoria.valido) {
       alert(validacaoCategoria.mensagem);
       console.error("❌ Validação da categoria falhou:", validacaoCategoria.mensagem);
@@ -254,10 +247,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     respostas[categoria][chave] = "[SAUDACAO] Nova resposta aqui... [DESPEDIDA]";
     console.log(`📝 Adicionando: ${categoria}:${chave}`);
-    salvarNoFirebase();
-    atualizarSeletorOpcoes();
+    window.salvarNoFirebase();
+    window.atualizarSeletorOpcoes();
     document.getElementById("opcoes").value = `${categoria}:${chave}`;
-    responder();
+    window.responder();
     alert("Nova resposta adicionada com sucesso!");
   };
 
@@ -278,7 +271,7 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log("⚠️ Alteração cancelada: categoria vazia");
       return;
     }
-    const validacao = validarChave(novaCategoria);
+    const validacao = window.validarChave(novaCategoria);
     if (!validacao.valido) {
       alert(validacao.mensagem);
       console.error("❌ Validação da nova categoria falhou:", validacao.mensagem);
@@ -308,10 +301,10 @@ document.addEventListener("DOMContentLoaded", function () {
       delete respostas[oldCategoria];
     }
     console.log(`🔄 Movendo ${chave} de ${oldCategoria} para ${novaCategoriaKey}`);
-    salvarNoFirebase();
-    atualizarSeletorOpcoes();
+    window.salvarNoFirebase();
+    window.atualizarSeletorOpcoes();
     document.getElementById("opcoes").value = `${novaCategoriaKey}:${chave}`;
-    responder();
+    window.responder();
     alert("Categoria alterada com sucesso!");
   };
 
@@ -352,7 +345,7 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
     const novoTitulo = document.getElementById("titulo").value.trim();
-    const validacao = validarChave(novoTitulo);
+    const validacao = window.validarChave(novoTitulo);
     if (!validacao.valido) {
       alert(validacao.mensagem);
       console.error("❌ Validação do novo título falhou:", validacao.mensagem);
@@ -378,23 +371,23 @@ document.addEventListener("DOMContentLoaded", function () {
     respostas[categoria][novoChave] = respostas[categoria][oldChave];
     delete respostas[categoria][oldChave];
     console.log(`🔄 Renomeando ${categoria}:${oldChave} para ${categoria}:${novoChave}`);
-    salvarNoFirebase();
-    atualizarSeletorOpcoes();
+    window.salvarNoFirebase();
+    window.atualizarSeletorOpcoes();
     document.getElementById("opcoes").value = `${categoria}:${novoChave}`;
-    responder();
+    window.responder();
     document.getElementById("titleContainer").style.display = "none";
     alert("Título alterado com sucesso!");
   };
 
-  function ajustarAlturaTextarea() {
+  window.ajustarAlturaTextarea = function() {
     const textarea = document.getElementById("resposta");
     if (textarea) {
       textarea.style.height = "auto";
       textarea.style.height = `${textarea.scrollHeight}px`;
     }
-  }
+  };
 
-  function substituirMarcadores(texto) {
+  window.substituirMarcadores = function(texto) {
     const hora = new Date().getHours();
     const saudacao = hora >= 5 && hora < 12 ? "Bom dia!" :
                      hora >= 12 && hora < 18 ? "Boa tarde!" : 
@@ -403,9 +396,9 @@ document.addEventListener("DOMContentLoaded", function () {
                      hora >= 12 && hora < 18 ? "Tenha uma excelente tarde!" : 
                      "Tenha uma excelente noite!";
     return texto.replace("[SAUDACAO]", saudacao).replace("[DESPEDIDA]", despedida);
-  }
+  };
 
-  function atualizarSaudacao() {
+  window.atualizarSaudacao = function() {
     const saudacao = document.getElementById("saudacao");
     if (saudacao) {
       const hora = new Date().getHours();
@@ -413,8 +406,8 @@ document.addEventListener("DOMContentLoaded", function () {
                              hora >= 12 && hora < 18 ? "Boa tarde!" : 
                              "Boa noite!";
     }
-  }
+  };
 
-  atualizarSaudacao();
-  setInterval(atualizarSaudacao, 600000);
+  window.atualizarSaudacao();
+  setInterval(window.atualizarSaudacao, 600000);
 });

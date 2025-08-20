@@ -50,7 +50,11 @@ document.addEventListener("DOMContentLoaded", function() {
     function applyCustomizations(iconColor, borderColor, neonBorders) {
         document.body.classList.toggle("no-neon", !neonBorders);
 
-        // Aplicar cor dos ícones
+        // Calcular cor de outline contrastante
+        const isLight = getLuminance(iconColor) > 0.5;
+        const outlineColor = isLight ? "#000000" : "#FFFFFF";
+
+        // Aplicar cor dos ícones e outline dinâmico
         const style = document.createElement("style");
         style.id = "custom-styles";
         style.textContent = `
@@ -71,6 +75,12 @@ document.addEventListener("DOMContentLoaded", function() {
             }
             .dark-mode .sidebar-button.active {
                 background: ${iconColor} !important;
+            }
+            .sidebar-button.active .text {
+                outline: 1px solid ${outlineColor} !important;
+            }
+            .dark-mode .sidebar-button.active .text {
+                outline: 1px solid ${outlineColor} !important;
             }
             .sidebar {
                 border-right: 1px solid ${borderColor} !important;
@@ -153,6 +163,16 @@ document.addEventListener("DOMContentLoaded", function() {
         const g = parseInt(hex.substring(2, 4), 16);
         const b = parseInt(hex.substring(4, 6), 16);
         return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    // Função para calcular a luminosidade de uma cor
+    function getLuminance(hex) {
+        hex = hex.replace("#", "");
+        const r = parseInt(hex.substring(0, 2), 16) / 255;
+        const g = parseInt(hex.substring(2, 4), 16) / 255;
+        const b = parseInt(hex.substring(4, 6), 16) / 255;
+        const a = [r, g, b].map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+        return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
     }
 
     // Verificar o estado da barra lateral no localStorage

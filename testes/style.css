@@ -34,7 +34,7 @@ body {
     position: fixed;
     top: 0;
     left: 0;
-    height: 100%;
+    height: 100vh; /* Altura total da viewport */
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -137,11 +137,11 @@ body {
 }
 
 .sidebar-button.active .text {
-    outline: 1px solid #000000; /* Borda preta para contraste no modo claro */
+    outline: 1px solid; /* Borda dinâmica via JS */
 }
 
 .dark-mode .sidebar-button.active .text {
-    outline: 1px solid #FFFFFF; /* Borda branca para contraste no modo escuro */
+    outline: 1px solid; /* Borda dinâmica via JS */
 }
 
 /* Toggle de modo noturno */
@@ -156,7 +156,12 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    align-self: flex-end; /* Fixar no final da sidebar */
+    position: absolute;
+    bottom: 50px; /* Fixar no final da sidebar */
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    width: fit-content;
     flex-shrink: 0; /* Evitar compressão */
 }
 
@@ -192,6 +197,7 @@ body {
     padding: 20px;
     margin: 20px 0;
     box-shadow: 0 0 15px rgba(0, 38, 64, 0.3); /* Sombra neon */
+    max-width: 100%; /* Garantir que caiba na página */
 }
 
 .dark-mode .card, .dark-mode .upload-card {
@@ -571,8 +577,10 @@ input:checked + .slider:before {
 /* Estilo do contêiner de controles */
 .controls {
     display: flex;
-    gap: 10px;
     flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 10px;
 }
 
 /* Estilo do contêiner de botões de cópia */
@@ -622,5 +630,8 @@ h1, h2, h3 {
     .customization-group input[type="color"] {
         width: 40px;
         height: 40px;
+    }
+    .controls {
+        justify-content: center; /* Centralizar botões em telas pequenas */
     }
 }

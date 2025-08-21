@@ -10,6 +10,9 @@
     </style>
 </head>
 <body class="light-mode">
+    <div id="loader-overlay" class="loader-overlay" style="display: none;">
+        <div class="loader"></div>
+    </div>
     <div id="popup" class="popup"></div>
 
     <div id="customizationPopup" class="customization-popup" style="display: none;">
@@ -98,12 +101,12 @@
                         <textarea id="resposta" rows="4"></textarea>
                     </div>
                     <div class="controls">
-                        <button id="copyBtn" class="button copy-btn">📋 Copiar</button>
-                        <button id="editTitleBtn" class="button">Editar Título</button>
-                        <button id="saveEditBtn" class="button">Salvar</button>
-                        <button id="changeCategoryBtn" class="button">Alterar Categoria</button>
-                        <button id="deleteBtn" class="button">Apagar</button>
-                        <button id="addBtn" class="button">Adicionar</button>
+                        <button id="copyBtn" class="button copy-btn" data-tooltip="Copiar mensagem para a área de transferência">📋 Copiar</button>
+                        <button id="editTitleBtn" class="button" data-tooltip="Abrir editor para o título da resposta">Editar Título</button>
+                        <button id="saveEditBtn" class="button" data-tooltip="Salvar alterações na mensagem atual">Salvar</button>
+                        <button id="changeCategoryBtn" class="button" data-tooltip="Mover esta resposta para outra categoria">Alterar Categoria</button>
+                        <button id="deleteBtn" class="button" data-tooltip="Apagar esta resposta permanentemente">Apagar</button>
+                        <button id="addBtn" class="button" data-tooltip="Criar uma nova resposta em branco">Adicionar</button>
                     </div>
                     <p id="saudacaoDespedidaText">Use [SAUDACAO] e [DESPEDIDA] para textos dinâmicos.</p>
                 </div>
@@ -235,5 +238,15 @@
     </div>
 
     <script type="module" src="assets/js/app.js"></script>
+    <div id="confirmationModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content card">
+        <h3 id="modalTitle">Confirmar Ação</h3>
+        <p id="modalMessage">Você tem certeza que deseja continuar?</p>
+        <div class="modal-buttons">
+            <button id="modalConfirmBtn" class="button">Confirmar</button>
+            <button id="modalCancelBtn" class="button back">Cancelar</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>

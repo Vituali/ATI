@@ -368,8 +368,10 @@ input:checked + .slider:before {
    ========================================================================== */
 
 .error {
+    color: var(--error-color, #B91C1C); /* Cor de erro do seu themes.css */
     font-size: 12px;
     margin-top: 5px;
+    min-height: 1.2em; /* Impede que o layout pule quando a mensagem aparece/desaparece */
     display: block;
     font-weight: 500;
 }

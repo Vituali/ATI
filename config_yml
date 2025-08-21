@@ -6,7 +6,7 @@ description: "Sistema automatizado para atendimentos com chat humanizado e conve
 author: "Equipe ATI"
 email: "contato@ati.com"
 baseurl: "" # Subpasta do site, ex: /meu-projeto
-url: "https://seuusuario.github.io" # URL base do site
+url: "https://vituali.github.io" # URL base do site
 
 # Build settings
 markdown: kramdown
@@ -25,7 +25,7 @@ logo: "/assets/images/favicon.ico"
 social:
   name: "ATI"
   links:
-    - "https://github.com/seuusuario/ati"
+    - "https://github.com/vituali/ATI"
 
 # Collections (se precisar no futuro)
 collections:

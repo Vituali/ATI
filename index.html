@@ -6,7 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ATI - Auxiliar de atendimentos</title>
     <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <style type="text/css">
         @font-face {
             font-family: Orbitron;
@@ -95,12 +97,14 @@
                         <div class="loader"></div>
                     </div>
 
-                    <div class="grupo">
-                        <label for="opcoes">Escolha uma opção:</label>
-                        <select id="opcoes">
-                            <option value="">Selecione uma opção</option>
-                        </select>
-                    </div>                    <div id="titleContainer" class="title-container" style="display: none;">
+                <div class="grupo">
+                    <div id="custom-select" class="custom-select">
+                        <div class="select-selected" id="select-display">Selecione uma resposta</div>
+                        <div class="select-items select-hide" id="select-items">
+                        </div>
+                    </div>
+                </div>                 
+                    <div id="titleContainer" class="title-container" style="display: none;">
                         <input type="text" id="titulo" placeholder="Título da resposta">
                         <button id="saveTitleBtn" class="button">Salvar Título</button>
                     </div>
@@ -108,18 +112,13 @@
                         <label for="resposta">Mensagem:</label>
                         <textarea id="resposta" rows="4"></textarea>
                     </div>
-                    <div class="controls">
-                        <button id="copyBtn" class="button copy-btn"
-                            data-tooltip="Copiar mensagem para a área de transferência">📋 Copiar</button>
-                        <button id="editTitleBtn" class="button"
-                            data-tooltip="Abrir editor para o título da resposta">Editar Título</button>
-                        <button id="saveEditBtn" class="button" data-tooltip="Salvar alterações na mensagem atual">Salvar</button>
-                        <button id="changeCategoryBtn" class="button"
-                            data-tooltip="Mover esta resposta para outra categoria">Alterar Categoria</button>
-                        <button id="deleteBtn" class="button"
-                            data-tooltip="Apagar esta resposta permanentemente">Apagar</button>
-                        <button id="addBtn" class="button" data-tooltip="Criar uma nova resposta em branco">Adicionar</button>
-                    </div>
+                        <div class="controls">
+                            <button id="copyBtn" class="button copy-btn" data-tooltip="Copiar mensagem para a área de transferência">📋 Copiar</button>
+                            <button id="editTitleBtn" class="button" data-tooltip="Abrir editor para o título da resposta">Editar Título</button>
+                            <button id="saveEditBtn" class="button" data-tooltip="Salvar alterações na mensagem atual">Salvar</button>
+                            <button id="deleteBtn" class="button" data-tooltip="Apagar esta resposta permanentemente">Apagar</button>
+                            <button id="addBtn" class="button" data-tooltip="Criar uma nova resposta em branco">Adicionar</button>
+                        </div>
                     <p id="saudacaoDespedidaText">Use [SAUDACAO] e [DESPEDIDA] para textos dinâmicos.</p>
                 </div>
             </div>
@@ -151,7 +150,7 @@
                                 <div class="inline-group">
                                     <div>
                                         <label for="phone">Número de Telefone:</label>
-                                        <input type="text" id="phone" placeholder="(21) 99999-9999">
+                                        <input type="text" id="phone" placeholder="(21) 99999-9999" autocomplete="tel">
                                         <span id="phoneError" class="error"></span>
                                     </div>
                                     <div>
@@ -257,6 +256,23 @@
             </div>
         </div>
     </div>
+    <div id="addResponseModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content card">
+        <h3 id="modalTitle">Adicionar Nova Resposta</h3>
+        <div class="modal-form-group">
+            <label for="newResponseTitle">Título da Resposta:</label>
+            <input type="text" id="newResponseTitle" placeholder="Ex: Problema de conexão">
+        </div>
+        <div class="modal-form-group">
+            <label for="newResponseCategory">Categoria:</label>
+            <input type="text" id="newResponseCategory" placeholder="Ex: suporte (ou deixe em branco para 'geral')">
+        </div>
+        <div class="modal-buttons">
+            <button id="modalSaveNewBtn" class="button">Salvar</button>
+            <button id="modalCancelNewBtn" class="button back">Cancelar</button>
+        </div>
+    </div>
+</div>
 </body>
 
 </html>

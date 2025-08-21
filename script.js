@@ -397,12 +397,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     window.substituirMarcadores = function(texto) {
         const hora = new Date().getHours();
-        const saudacao = hora >= 5 && hora < 12 ? "bom dia" :
-                         hora >= 12 && hora < 18 ? "boa tarde" : 
-                         "boa noite";
-        const despedida = hora >= 5 && hora < 12 ? "tenha uma excelente manhã" :
-                         hora >= 12 && hora < 18 ? "tenha uma excelente tarde" : 
-                         "tenha uma excelente noite";
+        const saudacao = hora >= 5 && hora < 12 ? "Bom dia" :
+                         hora >= 12 && hora < 18 ? "Boa tarde" : 
+                         "Boa noite";
+        const despedida = hora >= 5 && hora < 12 ? "Tenha uma excelente manhã" :
+                         hora >= 12 && hora < 18 ? "Tenha uma excelente tarde" : 
+                         "Tenha uma excelente noite";
         return texto.replace(/\[saudacao\]/gi, saudacao).replace(/\[despedida\]/gi, despedida);
     };
 
@@ -411,12 +411,12 @@ document.addEventListener("DOMContentLoaded", function () {
         const saudacaoSpan = document.getElementById("saudacaoSpan");
         const despedidaSpan = document.getElementById("despedidaSpan");
         const hora = new Date().getHours();
-        const saudacaoText = hora >= 5 && hora < 12 ? "bom dia" :
-                             hora >= 12 && hora < 18 ? "boa tarde" : 
-                             "boa noite";
-        const despedidaText = hora >= 5 && hora < 12 ? "tenha uma excelente manhã" :
-                              hora >= 12 && hora < 18 ? "tenha uma excelente tarde" : 
-                              "tenha uma excelente noite";
+        const saudacaoText = hora >= 5 && hora < 12 ? "Bom dia" :
+                             hora >= 12 && hora < 18 ? "Boa tarde" : 
+                             "Boa noite";
+        const despedidaText = hora >= 5 && hora < 12 ? "Tenha uma excelente manhã" :
+                              hora >= 12 && hora < 18 ? "Tenha uma excelente tarde" : 
+                              "Tenha uma excelente noite";
         saudacaoElements.forEach(element => {
             element.textContent = saudacaoText;
         });

@@ -28,8 +28,6 @@ yarn.lock
 # Dependências Ruby
 # ==========================================
 Gemfile.lock
-.bundle/
-vendor/
 
 # ==========================================
 # IDEs e Editores
@@ -47,12 +45,9 @@ vendor/
 # ==========================================
 # macOS
 .DS_Store
-.DS_Store?
 ._*
 .Spotlight-V100
 .Trashes
-ehthumbs.db
-Thumbs.db
 
 # Windows
 Thumbs.db
@@ -76,9 +71,6 @@ $RECYCLE.BIN/
 *.log
 logs/
 *.log.*
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 lerna-debug.log*
 
 # ==========================================
@@ -91,9 +83,6 @@ lerna-debug.log*
 *.old
 *.orig
 *.rej
-*.swp
-*.swo
-*~
 
 # ==========================================
 # Configurações Locais
@@ -103,8 +92,6 @@ lerna-debug.log*
 .env.development.local
 .env.test.local
 .env.production.local
-
-# Configurações específicas do desenvolvedor
 config.local.js
 firebase-config.local.js
 
@@ -184,7 +171,6 @@ documentation/generated/
 # Cache de ferramentas
 # ==========================================
 .parcel-cache/
-.cache/
 .eslintcache
 .stylelintcache
 

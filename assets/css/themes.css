@@ -1,0 +1,56 @@
+/* ==========================================================================
+   THEMES.CSS - Variáveis de cores, fontes e temas
+   ========================================================================== */
+
+:root {
+    /* Fontes */
+    --font-primary: 'Orbitron', sans-serif;
+    --text-primary: #1A3C5A;
+    --font-secondary: Arial, sans-serif;
+    --bg-gradient: linear-gradient(135deg, #E5F0F8 0%, #D1E0F0 100%);
+    --card-bg: linear-gradient(135deg, #FFFFFF 0%, #F5F7FA 100%);
+    --sidebar-bg: linear-gradient(180deg, #E5F0F8 0%, #D1E0F0 100%);
+    --input-bg: #FFFFFF;
+    --switch-bg: linear-gradient(180deg, #CCCCCC 0%, #AAAAAA 100%);
+    --switch-bg-checked: linear-gradient(180deg, #FF416C 0%, #FF4B2B 100%);
+}
+
+.dark-mode {
+    /* Cores do Tema Escuro */
+    --bg-gradient: linear-gradient(135deg, #2A2A2A 0%, #1A1A1A 100%);
+    --card-bg: linear-gradient(135deg, #2A2A2A 0%, #1A1A1A 100%);
+    --sidebar-bg: linear-gradient(180deg, #2A2A2A 0%, #1A1A1A 100%);
+    --text-primary: #D1D5DB;
+    --input-bg: #2A2A2A;
+    --switch-bg: linear-gradient(180deg, #555555 0%, #333333 100%); /* Gradiente cinza-escuro para 'desligado' */
+    --switch-bg-checked: linear-gradient(180deg, #FF0000 0%, #B30000 100%); /* Gradiente vermelho-escuro para 'ligado' */
+}
+
+/* Efeito Neon (controlado pela classe .no-neon no body) */
+.card, .upload-card, .customization-popup, .popup {
+    box-shadow: 0 0 15px 1px var(--shadow-color), 0 4px 8px rgba(0,0,0,0.2);
+}
+.button, .copy-btn, .file-label {
+    box-shadow: 0 0 10px 0px var(--shadow-color), 0 2px 4px rgba(0,0,0,0.2);
+}
+input:focus, select:focus, textarea:focus {
+    box-shadow: 0 0 10px 2px var(--shadow-color);
+}
+.sidebar-button.active {
+    box-shadow: 0 0 15px 2px var(--shadow-color);
+}
+
+/* Desativa o neon */
+.no-neon .card,
+.no-neon .upload-card,
+.no-neon .customization-popup,
+.no-neon .popup,
+.no-neon .button,
+.no-neon .copy-btn,
+.no-neon .file-label,
+.no-neon input:focus,
+.no-neon select:focus,
+.no-neon textarea:focus,
+.no-neon .sidebar-button.active {
+    box-shadow: none;
+}

@@ -1,0 +1,67 @@
+/* ==========================================================================
+   LAYOUT.CSS - Estrutura principal, sidebar, grid
+   ========================================================================== */
+
+/* Contêiner principal */
+.chatbox {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Barra lateral */
+.sidebar {
+    width: 60px;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border-color);
+    padding: 20px 10px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: width 0.3s ease, background 0.3s;
+    overflow: hidden;
+    z-index: 100;
+}
+
+.sidebar.expanded {
+    width: 200px;
+}
+
+/* Conteúdo principal */
+.content {
+    margin-left: 80px;
+    padding: 20px;
+    flex: 1;
+    transition: margin-left 0.3s ease;
+    display: flex;
+    justify-content: center;
+}
+
+.sidebar.expanded ~ .content {
+    margin-left: 220px;
+}
+
+/* Grid de duas colunas */
+.dual-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 100%;
+    align-items: start;
+}
+
+@media (max-width: 800px) {
+    .dual-grid {
+        grid-template-columns: 1fr;
+    }
+    .content {
+        margin-left: 70px;
+        padding: 10px;
+    }
+    .sidebar.expanded ~ .content {
+        margin-left: 210px;
+    }
+}

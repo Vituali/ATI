@@ -1,0 +1,30 @@
+/* ==========================================================================
+   MAIN.CSS - Ponto de entrada principal
+   ========================================================================== */
+
+/* 1. Importa os módulos de estilo */
+@import url('themes.css');
+@import url('layout.css');
+@import url('components.css');
+
+/* 2. Regras Globais e Resets */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-secondary);
+    background: var(--bg-gradient);
+    color: var(--text-primary);
+    transition: background-color 0.3s, color 0.3s;
+    min-height: 100vh;
+}
+
+h1, h2, h3, h4 {
+    font-family: var(--font-primary);
+    color: var(--heading-color);
+    text-align: center;
+    margin-bottom: 1rem;
+}

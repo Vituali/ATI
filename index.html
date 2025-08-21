@@ -4,102 +4,113 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ATI - Auxiliar de atendimentos</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="assets/css/main.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <style type="text/css">@font-face {font-family:Orbitron;font-style:normal;font-weight:400;src:url(/cf-fonts/v/orbitron/5.0.18/latin/wght/normal.woff2);unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-display:swap;}@font-face {font-family:Orbitron;font-style:normal;font-weight:700;src:url(/cf-fonts/v/orbitron/5.0.18/latin/wght/normal.woff2);unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-display:swap;}</style>
+    <style type="text/css">@font-face {font-family:Orbitron;font-style:normal;font-weight:400;src:url(https://fonts.gstatic.com/s/orbitron/v31/yMJRMIlzdpvBhQQL_Qq7dy0.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+    </style>
 </head>
 <body class="light-mode">
+    <div id="popup" class="popup"></div>
+
     <div id="customizationPopup" class="customization-popup" style="display: none;">
         <h2>Personalizar Cores</h2>
-        <div class="customization-group">
-            <div class="theme-options">
-                <label>Modo Escuro:</label>
-                <label class="switch">
-                    <input type="checkbox" id="themeToggle">
-                    <span class="slider"></span>
+        
+        <div class="customization-grid">
+            <div class="popup-column">
+                <label class="popup-label">
+                    <span>Modo Escuro</span>
+                    <label class="switch"><input type="checkbox" id="themeToggle"><span class="slider"></span></label>
                 </label>
-                <label>Ativar Bordas Neon:</label>
-                <label class="switch">
-                    <input type="checkbox" id="neonBorders">
-                    <span class="slider"></span>
+                <label class="popup-label">
+                    <span>Ativar Bordas Neon</span>
+                    <label class="switch"><input type="checkbox" id="neonBorders"><span class="slider"></span></label>
+                </label>
+            </div>
+
+            <div class="popup-column">
+                <label class="popup-label">
+                    <span>Cor dos Ícones</span>
+                    <input type="color" id="iconColor">
+                </label>
+                <label class="popup-label">
+                    <span>Cor das Bordas e Botões</span>
+                    <input type="color" id="borderColor">
+                </label>
+                <label class="popup-label">
+                    <span>Cor dos Títulos e Textos</span>
+                    <input type="color" id="textColor">
                 </label>
             </div>
         </div>
-        <div class="customization-group">
-            <label for="iconColor">Cor dos Ícones:</label>
-            <input type="color" id="iconColor">
-        </div>
-        <div class="customization-group">
-            <label for="borderColor">Cor das Bordas:</label>
-            <input type="color" id="borderColor">
-        </div>
+
         <div class="customization-buttons">
-            <button class="button" onclick="saveCustomization()">Salvar</button>
-            <button class="button" onclick="closeCustomizationPopup()">Cancelar</button>
+            <button class="button" id="saveCustomizationBtn">Salvar</button>
+            <button class="button back" id="closeCustomizationBtn">Cancelar</button>
         </div>
     </div>
 
+    <div id="atendentePopup" class="customization-popup" style="display: none;">
+        <h2>Selecionar Atendente</h2>
+        <select id="atendente">
+            <option value="">Selecione um atendente</option>
+            <option value="victor">Victor</option>
+            <option value="bruno">Bruno</option>
+            <option value="lucas">Lucas</option>
+            <option value="igor">Igor</option>
+            <option value="diego">Diego</option>
+            <option value="jefferson">Jefferson</option>
+            <option value="helio">Helio</option>
+            <option value="marlon">Marlon</option>
+        </select>
+        <button class="button" id="confirmAtendenteBtn">Confirmar</button>
+    </div>
+
     <div class="chatbox">
-        <div id="sidebar" class="sidebar">
-            <button id="toggleSidebar" class="toggle-sidebar">☰</button>
-            <button class="sidebar-button" onclick="showSection('chat')"><span class="icon">🗨️</span><span class="text">Chat</span></button>
-            <button class="sidebar-button" onclick="showSection('conversor')"><span class="icon">📄</span><span class="text">Conversor de Aditivo</span></button>
-            <button id="atendenteToggle" class="sidebar-button" onclick="openAtendentePopup()">👤<span class="text">Selecionar Atendente</span></button>
-            <button id="darkModeToggle" class="dark-mode-toggle">🌙</button>
-        </div>
+    <div id="sidebar" class="sidebar">
+        <button id="toggleSidebarBtn" class="toggle-sidebar">☰</button>
+        <button class="sidebar-button" data-section="chat"><span class="icon">🗨️</span><span class="text">Chat</span></button>
+        <button class="sidebar-button" data-section="conversor"><span class="icon">📄</span><span class="text">Conversor</span></button>
 
-        <div id="atendentePopup" class="customization-popup" style="display: none;">
-            <h2>Selecionar Atendente</h2>
-            <select id="atendente" onchange="selecionarAtendente()">
-                <option value="">Selecione um atendente</option>
-                <option value="victor">Victor</option>
-                <option value="bruno">Bruno</option>
-                <option value="lucas">Lucas</option>
-                <option value="igor">Igor</option>
-                <option value="diego">Diego</option>
-                <option value="jefferson">Jefferson</option>
-                <option value="helio">Helio</option>
-                <option value="marlon">Marlon</option>
-            </select>
-            <button class="button" onclick="closeAtendentePopup()">Fechar</button>
+        <div class="sidebar-footer">
+            <button id="atendenteToggleBtn" class="bottom-toggle">
+                <span class="icon">👤</span><span class="text">Atendente</span>
+            </button>
+            <button id="darkModeToggleBtn" class="bottom-toggle">
+                <span class="icon">⚙️</span><span class="text">Personalizar</span>
+            </button>
         </div>
-
+    </div>
         <div class="content">
             <div id="chatSection" style="display: none;">
-                <h1 id="saudacao"></h1>
-                <h2>🤖 Automatizador de Chat o manizado no mero un 🤖</h2>
+                <h1 id="saudacaoChat"></h1>
+                <h2>🤖 Automatizador de Chat Humanizado 🤖</h2>
                 <div class="card">
                     <div class="grupo">
                         <label for="opcoes">Escolha uma opção:</label>
-                        <select id="opcoes" onchange="responder()">
-                            <option value="">Selecione uma opção</option>
-                        </select>
+                        <select id="opcoes"><option value="">Selecione uma opção</option></select>
                     </div>
                     <div id="titleContainer" class="title-container" style="display: none;">
                         <input type="text" id="titulo" placeholder="Título da resposta">
-                        <button class="button" onclick="salvarNovoTitulo()">Salvar Título</button>
+                        <button id="saveTitleBtn" class="button">Salvar Título</button>
                     </div>
                     <div class="grupo">
                         <label for="resposta">Mensagem:</label>
                         <textarea id="resposta" rows="4"></textarea>
                     </div>
                     <div class="controls">
-                        <button class="button copy-btn" onclick="copiarTexto()">📋 Copiar</button>
-                        <button class="button" onclick="toggleEditarTitulo()">Editar Título</button>
-                        <button class="button" onclick="salvarEdicao()">Salvar</button>
-                        <button class="button" onclick="alterarCategoria()">Alterar Categoria</button>
-                        <button class="button" onclick="apagarTexto()">Apagar</button>
-                        <button class="button" onclick="mostrarPopupAdicionar()">Adicionar</button>
+                        <button id="copyBtn" class="button copy-btn">📋 Copiar</button>
+                        <button id="editTitleBtn" class="button">Editar Título</button>
+                        <button id="saveEditBtn" class="button">Salvar</button>
+                        <button id="changeCategoryBtn" class="button">Alterar Categoria</button>
+                        <button id="deleteBtn" class="button">Apagar</button>
+                        <button id="addBtn" class="button">Adicionar</button>
                     </div>
-                    <p id="saudacaoDespedidaText">Salvar <span id="saudacaoSpan"></span> e <span id="despedidaSpan"></span> como [SAUDACAO] E [DESPEDIDA] para alterar automaticamente com o horário</p>
+                    <p id="saudacaoDespedidaText">Use [SAUDACAO] e [DESPEDIDA] para textos dinâmicos.</p>
                 </div>
             </div>
 
             <div id="conversorSection" style="display: none;">
-                <h1 id="saudacao"></h1>
+                <h1 id="saudacaoConversor"></h1>
                 <h2>Conversor de Aditivo</h2>
                 <div id="uploadSection" class="upload-card">
                     <div class="upload-content">
@@ -109,13 +120,14 @@
                             <input type="file" id="pdfUpload" class="file-input" accept="application/pdf">
                             <span id="fileName" class="file-name">Nenhum arquivo selecionado</span>
                         </div>
-                        <button class="button" onclick="loadPDF()">Carregar e Extrair Dados</button>
+                        <button class="button" id="loadPdfBtn">Carregar e Extrair Dados</button>
                     </div>
                 </div>
-
-                <div id="dataSection" style="display: none;">
-                    <button class="button back" onclick="backToUpload()">Voltar à Página Inicial</button>
-                    <h3>Agendamento para Contrato - <span id="contratoSpan"></span></h3>
+            <div id="dataSection" style="display: none;">
+                <button class="button back" id="backToUploadBtn">Voltar</button>
+                <h3>Agendamento para Contrato - <span id="contratoSpan"></span></h3>
+                
+                <div class="dual-grid">
                     <div class="card">
                         <h4>Dados Gerais</h4>
                         <div class="grupo">
@@ -123,11 +135,10 @@
                             <p><strong>Nome:</strong> <span id="nome"></span></p>
                             <p><strong>Endereço Antigo:</strong> <span id="oldAddress"></span></p>
                             <p><strong>Endereço Novo:</strong> <span id="newAddress"></span></p>
-                            <p><strong>Motivo:</strong> <span id="motivo">MUD ENDEREÇO</span></p>
                             <div class="inline-group">
                                 <div>
                                     <label for="phone">Número de Telefone:</label>
-                                    <input type="text" id="phone">
+                                    <input type="text" id="phone" placeholder="(21) 99999-9999">
                                     <span id="phoneError" class="error"></span>
                                 </div>
                                 <div>
@@ -142,62 +153,27 @@
                             </div>
                         </div>
                     </div>
-                    <div class="dual-grid">
-                        <div class="card">
-                            <h4>Retirada</h4>
-                            <div class="grupo checkbox-group">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="selfWithdrawal">
-                                    <span class="checkbox-custom"></span>
-                                    Cliente faz a retirada por conta própria?
-                                </label>
-                            </div>
-                            <div id="withdrawalSection" class="grupo">
-                                <label for="withdrawalDate">Data de Retirada (a partir de amanhã):</label>
-                                <input type="date" id="withdrawalDate">
-                                <label for="withdrawalPeriod">Período de Retirada:</label>
-                                <select id="withdrawalPeriod">
-                                    <option value="Manhã">Manhã</option>
-                                    <option value="Tarde">Tarde</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="card">
-                            <h4>Instalação</h4>
-                            <div class="grupo">
-                                <label for="installationDate">Data de Instalação (não antes da retirada):</label>
-                                <input type="date" id="installationDate">
-                                <label for="installationPeriod">Período de Instalação:</label>
-                                <select id="installationPeriod">
-                                    <option value="Manhã">Manhã</option>
-                                    <option value="Tarde">Tarde</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
                     <div class="card">
                         <h4>Detalhes do Contrato</h4>
                         <div class="grupo checkbox-group">
                             <label class="checkbox-label">
                                 <input type="checkbox" id="renewal">
-                                <span class="checkbox-custom"></span>
-                                É Renovação? (Se sim, isento de taxa)
+                                <span class="checkbox-custom"></span> É Renovação? (Isento de taxa)
                             </label>
                             <label class="checkbox-label">
                                 <input type="checkbox" id="migration">
-                                <span class="checkbox-custom"></span>
-                                É Migração? (Se sim, isento de taxa)
+                                <span class="checkbox-custom"></span> É Migração? (Isento de taxa)
                             </label>
-                            <p id="renewalMessage" style="display: none; color: #1A3C5A;">Taxa isenta devido à renovação.</p>
-                            <p id="migrationMessage" style="display: none; color: #1A3C5A;">Taxa isenta devido à migração.</p>
+                            <p id="renewalMessage" style="display: none;">Taxa isenta devido à renovação.</p>
+                            <p id="migrationMessage" style="display: none;">Taxa isenta devido à migração.</p>
                         </div>
                         <div class="inline-group">
                             <div>
                                 <label for="taxValue">Valor da Taxa:</label>
                                 <select id="taxValue">
-                                    <option value="100">100</option>
-                                    <option value="65">65</option>
-                                    <option value="50">50</option>
+                                    <option value="100">R$ 100</option>
+                                    <option value="65">R$ 65</option>
+                                    <option value="50">R$ 50</option>
                                     <option value="isento">Isento</option>
                                 </select>
                             </div>
@@ -210,22 +186,54 @@
                             </div>
                         </div>
                     </div>
-                    <button class="button" onclick="generateOS()">Gerar O.S</button>
-                    <div id="output" class="output"></div>
+                </div>
+
+                <div class="dual-grid">
+                    <div class="card">
+                        <h4>Retirada</h4>
+                        <div class="grupo checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="selfWithdrawal">
+                                <span class="checkbox-custom"></span> Cliente faz a retirada
+                            </label>
+                        </div>
+                        <div id="withdrawalSection" class="grupo">
+                            <label for="withdrawalDate">Data de Retirada:</label>
+                            <input type="date" id="withdrawalDate">
+                            <label for="withdrawalPeriod">Período de Retirada:</label>
+                            <select id="withdrawalPeriod">
+                                <option value="Manhã">Manhã</option>
+                                <option value="Tarde">Tarde</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h4>Instalação</h4>
+                        <div class="grupo">
+                            <label for="installationDate">Data de Instalação:</label>
+                            <input type="date" id="installationDate">
+                            <label for="installationPeriod">Período de Instalação:</label>
+                            <select id="installationPeriod">
+                                <option value="Manhã">Manhã</option>
+                                <option value="Tarde">Tarde</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <button class="button" id="generateOsBtn">Gerar O.S</button>
+                    <textarea id="output" class="output" readonly></textarea>
                     <div id="copyButtons" class="copy-buttons" style="display: none;">
-                        <button class="button copy-btn" onclick="copyWithdrawal()">Copiar Retirada</button>
-                        <button class="button copy-btn" onclick="copyInstallation()">Copiar Instalação</button>
-                        <button class="button copy-btn" onclick="copyOS()">Copiar O.S</button>
+                        <button class="button copy-btn" id="copyWithdrawalBtn">Copiar Retirada</button>
+                        <button class="button copy-btn" id="copyInstallationBtn">Copiar Instalação</button>
+                        <button class="button copy-btn" id="copyOsBtn">Copiar O.S</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="popup" class="popup"></div>
-
-    <script src="main.js"></script>
-    <script src="script.js"></script>
-    <script src="conversor.js"></script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9723d9543c39f1eb',t:'MTc1NTcxMzQ0Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+    <script type="module" src="assets/js/app.js"></script>
+</body>
 </html>

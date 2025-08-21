@@ -4,48 +4,46 @@ import { initializeTheme } from './theme.js';
 import { initializeChat } from './chat.js';
 import { initializeConversor } from './conversor.js';
 
-// Executa quando o HTML estiver totalmente carregado
 document.addEventListener('DOMContentLoaded', async () => {
-    // Pega o loader no início
-    const loader = document.getElementById('loader-overlay');
+    // Inicializa módulos que não dependem de dados
+    initializeUI();
+    initializeTheme();
+    const chatModule = initializeChat();
+    initializeConversor();
     
-    // Mostra o loader
-    loader.style.display = 'flex';
+    // Conecta ao Firebase
+    await initializeFirebase();
 
-    try {
-        // Inicializa módulos básicos
-        initializeUI();
-        initializeTheme();
-        await initializeFirebase(); // Espera o Firebase conectar
-
-        // Inicializa as seções
-        const chatModule = initializeChat();
-        initializeConversor();
-
-    // Gerencia o estado global da aplicação (Atendente)
+    // Estado da Aplicação
     let currentAttendant = localStorage.getItem("atendenteAtual") || "";
 
-    // Seleciona os elementos globais da página
+    // Seletores de Elementos Globais
     const atendentePopup = document.getElementById('atendentePopup');
     const atendenteToggleBtn = document.getElementById('atendenteToggleBtn');
     const confirmAtendenteBtn = document.getElementById('confirmAtendenteBtn');
     const atendenteSelect = document.getElementById('atendente');
     const atendenteText = atendenteToggleBtn.querySelector('.text');
+    const chatLoader = document.getElementById('chatLoader');
 
     // Funções principais de controle
     const handleAttendantChange = async () => {
         const selected = atendenteSelect.value;
-        if (!selected) {
-            alert("Por favor, selecione um atendente.");
-            return;
-        }
+        if (!selected) return;
+        
         currentAttendant = selected;
         localStorage.setItem("atendenteAtual", currentAttendant);
         atendenteText.textContent = currentAttendant.charAt(0).toUpperCase() + currentAttendant.slice(1);
         
-        // Carrega os dados do Firebase e atualiza o módulo de chat
-        const data = await loadDataForAttendant(currentAttendant);
-        chatModule.setResponses(data);
+        chatLoader.style.display = 'flex'; // MOSTRA o loader do card
+        try {
+            const data = await loadDataForAttendant(currentAttendant);
+            chatModule.setResponses(data); // Passa os dados para o módulo de chat
+        } catch (error) {
+            console.error("Erro ao carregar dados do atendente:", error);
+            showPopup("Falha ao carregar dados do chat.");
+        } finally {
+            chatLoader.style.display = 'none'; // ESCONDE o loader do card
+        }
         
         atendentePopup.style.display = 'none';
     };
@@ -54,25 +52,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     atendenteToggleBtn.addEventListener('click', () => {
         atendentePopup.style.display = 'block';
     });
-
     confirmAtendenteBtn.addEventListener('click', handleAttendantChange);
-
-    // Adiciona evento aos botões da sidebar para trocar de seção
     document.querySelectorAll('.sidebar-button[data-section]').forEach(button => {
         button.addEventListener('click', () => {
             showSection(button.dataset.section);
         });
     });
 
-        // Estado Inicial ao Carregar
-        if (currentAttendant) {
-            atendenteSelect.value = currentAttendant;
-            await handleAttendantChange(); // Usa await para esperar o carregamento
-        }
-        
-        // ...
-    } finally {
-        // Esconde o loader, mesmo que dê erro
-        loader.style.display = 'none';
+    // Estado Inicial ao Carregar
+    if (currentAttendant) {
+        atendenteSelect.value = currentAttendant;
+        handleAttendantChange(); // Carrega os dados do atendente salvo
+    } else {
+        atendenteText.textContent = 'Atendente';
     }
+    
+    updateGreeting();
+    setInterval(updateGreeting, 60000);
 });

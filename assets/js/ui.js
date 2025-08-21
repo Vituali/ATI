@@ -9,13 +9,28 @@ export function showPopup(message, duration = 2000) {
 }
 
 export function showSection(sectionId) {
-    document.querySelectorAll('.content > div').forEach(section => {
-        section.style.display = section.id === `${sectionId}Section` ? 'block' : 'none';
+    // Esconde todas as seções de conteúdo
+    document.querySelectorAll('.content > div[id$="Section"]').forEach(section => {
+        section.style.display = 'none';
     });
+
+    // Mostra apenas a seção desejada
+    const activeSection = document.getElementById(`${sectionId}Section`);
+    if (activeSection) {
+        activeSection.style.display = 'block';
+    }
+
+    // Gerencia a classe 'active' nos botões da sidebar
     document.querySelectorAll('.sidebar-button[data-section]').forEach(button => {
-        button.classList.toggle('active', button.dataset.section === sectionId);
+        // Remove a classe 'active' de todos os botões
+        button.classList.remove('active');
+        // Adiciona a classe 'active' apenas ao botão correspondente
+        if (button.dataset.section === sectionId) {
+            button.classList.add('active');
+        }
     });
-    updateGreeting(); // Garante que a saudação correta é exibida
+
+    updateGreeting();
 }
 
 export function initializeUI() {

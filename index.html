@@ -1,23 +1,28 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ATI - Auxiliar de atendimentos</title>
     <link rel="stylesheet" href="assets/css/main.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <style type="text/css">@font-face {font-family:Orbitron;font-style:normal;font-weight:400;src:url(https://fonts.gstatic.com/s/orbitron/v31/yMJRMIlzdpvBhQQL_Qq7dy0.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+    <style type="text/css">
+        @font-face {
+            font-family: Orbitron;
+            font-style: normal;
+            font-weight: 400;
+            src: url(https://fonts.gstatic.com/s/orbitron/v31/yMJRMIlzdpvBhQQL_Qq7dy0.woff2) format('woff2');
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+        }
     </style>
 </head>
+
 <body class="light-mode">
-    <div id="loader-overlay" class="loader-overlay" style="display: none;">
-        <div class="loader"></div>
-    </div>
     <div id="popup" class="popup"></div>
 
     <div id="customizationPopup" class="customization-popup" style="display: none;">
         <h2>Personalizar Cores</h2>
-        
         <div class="customization-grid">
             <div class="popup-column">
                 <label class="popup-label">
@@ -29,7 +34,6 @@
                     <label class="switch"><input type="checkbox" id="neonBorders"><span class="slider"></span></label>
                 </label>
             </div>
-
             <div class="popup-column">
                 <label class="popup-label">
                     <span>Cor dos Ícones</span>
@@ -45,7 +49,6 @@
                 </label>
             </div>
         </div>
-
         <div class="customization-buttons">
             <button class="button" id="saveCustomizationBtn">Salvar</button>
             <button class="button back" id="closeCustomizationBtn">Cancelar</button>
@@ -69,30 +72,35 @@
     </div>
 
     <div class="chatbox">
-    <div id="sidebar" class="sidebar">
-        <button id="toggleSidebarBtn" class="toggle-sidebar">☰</button>
-        <button class="sidebar-button" data-section="chat"><span class="icon">🗨️</span><span class="text">Chat</span></button>
-        <button class="sidebar-button" data-section="conversor"><span class="icon">📄</span><span class="text">Conversor</span></button>
-
-        <div class="sidebar-footer">
-            <button id="atendenteToggleBtn" class="bottom-toggle">
-                <span class="icon">👤</span><span class="text">Atendente</span>
-            </button>
-            <button id="darkModeToggleBtn" class="bottom-toggle">
-                <span class="icon">⚙️</span><span class="text">Personalizar</span>
-            </button>
+        <div id="sidebar" class="sidebar">
+            <button id="toggleSidebarBtn" class="toggle-sidebar">☰</button>
+            <button class="sidebar-button active" data-section="chat"><span class="icon">🗨️</span><span class="text">Chat</span></button>
+            <button class="sidebar-button" data-section="conversor"><span class="icon">📄</span><span class="text">Conversor</span></button>
+            <div class="sidebar-footer">
+                <button id="atendenteToggleBtn" class="bottom-toggle">
+                    <span class="icon">👤</span><span class="text">Atendente</span>
+                </button>
+                <button id="darkModeToggleBtn" class="bottom-toggle">
+                    <span class="icon">⚙️</span><span class="text">Personalizar</span>
+                </button>
+            </div>
         </div>
-    </div>
         <div class="content">
-            <div id="chatSection" style="display: none;">
+            <div id="chatSection">
                 <h1 id="saudacaoChat"></h1>
                 <h2>🤖 Automatizador de Chat Humanizado 🤖</h2>
                 <div class="card">
+                    
+                    <div class="card-loader" id="chatLoader" style="display: none;">
+                        <div class="loader"></div>
+                    </div>
+
                     <div class="grupo">
                         <label for="opcoes">Escolha uma opção:</label>
-                        <select id="opcoes"><option value="">Selecione uma opção</option></select>
-                    </div>
-                    <div id="titleContainer" class="title-container" style="display: none;">
+                        <select id="opcoes">
+                            <option value="">Selecione uma opção</option>
+                        </select>
+                    </div>                    <div id="titleContainer" class="title-container" style="display: none;">
                         <input type="text" id="titulo" placeholder="Título da resposta">
                         <button id="saveTitleBtn" class="button">Salvar Título</button>
                     </div>
@@ -101,17 +109,20 @@
                         <textarea id="resposta" rows="4"></textarea>
                     </div>
                     <div class="controls">
-                        <button id="copyBtn" class="button copy-btn" data-tooltip="Copiar mensagem para a área de transferência">📋 Copiar</button>
-                        <button id="editTitleBtn" class="button" data-tooltip="Abrir editor para o título da resposta">Editar Título</button>
+                        <button id="copyBtn" class="button copy-btn"
+                            data-tooltip="Copiar mensagem para a área de transferência">📋 Copiar</button>
+                        <button id="editTitleBtn" class="button"
+                            data-tooltip="Abrir editor para o título da resposta">Editar Título</button>
                         <button id="saveEditBtn" class="button" data-tooltip="Salvar alterações na mensagem atual">Salvar</button>
-                        <button id="changeCategoryBtn" class="button" data-tooltip="Mover esta resposta para outra categoria">Alterar Categoria</button>
-                        <button id="deleteBtn" class="button" data-tooltip="Apagar esta resposta permanentemente">Apagar</button>
+                        <button id="changeCategoryBtn" class="button"
+                            data-tooltip="Mover esta resposta para outra categoria">Alterar Categoria</button>
+                        <button id="deleteBtn" class="button"
+                            data-tooltip="Apagar esta resposta permanentemente">Apagar</button>
                         <button id="addBtn" class="button" data-tooltip="Criar uma nova resposta em branco">Adicionar</button>
                     </div>
                     <p id="saudacaoDespedidaText">Use [SAUDACAO] e [DESPEDIDA] para textos dinâmicos.</p>
                 </div>
             </div>
-
             <div id="conversorSection" style="display: none;">
                 <h1 id="saudacaoConversor"></h1>
                 <h2>Conversor de Aditivo</h2>
@@ -126,111 +137,109 @@
                         <button class="button" id="loadPdfBtn">Carregar e Extrair Dados</button>
                     </div>
                 </div>
-            <div id="dataSection" style="display: none;">
-                <button class="button back" id="backToUploadBtn">Voltar</button>
-                <h3>Agendamento para Contrato - <span id="contratoSpan"></span></h3>
-                
-                <div class="dual-grid">
-                    <div class="card">
-                        <h4>Dados Gerais</h4>
-                        <div class="grupo">
-                            <p><strong>Contrato:</strong> <span id="contrato"></span></p>
-                            <p><strong>Nome:</strong> <span id="nome"></span></p>
-                            <p><strong>Endereço Antigo:</strong> <span id="oldAddress"></span></p>
-                            <p><strong>Endereço Novo:</strong> <span id="newAddress"></span></p>
+                <div id="dataSection" style="display: none;">
+                    <button class="button back" id="backToUploadBtn">Voltar</button>
+                    <h3>Agendamento para Contrato - <span id="contratoSpan"></span></h3>
+                    <div class="dual-grid">
+                        <div class="card">
+                            <h4>Dados Gerais</h4>
+                            <div class="grupo">
+                                <p><strong>Contrato:</strong> <span id="contrato"></span></p>
+                                <p><strong>Nome:</strong> <span id="nome"></span></p>
+                                <p><strong>Endereço Antigo:</strong> <span id="oldAddress"></span></p>
+                                <p><strong>Endereço Novo:</strong> <span id="newAddress"></span></p>
+                                <div class="inline-group">
+                                    <div>
+                                        <label for="phone">Número de Telefone:</label>
+                                        <input type="text" id="phone" placeholder="(21) 99999-9999">
+                                        <span id="phoneError" class="error"></span>
+                                    </div>
+                                    <div>
+                                        <label for="equipmentType">Tipo de Comodato:</label>
+                                        <select id="equipmentType">
+                                            <option value="alcl">ALCL</option>
+                                            <option value="proprio">PROPRIO</option>
+                                            <option value="huawei">HUAWEI</option>
+                                            <option value="tp link">TP LINK</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h4>Detalhes do Contrato</h4>
+                            <div class="grupo checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="renewal">
+                                    <span class="checkbox-custom"></span> É Renovação? (Isento de taxa)
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="migration">
+                                    <span class="checkbox-custom"></span> É Migração? (Isento de taxa)
+                                </label>
+                                <p id="renewalMessage" style="display: none;">Taxa isenta devido à renovação.</p>
+                                <p id="migrationMessage" style="display: none;">Taxa isenta devido à migração.</p>
+                            </div>
                             <div class="inline-group">
                                 <div>
-                                    <label for="phone">Número de Telefone:</label>
-                                    <input type="text" id="phone" placeholder="(21) 99999-9999">
-                                    <span id="phoneError" class="error"></span>
+                                    <label for="taxValue">Valor da Taxa:</label>
+                                    <select id="taxValue">
+                                        <option value="100">R$ 100</option>
+                                        <option value="65">R$ 65</option>
+                                        <option value="50">R$ 50</option>
+                                        <option value="isento">Isento</option>
+                                    </select>
                                 </div>
                                 <div>
-                                    <label for="equipmentType">Tipo de Comodato:</label>
-                                    <select id="equipmentType">
-                                        <option value="alcl">ALCL</option>
-                                        <option value="proprio">PROPRIO</option>
-                                        <option value="huawei">HUAWEI</option>
-                                        <option value="tp link">TP LINK</option>
+                                    <label for="signature">Tipo de Assinatura:</label>
+                                    <select id="signature">
+                                        <option value="digital">Assinatura Digital</option>
+                                        <option value="local">Assinatura no Local</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="card">
-                        <h4>Detalhes do Contrato</h4>
-                        <div class="grupo checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="renewal">
-                                <span class="checkbox-custom"></span> É Renovação? (Isento de taxa)
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="migration">
-                                <span class="checkbox-custom"></span> É Migração? (Isento de taxa)
-                            </label>
-                            <p id="renewalMessage" style="display: none;">Taxa isenta devido à renovação.</p>
-                            <p id="migrationMessage" style="display: none;">Taxa isenta devido à migração.</p>
-                        </div>
-                        <div class="inline-group">
-                            <div>
-                                <label for="taxValue">Valor da Taxa:</label>
-                                <select id="taxValue">
-                                    <option value="100">R$ 100</option>
-                                    <option value="65">R$ 65</option>
-                                    <option value="50">R$ 50</option>
-                                    <option value="isento">Isento</option>
-                                </select>
+                    <div class="dual-grid">
+                        <div class="card">
+                            <h4>Retirada</h4>
+                            <div class="grupo checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="selfWithdrawal">
+                                    <span class="checkbox-custom"></span> Cliente faz a retirada
+                                </label>
                             </div>
-                            <div>
-                                <label for="signature">Tipo de Assinatura:</label>
-                                <select id="signature">
-                                    <option value="digital">Assinatura Digital</option>
-                                    <option value="local">Assinatura no Local</option>
+                            <div id="withdrawalSection" class="grupo">
+                                <label for="withdrawalDate">Data de Retirada:</label>
+                                <input type="date" id="withdrawalDate">
+                                <label for="withdrawalPeriod">Período de Retirada:</label>
+                                <select id="withdrawalPeriod">
+                                    <option value="Manhã">Manhã</option>
+                                    <option value="Tarde">Tarde</option>
                                 </select>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <div class="dual-grid">
-                    <div class="card">
-                        <h4>Retirada</h4>
-                        <div class="grupo checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="selfWithdrawal">
-                                <span class="checkbox-custom"></span> Cliente faz a retirada
-                            </label>
-                        </div>
-                        <div id="withdrawalSection" class="grupo">
-                            <label for="withdrawalDate">Data de Retirada:</label>
-                            <input type="date" id="withdrawalDate">
-                            <label for="withdrawalPeriod">Período de Retirada:</label>
-                            <select id="withdrawalPeriod">
-                                <option value="Manhã">Manhã</option>
-                                <option value="Tarde">Tarde</option>
-                            </select>
+                        <div class="card">
+                            <h4>Instalação</h4>
+                            <div class="grupo">
+                                <label for="installationDate">Data de Instalação:</label>
+                                <input type="date" id="installationDate">
+                                <label for="installationPeriod">Período de Instalação:</label>
+                                <select id="installationPeriod">
+                                    <option value="Manhã">Manhã</option>
+                                    <option value="Tarde">Tarde</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div class="card">
-                        <h4>Instalação</h4>
-                        <div class="grupo">
-                            <label for="installationDate">Data de Instalação:</label>
-                            <input type="date" id="installationDate">
-                            <label for="installationPeriod">Período de Instalação:</label>
-                            <select id="installationPeriod">
-                                <option value="Manhã">Manhã</option>
-                                <option value="Tarde">Tarde</option>
-                            </select>
+                        <button class="button" id="generateOsBtn">Gerar O.S</button>
+                        <textarea id="output" class="output" readonly></textarea>
+                        <div id="copyButtons" class="copy-buttons" style="display: none;">
+                            <button class="button copy-btn" id="copyWithdrawalBtn">Copiar Retirada</button>
+                            <button class="button copy-btn" id="copyInstallationBtn">Copiar Instalação</button>
+                            <button class="button copy-btn" id="copyOsBtn">Copiar O.S</button>
                         </div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <button class="button" id="generateOsBtn">Gerar O.S</button>
-                    <textarea id="output" class="output" readonly></textarea>
-                    <div id="copyButtons" class="copy-buttons" style="display: none;">
-                        <button class="button copy-btn" id="copyWithdrawalBtn">Copiar Retirada</button>
-                        <button class="button copy-btn" id="copyInstallationBtn">Copiar Instalação</button>
-                        <button class="button copy-btn" id="copyOsBtn">Copiar O.S</button>
                     </div>
                 </div>
             </div>
@@ -239,14 +248,15 @@
 
     <script type="module" src="assets/js/app.js"></script>
     <div id="confirmationModal" class="modal-overlay" style="display: none;">
-    <div class="modal-content card">
-        <h3 id="modalTitle">Confirmar Ação</h3>
-        <p id="modalMessage">Você tem certeza que deseja continuar?</p>
-        <div class="modal-buttons">
-            <button id="modalConfirmBtn" class="button">Confirmar</button>
-            <button id="modalCancelBtn" class="button back">Cancelar</button>
+        <div class="modal-content card">
+            <h3 id="modalTitle">Confirmar Ação</h3>
+            <p id="modalMessage">Você tem certeza que deseja continuar?</p>
+            <div class="modal-buttons">
+                <button id="modalConfirmBtn" class="button">Confirmar</button>
+                <button id="modalCancelBtn" class="button back">Cancelar</button>
+            </div>
         </div>
     </div>
-</div>
 </body>
+
 </html>

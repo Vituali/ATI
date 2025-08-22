@@ -1,13 +1,18 @@
 // --- Funções de UI reutilizáveis ---
 
-export function showPopup(message, duration = 2000) {
+export function showPopup(message, type = 'info', duration = 3000) {
     const popup = document.getElementById('popup');
     if (!popup) return;
+
+    popup.classList.remove('success', 'error', 'info');
+    popup.classList.add(type);
     popup.textContent = message;
     popup.classList.add('show');
-    setTimeout(() => popup.classList.remove('show'), duration);
+    
+    setTimeout(() => {
+        popup.classList.remove('show');
+    }, duration);
 }
-
 export function showSection(sectionId) {
     // Esconde todas as seções de conteúdo
     document.querySelectorAll('.content > div[id$="Section"]').forEach(section => {

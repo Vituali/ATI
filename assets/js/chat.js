@@ -140,7 +140,7 @@ export function initializeChat() {
         if (categoryObject) {
             categoryObject.items[key] = elements.response.value.trim();
             saveDataForAttendant(attendant, respostas);
-            showPopup("Resposta salva com sucesso!");
+            showPopup("Resposta salva com sucesso!", 'success');
         }
     };
     

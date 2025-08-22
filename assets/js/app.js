@@ -1,72 +1,216 @@
-import { initializeUI, showSection, updateGreeting } from './ui.js';
-import { initializeFirebase, loadDataForAttendant } from './firebase.js';
+import { initializeUI, showSection, updateGreeting, showPopup } from './ui.js';
+import {
+    initializeFirebase,
+    loadDataForAttendant,
+    loadAtendentes,
+    loginUser,
+    logoutUser,
+    checkAuthState,
+    createUserAccount,
+    updateUserPassword
+} from './firebase.js';
 import { initializeTheme } from './theme.js';
 import { initializeChat } from './chat.js';
 import { initializeConversor } from './conversor.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Inicializa módulos que não dependem de dados
+    // --- 1. INICIALIZAÇÃO DOS MÓDULOS E SELETORES ---
     initializeUI();
     initializeTheme();
-    const chatModule = initializeChat();
     initializeConversor();
-    
-    // Conecta ao Firebase
-    await initializeFirebase();
+    initializeFirebase();
+    const chatModule = initializeChat();
 
-    // Estado da Aplicação
-    let currentAttendant = localStorage.getItem("atendenteAtual") || "";
-
-    // Seletores de Elementos Globais
-    const atendentePopup = document.getElementById('atendentePopup');
+    // Seletores da interface
+    const authOverlay = document.getElementById('auth-overlay');
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const mainContent = document.querySelector('.chatbox');
+    const sidebar = document.querySelector('.sidebar');
     const atendenteToggleBtn = document.getElementById('atendenteToggleBtn');
-    const confirmAtendenteBtn = document.getElementById('confirmAtendenteBtn');
-    const atendenteSelect = document.getElementById('atendente');
-    const atendenteText = atendenteToggleBtn.querySelector('.text');
     const chatLoader = document.getElementById('chatLoader');
+    const profileModal = document.getElementById('profileModal');
+    const updatePasswordForm = document.getElementById('update-password-form');
+    const modalLogoutBtn = document.getElementById('modalLogoutBtn');
+    const modalCloseProfileBtn = document.getElementById('modalCloseProfileBtn');
+    const adminLinkContainer = document.getElementById('admin-link-container');
 
-    // Funções principais de controle
-    const handleAttendantChange = async () => {
-        const selected = atendenteSelect.value;
-        if (!selected) return;
-        
-        currentAttendant = selected;
-        localStorage.setItem("atendenteAtual", currentAttendant);
-        atendenteText.textContent = currentAttendant.charAt(0).toUpperCase() + currentAttendant.slice(1);
-        
-        chatLoader.style.display = 'flex'; // MOSTRA o loader do card
-        try {
-            const data = await loadDataForAttendant(currentAttendant);
-            chatModule.setResponses(data); // Passa os dados para o módulo de chat
-        } catch (error) {
-            console.error("Erro ao carregar dados do atendente:", error);
-            showPopup("Falha ao carregar dados do chat.");
-        } finally {
-            chatLoader.style.display = 'none'; // ESCONDE o loader do card
+    // --- 2. DEFINIÇÃO DAS FUNÇÕES PRINCIPAIS ---
+
+    /**
+     * Inicia a aplicação principal para um usuário autenticado.
+     * @param {object} user - O objeto do usuário vindo do Firebase Auth.
+     * @param {object} allAtendentes - O objeto com os dados de todos os atendentes (JÁ CARREGADO).
+     */
+    const startApp = async (user, allAtendentes) => {
+        authOverlay.style.display = 'none';
+        mainContent.style.display = 'flex';
+        sidebar.style.display = 'flex';
+
+        const attendantKey = Object.keys(allAtendentes).find(key => allAtendentes[key].uid === user.uid);
+
+        if (attendantKey) {
+            // Atualiza o tooltip e o texto do botão do perfil
+            if (atendenteToggleBtn) {
+                atendenteToggleBtn.dataset.tooltip = allAtendentes[attendantKey].nomeCompleto;
+                const atendenteTextSpan = atendenteToggleBtn.querySelector('.text');
+                if(atendenteTextSpan) {
+                    atendenteTextSpan.textContent = allAtendentes[attendantKey].nomeCompleto.split(' ')[0];
+                }
+            }
+            localStorage.setItem("atendenteAtual", attendantKey);
+
+            // Mostra o link de admin se o usuário tiver a permissão
+            const userRole = allAtendentes[attendantKey].role;
+            adminLinkContainer.style.display = userRole === 'admin' ? 'block' : 'none';
+
+            // Carrega os dados do chat
+            chatLoader.style.display = 'flex';
+            const data = await loadDataForAttendant(attendantKey);
+            chatModule.setResponses(data);
+            chatLoader.style.display = 'none';
+        } else {
+            showPopup("Seu usuário do login não foi encontrado na lista de atendentes.", 'error');
+            await logoutUser();
         }
-        
-        atendentePopup.style.display = 'none';
+
+        updateGreeting();
+        setInterval(updateGreeting, 60000);
     };
 
-    // Configura os eventos principais
-    atendenteToggleBtn.addEventListener('click', () => {
-        atendentePopup.style.display = 'block';
-    });
-    confirmAtendenteBtn.addEventListener('click', handleAttendantChange);
+    /**
+     * Mostra a tela de login e esconde a aplicação principal.
+     */
+    const showLoginScreen = () => {
+        mainContent.style.display = 'none';
+        sidebar.style.display = 'none';
+        authOverlay.style.display = 'flex';
+    };
+
+    // --- 3. FLUXO DE EXECUÇÃO PRINCIPAL (A CORREÇÃO ESTÁ AQUI) ---
+
+    try {
+        // SÓ verifica o estado de autenticação.
+        checkAuthState(async (user) => {
+            if (user) {
+                // Se o usuário está logado, AGORA SIM carregamos os dados dele.
+                const allAtendentes = await loadAtendentes(); // <<< MUDANÇA 2: Mova esta linha para cá
+                startApp(user, allAtendentes);
+            } else {
+                // Se não, mostra a tela de login.
+                showLoginScreen();
+            }
+        });
+
+    } catch (error) {
+        console.error("Erro fatal na inicialização:", error);
+        showPopup("Não foi possível iniciar a aplicação. Verifique o console.", "error");
+        showLoginScreen();
+    }
+
+    // --- 4. EVENT LISTENERS DA INTERFACE ---
+
+    if (atendenteToggleBtn) {
+        atendenteToggleBtn.addEventListener('click', () => {
+            profileModal.style.display = 'flex';
+        });
+    }
+    if (modalCloseProfileBtn) {
+        modalCloseProfileBtn.addEventListener('click', () => {
+            profileModal.style.display = 'none';
+        });
+    }
+    if (modalLogoutBtn) {
+        modalLogoutBtn.addEventListener('click', async () => {
+            try {
+                await logoutUser();
+                profileModal.style.display = 'none';
+            } catch (error) {
+                showPopup("Erro ao fazer logout: " + error.message, 'error');
+            }
+        });
+    }
+    if (updatePasswordForm) {
+        updatePasswordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newPassword = document.getElementById('newPassword').value;
+            if (newPassword.length < 6) {
+                return showPopup("A nova senha deve ter pelo menos 6 caracteres.", 'error');
+            }
+            try {
+                await updateUserPassword(newPassword);
+                showPopup("Senha alterada com sucesso!", 'success');
+                document.getElementById('newPassword').value = '';
+                profileModal.style.display = 'none';
+            } catch (error) {
+                showPopup("Erro ao alterar senha: " + error.message, 'error');
+            }
+        });
+    }
+
+    if(loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            try {
+                await loginUser(email, password);
+            } catch (error) {
+                showPopup("Erro no login: " + error.message, 'error');
+            }
+        });
+    }
+    if(registerForm) {
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userDetails = {
+                username: document.getElementById('registerUsername').value.toLowerCase(),
+                fullName: document.getElementById('registerFullName').value,
+                email: document.getElementById('registerEmail').value,
+                password: document.getElementById('registerPassword').value,
+            };
+            if (!userDetails.username || !userDetails.fullName) {
+                return showPopup("Todos os campos são obrigatórios.", 'error');
+            }
+            try {
+                await createUserAccount(userDetails);
+                showPopup("Registro bem-sucedido! Logando...", 'success');
+            } catch (error) {
+                let friendlyMessage = "Ocorreu um erro desconhecido.";
+                if (error.code === 'auth/email-already-in-use') friendlyMessage = "Este e-mail já está cadastrado. Tente fazer o login.";
+                else if (error.code === 'auth/weak-password') friendlyMessage = "A senha é muito fraca. Use pelo menos 6 caracteres.";
+                else if (error.code === 'auth/invalid-email') friendlyMessage = "O formato do e-mail é inválido.";
+                showPopup("Erro no registro: " + friendlyMessage, 'error');
+                console.error("Erro no registro:", error);
+            }
+        });
+    }
+
     document.querySelectorAll('.sidebar-button[data-section]').forEach(button => {
         button.addEventListener('click', () => {
             showSection(button.dataset.section);
         });
     });
-
-    // Estado Inicial ao Carregar
-    if (currentAttendant) {
-        atendenteSelect.value = currentAttendant;
-        handleAttendantChange(); // Carrega os dados do atendente salvo
-    } else {
-        atendenteText.textContent = 'Atendente';
+    const showRegisterBtn = document.getElementById('show-register');
+    if (showRegisterBtn) {
+        showRegisterBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'block';
+        });
     }
-    
-    updateGreeting();
-    setInterval(updateGreeting, 60000);
+    const showLoginBtn = document.getElementById('show-login');
+    if (showLoginBtn) {
+        showLoginBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            registerForm.style.display = 'none';
+            loginForm.style.display = 'block';
+        });
+    }
+
+    document.addEventListener('click', (e) => {
+        if (profileModal && atendenteToggleBtn && !atendenteToggleBtn.contains(e.target) && !profileModal.contains(e.target)) {
+            profileModal.style.display = 'none';
+        }
+    });
 });

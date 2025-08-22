@@ -6,8 +6,7 @@
 
 Um sistema de produtividade para equipes de atendimento, focado em agilizar a comunicação e automatizar tarefas repetitivas. O ATI combina um gerenciador de respostas rápidas com um conversor inteligente de aditivos contratuais em PDF.
 
-### ✨ [Acesse a versão ao vivo aqui!](https://vituali.github.io/ati-auxiliar/)
-*(Nota: Ajuste o link se o nome do seu repositório for diferente)*
+### ✨ [Acesse a versão ao vivo aqui!](https://vituali.github.io/ATI/)
 
 ---
 

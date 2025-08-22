@@ -58,10 +58,10 @@
         grid-template-columns: 1fr;
     }
     .content {
-        margin-left: 70px;
+        margin-left: 80px;
         padding: 10px;
     }
     .sidebar.expanded ~ .content {
-        margin-left: 210px;
+        margin-left: 220px;
     }
 }

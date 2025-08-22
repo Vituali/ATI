@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     }
-    if(registerForm) {
+    if (registerForm) {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const userDetails = {
@@ -180,6 +180,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (error.code === 'auth/email-already-in-use') friendlyMessage = "Este e-mail já está cadastrado. Tente fazer o login.";
                 else if (error.code === 'auth/weak-password') friendlyMessage = "A senha é muito fraca. Use pelo menos 6 caracteres.";
                 else if (error.code === 'auth/invalid-email') friendlyMessage = "O formato do e-mail é inválido.";
+                else if (error.message === 'Nome de usuário já está em uso') friendlyMessage = "Este nome de usuário já está em uso. Escolha outro.";
+                else if (error.message === 'Erro ao verificar disponibilidade do nome de usuário') friendlyMessage = "Não foi possível verificar o nome de usuário. Tente novamente.";
+                else if (error.message.includes('PERMISSION_DENIED')) friendlyMessage = "Erro ao registrar: permissão negada. O nome de usuário pode estar em uso ou o acesso foi bloqueado. Tente outro nome.";
                 showPopup("Erro no registro: " + friendlyMessage, 'error');
                 console.error("Erro no registro:", error);
             }

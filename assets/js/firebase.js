@@ -53,24 +53,46 @@ export const updateUserPassword = (newPassword) => {
 export async function createUserAccount(details) {
     const { email, password, username, fullName } = details;
 
+    // 1. Sanitiza o nome de usuário
+    const sanitizedUsername = username.trim().toLowerCase().replace(/\s+/g, "_");
+    if (/[.$#[\]/]/.test(sanitizedUsername)) {
+        throw new Error('Nome de usuário inválido: não pode conter ., $, #, [, ], ou /');
+    }
+
+    // 2. Cria o usuário na Autenticação primeiro
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
+    // 3. Força a atualização do token para evitar problemas de timing
+    await user.getIdToken(true);
     await updateProfile(user, { displayName: fullName });
 
+    // 4. Prepara os dados para salvar no banco de dados
     const newAtendenteData = {
         nomeCompleto: fullName,
         role: "usuario",
         uid: user.uid
     };
-    console.log("DEBUG: Objeto sendo enviado para o Firebase:", newAtendenteData);
-    const atendenteRef = ref(db, `atendentes/${username}`);
-    const respostaRef = ref(db, `respostas/${username}`);
 
-    await set(atendenteRef, newAtendenteData);
-    await set(respostaRef, []); 
+    // 5. Tenta escrever no banco de dados
+    try {
+        const atendenteRef = ref(db, `atendentes/${sanitizedUsername}`);
+        const respostaRef = ref(db, `respostas/${sanitizedUsername}`);
+        
+        // A regra do Firebase ".write": "!data.exists()" vai impedir a criação se o username já existir.
+        await set(atendenteRef, newAtendenteData);
+        await set(respostaRef, []);
 
-    return userCredential;
+        return userCredential;
+
+    } catch (error) {
+        // Se a escrita falhar (seja por permissão ou outro motivo),
+        // deletamos o usuário recém-criado para não deixar contas órfãs.
+        await user.delete();
+        console.error("Erro ao gravar no banco de dados, usuário de autenticação foi revertido:", error);
+        // Lança um erro mais amigável
+        throw new Error('Este nome de usuário já pode estar em uso ou ocorreu um erro de permissão.');
+    }
 }
 
 

@@ -5,6 +5,7 @@
 /* --- Cards e Contêineres de Conteúdo --- */
 .card,
 .upload-card {
+    position: relative; /* <-- ADICIONE ESTA LINHA */
     background: var(--card-bg);
     border: 1px solid var(--border-color);
     border-radius: 10px;
@@ -42,11 +43,11 @@
 }
 
 .sidebar-footer {
-    margin-top: auto; /* Empurra o grupo inteiro para o fundo */
+    margin-top: auto;
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 5px; /* Espaçamento entre os botões de baixo */
+    gap: 5px;
 }
 
 .bottom-toggle {
@@ -69,6 +70,11 @@
     display: none;
     font-family: var(--font-primary);
     font-size: 16px;
+    white-space: nowrap;
+}
+
+.bottom-toggle .text {
+    display: none; /* Esconde o texto por padrão */
     white-space: nowrap;
 }
 
@@ -242,7 +248,7 @@ input[type="color"] {
     border-radius: 5px;
     opacity: 0;
     transition: opacity 0.3s ease;
-    z-index: 1000;
+    z-index: 3000;
 }
 .popup.show {
     opacity: 1;
@@ -446,7 +452,6 @@ input:checked + .slider:before {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.7);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -472,24 +477,24 @@ input:checked + .slider:before {
 
 /* A dica (balão) */
 [data-tooltip]::after {
-    content: attr(data-tooltip); /* Pega o texto do atributo */
+    content: attr(data-tooltip);
     position: absolute;
-    bottom: 100%; /* Posiciona acima do botão */
-    left: 50%;
-    transform: translateX(-50%);
-    margin-bottom: 8px; /* Espaço entre o botão e a dica */
+    left: calc(100% + 10px); /* Posiciona à direita da sidebar */
+    top: 50%;
+    transform: translateY(-50%);
     
-    background-color: var(--heading-color); /* Usa a cor dos títulos */
-    color: var(--card-bg); /* Usa a cor de fundo do card para o texto */
+    background-color: var(--icon-color);
+    color: #ffffff;
     padding: 6px 12px;
     border-radius: 5px;
     font-size: 12px;
     font-family: var(--font-secondary);
     white-space: nowrap;
     
-    opacity: 0; /* Começa invisível */
-    pointer-events: none; /* Não interfere com o mouse */
+    opacity: 0;
+    pointer-events: none;
     transition: opacity 0.2s;
+    z-index: 101; /* Garante que o tooltip fique ACIMA de tudo */
 }
 
 /* Mostra a dica ao passar o mouse */
@@ -636,4 +641,56 @@ input:checked + .slider:before {
 
 .option-item:hover {
     background-color: rgba(0,0,0,0.2);
+}
+
+/* --- Estilos para Autenticação --- */
+.auth-toggle-link {
+    margin-top: 20px;
+    font-size: 14px;
+}
+.auth-toggle-link a {
+    color: var(--icon-color);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.user-menu {
+    position: absolute;
+    bottom: 110px; /* Posição inicial, um pouco acima dos botões */
+    left: 15px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    z-index: 101; /* Garante que fique acima da sidebar */
+    width: 180px; /* Largura do menu */
+    padding: 5px;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.user-menu a {
+    display: block;
+    padding: 10px 15px;
+    color: var(--text-primary);
+    text-decoration: none;
+    font-family: var(--font-secondary);
+    font-size: 14px;
+    border-radius: 5px;
+}
+
+.user-menu a:hover {
+    background-color: var(--button-bg);
+    color: var(--button-text, #FFF); /* Usa a cor de texto calculada do botão */
+}
+
+.popup.success {
+    background: var(--success-color);
+    color: #FFFFFF; /* Texto branco para bom contraste */
+    box-shadow: 0 0 15px 1px var(--success-color);
+}
+
+.popup.error {
+    background: var(--error-color);
+    color: #FFFFFF; /* Texto branco para bom contraste */
+    box-shadow: 0 0 15px 1px var(--error-color);
 }

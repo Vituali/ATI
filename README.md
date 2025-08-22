@@ -1,6 +1,6 @@
 # ATI - Auxiliar de Atendimentos 🤖
 
-![Status do Build][![pages-build-deployment](https://github.com/Vituali/ATI/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/Vituali/ATI/actions/workflows/pages/pages-build-deployment)
+[![Deploy static content to Pages](https://github.com/Vituali/ATI/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/Vituali/ATI/actions/workflows/pages/pages-build-deployment)
 ![Licença](https://img.shields.io/badge/licen%C3%A7a-MIT-blue.svg)
 ![Versão](https://img.shields.io/badge/vers%C3%A3o-2.0.0-brightgreen)
 

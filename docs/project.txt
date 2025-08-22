@@ -10,11 +10,12 @@ projeto/
 │   │   ├── components.css    # Buttons, forms, cards, popups
 │   │   └── themes.css        # Light/dark/neon themes
 │   ├── js/
-│   │   ├── main.js
-│   │   ├── script.js
-│   │   ├── darkmode.js
+│   │   ├── app.js
+│   │   ├── chat.js
 │   │   ├── conversor.js
-│   │   └── chat.js 
+│   │   ├── firebase.js
+│   │   ├── theme.js
+│   │   └── ui.js
 │   └── images/
 │       └── favicon.ico
 └── docs/

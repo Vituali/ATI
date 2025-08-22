@@ -1,13 +1,10 @@
 # ATI - Auxiliar de Atendimentos 🤖
 
-![Status do Build](https://github.com/vituali/ATI/actions/workflows/pages.yml/badge.svg)
+![Status do Build][![pages-build-deployment](https://github.com/Vituali/ATI/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/Vituali/ATI/actions/workflows/pages/pages-build-deployment)
 ![Licença](https://img.shields.io/badge/licen%C3%A7a-MIT-blue.svg)
 ![Versão](https://img.shields.io/badge/vers%C3%A3o-2.0.0-brightgreen)
 
 Um sistema de produtividade para equipes de atendimento, focado em agilizar a comunicação e automatizar tarefas repetitivas. O ATI combina um gerenciador de respostas rápidas com um conversor inteligente de aditivos contratuais em PDF.
-
-![Screenshot da Interface do ATI em Modo Escuro](https://i.imgur.com/3YhGj5D.png)
-*(Sugestão: Substitua o link acima por um screenshot seu hospedado no próprio repositório)*
 
 ### ✨ [Acesse a versão ao vivo aqui!](https://vituali.github.io/ati-auxiliar/)
 *(Nota: Ajuste o link se o nome do seu repositório for diferente)*

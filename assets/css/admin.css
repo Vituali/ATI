@@ -1,0 +1,145 @@
+/* ==========================================================================
+   ADMIN.CSS - Estilos para o Painel de Administração
+   ========================================================================== */
+
+/* --- Layout Geral da Página de Admin --- */
+/* Ajusta o contêiner principal para empilhar os cards verticalmente */
+.content {
+    flex-direction: column; /* Empilha os cards */
+    align-items: center;    /* Centraliza os cards horizontalmente */
+    gap: 20px; /* Espaço entre os cards */
+}
+
+/* Garante que o conteúdo principal não fique muito largo em telas grandes */
+#mainContent {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    max-width: 900px; /* Limita a largura máxima */
+}
+
+/* --- Estilização dos Cards --- */
+.card h2 {
+    font-family: var(--font-primary);
+    color: var(--heading-color);
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.card p {
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: var(--text-primary);
+    opacity: 0.8;
+}
+
+/* --- Tabela de Gerenciamento --- */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.admin-table th,
+.admin-table td {
+    border: 1px solid var(--border-color);
+    padding: 12px;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.admin-table th {
+    background-color: rgba(0, 0, 0, 0.1);
+    font-family: var(--font-primary);
+    font-size: 14px;
+}
+
+.admin-table select {
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    padding: 8px;
+    width: 100%;
+    font-size: 14px;
+}
+
+.admin-table select:focus {
+    outline: none;
+    border-color: var(--icon-color);
+}
+
+.admin-table button {
+    margin: 0;
+    width: 100%;
+    padding: 8px 12px;
+}
+
+/* --- Ferramenta de Verificação de Órfãos --- */
+.checker-section textarea {
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    width: 100%;
+    min-height: 150px;
+    margin-top: 10px;
+    padding: 10px;
+    font-family: monospace;
+}
+
+.checker-section .instructions {
+    margin-bottom: 15px;
+}
+
+.checker-section .instructions ol {
+    line-height: 1.8;
+    padding-left: 20px;
+    font-size: 14px;
+}
+
+.checker-section .user-list {
+    list-style: none;
+    padding: 10px;
+    margin-top: 10px;
+    background-color: rgba(0,0,0,0.1);
+    border-radius: 5px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.checker-section .orphan {
+    color: var(--error-color, #F43F5E);
+    font-weight: bold;
+}
+
+.checker-section .valid {
+    color: var(--success-color, #22C55E);
+}
+
+/* --- Botão de Voltar --- */
+#backToAppBtn {
+    display: block;
+    width: 100%;
+    max-width: 900px;
+    text-align: center;
+    margin: 10px auto 0;
+    padding: 12px 20px;
+    background: var(--button-bg);
+    color: var(--button-text);
+    border-radius: 5px;
+    text-decoration: none;
+    font-family: var(--font-primary);
+    transition: background 0.3s, transform 0.2s;
+}
+
+#backToAppBtn:hover {
+    background: var(--button-hover-bg);
+    transform: scale(1.02);
+}
+
+.hidden {
+    display: none;
+}

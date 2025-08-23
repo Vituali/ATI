@@ -3,15 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <title>Painel de Administração - ATI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
+    <!-- CSS principal que importa todos os outros (themes, components, layout) -->
     <link rel="stylesheet" href="assets/css/main.css">
+    <!-- CSS específico para a página de admin -->
+    <link rel="stylesheet" href="assets/css/admin.css">
 </head>
 <body class="dark-mode">
+    <!-- Popup para notificações, reutilizado do ui.js -->
+    <div id="popup" class="popup"></div>
+
+    <!-- O contêiner .content é definido em layout.css -->
     <div class="content">
-        <div class="card">
-            <h1>Painel de Administração</h1>
-            <p>Aqui você poderá gerenciar os usuários e outras configurações do sistema.</p>
-            <a href="index.html">Voltar para a aplicação principal</a>
+        <!-- Loader de carregamento inicial -->
+        <div class="card-loader" id="adminLoader" style="display: flex;">
+            <div class="loader"></div>
+        </div>
+        
+        <!-- Conteúdo principal, fica visível após o carregamento -->
+        <div id="mainContent" style="display: none;">
+            
+            <!-- Card de Gerenciamento de Usuários -->
+            <div class="card">
+                <h2>Gerenciamento de Usuários</h2>
+                <p>Controle as permissões e o status dos usuários do sistema.</p>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Usuário (Login)</th>
+                            <th>Nome Completo</th>
+                            <th>Permissão</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userListBody">
+                        <!-- Linhas da tabela serão inseridas aqui via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Card da Ferramenta de Verificação -->
+            <div class="card checker-section">
+                <h2>Verificação de Usuários Órfãos</h2>
+                <p>Encontre contas na Autenticação sem dados correspondentes no Banco de Dados.</p>
+
+                <div id="checkerStep1">
+                    <button id="loadValidUsersBtn" class="button">Passo 1: Carregar Usuários Válidos</button>
+                </div>
+
+                <div id="checkerStep2" class="hidden">
+                    <h3>Passo 2: Cole a lista do Painel de Autenticação</h3>
+                    <div class="instructions">
+                        <ol>
+                            <li>No <a href="https://console.firebase.google.com/" target="_blank">Painel do Firebase</a>, vá para <strong>Authentication > Users</strong>.</li>
+                            <li>Selecione e copie toda a lista de usuários (Ctrl+A, Ctrl+C).</li>
+                            <li>Cole o conteúdo no campo abaixo (Ctrl+V).</li>
+                        </ol>
+                    </div>
+                    <textarea id="authPasteArea" placeholder="Cole os dados copiados do painel de autenticação aqui..."></textarea>
+                    <button id="compareBtn" class="button">Passo 3: Encontrar Contas Órfãs</button>
+                </div>
+
+                <div id="checkerResults" class="results hidden">
+                    <h3>Resultado da Comparação:</h3>
+                    <p>As seguintes contas são órfãs e podem ser excluídas no Firebase.</p>
+                    <ul id="orphanList" class="user-list">
+                        <!-- Contas órfãs serão listadas aqui -->
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Botão para voltar à aplicação principal -->
+            <a href="index.html" id="backToAppBtn">Voltar para a aplicação</a>
         </div>
     </div>
-    </body>
+    
+    <!-- Script principal da página de administração -->
+    <script type="module" src="assets/js/admin.js"></script>
+</body>
 </html>

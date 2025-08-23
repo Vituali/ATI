@@ -21,6 +21,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     initializeFirebase();
     const chatModule = initializeChat();
 
+    let isRegistering = false;
+
     // Seletores da interface
     const authOverlay = document.getElementById('auth-overlay');
     const loginForm = document.getElementById('login-form');
@@ -78,26 +80,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         setInterval(updateGreeting, 60000);
     };
 
-    /**
-     * Mostra a tela de login e esconde a aplicação principal.
-     */
     const showLoginScreen = () => {
         mainContent.style.display = 'none';
         sidebar.style.display = 'none';
         authOverlay.style.display = 'flex';
     };
 
-    // --- 3. FLUXO DE EXECUÇÃO PRINCIPAL (A CORREÇÃO ESTÁ AQUI) ---
+    // --- 3. FLUXO DE EXECUÇÃO PRINCIPAL ---
 
     try {
-        // SÓ verifica o estado de autenticação.
         checkAuthState(async (user) => {
-            if (user) {
-                // Se o usuário está logado, AGORA SIM carregamos os dados dele.
+            if (user && !isRegistering) {
                 const allAtendentes = await loadAtendentes(); // <<< MUDANÇA 2: Mova esta linha para cá
                 startApp(user, allAtendentes);
-            } else {
-                // Se não, mostra a tela de login.
+            } else if (!user){
                 showLoginScreen();
             }
         });
@@ -172,19 +168,37 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!userDetails.username || !userDetails.fullName) {
                 return showPopup("Todos os campos são obrigatórios.", 'error');
             }
+
+            isRegistering = true;
+
+
             try {
-                await createUserAccount(userDetails);
-                showPopup("Registro bem-sucedido! Logando...", 'success');
+                // 1. Aguarda a criação da conta na autenticação e no banco de dados
+                const userCredential = await createUserAccount(userDetails);
+                const user = userCredential.user;
+                const sanitizedUsername = userDetails.username.trim().toLowerCase().replace(/\s+/g, "_");
+                const tempAllAtendentes = {
+                    [sanitizedUsername]: {
+                        uid: user.uid,
+                        nomeCompleto: userDetails.fullName,
+                        role: "usuario"
+                    }
+                };
+
+                startApp(user, tempAllAtendentes);
+
             } catch (error) {
                 let friendlyMessage = "Ocorreu um erro desconhecido.";
                 if (error.code === 'auth/email-already-in-use') friendlyMessage = "Este e-mail já está cadastrado. Tente fazer o login.";
                 else if (error.code === 'auth/weak-password') friendlyMessage = "A senha é muito fraca. Use pelo menos 6 caracteres.";
                 else if (error.code === 'auth/invalid-email') friendlyMessage = "O formato do e-mail é inválido.";
-                else if (error.message === 'Nome de usuário já está em uso') friendlyMessage = "Este nome de usuário já está em uso. Escolha outro.";
-                else if (error.message === 'Erro ao verificar disponibilidade do nome de usuário') friendlyMessage = "Não foi possível verificar o nome de usuário. Tente novamente.";
-                else if (error.message.includes('PERMISSION_DENIED')) friendlyMessage = "Erro ao registrar: permissão negada. O nome de usuário pode estar em uso ou o acesso foi bloqueado. Tente outro nome.";
+                else if (error.message.includes('Este nome de usuário já pode estar em uso')) friendlyMessage = "Este nome de usuário já está em uso. Escolha outro.";
+                else if (error.message.includes('PERMISSION_DENIED')) friendlyMessage = "Erro de permissão ao registrar. O nome de usuário pode já estar em uso.";
+                
                 showPopup("Erro no registro: " + friendlyMessage, 'error');
                 console.error("Erro no registro:", error);
+            } finally {
+                isRegistering = false;
             }
         });
     }

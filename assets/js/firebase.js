@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+import { getDatabase, ref, set, get, remove } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 import { 
     getAuth, 
     createUserWithEmailAndPassword, 
@@ -121,4 +121,39 @@ export async function saveDataForAttendant(attendant, data) {
     const dbRef = ref(db, `respostas/${attendant}`);
     await set(dbRef, data);
     console.log(`🔥 Dados salvos para ${attendant}`);
+}
+
+// --- SISTEMA DE ADMIN ---//
+/**
+ * Atualiza a permissão (role) de um usuário.
+ * @param {string} username - O nome de usuário (chave) do atendente.
+ * @param {string} field - O campo a ser atualizado (ex: 'role', 'status').
+ * @param {string} value - O novo valor para o campo.
+ * @returns {Promise<void>}
+ */
+async function updateUserData(username, field, value) {
+    if (!auth.currentUser) throw new Error("Ação não permitida. Faça o login.");
+    const userFieldRef = ref(db, `atendentes/${username}/${field}`);
+    return set(userFieldRef, value);
+}
+
+export const updateUserRole = (username, newRole) => updateUserData(username, 'role', newRole);
+export const updateUserStatus = (username, newStatus) => updateUserData(username, 'status', newStatus);
+
+/**
+ * Deleta os dados de um usuário do Realtime Database.
+ * ATENÇÃO: Isso NÃO deleta o usuário do Firebase Authentication.
+ * @param {string} username - O nome de usuário (chave) do atendente.
+ * @returns {Promise<void>}
+ */
+export async function deleteUser(username) {
+    if (!auth.currentUser) throw new Error("Ação não permitida. Faça o login.");
+    
+    const atendenteRef = ref(db, `atendentes/${username}`);
+    const respostasRef = ref(db, `respostas/${username}`);
+    
+    // Deleta os dois nós de dados do usuário
+    await remove(atendenteRef);
+    await remove(respostasRef);
+    console.log(`🔥 Dados de ${username} removidos.`);
 }

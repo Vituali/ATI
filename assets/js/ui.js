@@ -13,7 +13,7 @@ export function showPopup(message, type = 'info', duration = 3000) {
         popup.classList.remove('show');
     }, duration);
 }
-export function showSection(sectionId) {
+export function showSection(sectionId, username) {
     // Esconde todas as seções de conteúdo
     document.querySelectorAll('.content > div[id$="Section"]').forEach(section => {
         section.style.display = 'none';
@@ -35,7 +35,7 @@ export function showSection(sectionId) {
         }
     });
 
-    updateGreeting();
+    updateGreeting(username);
 }
 
 export function initializeUI() {
@@ -48,12 +48,15 @@ export function initializeUI() {
     }
 }
 
-export function updateGreeting() {
+export function updateGreeting(username) {
     const hora = new Date().getHours();
-    const saudacaoText = hora >= 5 && hora < 12 ? "Bom dia" :
+    let saudacaoText = hora >= 5 && hora < 12 ? "Bom dia" :
                          hora >= 12 && hora < 18 ? "Boa tarde" : "Boa noite";
+    if (username) {
+        const capitalizedUsername = username.charAt(0).toUpperCase() + username.slice(1);
+        saudacaoText += `, ${capitalizedUsername}`;
+    }                         
     document.getElementById('saudacaoChat').textContent = saudacaoText;
-    document.getElementById('saudacaoConversor').textContent = saudacaoText;
 }
 
 export function replacePlaceholders(text) {

@@ -82,8 +82,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             await logoutUser();
         }
 
-        updateGreeting();
-        setInterval(updateGreeting, 60000);
+        updateGreeting(attendantKey);
+        setInterval(() => updateGreeting(currentUsername), 60000);
     };
 
     const showLoginScreen = () => {
@@ -227,7 +227,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.querySelectorAll('.sidebar-button[data-section]').forEach(button => {
         button.addEventListener('click', () => {
-            showSection(button.dataset.section);
+            showSection(button.dataset.section, currentUsername);
         });
     });
     const showRegisterBtn = document.getElementById('show-register');

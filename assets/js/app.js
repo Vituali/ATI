@@ -45,50 +45,45 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- 2. DEFINIÇÃO DAS FUNÇÕES PRINCIPAIS ---
 
     const startApp = async (user, allAtendentes) => {
+        const attendantKey = Object.keys(allAtendentes).find(key => allAtendentes[key].uid === user.uid);
+        
+        if (!attendantKey) {
+            showPopup("Não foi possível carregar os dados do seu perfil. Por favor, faça o login novamente.", 'error');
+            await logoutUser();
+            return;
+        }
+
+        currentUsername = attendantKey;
         authOverlay.style.display = 'none';
         mainContent.style.display = 'flex';
         sidebar.style.display = 'flex';
-
-        const attendantKey = Object.keys(allAtendentes).find(key => allAtendentes[key].uid === user.uid);
-        currentUsername = attendantKey;
-
-        if (attendantKey) {
-            const attendantData = allAtendentes[attendantKey];
-            const userStatus = attendantData.status || 'ativo';
-            if (userStatus === 'inativo') {
-                showPopup("Sua conta foi desativada.", 'error');
-                await logoutUser();
-                return;
-            }
-
-            if (atendenteToggleBtn) {
-                const atendenteTextSpan = atendenteToggleBtn.querySelector('.text');
-                if (atendenteTextSpan) {
-                    atendenteTextSpan.textContent = attendantKey.charAt(0).toUpperCase() + attendantKey.slice(1);
-                }
-            }
-            localStorage.setItem("atendenteAtual", attendantKey);
-            
-            if (newFullNameInput) newFullNameInput.value = attendantData.nomeCompleto;
-            if (profileUsernameSpan) profileUsernameSpan.textContent = attendantKey;
-
-            if (adminLinkContainer) {
-                adminLinkContainer.style.display = attendantData.role === 'admin' ? 'block' : 'none';
-            }
-
-            chatLoader.style.display = 'flex';
-            try {
-                const data = await loadDataForAttendant(attendantKey);
-                chatModule.setResponses(data);
-            } catch (error) {
-                console.error("Erro ao carregar dados do chat:", error);
-                showPopup("Não foi possível carregar suas respostas.", "error");
-            } finally {
-                chatLoader.style.display = 'none';
-            }
-        } else {
-            showPopup("Dados do atendente não encontrados. Por favor, faça login novamente.", 'error');
+        
+        const attendantData = allAtendentes[attendantKey];
+        if (attendantData.status === 'inativo') {
+            showPopup("Sua conta foi desativada.", 'error');
             await logoutUser();
+            return;
+        }
+
+        if (atendenteToggleBtn) {
+            const atendenteTextSpan = atendenteToggleBtn.querySelector('.text');
+            if (atendenteTextSpan) atendenteTextSpan.textContent = attendantKey.charAt(0).toUpperCase() + attendantKey.slice(1);
+        }
+        localStorage.setItem("atendenteAtual", attendantKey);
+        
+        if (newFullNameInput) newFullNameInput.value = attendantData.nomeCompleto;
+        if (profileUsernameSpan) profileUsernameSpan.textContent = attendantKey;
+        if (adminLinkContainer) adminLinkContainer.style.display = attendantData.role === 'admin' ? 'block' : 'none';
+
+        chatLoader.style.display = 'flex';
+        try {
+            const data = await loadDataForAttendant(attendantKey);
+            chatModule.setResponses(data);
+        } catch (error) {
+            console.error("Erro ao carregar dados do chat:", error);
+            showPopup("Não foi possível carregar suas respostas.", "error");
+        } finally {
+            chatLoader.style.display = 'none';
         }
 
         updateGreeting(attendantKey);
@@ -103,12 +98,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     // --- 3. FLUXO DE EXECUÇÃO PRINCIPAL ---
-
     try {
         checkAuthState(async (user) => {
             if (user) {
                 const allAtendentes = await loadAtendentes();
-                startApp(user, allAtendentes);
+                await startApp(user, allAtendentes);
             } else {
                 showLoginScreen();
             }
@@ -120,7 +114,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // --- 4. EVENT LISTENERS DA INTERFACE ---
-
     if (atendenteToggleBtn) atendenteToggleBtn.addEventListener('click', () => { profileModal.style.display = 'flex'; });
     if (modalCloseProfileBtn) modalCloseProfileBtn.addEventListener('click', () => { profileModal.style.display = 'none'; });
     if (modalLogoutBtn) modalLogoutBtn.addEventListener('click', async () => { try { await logoutUser(); profileModal.style.display = 'none'; } catch (error) { showPopup("Erro ao fazer logout: " + error.message, 'error'); } });
@@ -190,7 +183,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             try {
                 // CORREÇÃO DO FLUXO PÓS-REGISTRO
-                const { userCredential, newAtendenteData, sanitizedUsername } = await createUserAccount(userDetails);
+                const { userCredential, sanitizedUsername, newAtendenteData } = await createUserAccount(userDetails);
                 
                 // Em vez de esperar o listener, iniciamos o app manualmente com os dados que acabamos de criar.
                 // Isso evita a "tela presa" e a "condição de corrida".

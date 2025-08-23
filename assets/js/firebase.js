@@ -29,14 +29,18 @@ export function initializeFirebase() {
         const app = initializeApp(firebaseConfig);
         db = getDatabase(app);
         auth = getAuth(app);
-        console.log("✅ Módulos do Firebase inicializados.");
     } catch (error) {
         console.error("❌ Erro ao inicializar Firebase:", error);
-        alert("Erro fatal ao conectar com o banco de dados.");
     }
 }
 
-// --- Funções de Autenticação ---
+function capitalizeFullName(name) {
+    if (!name || typeof name !== 'string') return '';
+    return name.split(' ').map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    ).join(' ');
+}
+
 export const loginUser = (email, password) => signInWithEmailAndPassword(auth, email, password);
 export const logoutUser = () => signOut(auth);
 export const checkAuthState = (callback) => onAuthStateChanged(auth, callback);
@@ -45,115 +49,87 @@ export const updateUserPassword = (newPassword) => {
     return updatePassword(auth.currentUser, newPassword);
 };
 
-/**
- * Registra um novo usuário na autenticação e cria suas entradas no Realtime Database.
- * @param {object} details - Contém email, password, username (chave) e fullName.
- * @returns {Promise<UserCredential>}
- */
-export async function createUserAccount(details) {
-    const { email, password, username, fullName } = details;
+export async function loginWithUsername(username, password) {
+    const sanitizedUsername = username.trim().toLowerCase();
+    const userRef = ref(db, `atendentes/${sanitizedUsername}`);
+    const snapshot = await get(userRef);
 
-    // 1. Sanitiza o nome de usuário
-    const sanitizedUsername = username.trim().toLowerCase().replace(/\s+/g, "_");
-    if (/[.$#[\]/]/.test(sanitizedUsername)) {
-        throw new Error('Nome de usuário inválido: não pode conter ., $, #, [, ], ou /');
+    if (!snapshot.exists() || !snapshot.val().email) {
+        const error = new Error("Credenciais inválidas.");
+        error.code = 'auth/invalid-login-credentials';
+        throw error;
     }
 
-    // 2. Cria o usuário na Autenticação primeiro
+    const email = snapshot.val().email;
+    return signInWithEmailAndPassword(auth, email, password);
+}
+
+export async function createUserAccount(details) {
+    const { email, password, username, fullName } = details;
+    const sanitizedUsername = username.trim().toLowerCase().replace(/\s+/g, "_");
+    if (/[.$#[\]/]/.test(sanitizedUsername)) {
+        throw new Error('Nome de usuário inválido.');
+    }
+
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
+    const formattedFullName = capitalizeFullName(fullName);
 
-    // 3. Força a atualização do token para evitar problemas de timing
-    await user.getIdToken(true);
-    await updateProfile(user, { displayName: fullName });
+    // CORREÇÃO: Atualiza o perfil de autenticação ANTES de tentar escrever no banco de dados.
+    // Isso ajuda a garantir que o token de autenticação esteja pronto.
+    await updateProfile(user, { displayName: formattedFullName });
 
-    // 4. Prepara os dados para salvar no banco de dados
     const newAtendenteData = {
-        nomeCompleto: fullName,
+        nomeCompleto: formattedFullName,
         role: "usuario",
-        uid: user.uid
+        status: "ativo",
+        uid: user.uid,
+        email: email
     };
 
-    // 5. Tenta escrever no banco de dados
     try {
         const atendenteRef = ref(db, `atendentes/${sanitizedUsername}`);
-        const respostaRef = ref(db, `respostas/${sanitizedUsername}`);
-        
-        // A regra do Firebase ".write": "!data.exists()" vai impedir a criação se o username já existir.
         await set(atendenteRef, newAtendenteData);
-        await set(respostaRef, []);
-
         return userCredential;
-
     } catch (error) {
-        // Se a escrita falhar (seja por permissão ou outro motivo),
-        // deletamos o usuário recém-criado para não deixar contas órfãs.
         await user.delete();
         console.error("Erro ao gravar no banco de dados, usuário de autenticação foi revertido:", error);
-        // Lança um erro mais amigável
         throw new Error('Este nome de usuário já pode estar em uso ou ocorreu um erro de permissão.');
     }
 }
 
-
-// --- Funções de Dados ---
-
 export async function loadAtendentes() {
-    
     const dbRef = ref(db, 'atendentes');
     const snapshot = await get(dbRef);
-    
     return snapshot.exists() ? snapshot.val() : {};
 }
 
 export async function loadDataForAttendant(attendant) {
-    if (!attendant || !auth.currentUser) return []; // Retorna array vazio para evitar erros
+    if (!attendant || !auth.currentUser) return [];
     const dbRef = ref(db, `respostas/${attendant}`);
     const snapshot = await get(dbRef);
     return snapshot.exists() ? snapshot.val() : [];
 }
 
 export async function saveDataForAttendant(attendant, data) {
-    if (!attendant || !auth.currentUser) {
-        alert("Selecione um atendente para salvar.");
-        return;
-    }
+    if (!attendant || !auth.currentUser) return;
     const dbRef = ref(db, `respostas/${attendant}`);
     await set(dbRef, data);
-    console.log(`🔥 Dados salvos para ${attendant}`);
 }
 
-// --- SISTEMA DE ADMIN ---//
-/**
- * Atualiza a permissão (role) de um usuário.
- * @param {string} username - O nome de usuário (chave) do atendente.
- * @param {string} field - O campo a ser atualizado (ex: 'role', 'status').
- * @param {string} value - O novo valor para o campo.
- * @returns {Promise<void>}
- */
+export async function updateUserFullName(username, newFullName) {
+    if (!auth.currentUser) throw new Error("Usuário não autenticado.");
+    const formattedName = capitalizeFullName(newFullName);
+    const dbRef = ref(db, `atendentes/${username}/nomeCompleto`);
+    await set(dbRef, formattedName);
+    await updateProfile(auth.currentUser, { displayName: formattedName });
+}
+
 async function updateUserData(username, field, value) {
-    if (!auth.currentUser) throw new Error("Ação não permitida. Faça o login.");
+    if (!auth.currentUser) throw new Error("Ação não permitida.");
     const userFieldRef = ref(db, `atendentes/${username}/${field}`);
     return set(userFieldRef, value);
 }
 
 export const updateUserRole = (username, newRole) => updateUserData(username, 'role', newRole);
 export const updateUserStatus = (username, newStatus) => updateUserData(username, 'status', newStatus);
-
-/**
- * Deleta os dados de um usuário do Realtime Database.
- * ATENÇÃO: Isso NÃO deleta o usuário do Firebase Authentication.
- * @param {string} username - O nome de usuário (chave) do atendente.
- * @returns {Promise<void>}
- */
-export async function deleteUser(username) {
-    if (!auth.currentUser) throw new Error("Ação não permitida. Faça o login.");
-    
-    const atendenteRef = ref(db, `atendentes/${username}`);
-    const respostasRef = ref(db, `respostas/${username}`);
-    
-    // Deleta os dois nós de dados do usuário
-    await remove(atendenteRef);
-    await remove(respostasRef);
-    console.log(`🔥 Dados de ${username} removidos.`);
-}

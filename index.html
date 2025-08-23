@@ -31,8 +31,8 @@
             <form id="login-form">
                 <h3>Login - ATI</h3>
                 <div class="modal-form-group">
-                    <label for="loginEmail">Email:</label>
-                    <input type="email" id="loginEmail" required autocomplete="email">
+                    <label for="loginIdentifier">Usuário ou E-mail:</label>
+                    <input type="text" id="loginIdentifier" required autocomplete="username">
                 </div>
                 <div class="modal-form-group">
                     <label for="loginPassword">Senha:</label>
@@ -47,7 +47,7 @@
             <form id="register-form" style="display: none;">
                 <h3>Registro - Novo Atendente</h3>
                 <div class="modal-form-group">
-                    <label for="registerUsername">Nome de Usuário:</label>
+                    <label for="registerUsername">Nome de Usuário (Login):</label>
                     <input type="text" id="registerUsername" required placeholder="tudo minúsculo, sem espaços">
                 </div>
                 <div class="modal-form-group">
@@ -293,9 +293,22 @@
         </div>
     </div>
 
+    <!-- ===== MODAL DE PERFIL ATUALIZADO ===== -->
     <div id="profileModal" class="modal-overlay" style="display: none;">
         <div class="modal-content card">
             <h3>Perfil do Usuário</h3>
+            
+            <!-- Formulário para alterar Nome Completo -->
+            <form id="update-fullname-form">
+                <div class="modal-form-group">
+                    <label for="newFullName">Alterar Nome Completo:</label>
+                    <input type="text" id="newFullName" placeholder="Seu nome e sobrenome">
+                </div>
+                <button type="submit" class="button">Salvar Nome</button>
+            </form>
+            <hr style="margin: 20px 0;">
+
+            <!-- Formulário para alterar Senha -->
             <form id="update-password-form">
                 <div class="modal-form-group">
                     <label for="newPassword">Alterar Senha:</label>
@@ -304,17 +317,18 @@
                 <button type="submit" class="button">Salvar Nova Senha</button>
             </form>
             <hr style="margin: 20px 0;">
+
+            <!-- Seção de Admin e Logout -->
             <div id="admin-link-container" style="display: none;">
-                <h4>Painel do Administrador</h4>
-                <a href="admin.html" class="button">Gerenciar Usuários</a>
+                <a href="admin.html" class="button">Painel do Administrador</a>
             </div>
-            <hr style="margin: 20px 0;">
-            <div class="modal-buttons">
+            <div class="modal-buttons" style="margin-top: 20px;">
                 <button id="modalLogoutBtn" class="button back">Sair (Logout)</button>
                 <button id="modalCloseProfileBtn" class="button back">Fechar</button>
             </div>
         </div>
     </div>
+    <!-- ===== FIM DO MODAL DE PERFIL ===== -->
 
     <div id="confirmationModal" class="modal-overlay" style="display: none;">
         <div class="modal-content card">

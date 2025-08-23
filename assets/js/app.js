@@ -4,24 +4,26 @@ import {
     loadDataForAttendant,
     loadAtendentes,
     loginUser,
+    loginWithUsername,
     logoutUser,
     checkAuthState,
     createUserAccount,
-    updateUserPassword
+    updateUserPassword,
+    updateUserFullName
 } from './firebase.js';
 import { initializeTheme } from './theme.js';
 import { initializeChat } from './chat.js';
 import { initializeConversor } from './conversor.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // --- 1. INICIALIZAÇÃO DOS MÓDULOS E SELETORES ---
+    // --- 1. INICIALIZAÇÃO E SELETORES ---
     initializeUI();
     initializeTheme();
     initializeConversor();
     initializeFirebase();
     const chatModule = initializeChat();
 
-    let isRegistering = false;
+    let currentUsername = null;
 
     // Seletores da interface
     const authOverlay = document.getElementById('auth-overlay');
@@ -32,41 +34,45 @@ document.addEventListener('DOMContentLoaded', async () => {
     const atendenteToggleBtn = document.getElementById('atendenteToggleBtn');
     const chatLoader = document.getElementById('chatLoader');
     const profileModal = document.getElementById('profileModal');
+    const updateFullNameForm = document.getElementById('update-fullname-form');
     const updatePasswordForm = document.getElementById('update-password-form');
     const modalLogoutBtn = document.getElementById('modalLogoutBtn');
     const modalCloseProfileBtn = document.getElementById('modalCloseProfileBtn');
     const adminLinkContainer = document.getElementById('admin-link-container');
+    const newFullNameInput = document.getElementById('newFullName');
 
     // --- 2. DEFINIÇÃO DAS FUNÇÕES PRINCIPAIS ---
 
-    /**
-     * Inicia a aplicação principal para um usuário autenticado.
-     * @param {object} user - O objeto do usuário vindo do Firebase Auth.
-     * @param {object} allAtendentes - O objeto com os dados de todos os atendentes (JÁ CARREGADO).
-     */
     const startApp = async (user, allAtendentes) => {
         authOverlay.style.display = 'none';
         mainContent.style.display = 'flex';
         sidebar.style.display = 'flex';
 
         const attendantKey = Object.keys(allAtendentes).find(key => allAtendentes[key].uid === user.uid);
+        currentUsername = attendantKey;
 
         if (attendantKey) {
-            // Atualiza o tooltip e o texto do botão do perfil
+            const attendantData = allAtendentes[attendantKey];
+            const userStatus = attendantData.status || 'ativo';
+            if (userStatus === 'inativo') {
+                showPopup("Sua conta foi desativada por um administrador.", 'error');
+                await logoutUser();
+                return;
+            }
+
             if (atendenteToggleBtn) {
-                atendenteToggleBtn.dataset.tooltip = allAtendentes[attendantKey].nomeCompleto;
                 const atendenteTextSpan = atendenteToggleBtn.querySelector('.text');
-                if(atendenteTextSpan) {
-                    atendenteTextSpan.textContent = allAtendentes[attendantKey].nomeCompleto.split(' ')[0];
+                if (atendenteTextSpan) {
+                    const capitalizedUsername = attendantKey.charAt(0).toUpperCase() + attendantKey.slice(1);
+                    atendenteTextSpan.textContent = capitalizedUsername;
                 }
             }
             localStorage.setItem("atendenteAtual", attendantKey);
+            newFullNameInput.value = attendantData.nomeCompleto;
 
-            // Mostra o link de admin se o usuário tiver a permissão
-            const userRole = allAtendentes[attendantKey].role;
+            const userRole = attendantData.role;
             adminLinkContainer.style.display = userRole === 'admin' ? 'block' : 'none';
 
-            // Carrega os dados do chat
             chatLoader.style.display = 'flex';
             const data = await loadDataForAttendant(attendantKey);
             chatModule.setResponses(data);
@@ -84,20 +90,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         mainContent.style.display = 'none';
         sidebar.style.display = 'none';
         authOverlay.style.display = 'flex';
+        currentUsername = null;
     };
 
     // --- 3. FLUXO DE EXECUÇÃO PRINCIPAL ---
 
     try {
         checkAuthState(async (user) => {
-            if (user && !isRegistering) {
-                const allAtendentes = await loadAtendentes(); // <<< MUDANÇA 2: Mova esta linha para cá
+            if (user) {
+                const allAtendentes = await loadAtendentes();
                 startApp(user, allAtendentes);
-            } else if (!user){
+            } else {
                 showLoginScreen();
             }
         });
-
     } catch (error) {
         console.error("Erro fatal na inicialização:", error);
         showPopup("Não foi possível iniciar a aplicação. Verifique o console.", "error");
@@ -126,6 +132,27 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     }
+
+    if (updateFullNameForm) {
+        updateFullNameForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newFullName = newFullNameInput.value;
+            if (!newFullName.trim()) {
+                return showPopup("O nome não pode estar em branco.", 'error');
+            }
+            if (!currentUsername) {
+                 return showPopup("Erro: Usuário não identificado.", 'error');
+            }
+            try {
+                await updateUserFullName(currentUsername, newFullName);
+                showPopup("Nome completo alterado com sucesso!", 'success');
+                profileModal.style.display = 'none';
+            } catch (error) {
+                showPopup("Erro ao alterar o nome: " + error.message, 'error');
+            }
+        });
+    }
+
     if (updatePasswordForm) {
         updatePasswordForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -147,12 +174,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     if(loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
+            const identifier = document.getElementById('loginIdentifier').value;
             const password = document.getElementById('loginPassword').value;
+            
             try {
-                await loginUser(email, password);
+                if (identifier.includes('@')) {
+                    await loginUser(identifier, password);
+                } else {
+                    await loginWithUsername(identifier, password);
+                }
+                // Se o login for bem-sucedido, o checkAuthState cuidará do resto.
             } catch (error) {
-                showPopup("Erro no login: " + error.message, 'error');
+                // --- CORREÇÃO DO ERRO GENÉRICO ---
+                let friendlyMessage = "Ocorreu um erro inesperado. Tente novamente.";
+                if (error.code === 'auth/invalid-login-credentials') {
+                    friendlyMessage = "Usuário, e-mail ou senha incorretos.";
+                }
+                showPopup(friendlyMessage, 'error');
+                console.error("Erro de login:", error); // Mantém o log para depuração
             }
         });
     }
@@ -160,7 +199,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const userDetails = {
-                username: document.getElementById('registerUsername').value.toLowerCase(),
+                username: document.getElementById('registerUsername').value,
                 fullName: document.getElementById('registerFullName').value,
                 email: document.getElementById('registerEmail').value,
                 password: document.getElementById('registerPassword').value,
@@ -168,37 +207,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!userDetails.username || !userDetails.fullName) {
                 return showPopup("Todos os campos são obrigatórios.", 'error');
             }
-
-            isRegistering = true;
-
-
             try {
-                // 1. Aguarda a criação da conta na autenticação e no banco de dados
-                const userCredential = await createUserAccount(userDetails);
-                const user = userCredential.user;
-                const sanitizedUsername = userDetails.username.trim().toLowerCase().replace(/\s+/g, "_");
-                const tempAllAtendentes = {
-                    [sanitizedUsername]: {
-                        uid: user.uid,
-                        nomeCompleto: userDetails.fullName,
-                        role: "usuario"
-                    }
-                };
-
-                startApp(user, tempAllAtendentes);
+                // --- CORREÇÃO DO LOGIN AUTOMÁTICO ---
+                // A função createUserAccount já loga o usuário.
+                // O listener checkAuthState irá detectar o novo usuário logado e iniciar a aplicação automaticamente.
+                await createUserAccount(userDetails);
+                showPopup("Registro realizado com sucesso! Logando...", "success");
 
             } catch (error) {
                 let friendlyMessage = "Ocorreu um erro desconhecido.";
-                if (error.code === 'auth/email-already-in-use') friendlyMessage = "Este e-mail já está cadastrado. Tente fazer o login.";
-                else if (error.code === 'auth/weak-password') friendlyMessage = "A senha é muito fraca. Use pelo menos 6 caracteres.";
-                else if (error.code === 'auth/invalid-email') friendlyMessage = "O formato do e-mail é inválido.";
-                else if (error.message.includes('Este nome de usuário já pode estar em uso')) friendlyMessage = "Este nome de usuário já está em uso. Escolha outro.";
-                else if (error.message.includes('PERMISSION_DENIED')) friendlyMessage = "Erro de permissão ao registrar. O nome de usuário pode já estar em uso.";
+                if (error.code === 'auth/email-already-in-use') friendlyMessage = "Este e-mail já está cadastrado.";
+                else if (error.code === 'auth/weak-password') friendlyMessage = "A senha é muito fraca.";
+                else if (error.message.includes('Este nome de usuário já pode estar em uso')) friendlyMessage = "Este nome de usuário já está em uso.";
                 
                 showPopup("Erro no registro: " + friendlyMessage, 'error');
-                console.error("Erro no registro:", error);
-            } finally {
-                isRegistering = false;
             }
         });
     }

@@ -75,8 +75,6 @@ export async function createUserAccount(details) {
     const user = userCredential.user;
     const formattedFullName = capitalizeFullName(fullName);
 
-    // CORREÇÃO: Atualiza o perfil de autenticação ANTES de tentar escrever no banco de dados.
-    // Isso ajuda a garantir que o token de autenticação esteja pronto.
     await updateProfile(user, { displayName: formattedFullName });
 
     const newAtendenteData = {
@@ -88,11 +86,25 @@ export async function createUserAccount(details) {
     };
 
     try {
+        // Passo 1: Cria o perfil do atendente.
         const atendenteRef = ref(db, `atendentes/${sanitizedUsername}`);
         await set(atendenteRef, newAtendenteData);
-        return userCredential;
+
+        // Passo 2: Busca o modelo de respostas.
+        const templateRef = ref(db, 'respostas_template');
+        const templateSnapshot = await get(templateRef);
+        if (templateSnapshot.exists()) {
+            const respostasIniciais = templateSnapshot.val();
+            const respostaRef = ref(db, `respostas/${sanitizedUsername}`);
+            // Passo 3: Salva as respostas iniciais para o novo usuário.
+            // Isso agora funciona porque o perfil em /atendentes já foi criado e confirmado.
+            await set(respostaRef, respostasIniciais);
+        }
+        
+        return { userCredential, newAtendenteData, sanitizedUsername };
+
     } catch (error) {
-        await user.delete();
+        await user.delete(); // Garante a limpeza em caso de falha
         console.error("Erro ao gravar no banco de dados, usuário de autenticação foi revertido:", error);
         throw new Error('Este nome de usuário já pode estar em uso ou ocorreu um erro de permissão.');
     }
@@ -108,6 +120,7 @@ export async function loadDataForAttendant(attendant) {
     if (!attendant || !auth.currentUser) return [];
     const dbRef = ref(db, `respostas/${attendant}`);
     const snapshot = await get(dbRef);
+    // A função agora apenas lê os dados. A criação foi movida para o registro.
     return snapshot.exists() ? snapshot.val() : [];
 }
 

@@ -71,6 +71,8 @@ export function initializeConversor() {
         selfWithdrawal: document.getElementById('selfWithdrawal'),
         renewal: document.getElementById('renewal'),
         migration: document.getElementById('migration'),
+        carrierSection: document.getElementById('carrierSection'), // ADICIONAR
+        oldCarrier: document.getElementById('oldCarrier'), 
         loadPdfBtn: document.getElementById('loadPdfBtn'),
         generateOsBtn: document.getElementById('generateOsBtn'),
         backToUploadBtn: document.getElementById('backToUploadBtn'),
@@ -101,6 +103,7 @@ export function initializeConversor() {
         elements.taxValue.disabled = isExempt;
         elements.renewalMessage.style.display = elements.renewal.checked ? 'block' : 'none';
         elements.migrationMessage.style.display = elements.migration.checked ? 'block' : 'none';
+        elements.carrierSection.style.display = elements.migration.checked ? 'block' : 'none';
         elements.taxValue.value = isExempt ? 'isento' : '100';
     };
     
@@ -125,6 +128,8 @@ export function initializeConversor() {
         elements.phoneError.textContent = '';
         elements.copyButtons.style.display = 'none';
         elements.renewal.checked = false;
+        elements.carrierSection.style.display = 'none';
+        elements.oldCarrier.value = 'none';
         elements.migration.checked = false;
         elements.selfWithdrawal.checked = false;
         elements.migration.disabled = false;
@@ -198,7 +203,7 @@ export function initializeConversor() {
 
         const withdrawalPeriod = elements.withdrawalPeriod.value.toUpperCase();
         const installationPeriod = elements.installationPeriod.value.toUpperCase();
-        const tax = elements.taxValue.value === 'isento' ? 'ISENTO' : `R$${elements.taxValue.value}`;
+        
         const signature = elements.signature.value === 'digital' ? 'ASSINATURA DIGITAL PENDENTE' : 'TITULAR NO LOCAL PARA ASSINATURA';
         
         let scheduleLines = '';
@@ -212,7 +217,9 @@ export function initializeConversor() {
         osTextData.installation = `${installationDay} - ${pdfData.contrato} - ${pdfData.primeiroNome} - ${pdfData.newAddress} - MUD ENDEREÇO - ${installationPeriod} - ${technician}`;
         scheduleLines += osTextData.installation;
         
+        // ✅ LINHA CORRIGIDA / READICIONADA ABAIXO
         const withdrawalText = isSelfWithdrawal ? 'CLIENTE FAZ A RETIRADA POR CONTA PRÓPRIA' : `RETIRAR EM ${pdfData.oldAddress} DIA ${withdrawalDay} ${withdrawalPeriod}`;
+        
         const taxValue = elements.taxValue.value;
         let taxText;
         if (elements.renewal.checked) {
@@ -220,11 +227,23 @@ export function initializeConversor() {
         } else if (elements.migration.checked) {
             taxText = 'ISENTO DA TAXA POR MIGRAÇÃO.';
         } else if (taxValue === 'isento') {
-            taxText = 'ISENTO DA TAXA.'; // Mensagem correta para "isento"
+            taxText = 'ISENTO DA TAXA.';
         } else {
             taxText = `TAXA DE R$${taxValue}.`;
         }
-        osTextData.os = `${phone} ${pdfData.primeiroNome} | ** ${elements.equipmentType.value.toUpperCase()} **\n${withdrawalText}.\nINSTALAR EM ${pdfData.newAddress} DIA ${installationDay} ${installationPeriod}.\n${taxText}\n${signature}.`;
+
+        // --- INÍCIO DA NOVA LÓGICA DO PORTADOR ---
+        let carrierText = '';
+        if (elements.migration.checked) {
+            const selectedCarrier = elements.oldCarrier.value;
+            if (selectedCarrier !== 'none') {
+                carrierText = `** ANTIGO PORTADOR ${selectedCarrier.toUpperCase()} **\n`;
+            }
+        }
+        // --- FIM DA NOVA LÓGICA ---
+
+        // Adiciona a variável 'carrierText' no início da O.S.
+        osTextData.os = `${carrierText}${phone} ${pdfData.primeiroNome} | ** ${elements.equipmentType.value.toUpperCase()} **\n${withdrawalText}.\nINSTALAR EM ${pdfData.newAddress} DIA ${installationDay} ${installationPeriod}.\n${taxText}\n${signature}.`;
         
         const fullOutput = `${scheduleLines}\n\n${osTextData.os}`;
         elements.output.textContent = replacePlaceholders(fullOutput);

@@ -40,46 +40,50 @@ document.addEventListener('DOMContentLoaded', async () => {
     const modalCloseProfileBtn = document.getElementById('modalCloseProfileBtn');
     const adminLinkContainer = document.getElementById('admin-link-container');
     const newFullNameInput = document.getElementById('newFullName');
+    const profileUsernameSpan = document.getElementById('profileUsername');
 
     // --- 2. DEFINIÇÃO DAS FUNÇÕES PRINCIPAIS ---
 
     const startApp = async (user, allAtendentes) => {
+        const attendantKey = Object.keys(allAtendentes).find(key => allAtendentes[key].uid === user.uid);
+        
+        if (!attendantKey) {
+            showPopup("Não foi possível carregar os dados do seu perfil. Por favor, faça o login novamente.", 'error');
+            await logoutUser();
+            return;
+        }
+
+        currentUsername = attendantKey;
         authOverlay.style.display = 'none';
         mainContent.style.display = 'flex';
         sidebar.style.display = 'flex';
+        
+        const attendantData = allAtendentes[attendantKey];
+        if (attendantData.status === 'inativo') {
+            showPopup("Sua conta foi desativada.", 'error');
+            await logoutUser();
+            return;
+        }
 
-        const attendantKey = Object.keys(allAtendentes).find(key => allAtendentes[key].uid === user.uid);
-        currentUsername = attendantKey;
+        if (atendenteToggleBtn) {
+            const atendenteTextSpan = atendenteToggleBtn.querySelector('.text');
+            if (atendenteTextSpan) atendenteTextSpan.textContent = attendantKey.charAt(0).toUpperCase() + attendantKey.slice(1);
+        }
+        localStorage.setItem("atendenteAtual", attendantKey);
+        
+        if (newFullNameInput) newFullNameInput.value = attendantData.nomeCompleto;
+        if (profileUsernameSpan) profileUsernameSpan.textContent = attendantKey;
+        if (adminLinkContainer) adminLinkContainer.style.display = attendantData.role === 'admin' ? 'block' : 'none';
 
-        if (attendantKey) {
-            const attendantData = allAtendentes[attendantKey];
-            const userStatus = attendantData.status || 'ativo';
-            if (userStatus === 'inativo') {
-                showPopup("Sua conta foi desativada por um administrador.", 'error');
-                await logoutUser();
-                return;
-            }
-
-            if (atendenteToggleBtn) {
-                const atendenteTextSpan = atendenteToggleBtn.querySelector('.text');
-                if (atendenteTextSpan) {
-                    const capitalizedUsername = attendantKey.charAt(0).toUpperCase() + attendantKey.slice(1);
-                    atendenteTextSpan.textContent = capitalizedUsername;
-                }
-            }
-            localStorage.setItem("atendenteAtual", attendantKey);
-            newFullNameInput.value = attendantData.nomeCompleto;
-
-            const userRole = attendantData.role;
-            adminLinkContainer.style.display = userRole === 'admin' ? 'block' : 'none';
-
-            chatLoader.style.display = 'flex';
+        chatLoader.style.display = 'flex';
+        try {
             const data = await loadDataForAttendant(attendantKey);
             chatModule.setResponses(data);
+        } catch (error) {
+            console.error("Erro ao carregar dados do chat:", error);
+            showPopup("Não foi possível carregar suas respostas.", "error");
+        } finally {
             chatLoader.style.display = 'none';
-        } else {
-            showPopup("Seu usuário do login não foi encontrado na lista de atendentes.", 'error');
-            await logoutUser();
         }
 
         updateGreeting(attendantKey);
@@ -94,58 +98,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     // --- 3. FLUXO DE EXECUÇÃO PRINCIPAL ---
-
     try {
         checkAuthState(async (user) => {
             if (user) {
                 const allAtendentes = await loadAtendentes();
-                startApp(user, allAtendentes);
+                await startApp(user, allAtendentes);
             } else {
                 showLoginScreen();
             }
         });
     } catch (error) {
         console.error("Erro fatal na inicialização:", error);
-        showPopup("Não foi possível iniciar a aplicação. Verifique o console.", "error");
+        showPopup("Não foi possível iniciar a aplicação.", "error");
         showLoginScreen();
     }
 
     // --- 4. EVENT LISTENERS DA INTERFACE ---
-
-    if (atendenteToggleBtn) {
-        atendenteToggleBtn.addEventListener('click', () => {
-            profileModal.style.display = 'flex';
-        });
-    }
-    if (modalCloseProfileBtn) {
-        modalCloseProfileBtn.addEventListener('click', () => {
-            profileModal.style.display = 'none';
-        });
-    }
-    if (modalLogoutBtn) {
-        modalLogoutBtn.addEventListener('click', async () => {
-            try {
-                await logoutUser();
-                profileModal.style.display = 'none';
-            } catch (error) {
-                showPopup("Erro ao fazer logout: " + error.message, 'error');
-            }
-        });
-    }
+    if (atendenteToggleBtn) atendenteToggleBtn.addEventListener('click', () => { profileModal.style.display = 'flex'; });
+    if (modalCloseProfileBtn) modalCloseProfileBtn.addEventListener('click', () => { profileModal.style.display = 'none'; });
+    if (modalLogoutBtn) modalLogoutBtn.addEventListener('click', async () => { try { await logoutUser(); profileModal.style.display = 'none'; } catch (error) { showPopup("Erro ao fazer logout: " + error.message, 'error'); } });
 
     if (updateFullNameForm) {
         updateFullNameForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const newFullName = newFullNameInput.value;
-            if (!newFullName.trim()) {
-                return showPopup("O nome não pode estar em branco.", 'error');
-            }
-            if (!currentUsername) {
-                 return showPopup("Erro: Usuário não identificado.", 'error');
-            }
+            if (!newFullName.trim()) return showPopup("O nome não pode estar em branco.", 'error');
+            if (!currentUsername) return showPopup("Erro: Usuário não identificado.", 'error');
             try {
                 await updateUserFullName(currentUsername, newFullName);
-                showPopup("Nome completo alterado com sucesso!", 'success');
+                showPopup("Nome alterado com sucesso!", 'success');
                 profileModal.style.display = 'none';
             } catch (error) {
                 showPopup("Erro ao alterar o nome: " + error.message, 'error');
@@ -157,9 +138,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         updatePasswordForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const newPassword = document.getElementById('newPassword').value;
-            if (newPassword.length < 6) {
-                return showPopup("A nova senha deve ter pelo menos 6 caracteres.", 'error');
-            }
+            if (newPassword.length < 6) return showPopup("A nova senha deve ter pelo menos 6 caracteres.", 'error');
             try {
                 await updateUserPassword(newPassword);
                 showPopup("Senha alterada com sucesso!", 'success');
@@ -176,22 +155,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             e.preventDefault();
             const identifier = document.getElementById('loginIdentifier').value;
             const password = document.getElementById('loginPassword').value;
-            
             try {
                 if (identifier.includes('@')) {
                     await loginUser(identifier, password);
                 } else {
                     await loginWithUsername(identifier, password);
                 }
-                // Se o login for bem-sucedido, o checkAuthState cuidará do resto.
             } catch (error) {
-                // --- CORREÇÃO DO ERRO GENÉRICO ---
-                let friendlyMessage = "Ocorreu um erro inesperado. Tente novamente.";
+                let friendlyMessage = "Ocorreu um erro.";
                 if (error.code === 'auth/invalid-login-credentials') {
                     friendlyMessage = "Usuário, e-mail ou senha incorretos.";
                 }
                 showPopup(friendlyMessage, 'error');
-                console.error("Erro de login:", error); // Mantém o log para depuração
             }
         });
     }
@@ -204,16 +179,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 email: document.getElementById('registerEmail').value,
                 password: document.getElementById('registerPassword').value,
             };
-            if (!userDetails.username || !userDetails.fullName) {
-                return showPopup("Todos os campos são obrigatórios.", 'error');
-            }
+            if (!userDetails.username || !userDetails.fullName) return showPopup("Todos os campos são obrigatórios.", 'error');
+            
             try {
-                // --- CORREÇÃO DO LOGIN AUTOMÁTICO ---
-                // A função createUserAccount já loga o usuário.
-                // O listener checkAuthState irá detectar o novo usuário logado e iniciar a aplicação automaticamente.
-                await createUserAccount(userDetails);
-                showPopup("Registro realizado com sucesso! Logando...", "success");
-
+                // CORREÇÃO DO FLUXO PÓS-REGISTRO
+                const { userCredential, sanitizedUsername, newAtendenteData } = await createUserAccount(userDetails);
+                
+                // Em vez de esperar o listener, iniciamos o app manualmente com os dados que acabamos de criar.
+                // Isso evita a "tela presa" e a "condição de corrida".
+                const allAtendentes = await loadAtendentes();
+                allAtendentes[sanitizedUsername] = newAtendenteData;
+                await startApp(userCredential.user, allAtendentes);
+                
             } catch (error) {
                 let friendlyMessage = "Ocorreu um erro desconhecido.";
                 if (error.code === 'auth/email-already-in-use') friendlyMessage = "Este e-mail já está cadastrado.";
@@ -227,25 +204,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.querySelectorAll('.sidebar-button[data-section]').forEach(button => {
         button.addEventListener('click', () => {
-            showSection(button.dataset.section, currentUsername);
+            showSection(button.dataset.section, currentUsername); 
         });
     });
     const showRegisterBtn = document.getElementById('show-register');
-    if (showRegisterBtn) {
-        showRegisterBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            loginForm.style.display = 'none';
-            registerForm.style.display = 'block';
-        });
-    }
+    if (showRegisterBtn) showRegisterBtn.addEventListener('click', (e) => { e.preventDefault(); loginForm.style.display = 'none'; registerForm.style.display = 'block'; });
     const showLoginBtn = document.getElementById('show-login');
-    if (showLoginBtn) {
-        showLoginBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            registerForm.style.display = 'none';
-            loginForm.style.display = 'block';
-        });
-    }
+    if (showLoginBtn) showLoginBtn.addEventListener('click', (e) => { e.preventDefault(); registerForm.style.display = 'none'; loginForm.style.display = 'block'; });
 
     document.addEventListener('click', (e) => {
         if (profileModal && atendenteToggleBtn && !atendenteToggleBtn.contains(e.target) && !profileModal.contains(e.target)) {

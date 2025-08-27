@@ -75,8 +75,6 @@ export async function createUserAccount(details) {
     const user = userCredential.user;
     const formattedFullName = capitalizeFullName(fullName);
 
-    // CORREÇÃO: Atualiza o perfil de autenticação ANTES de tentar escrever no banco de dados.
-    // Isso ajuda a garantir que o token de autenticação esteja pronto.
     await updateProfile(user, { displayName: formattedFullName });
 
     const newAtendenteData = {
@@ -90,7 +88,8 @@ export async function createUserAccount(details) {
     try {
         const atendenteRef = ref(db, `atendentes/${sanitizedUsername}`);
         await set(atendenteRef, newAtendenteData);
-        return userCredential;
+        // Retorna tudo que o app.js precisa para iniciar o app imediatamente
+        return { userCredential, sanitizedUsername, newAtendenteData };
     } catch (error) {
         await user.delete();
         console.error("Erro ao gravar no banco de dados, usuário de autenticação foi revertido:", error);
@@ -108,11 +107,15 @@ export async function loadDataForAttendant(attendant) {
     if (!attendant || !auth.currentUser) return [];
     const dbRef = ref(db, `respostas/${attendant}`);
     const snapshot = await get(dbRef);
+    // Lógica simplificada: Apenas lê. Se não existir, retorna vazio.
     return snapshot.exists() ? snapshot.val() : [];
 }
 
 export async function saveDataForAttendant(attendant, data) {
-    if (!attendant || !auth.currentUser) return;
+    if (!attendant || !auth.currentUser) {
+        console.error("Tentativa de salvar dados sem um atendente definido.");
+        return;
+    }
     const dbRef = ref(db, `respostas/${attendant}`);
     await set(dbRef, data);
 }

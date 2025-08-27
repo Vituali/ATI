@@ -2,9 +2,9 @@
 
 [![Deploy static content to Pages](https://github.com/Vituali/ATI/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/Vituali/ATI/actions/workflows/pages/pages-build-deployment)
 ![Licença](https://img.shields.io/badge/licen%C3%A7a-MIT-blue.svg)
-![Versão](https://img.shields.io/badge/vers%C3%A3o-2.0.0-brightgreen)
+![Versão](https://img.shields.io/badge/vers%C3%A3o-3.0.0-brightgreen)
 
-Um sistema de produtividade para equipes de atendimento, focado em agilizar a comunicação e automatizar tarefas repetitivas. O ATI combina um gerenciador de respostas rápidas com um conversor inteligente de aditivos contratuais em PDF.
+Um sistema de produtividade multiusuário para equipas de atendimento, focado em agilizar a comunicação e automatizar tarefas repetitivas. O ATI combina um gerenciador de respostas rápidas com um conversor inteligente de aditivos contratuais em PDF, tudo com contas de usuário individuais e um painel de administração.
 
 ### ✨ [Acesse a versão ao vivo aqui!](https://vituali.github.io/ATI/)
 
@@ -12,20 +12,27 @@ Um sistema de produtividade para equipes de atendimento, focado em agilizar a co
 
 ## 🚀 Funcionalidades Principais
 
-O ATI é dividido em duas ferramentas principais, com uma interface totalmente personalizável.
+O ATI é dividido em duas ferramentas principais, com uma interface totalmente personalizável e um sistema de autenticação completo.
+
+* **🔐 Sistema de Autenticação e Gerenciamento:**
+    * **Contas Individuais:** Sistema completo de Registro e Login para cada atendente.
+    * **Login Flexível:** Permite o login tanto com **nome de usuário** quanto com **e-mail**.
+    * **Gerenciamento de Perfil:** Usuários podem alterar o próprio nome completo e senha.
+    * **Painel de Administração:** Uma área restrita para administradores gerenciarem outros usuários, alterando suas permissões (role) e status (ativo/inativo).
+    * **Segurança Robusta:** Regras de segurança no Firebase impedem o acesso não autorizado e a sobrescrita de nomes de usuário.
 
 * **💬 Chat Automatizado:**
-    * Crie, edite e apague respostas padrão.
+    * Crie, edite e apague respostas padrão salvas na sua conta.
+    * **Modelo para Novos Usuários:** Novos registros começam com um conjunto de respostas-padrão para facilitar a integração.
     * Organize as respostas em categorias customizáveis.
-    * Reordene tanto as categorias quanto as respostas dentro delas com um sistema de **Arrastar e Soltar (Drag and Drop)**.
+    * Reordene tanto as categorias quanto as respostas com um sistema de **Arrastar e Soltar (Drag and Drop)**.
     * Use marcadores dinâmicos como `[SAUDACAO]` e `[DESPEDIDA]` que se ajustam ao horário.
 
 * **📄 Conversor de Aditivos:**
     * Faça o upload de um aditivo contratual em PDF.
-    * O sistema extrai automaticamente: Número do Contrato, Nome do Cliente e Endereços (antigo e novo).
-    * Preencha informações adicionais (telefone, datas, taxas) em um formulário inteligente.
+    * O sistema extrai automaticamente: Número do Contrato, Nome do Cliente e Endereços.
+    * Preencha informações adicionais num formulário inteligente.
     * Gere uma Ordem de Serviço (O.S.) completa e formatada com um clique.
-    * Copie textos específicos para a agenda de retirada e instalação.
 
 * **🎨 Interface Personalizável:**
     * Alterne entre **Modo Claro** e **Modo Escuro**.
@@ -35,10 +42,10 @@ O ATI é dividido em duas ferramentas principais, com uma interface totalmente p
 
 ## 🛠️ Tecnologias Utilizadas
 
-Este projeto foi construído com tecnologias web puras, sem o uso de frameworks complexos, para garantir leveza e performance.
+Este projeto foi construído com tecnologias web puras para garantir leveza e performance.
 
 * **Frontend:** HTML5, CSS3 (com Variáveis CSS), JavaScript (ES6 Modules)
-* **Banco de Dados:** Firebase Realtime Database (para armazenamento das respostas do chat)
+* **Autenticação e Banco de Dados:** Firebase Authentication e Firebase Realtime Database
 * **Bibliotecas:**
     * [SortableJS](https://github.com/SortableJS/Sortable): Para a funcionalidade de Arrastar e Soltar.
     * [PDF.js](https://mozilla.github.io/pdf.js/): Para a leitura e extração de texto de arquivos PDF.
@@ -46,21 +53,16 @@ Este projeto foi construído com tecnologias web puras, sem o uso de frameworks 
 
 ## ⚙️ Como Rodar o Projeto Localmente
 
-Para testar ou desenvolver o projeto na sua máquina local:
-
 1.  **Clone o repositório:**
     ```bash
     git clone [https://github.com/vituali/ATI.git](https://github.com/vituali/ATI.git)
     ```
-
 2.  **Navegue até a pasta do projeto:**
     ```bash
     cd ATI
     ```
-
 3.  **Inicie um servidor local:**
-    Como o projeto usa Módulos JavaScript (ESM), ele precisa ser servido por um servidor web, não basta abrir o `index.html` diretamente. A forma mais fácil é usando `http-server`.
-
+    Como o projeto usa Módulos JavaScript (ESM), ele precisa ser servido por um servidor web. A forma mais fácil é usando `http-server`.
     * Se não tiver o `http-server`, instale globalmente com o Node.js:
         ```bash
         npm install -g http-server
@@ -73,11 +75,9 @@ Para testar ou desenvolver o projeto na sua máquina local:
 
 ## 🗂️ Estrutura de Ramificação (Branching Strategy)
 
-Este projeto utiliza um fluxo de trabalho Git para garantir a estabilidade do site em produção.
-
-* **`main`**: Branch de produção. Contém apenas o código estável que está no ar. O deploy é acionado automaticamente a cada merge para esta branch. **Ninguém deve fazer push direto para a `main`**.
-* **`develop`**: Branch principal de desenvolvimento. Todas as novas funcionalidades são mescladas aqui para testes integrados.
-* **`feature/*`**: Branches para novas funcionalidades ou correções. São criadas a partir da `develop` e, ao serem concluídas, são mescladas de volta na `develop` através de um Pull Request.
+* **`main`**: Branch de produção. Contém apenas o código estável que está no ar.
+* **`develop`**: Branch principal de desenvolvimento. Todas as novas funcionalidades são mescladas aqui.
+* **`feature/*`**: Branches para novas funcionalidades ou correções.
 
 ## 📄 Licença
 

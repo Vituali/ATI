@@ -100,7 +100,7 @@ export function initializeChat() {
             const [categoryName, key] = selectedValue.split(":");
             const categoryObject = respostas.find(c => c.categoryName === categoryName);
             const message = categoryObject?.items[key] || "Resposta não encontrada.";
-            elements.response.value = replacePlaceholders(message);
+            elements.response.value = message;
         }
         adjustTextareaHeight(elements.response);
         elements.titleContainer.style.display = 'none';
@@ -282,8 +282,11 @@ export function initializeChat() {
     });
     
     elements.response.addEventListener('input', () => adjustTextareaHeight(elements.response));
-    elements.copyBtn.addEventListener('click', () => navigator.clipboard.writeText(elements.response.value).then(() => showPopup('Texto copiado!')));
-    
+    elements.copyBtn.addEventListener('click', () => {
+    const rawText = elements.response.value;
+    const processedText = replacePlaceholders(rawText);
+    navigator.clipboard.writeText(processedText).then(() => showPopup('Texto copiado!'));
+});    
     elements.saveEditBtn.addEventListener('click', saveChanges);
     elements.addBtn.addEventListener('click', addNewResponse);
     elements.deleteBtn.addEventListener('click', deleteResponse);

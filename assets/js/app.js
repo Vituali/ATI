@@ -13,12 +13,14 @@ import {
 } from './firebase.js';
 import { initializeTheme } from './theme.js';
 import { initializeChat } from './chat.js';
+import { osEditorModule, initializeOsEditor } from './os-editor.js';
 import { initializeConversor } from './conversor.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     // --- 1. INICIALIZAÇÃO E SELETORES ---
     initializeUI();
     initializeTheme();
+    initializeOsEditor();
     initializeConversor();
     initializeFirebase();
     const chatModule = initializeChat();
@@ -79,6 +81,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const data = await loadDataForAttendant(attendantKey);
             chatModule.setResponses(data);
+            osEditorModule.setTemplates(data, attendantKey)
         } catch (error) {
             console.error("Erro ao carregar dados do chat:", error);
             showPopup("Não foi possível carregar suas respostas.", "error");

@@ -129,6 +129,59 @@
                     <p id="saudacaoDespedidaText">Use [SAUDACAO] e [DESPEDIDA] para textos dinâmicos.</p>
                 </div>
             </div>
+            <!--============ SISTEMA DO EDITOR DE O.S ============-->
+            <div id="osSection" style="display: none;">
+    <h1>Editor de Modelos de O.S.</h1>
+    <h2>Crie e gerencie os templates para a criação de Ordens de Serviço.</h2>
+
+    <div class="os-editor-layout">
+        <div class="os-list-container card">
+            <h3>Seus Modelos</h3>
+            <div id="os-list" class="os-list">
+                </div>
+
+             <button id="os-reset-btn" class="button back" style="width: 100%; margin-top: 15px;">Resetar para Padrão</button>
+        </div>
+
+        <div class="os-form-container card">
+            <form id="os-form">
+                <input type="hidden" id="os-edit-index">
+                <h3 id="os-form-title">Selecione ou crie um modelo</h3>
+
+                <div class="grupo">
+                    <label for="os-title">Título do Modelo:</label>
+                    <input type="text" id="os-title" placeholder="Ex: Sem Conexão" required>
+                </div>
+
+                <div class="grupo">
+                    <label for="os-text">Texto da O.S.:</label>
+                    <textarea id="os-text" rows="5" placeholder="Ex: CLIENTE SEM ACESSO. REALIZADO OS PROCEDIMENTOS..."></textarea>
+                </div>
+
+                <div class="grupo">
+                    <label for="os-category">Categoria:</label>
+                    <select id="os-category">
+                        <option value="Suporte">Suporte</option>
+                        <option value="Financeiro">Financeiro</option>
+                        <option value="Comercial">Comercial</option>
+                        <option value="Geral">Geral</option>
+                        </select>
+                </div>
+
+                <div class="grupo">
+                    <label for="os-keywords">Palavras-chave (separadas por vírgula):</label>
+                    <input type="text" id="os-keywords" placeholder="sem conexao, nao funciona, caiu">
+                </div>
+
+                <div class="controls">
+                    <button type="submit" id="os-save-btn" class="button">Salvar</button>
+                    <button type="button" id="os-new-btn" class="button">Novo Modelo</button>
+                    <button type="button" id="os-delete-btn" class="button back" style="display: none;">Apagar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
                     <!--============ SISTEMA DO CONVERSOR ============-->
             <div id="conversorSection" style="display: none;">
                 <h1 id="saudacaoConversor"></h1>

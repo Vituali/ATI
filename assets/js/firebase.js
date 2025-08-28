@@ -21,7 +21,7 @@ const firebaseConfig = {
     measurementId: "G-22D5RNGGK6"
 };
 
-let db;
+export let db;
 let auth;
 
 export function initializeFirebase() {

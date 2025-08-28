@@ -142,7 +142,7 @@ function showOSModalV2() {
     const clientChatTexts = extractClientChatAfterAssignment(chatBody);
     const suggestedTemplate = findSuggestedTemplateV2(clientChatTexts);
     const { firstName, phoneNumber } = extractDataFromHeader(chatHeader);
-    const osBaseText = `${phoneNumber || ''} ${firstName || ''} | E A OCORRENCIA: `.trim();
+    const osBaseText = `${phoneNumber || ''} ${firstName || ''} | `.trim();
     const osOnlyTemplates = osTemplates.filter(t => t.category !== 'quick_reply');
     const templatesByCategory = osOnlyTemplates.reduce((acc, template) => {
         const category = template.category || 'Outros';
@@ -150,23 +150,30 @@ function showOSModalV2() {
         acc[category].push(template);
         return acc;
     }, {});
+    
     let modelsHTML = '';
     for (const category in templatesByCategory) {
-        modelsHTML += `<h4 style="margin-top: 15px; margin-bottom: 5px;">${category.toUpperCase()}</h4>`;
-        modelsHTML += templatesByCategory[category].map(t => `<button class="template-btn" data-template-text="${t.text}">${t.title}</button>`).join('');
+        modelsHTML += `<h4 style="margin-top: 15px; margin-bottom: 5px; border-bottom: 1px solid #555; padding-bottom: 5px;">${category.toUpperCase()}</h4>`;
+        modelsHTML += templatesByCategory[category].map(t => `<button class="template-btn" data-template-text="${t.text}" style="margin: 2px 5px 2px 0; background: #007bff; border: none; color: #fff; padding: 5px 10px; border-radius: 4px; cursor: pointer;">${t.title}</button>`).join('');
     }
+
     const modalBackdrop = document.createElement('div');
     modalBackdrop.id = 'osModalV2';
     modalBackdrop.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center;';
     const modalContent = document.createElement('div');
-    modalContent.style.cssText = 'background-color: #333; color: #fff; padding: 20px; border-radius: 8px; width: 600px; max-width: 90%;';
-    const suggestionHTML = suggestedTemplate ? `<div><strong>Sugestão:</strong><button class="template-btn" data-template-text="${suggestedTemplate.text}">${suggestedTemplate.title}</button></div>` : '';
-    modalContent.innerHTML = `<h3>CRIAR ORDEM DE SERVIÇO</h3> ${suggestionHTML} <div><label>DESCRIÇÃO:</label><textarea id="osTextAreaV2" style="width: 98%; height: 150px; background-color: #222; color:#fff; border: 1px solid #555; padding: 5px; text-transform: uppercase;"></textarea></div><div><strong>TODOS OS MODELOS:</strong>${modelsHTML}</div><div><button id="copyOsBtnV2">COPIAR O.S.</button><button id="cancelOsBtnV2">CANCELAR</button></div>`;
+    modalContent.style.cssText = 'background-color: #333; color: #fff; padding: 20px; border-radius: 8px; width: 600px; max-width: 90%; box-shadow: 0 5px 15px rgba(0,0,0,0.3);';
+    const suggestionHTML = suggestedTemplate ? `<div style="margin-bottom: 20px; padding: 10px; background-color: #444; border-radius: 4px;"><strong>Sugestão:</strong><button class="template-btn" data-template-text="${suggestedTemplate.text}" style="margin-left: 10px; background: #ffc107; border: none; color: #000; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold;">${suggestedTemplate.title}</button></div>` : '';
+    
+    // ===== LINHA CORRIGIDA ABAIXO (ADICIONADO STYLE NOS BOTÕES FINAIS) =====
+    modalContent.innerHTML = `<h3 style="margin-top: 0; border-bottom: 1px solid #555; padding-bottom: 10px;">CRIAR ORDEM DE SERVIÇO</h3> ${suggestionHTML} <div style="margin-bottom: 15px;"><label for="osTextAreaV2" style="display: block; margin-bottom: 5px;">DESCRIÇÃO:</label><textarea id="osTextAreaV2" style="width: 97%; height: 150px; background-color: #222; color: #fff; border: 1px solid #555; border-radius: 4px; padding: 10px; font-family: sans-serif; text-transform: uppercase;"></textarea></div><div style="margin-bottom: 20px;"><strong>TODOS OS MODELOS:</strong>${modelsHTML}</div><div><button id="copyOsBtnV2" style="padding: 10px 20px; background-color: #28a745; color: #fff; border: none; border-radius: 5px; cursor: pointer;">COPIAR O.S. E FECHAR</button><button id="cancelOsBtnV2" style="padding: 10px 20px; background-color: #dc3545; color: #fff; border: none; border-radius: 5px; cursor: pointer; float: right;">CANCELAR</button></div>`;
+    
     modalBackdrop.appendChild(modalContent);
     document.body.appendChild(modalBackdrop);
+
     const osTextArea = document.getElementById('osTextAreaV2');
     osTextArea.value = processDynamicPlaceholders(osBaseText).toUpperCase();
     osTextArea.addEventListener('input', function() { this.value = this.value.toUpperCase(); });
+
     modalContent.querySelectorAll('.template-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const templateText = btn.getAttribute('data-template-text');
@@ -174,6 +181,7 @@ function showOSModalV2() {
             osTextArea.value = processDynamicPlaceholders(fullText).toUpperCase();
         });
     });
+    
     document.getElementById('copyOsBtnV2').onclick = () => { navigator.clipboard.writeText(osTextArea.value); showNotificationV2("O.S. Copiada!"); modalBackdrop.remove(); };
     document.getElementById('cancelOsBtnV2').onclick = () => modalBackdrop.remove();
 }

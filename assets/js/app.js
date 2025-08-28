@@ -70,6 +70,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (atendenteTextSpan) atendenteTextSpan.textContent = attendantKey.charAt(0).toUpperCase() + attendantKey.slice(1);
         }
         localStorage.setItem("atendenteAtual", attendantKey);
+        chrome.storage.local.set({ atendenteAtual: attendantKey });
         
         if (newFullNameInput) newFullNameInput.value = attendantData.nomeCompleto;
         if (profileUsernameSpan) profileUsernameSpan.textContent = attendantKey;

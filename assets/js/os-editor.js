@@ -35,19 +35,41 @@ function renderList() {
         return;
     }
 
-    osTemplates.forEach(template => {
-        const originalIndex = allUserTemplates.indexOf(template);
-        const item = document.createElement('div');
-        item.className = 'os-list-item';
-        item.textContent = template.title;
-        item.dataset.index = originalIndex;
-        item.addEventListener('click', () => {
-            document.querySelectorAll('.os-list-item.active').forEach(i => i.classList.remove('active'));
-            item.classList.add('active');
-            fillFormForEdit(originalIndex);
+    // 1. Agrupa os templates por categoria usando reduce
+    const groupedByCategory = osTemplates.reduce((acc, template) => {
+        const category = template.category || 'Geral'; // Usa 'Geral' se não houver categoria
+        if (!acc[category]) {
+            acc[category] = [];
+        }
+        acc[category].push(template);
+        return acc;
+    }, {});
+
+    // 2. Itera sobre as categorias agrupadas para criar a lista
+    for (const category in groupedByCategory) {
+        // Cria o título da categoria (ex: <h3>Financeiro</h3>)
+        const categoryHeader = document.createElement('div');
+        categoryHeader.className = 'os-category-header';
+        categoryHeader.textContent = category;
+        elements.list.appendChild(categoryHeader);
+
+        // Itera sobre os templates dentro de cada categoria
+        groupedByCategory[category].forEach(template => {
+            const originalIndex = allUserTemplates.indexOf(template);
+            const item = document.createElement('div');
+            item.className = 'os-list-item';
+            item.textContent = template.title;
+            item.dataset.index = originalIndex;
+            
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.os-list-item.active').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                fillFormForEdit(originalIndex);
+            });
+
+            elements.list.appendChild(item);
         });
-        elements.list.appendChild(item);
-    });
+    }
 }
 
 function fillFormForEdit(index) {

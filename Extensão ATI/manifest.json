@@ -52,7 +52,8 @@
     {
       "comment": "Ponte de comunicação com o site-painel.",
       "matches": ["https://vituali.github.io/ATI/"],
-      "js": ["bridge-listener.js"]
+      "js": ["bridge-listener.js"],
+       "all_frames": true
     }
   ],
   "web_accessible_resources": [

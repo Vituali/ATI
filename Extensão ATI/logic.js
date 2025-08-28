@@ -1,41 +1,43 @@
 // logic.js - Funções para extração e processamento de dados da página.
 
 async function loadTemplatesFromStorage() {
-    return new Promise((resolve) => {
-        // 1. Descobre qual atendente está salvo no armazenamento da extensão.
-        chrome.storage.local.get('atendenteAtual', async ({ atendenteAtual }) => {
-            if (!atendenteAtual) {
-                console.log("[Extensão ATI] Nenhum atendente definido. Use o site-painel para fazer login.");
-                resolve([]); // Resolve com array vazio se ninguém estiver logado.
-                return;
-            }
+  return new Promise((resolve) => {
+    chrome.storage.local.get('atendenteAtual', async ({
+      atendenteAtual
+    }) => {
+      if (!atendenteAtual) {
+        console.log("[Extensão ATI] Nenhum atendente definido. Use o site-painel para fazer login.");
+        // CHAMA A NOTIFICAÇÃO VISUAL NA TELA
+        if (typeof showNotification === 'function') {
+          showNotification("ATI: Faça o login no painel para carregar seus modelos.", true, 5000);
+        }
+        resolve([]);
+        return;
+      }
 
-            console.log(`[Extensão ATI] Tentando carregar modelos para: ${atendenteAtual}`);
-            try {
-                // 2. Busca os dados do Firebase para esse atendente específico.
-                const firebaseTemplates = await fetchTemplatesFromFirebase(atendenteAtual);
-
-                // 3. Salva os dados mais recentes no cache local da extensão.
-                await chrome.storage.local.set({ cachedOsTemplates: firebaseTemplates });
-                console.log(`[Extensão ATI] ${firebaseTemplates.length} modelos de '${atendenteAtual}' carregados do Firebase.`);
-                resolve(firebaseTemplates);
-
-            } catch (error) {
-                console.error("[Extensão ATI] Falha ao carregar do Firebase. Tentando usar o cache local.", error);
-                
-                // 4. Se o Firebase falhar, tenta usar o último cache salvo.
-                chrome.storage.local.get('cachedOsTemplates', (cache) => {
-                    if (cache.cachedOsTemplates) {
-                        console.log("[Extensão ATI] Modelos carregados do cache como fallback.");
-                        resolve(cache.cachedOsTemplates);
-                    } else {
-                        console.error("[Extensão ATI] Cache também está vazio. Nenhum modelo carregado.");
-                        resolve([]);
-                    }
-                });
-            }
+      console.log(`[Extensão ATI] Tentando carregar modelos para: ${atendenteAtual}`);
+      try {
+        const firebaseTemplates = await fetchTemplatesFromFirebase(atendenteAtual);
+        await chrome.storage.local.set({
+          cachedOsTemplates: firebaseTemplates
         });
+        console.log(`[Extensão ATI] ${firebaseTemplates.length} modelos de '${atendenteAtual}' carregados do Firebase.`);
+        resolve(firebaseTemplates);
+
+      } catch (error) {
+        console.error("[Extensão ATI] Falha ao carregar do Firebase. Tentando usar o cache local.", error);
+        chrome.storage.local.get('cachedOsTemplates', (cache) => {
+          if (cache.cachedOsTemplates) {
+            console.log("[Extensão ATI] Modelos carregados do cache como fallback.");
+            resolve(cache.cachedOsTemplates);
+          } else {
+            console.error("[Extensão ATI] Cache também está vazio. Nenhum modelo carregado.");
+            resolve([]);
+          }
+        });
+      }
     });
+  });
 }
 function findActiveAttendanceElement() {
     const allAttendanceDivs = document.querySelectorAll('section.chat .attendance');

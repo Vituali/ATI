@@ -1,21 +1,18 @@
 // bridge-injected.js
-
-console.log("Ponte ATI injetada no site-painel com sucesso.");
+console.log("[Site] Ponte injetada INICIADA. Monitorando login...");
 
 let lastKnownAttendant = null;
 
-// A cada 2 segundos, verifica se o atendente no localStorage mudou.
 setInterval(() => {
     const currentAttendant = localStorage.getItem('atendenteAtual');
 
-    // Se o valor mudou (incluindo login e logout)
     if (currentAttendant !== lastKnownAttendant) {
+        console.log(`[Site] Mudança detectada! Atendente agora é: ${currentAttendant}. Enviando mensagem para a extensão...`);
         lastKnownAttendant = currentAttendant;
 
-        // Envia uma mensagem para o 'mundo' da extensão
         window.postMessage({
             type: 'ATI_ATTENDANT_UPDATE',
             attendant: currentAttendant
         }, '*');
     }
-}, 2000);
+}, 1500);

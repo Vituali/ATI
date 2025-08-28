@@ -1,19 +1,8 @@
 import { showPopup, adjustTextareaHeight, replacePlaceholders } from './ui.js';
 import { saveDataForAttendant } from './firebase.js';
 
-function validateKey(key) {
-    if (!key || !key.trim()) {
-        return { isValid: false, message: "O título não pode estar em branco." };
-    }
-    if (/[.$#[\]/]/g.test(key)) {
-        return { isValid: false, message: "O título não pode conter ., $, #, [, ], ou /" };
-    }
-    const sanitizedKey = key.trim().toLowerCase().replace(/\s+/g, "_");
-    return { isValid: true, sanitizedKey };
-}
-
 export function initializeChat() {
-    // A estrutura de 'respostas' agora é um ARRAY para preservar a ordem
+    // A estrutura de 'respostas' é um ARRAY para preservar a ordem
     let respostas = []; 
     let currentSelection = { value: "", text: "Selecione uma resposta" };
     let sortableInstances = [];
@@ -34,28 +23,26 @@ export function initializeChat() {
 
     const getCurrentAttendant = () => localStorage.getItem('atendenteAtual');
 
-    const convertOldDataFormat = (data) => {
-        if (Array.isArray(data)) return data;
-        if (typeof data === 'object' && data !== null) {
-            return Object.keys(data).map(categoryName => ({
-                categoryName: categoryName,
-                items: data[categoryName] || {}
-            }));
-        }
-        return [];
-    };
-
     const updateResponseSelector = () => {
-        const attendant = getCurrentAttendant();
         elements.selectItems.innerHTML = '';
-        if (!attendant || respostas.length === 0) {
+        if (respostas.length === 0) {
             elements.selectDisplay.textContent = 'Nenhuma resposta encontrada';
             return;
         }
+
+        const groupedByCategory = respostas.reduce((acc, template) => {
+            const category = template.subCategory || 'Geral';
+            if (!acc[category]) {
+                acc[category] = [];
+            }
+            acc[category].push(template);
+            return acc;
+        }, {});
+
         sortableInstances.forEach(sortable => sortable.destroy());
         sortableInstances = [];
-        respostas.forEach(categoryObject => {
-            const categoryName = categoryObject.categoryName;
+
+        for (const categoryName in groupedByCategory) {
             const categoryGroup = document.createElement("div");
             categoryGroup.className = 'category-group';
             const optgroup = document.createElement("div");
@@ -64,11 +51,13 @@ export function initializeChat() {
             categoryGroup.appendChild(optgroup);
             const optionsContainer = document.createElement("div");
             optionsContainer.className = 'options-container';
-            Object.keys(categoryObject.items).forEach(key => {
+            optionsContainer.dataset.categoryName = categoryName;
+
+            groupedByCategory[categoryName].forEach(template => {
                 const opt = document.createElement("div");
                 opt.className = 'option-item';
-                opt.textContent = key.replace(/_/g, " ").toUpperCase();
-                opt.dataset.value = `${categoryName}:${key}`;
+                opt.textContent = template.title;
+                opt.dataset.value = respostas.indexOf(template);
                 opt.addEventListener('click', () => {
                     currentSelection = { value: opt.dataset.value, text: opt.textContent };
                     elements.selectDisplay.textContent = opt.textContent;
@@ -79,7 +68,8 @@ export function initializeChat() {
             });
             categoryGroup.appendChild(optionsContainer);
             elements.selectItems.appendChild(categoryGroup);
-        });
+        }
+
         elements.selectItems.querySelectorAll('.options-container').forEach(container => {
             const sortable = Sortable.create(container, {
                 group: 'shared-options',
@@ -93,14 +83,12 @@ export function initializeChat() {
     };
     
     const displaySelectedResponse = () => {
-        const selectedValue = currentSelection.value;
-        if (!selectedValue) {
+        const selectedIndex = currentSelection.value;
+        if (selectedIndex === "") {
             elements.response.value = "Selecione uma opção para ver a mensagem.";
         } else {
-            const [categoryName, key] = selectedValue.split(":");
-            const categoryObject = respostas.find(c => c.categoryName === categoryName);
-            const message = categoryObject?.items[key] || "Resposta não encontrada.";
-            elements.response.value = message;
+            const template = respostas[parseInt(selectedIndex)];
+            elements.response.value = template ? template.text : "Resposta não encontrada.";
         }
         adjustTextareaHeight(elements.response);
         elements.titleContainer.style.display = 'none';
@@ -109,45 +97,39 @@ export function initializeChat() {
     const saveOrder = () => {
         const attendant = getCurrentAttendant();
         if (!attendant) return;
-        const newOrderedRespostas = [];
-        elements.selectItems.querySelectorAll('.category-group').forEach(group => {
-            const categoryName = group.querySelector('.optgroup-label').textContent.toLowerCase();
-            const newCategoryObject = { categoryName: categoryName, items: {} };
-            group.querySelectorAll('.option-item').forEach(item => {
-                const [originalCategory, key] = item.dataset.value.split(':');
-                const oldCategoryObject = respostas.find(c => c.categoryName === originalCategory);
-                if (oldCategoryObject && oldCategoryObject.items[key] !== undefined) {
-                    newCategoryObject.items[key] = oldCategoryObject.items[key];
-                }
-            });
-            newOrderedRespostas.push(newCategoryObject);
-        });
-        respostas = newOrderedRespostas;
-        saveDataForAttendant(attendant, respostas);
-        updateResponseSelector();
-        showPopup("Ordem salva!");
-    };
 
-    // --- FUNÇÕES COMPLETAS DOS BOTÕES ---
+        const newOrderedRespostas = [];
+        elements.selectItems.querySelectorAll('.option-item').forEach(item => {
+            const originalIndex = parseInt(item.dataset.value);
+            // Adiciona o template original na nova lista, na ordem correta
+            if (respostas[originalIndex]) {
+                 newOrderedRespostas.push(respostas[originalIndex]);
+            }
+        });
+        
+        // Substitui o array antigo pelo novo, agora ordenado
+        respostas = newOrderedRespostas;
+        
+        saveDataForAttendant(attendant, respostas).then(() => {
+            updateResponseSelector();
+            showPopup("Ordem salva!", 'success');
+        });
+    };
 
     const saveChanges = () => {
         const attendant = getCurrentAttendant();
-        const selectedValue = currentSelection.value;
-        if (!attendant || !selectedValue) return showPopup("Selecione uma resposta para salvar.");
-        
-        const [categoryName, key] = selectedValue.split(":");
-        const categoryObject = respostas.find(c => c.categoryName === categoryName);
-        if (categoryObject) {
-            categoryObject.items[key] = elements.response.value.trim();
-            saveDataForAttendant(attendant, respostas);
-            showPopup("Resposta salva com sucesso!", 'success');
-        }
+        const selectedIndex = currentSelection.value;
+        if (!attendant || selectedIndex === "") return showPopup("Selecione uma resposta para salvar.");
+
+        respostas[parseInt(selectedIndex)].text = elements.response.value.trim();
+        saveDataForAttendant(attendant, respostas);
+        showPopup("Resposta salva com sucesso!", 'success');
     };
-    
+     
     const deleteResponse = () => {
         const attendant = getCurrentAttendant();
-        const selectedValue = currentSelection.value;
-        if (!attendant || !selectedValue) return showPopup("Selecione uma resposta para apagar.");
+        const selectedIndex = currentSelection.value;
+        if (!attendant || selectedIndex === "") return showPopup("Selecione uma resposta para apagar.");
 
         const modal = document.getElementById('confirmationModal');
         document.getElementById('modalTitle').textContent = 'Apagar Resposta';
@@ -158,14 +140,7 @@ export function initializeChat() {
         modal.style.display = 'flex';
 
         const onConfirm = () => {
-            const [categoryName, key] = selectedValue.split(":");
-            const categoryIndex = respostas.findIndex(c => c.categoryName === categoryName);
-            if (categoryIndex > -1) {
-                delete respostas[categoryIndex].items[key];
-                if (Object.keys(respostas[categoryIndex].items).length === 0) {
-                    respostas.splice(categoryIndex, 1);
-                }
-            }
+            respostas.splice(parseInt(selectedIndex), 1);
             saveDataForAttendant(attendant, respostas).then(() => {
                 currentSelection = { value: "", text: "Selecione uma resposta" };
                 updateResponseSelector();
@@ -176,6 +151,8 @@ export function initializeChat() {
         };
 
         const onCancel = () => {
+            confirmBtn.removeEventListener('click', onConfirm);
+            cancelBtn.removeEventListener('click', onCancel);
             modal.style.display = 'none';
         };
 
@@ -199,23 +176,22 @@ export function initializeChat() {
         titleInput.focus();
 
         const onSave = () => {
-            const { isValid, sanitizedKey, message } = validateKey(titleInput.value);
-            if (!isValid) return showPopup(message);
-            
-            let categoryName = categoryInput.value.trim().toLowerCase() || 'geral';
-            if (validateKey(categoryName).isValid === false) return showPopup("Nome de categoria inválido.");
-            
-            let categoryObject = respostas.find(c => c.categoryName === categoryName);
-            if (!categoryObject) {
-                categoryObject = { categoryName: categoryName, items: {} };
-                respostas.push(categoryObject);
-            }
-            
-            if (categoryObject.items[sanitizedKey]) return showPopup("Esse título já existe nesta categoria!");
+            const title = titleInput.value.trim();
+            if (!title) return showPopup("O título não pode estar em branco.");
 
-            categoryObject.items[sanitizedKey] = "Nova resposta. Edite aqui e clique em Salvar. [DESPEDIDA]";
+            let categoryName = categoryInput.value.trim() || 'Geral';
+
+            const newTemplate = {
+                title: title,
+                text: "Nova resposta. Edite aqui e clique em Salvar.",
+                category: "quick_reply",
+                subCategory: categoryName,
+                keywords: []
+            };
+
+            respostas.push(newTemplate);
             saveDataForAttendant(attendant, respostas).then(() => {
-                currentSelection = { value: `${categoryName}:${sanitizedKey}`, text: titleInput.value.trim().toUpperCase() };
+                currentSelection = { value: (respostas.length - 1).toString(), text: title };
                 updateResponseSelector();
                 displaySelectedResponse();
                 showPopup("Nova resposta adicionada!");
@@ -224,6 +200,8 @@ export function initializeChat() {
         };
 
         const onCancel = () => {
+            saveBtn.removeEventListener('click', onSave);
+            cancelBtn.removeEventListener('click', onCancel);
             modal.style.display = 'none';
         };
 
@@ -232,36 +210,29 @@ export function initializeChat() {
     };
 
     const editTitle = () => {
-        const selectedValue = currentSelection.value;
-        if (!selectedValue) return showPopup("Selecione uma resposta para editar o título.");
-        const [, key] = selectedValue.split(":");
-        elements.title.value = key.replace(/_/g, ' ');
-        elements.titleContainer.style.display = 'flex';
-        elements.title.focus();
+        const selectedIndex = currentSelection.value;
+        if (selectedIndex === "") return showPopup("Selecione uma resposta para editar o título.");
+        
+        const template = respostas[parseInt(selectedIndex)];
+        if (template) {
+            elements.title.value = template.title;
+            elements.titleContainer.style.display = 'flex';
+            elements.title.focus();
+        }
     };
 
     const saveNewTitle = () => {
         const attendant = getCurrentAttendant();
-        const selectedValue = currentSelection.value;
-        if (!selectedValue || !attendant) return;
+        const selectedIndex = currentSelection.value;
+        if (selectedIndex === "" || !attendant) return;
 
-        const { isValid, sanitizedKey, message } = validateKey(elements.title.value);
-        if (!isValid) return showPopup(message);
+        const newTitle = elements.title.value.trim();
+        if (!newTitle) return showPopup("O título não pode estar em branco.");
 
-        const [categoryName, oldKey] = selectedValue.split(":");
-        if (sanitizedKey === oldKey) {
-            elements.titleContainer.style.display = 'none';
-            return;
-        }
+        respostas[parseInt(selectedIndex)].title = newTitle;
 
-        const categoryObject = respostas.find(c => c.categoryName === categoryName);
-        if (categoryObject.items[sanitizedKey]) return showPopup("Este título já existe na categoria!");
-        
-        categoryObject.items[sanitizedKey] = categoryObject.items[oldKey];
-        delete categoryObject.items[oldKey];
-        
         saveDataForAttendant(attendant, respostas).then(() => {
-            currentSelection = { value: `${categoryName}:${sanitizedKey}`, text: sanitizedKey.replace(/_/g, ' ').toUpperCase() };
+            currentSelection.text = newTitle;
             updateResponseSelector();
             displaySelectedResponse();
             showPopup("Título alterado com sucesso!");
@@ -283,10 +254,10 @@ export function initializeChat() {
     
     elements.response.addEventListener('input', () => adjustTextareaHeight(elements.response));
     elements.copyBtn.addEventListener('click', () => {
-    const rawText = elements.response.value;
-    const processedText = replacePlaceholders(rawText);
-    navigator.clipboard.writeText(processedText).then(() => showPopup('Texto copiado!'));
-});    
+        const rawText = elements.response.value;
+        const processedText = replacePlaceholders(rawText);
+        navigator.clipboard.writeText(processedText).then(() => showPopup('Texto copiado!'));
+    });    
     elements.saveEditBtn.addEventListener('click', saveChanges);
     elements.addBtn.addEventListener('click', addNewResponse);
     elements.deleteBtn.addEventListener('click', deleteResponse);
@@ -296,7 +267,7 @@ export function initializeChat() {
     // --- API PÚBLICA DO MÓDULO ---
     return {
         setResponses: (data) => {
-            respostas = convertOldDataFormat(data);
+            respostas = Array.isArray(data) ? data : [];
             currentSelection = { value: "", text: "Selecione uma resposta" };
             updateResponseSelector();
             displaySelectedResponse();

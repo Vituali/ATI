@@ -1,0 +1,165 @@
+:root {
+    --bg-color: #2c2f33;
+    --primary-color: #007bff;
+    --secondary-color: #3a3f44;
+    --text-color: #ffffff;
+    --text-muted-color: #99aab5;
+    --border-color: #4f545c;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    font-family: var(--font-family);
+    margin: 0;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    width: 520px;
+}
+
+.container {
+    padding: 20px;
+}
+
+header h1 {
+    margin: 0 0 5px 0;
+    color: var(--primary-color);
+}
+
+header p {
+    margin: 0 0 20px 0;
+    color: var(--text-muted-color);
+}
+
+/* --- Estilos das Abas --- */
+.tab-nav {
+    display: flex;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 20px;
+}
+
+.tab-button {
+    padding: 10px 20px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: var(--text-muted-color);
+    font-size: 16px;
+    font-family: var(--font-family);
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease-in-out;
+}
+
+.tab-button.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* --- Lista de Modelos --- */
+.template-list {
+    max-height: 250px;
+    overflow-y: auto;
+    background-color: var(--secondary-color);
+    border-radius: 6px;
+    margin-bottom: 20px;
+}
+
+.template-item {
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.template-item:last-child { border-bottom: none; }
+
+.template-details strong { display: block; }
+.template-details small { color: var(--text-muted-color); }
+
+.template-actions button {
+    margin-left: 8px;
+    padding: 5px 10px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.template-actions button:hover { background-color: #4f545c; }
+.template-actions button.delete { color: var(--danger-color); }
+.template-actions button.delete:hover { background-color: var(--danger-color); color: white; }
+
+/* --- Formulário --- */
+.form-area {
+    background-color: var(--secondary-color);
+    padding: 20px;
+    border-radius: 6px;
+}
+
+#form-title { margin-top: 0; color: var(--primary-color); }
+
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 5px; }
+.form-group input, .form-group textarea, .form-group select {
+    width: 95%;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: var(--font-family);
+}
+
+.form-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.form-buttons button {
+    padding: 10px 15px;
+    border: none;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: opacity 0.2s;
+}
+.form-buttons button:hover { opacity: 0.9; }
+
+#save-button { background-color: var(--success-color); }
+#cancel-button { background-color: var(--text-muted-color); display: none; }
+
+.io-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px; /* Adiciona espaço acima dos botões */
+    border-top: 1px solid var(--border-color); /* Adiciona uma linha separadora */
+    padding-top: 20px; /* Adiciona mais espaço */
+}
+
+.io-buttons button, .io-buttons .import-label {
+    flex-grow: 1;
+    padding: 10px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 14px;
+}
+
+.io-buttons button:hover, .io-buttons .import-label:hover {
+    background-color: var(--border-color);
+}

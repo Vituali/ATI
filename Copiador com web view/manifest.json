@@ -1,0 +1,64 @@
+{
+  "manifest_version": 3,
+  "name": "ATI - Auxiliar de Atendimentos",
+  "version": "6.0",
+  "description": "Copia dados, sugere e cria Ordens de Serviço a partir do chat.",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "clipboardWrite",
+    "tabs",
+    "commands"
+  ],
+  "host_permissions": [
+    "https://*.firebaseio.com/*",
+    "https://*.googleapis.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "commands": {
+    "copy-data": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+C",
+        "mac": "Command+Shift+C"
+      },
+      "description": "Copia os dados do cliente ativo."
+    }
+  },
+  "content_scripts": [
+    {
+      "comment": "Scripts para a V1 do Chatmix.",
+      "matches": ["https://www.chatmix.com.br/app/atendimento"],
+      "js": [
+        "firebase-config.js",
+        "logic.js",
+        "ui.js",
+        "content.js"
+      ]
+    },
+    {
+      "comment": "Scripts para a V2 do Chatmix.",
+      "matches": ["https://www.chatmix.com.br/v2/chat*"],
+      "js": [
+        "firebase-config.js",
+        "logic.js",
+        "v2.js"
+      ]
+    },
+    {
+      "comment": "Ponte de comunicação com o site-painel.",
+      "matches": ["https://vituali.github.io/ATI/"],
+      "js": ["bridge-listener.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["bridge-injected.js"],
+      "matches": ["https://vituali.github.io/*"]
+    }
+  ]
+}

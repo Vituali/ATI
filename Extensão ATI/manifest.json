@@ -12,6 +12,7 @@
   ],
   "host_permissions": [
     "https://*.firebaseio.com/*",
+    "https://*.firebaseapp.com/",
     "https://*.googleapis.com/*"
   ],
   "action": {
@@ -58,8 +59,8 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["bridge-injected.js"],
-      "matches": ["https://vituali.github.io/*"]
+      "resources": ["bridge-injected.js", "injected.css"],
+      "matches": ["https://*.chatmix.com.br/*", "https://vituali.github.io/*"]
     }
   ]
 }

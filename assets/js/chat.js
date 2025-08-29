@@ -2,8 +2,8 @@ import { showPopup, adjustTextareaHeight, replacePlaceholders } from './ui.js';
 import { saveDataForAttendant } from './firebase.js';
 
 export function initializeChat() {
-    // A estrutura de 'respostas' é um ARRAY para preservar a ordem
-    let respostas = []; 
+    // 'respostas' agora guardará a lista COMPLETA (quick replies + modelos de o.s.)
+    let respostas = [];
     let currentSelection = { value: "", text: "Selecione uma resposta" };
     let sortableInstances = [];
 
@@ -25,12 +25,18 @@ export function initializeChat() {
 
     const updateResponseSelector = () => {
         elements.selectItems.innerHTML = '';
-        if (respostas.length === 0) {
+
+        // ## CORREÇÃO DE EXIBIÇÃO ##
+        // Filtra a lista completa para pegar apenas os quick_replies para mostrar no chat
+        const quickReplies = respostas.filter(r => r.category === 'quick_reply');
+
+        if (quickReplies.length === 0) {
             elements.selectDisplay.textContent = 'Nenhuma resposta encontrada';
             return;
         }
 
-        const groupedByCategory = respostas.reduce((acc, template) => {
+        // Agrupa por categoria apenas os quick_replies
+        const groupedByCategory = quickReplies.reduce((acc, template) => {
             const category = template.subCategory || 'Geral';
             if (!acc[category]) {
                 acc[category] = [];
@@ -57,6 +63,7 @@ export function initializeChat() {
                 const opt = document.createElement("div");
                 opt.className = 'option-item';
                 opt.textContent = template.title;
+                // IMPORTANTE: o data-value continua sendo o índice do item na lista COMPLETA ('respostas')
                 opt.dataset.value = respostas.indexOf(template);
                 opt.addEventListener('click', () => {
                     currentSelection = { value: opt.dataset.value, text: opt.textContent };
@@ -70,18 +77,65 @@ export function initializeChat() {
             elements.selectItems.appendChild(categoryGroup);
         }
 
+        // Inicializa o Sortable para os itens dentro de cada categoria
         elements.selectItems.querySelectorAll('.options-container').forEach(container => {
             const sortable = Sortable.create(container, {
                 group: 'shared-options',
                 animation: 150,
                 ghostClass: 'sortable-ghost',
-                onEnd: () => saveOrder(),
+                onEnd: (evt) => {
+                    const itemEl = evt.item;
+                    const originalIndex = parseInt(itemEl.dataset.value, 10);
+                    const newCategoryName = evt.to.dataset.categoryName;
+                    if (respostas[originalIndex] && newCategoryName) {
+                        respostas[originalIndex].subCategory = newCategoryName;
+                    }
+                    saveOrderAndCategories();
+                },
             });
             sortableInstances.push(sortable);
         });
-        elements.selectDisplay.textContent = currentSelection.text;
+
+        // Inicializa o Sortable para reordenar as categorias inteiras
+        Sortable.create(elements.selectItems, {
+            handle: '.optgroup-label',
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+            onEnd: () => saveOrderAndCategories(),
+        });
     };
-    
+
+    // ## CORREÇÃO DE SALVAMENTO ##
+    const saveOrderAndCategories = () => {
+        const attendant = getCurrentAttendant();
+        if (!attendant) return;
+
+        // 1. Pega a nova ordem dos quick_replies a partir dos elementos visíveis no DOM
+        const newOrderedQuickReplies = [];
+        elements.selectItems.querySelectorAll('.option-item').forEach(item => {
+            const originalIndex = parseInt(item.dataset.value, 10);
+            if (respostas[originalIndex]) {
+                newOrderedQuickReplies.push(respostas[originalIndex]);
+            }
+        });
+
+        // 2. Pega todos os modelos de O.S. que não estão visíveis, para não perdê-los
+        const osTemplates = respostas.filter(r => r.category !== 'quick_reply');
+
+        // 3. Junta as duas listas: os quick_replies reordenados + os modelos de O.S. intactos
+        const fullDataToSave = [...newOrderedQuickReplies, ...osTemplates];
+
+        // 4. Atualiza o estado local e salva a lista COMPLETA no Firebase
+        respostas = fullDataToSave;
+        saveDataForAttendant(attendant, respostas).then(() => {
+            updateResponseSelector();
+            showPopup("Ordem e categoria salvas!", 'success');
+        }).catch(error => {
+            showPopup("Erro ao salvar as alterações.", 'error');
+            console.error("Erro no Firebase:", error);
+        });
+    };
+
     const displaySelectedResponse = () => {
         const selectedIndex = currentSelection.value;
         if (selectedIndex === "") {
@@ -94,51 +148,25 @@ export function initializeChat() {
         elements.titleContainer.style.display = 'none';
     };
 
-    const saveOrder = () => {
-        const attendant = getCurrentAttendant();
-        if (!attendant) return;
-
-        const newOrderedRespostas = [];
-        elements.selectItems.querySelectorAll('.option-item').forEach(item => {
-            const originalIndex = parseInt(item.dataset.value);
-            // Adiciona o template original na nova lista, na ordem correta
-            if (respostas[originalIndex]) {
-                 newOrderedRespostas.push(respostas[originalIndex]);
-            }
-        });
-        
-        // Substitui o array antigo pelo novo, agora ordenado
-        respostas = newOrderedRespostas;
-        
-        saveDataForAttendant(attendant, respostas).then(() => {
-            updateResponseSelector();
-            showPopup("Ordem salva!", 'success');
-        });
-    };
-
     const saveChanges = () => {
         const attendant = getCurrentAttendant();
         const selectedIndex = currentSelection.value;
         if (!attendant || selectedIndex === "") return showPopup("Selecione uma resposta para salvar.");
-
         respostas[parseInt(selectedIndex)].text = elements.response.value.trim();
         saveDataForAttendant(attendant, respostas);
         showPopup("Resposta salva com sucesso!", 'success');
     };
-     
+
     const deleteResponse = () => {
         const attendant = getCurrentAttendant();
         const selectedIndex = currentSelection.value;
         if (!attendant || selectedIndex === "") return showPopup("Selecione uma resposta para apagar.");
-
         const modal = document.getElementById('confirmationModal');
         document.getElementById('modalTitle').textContent = 'Apagar Resposta';
         document.getElementById('modalMessage').textContent = 'Tem certeza que deseja apagar esta resposta permanentemente?';
         const confirmBtn = document.getElementById('modalConfirmBtn');
         const cancelBtn = document.getElementById('modalCancelBtn');
-        
         modal.style.display = 'flex';
-
         const onConfirm = () => {
             respostas.splice(parseInt(selectedIndex), 1);
             saveDataForAttendant(attendant, respostas).then(() => {
@@ -149,13 +177,11 @@ export function initializeChat() {
             });
             modal.style.display = 'none';
         };
-
         const onCancel = () => {
             confirmBtn.removeEventListener('click', onConfirm);
             cancelBtn.removeEventListener('click', onCancel);
             modal.style.display = 'none';
         };
-
         confirmBtn.addEventListener('click', onConfirm, { once: true });
         cancelBtn.addEventListener('click', onCancel, { once: true });
     };
@@ -163,24 +189,19 @@ export function initializeChat() {
     const addNewResponse = () => {
         const attendant = getCurrentAttendant();
         if (!attendant) return showPopup("Selecione um atendente primeiro.");
-
         const modal = document.getElementById('addResponseModal');
         const titleInput = document.getElementById('newResponseTitle');
         const categoryInput = document.getElementById('newResponseCategory');
         const saveBtn = document.getElementById('modalSaveNewBtn');
         const cancelBtn = document.getElementById('modalCancelNewBtn');
-
         titleInput.value = '';
         categoryInput.value = '';
         modal.style.display = 'flex';
         titleInput.focus();
-
         const onSave = () => {
             const title = titleInput.value.trim();
             if (!title) return showPopup("O título não pode estar em branco.");
-
             let categoryName = categoryInput.value.trim() || 'Geral';
-
             const newTemplate = {
                 title: title,
                 text: "Nova resposta. Edite aqui e clique em Salvar.",
@@ -188,7 +209,6 @@ export function initializeChat() {
                 subCategory: categoryName,
                 keywords: []
             };
-
             respostas.push(newTemplate);
             saveDataForAttendant(attendant, respostas).then(() => {
                 currentSelection = { value: (respostas.length - 1).toString(), text: title };
@@ -198,13 +218,11 @@ export function initializeChat() {
                 modal.style.display = 'none';
             });
         };
-
         const onCancel = () => {
             saveBtn.removeEventListener('click', onSave);
             cancelBtn.removeEventListener('click', onCancel);
             modal.style.display = 'none';
         };
-
         saveBtn.addEventListener('click', onSave, { once: true });
         cancelBtn.addEventListener('click', onCancel, { once: true });
     };
@@ -212,7 +230,6 @@ export function initializeChat() {
     const editTitle = () => {
         const selectedIndex = currentSelection.value;
         if (selectedIndex === "") return showPopup("Selecione uma resposta para editar o título.");
-        
         const template = respostas[parseInt(selectedIndex)];
         if (template) {
             elements.title.value = template.title;
@@ -225,12 +242,9 @@ export function initializeChat() {
         const attendant = getCurrentAttendant();
         const selectedIndex = currentSelection.value;
         if (selectedIndex === "" || !attendant) return;
-
         const newTitle = elements.title.value.trim();
         if (!newTitle) return showPopup("O título não pode estar em branco.");
-
         respostas[parseInt(selectedIndex)].title = newTitle;
-
         saveDataForAttendant(attendant, respostas).then(() => {
             currentSelection.text = newTitle;
             updateResponseSelector();
@@ -239,25 +253,17 @@ export function initializeChat() {
         });
     };
 
-    // --- INICIALIZAÇÃO E EVENTOS GERAIS ---
-    Sortable.create(elements.selectItems, {
-        handle: '.optgroup-label',
-        animation: 150,
-        ghostClass: 'sortable-ghost',
-        onEnd: () => saveOrder(),
-    });
-
+    // --- Event Listeners ---
     elements.selectDisplay.addEventListener('click', () => elements.selectItems.classList.toggle('select-hide'));
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.custom-select')) elements.selectItems.classList.add('select-hide');
     });
-    
     elements.response.addEventListener('input', () => adjustTextareaHeight(elements.response));
     elements.copyBtn.addEventListener('click', () => {
         const rawText = elements.response.value;
         const processedText = replacePlaceholders(rawText);
         navigator.clipboard.writeText(processedText).then(() => showPopup('Texto copiado!'));
-    });    
+    });
     elements.saveEditBtn.addEventListener('click', saveChanges);
     elements.addBtn.addEventListener('click', addNewResponse);
     elements.deleteBtn.addEventListener('click', deleteResponse);

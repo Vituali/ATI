@@ -1,6 +1,5 @@
-// content.js - Script principal que inicializa a extensão e gerencia os eventos.
+// content.js - VERSÃO FINAL (ESTRATÉGIA DE HIJACK DE MODAL)
 
-// Listener para o atalho de teclado e para o aviso de recarregar
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "executeCopy") {
     if (typeof copyContactInfo === "function") {
@@ -17,25 +16,24 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   return true;
 });
 
-// ===================================================================================
-// LÓGICA DE INICIALIZAÇÃO CORRETA E ROBUSTA
-// ===================================================================================
-
 async function runExtension() {
+  injectCSS('injected.css');
   if (typeof initializeActions === "function" && typeof loadTemplatesFromStorage === "function") {
-    // ATENÇÃO: Esta verificação é importante para não duplicar os botões
-    if (document.getElementById('actionsContainer') && window.extensionInitialized) {
-        console.log("ATI Extensão: Ações já inicializadas, recarregando apenas os dados dos templates.");
+    
+    if (!document.getElementById('actionsContainer')) {
+        initializeActions();
     }
-    window.extensionInitialized = true; // Marca que a extensão já iniciou uma vez
 
     console.log("ATI Extensão: runExtension iniciada.");
     try {
       const templates = await loadTemplatesFromStorage();
       console.log("ATI Extensão: Templates carregados.");
       window.osTemplates = templates;
-      initializeActions();
-      console.log("ATI Extensão: initializeActions chamada com sucesso.");
+      
+      // Inicia o "sequestrador" de modal
+      initializeModalHijacker();
+
+      console.log("ATI Extensão: Funções de UI inicializadas com sucesso.");
     } catch (error) {
       console.error("ATI Extensão: Erro fatal durante a inicialização.", error);
     }
@@ -43,8 +41,9 @@ async function runExtension() {
 }
 
 const startupInterval = setInterval(() => {
+    // Espera por um elemento que com certeza só existe quando a página carregou
     const targetElement = document.querySelector("section.attendances");
-    if (targetElement && targetElement.offsetWidth > 0) {
+    if (targetElement) {
         clearInterval(startupInterval);
         runExtension();
     } 

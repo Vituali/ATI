@@ -110,14 +110,24 @@ header p {
 
 .form-group { margin-bottom: 15px; }
 .form-group label { display: block; margin-bottom: 5px; }
+
+/* ===== CORREÇÃO: Ajustado para ocupar 100% da largura do contêiner ===== */
 .form-group input, .form-group textarea, .form-group select {
-    width: 95%;
+    box-sizing: border-box; /* Garante que o padding não afete a largura total */
+    width: 100%;
     padding: 10px;
     border-radius: 4px;
     border: 1px solid var(--border-color);
     background-color: var(--bg-color);
     color: var(--text-color);
     font-family: var(--font-family);
+}
+
+/* ===== CORREÇÃO: Nova regra para o textarea crescer automaticamente ===== */
+.form-group textarea {
+    min-height: 60px; /* Altura inicial para ~2 linhas */
+    resize: vertical; /* Permite que o usuário redimensione manualmente se quiser */
+    field-sizing: content; /* Propriedade que faz a mágica de auto-ajuste de altura */
 }
 
 .form-buttons {
@@ -142,13 +152,14 @@ header p {
 .io-buttons {
     display: flex;
     gap: 10px;
-    margin-top: 20px; /* Adiciona espaço acima dos botões */
-    border-top: 1px solid var(--border-color); /* Adiciona uma linha separadora */
-    padding-top: 20px; /* Adiciona mais espaço */
+    margin-top: 20px;
+    border-top: 1px solid var(--border-color);
+    padding-top: 20px;
 }
 
+/* ===== CORREÇÃO: Ajustado para garantir que os botões fiquem lado a lado ===== */
 .io-buttons button, .io-buttons .import-label {
-    flex-grow: 1;
+    flex: 1; /* Faz com que os itens dividam o espaço igualmente */
     padding: 10px;
     text-align: center;
     border: 1px solid var(--border-color);

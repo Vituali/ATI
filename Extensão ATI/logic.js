@@ -1,4 +1,4 @@
-// logic.js - Funções para extração e processamento de dados da página.
+// logic.js - VERSÃO COM COLETA DE TEXTO CORRIGIDA
 
 async function loadTemplatesFromStorage() {
   return new Promise((resolve) => {
@@ -7,7 +7,6 @@ async function loadTemplatesFromStorage() {
     }) => {
       if (!atendenteAtual) {
         console.log("[Extensão ATI] Nenhum atendente definido. Use o site-painel para fazer login.");
-        // CHAMA A NOTIFICAÇÃO VISUAL NA TELA
         if (typeof showNotification === 'function') {
           showNotification("ATI: Faça o login no painel para carregar seus modelos.", true, 5000);
         }
@@ -39,12 +38,13 @@ async function loadTemplatesFromStorage() {
     });
   });
 }
+
 function findActiveAttendanceElement() {
-    const allAttendanceDivs = document.querySelectorAll('section.chat .attendance');
-    for (const attendance of allAttendanceDivs) {
-        const style = window.getComputedStyle(attendance);
-        if (style.display !== 'none' && style.visibility !== 'hidden' && attendance.offsetHeight > 0) {
-            return attendance;
+    const activeChatContainer = document.querySelector('section.chat > div[data-navigation_to="attendance"]');
+    if (activeChatContainer) {
+        const style = window.getComputedStyle(activeChatContainer);
+        if (style.display !== 'none' && style.visibility !== 'hidden' && activeChatContainer.offsetHeight > 0) {
+            return activeChatContainer.querySelector('.attendance');
         }
     }
     return null;
@@ -68,59 +68,96 @@ function processDynamicPlaceholders(text) {
     let despedida = '';
     if (hour >= 5 && hour < 12) {
         saudacao = 'Bom dia';
-        despedida = 'tenha uma excelente manhã';
+        despedida = 'Tenha uma excelente manhã';
     } else if (hour >= 12 && hour < 18) {
         saudacao = 'Boa tarde';
-        despedida = 'tenha uma excelente tarde';
+        despedida = 'Tenha uma excelente tarde';
     } else {
         saudacao = 'Boa noite';
-        despedida = 'tenha uma excelente noite';
+        despedida = 'Tenha uma excelente noite';
     }
     let processedText = text.replace(/\[SAUDACAO\]/gi, saudacao);
     processedText = processedText.replace(/\[DESPEDIDA\]/gi, despedida);
     return processedText;
 }
 
-function isVisible(element) {
-  const style = window.getComputedStyle(element);
-  return (
-    style.display !== "none" &&
-    style.visibility !== "hidden" &&
-    style.opacity !== "0" &&
-    element.getBoundingClientRect().height > 0
-  );
-}
+// ===================================================================================
+// ## INÍCIO DA CORREÇÃO ##
+// ===================================================================================
 
+/**
+ * Coleta APENAS o texto principal das mensagens, ignorando lixo de UI e replies.
+ * @param {HTMLElement} rootElement O contêiner de mensagens (div.messages).
+ * @returns {string[]} Um array com os textos limpos de cada mensagem.
+ */
 function collectTextFromMessages(rootElement) {
     const texts = [];
     if (!rootElement) return texts;
-    
-    // Seletor que funciona tanto na V1 (.item) quanto na V2 (div com ID message-)
-    const messageItems = rootElement.querySelectorAll('.item, div[id^="message-"]');
-    
+
+    // Seleciona todos os blocos de mensagem visíveis
+    const messageItems = rootElement.querySelectorAll('.item');
     messageItems.forEach(item => {
-        if (isVisible(item)) {
-            // Na V2, o texto está em um parágrafo <p> com a classe .break-words
-            // Na V1, o texto está em um parágrafo <p> com a classe .mensagem
-            // Este seletor procura por ambos. Se não encontrar, pega o texto geral do item.
-            const messageTextElement = item.querySelector('p.break-words, p.mensagem');
-            if (messageTextElement) {
-                texts.push(messageTextElement.textContent || "");
-            } else {
-                texts.push(item.textContent || "");
+        const contentDiv = item.querySelector('.content.message_content');
+        if (contentDiv) {
+            // Pega todos os parágrafos (<p>) que são filhos DIRETOS do 'content'.
+            // Isso inteligentemente ignora os parágrafos que estão dentro de uma citação (div.reply).
+            const directMessageParagraphs = Array.from(contentDiv.children).filter(child => child.tagName === 'P');
+            
+            if (directMessageParagraphs.length > 0) {
+                const messageText = directMessageParagraphs.map(p => p.textContent.trim()).join(' ');
+                texts.push(messageText);
             }
         }
     });
+
+    console.log("Textos coletados de forma limpa:", texts); // Log para depuração
     return texts;
 }
+
+function findCPF(allTexts) {
+    const cpfCnpjRegex = /\b(\d{11}|\d{14})\b/g;
+    const validMatches = [];
+    const blacklist = ['código de barras', 'boleto', 'fatura', 'pix', 'linha digitável'];
+    
+    console.log("Textos recebidos para análise de CPF:", allTexts); // Log 1: Ver o que a função recebe
+
+    for (const text of allTexts) {
+        // Converte para minúsculas ANTES de verificar a blacklist
+        const lowerCaseText = text.toLowerCase();
+        
+        if (blacklist.some(keyword => lowerCaseText.includes(keyword))) {
+            console.log("Texto ignorado pela blacklist:", text); // Log 2: Ver o que está sendo pulado
+            continue;
+        }
+
+        const cleanText = text.replace(/[.\-\/]/g, "");
+        const potentialMatches = cleanText.match(cpfCnpjRegex);
+
+        if (potentialMatches) {
+            for (const match of potentialMatches) {
+                if (match.length === 11 && isValidCPF(match)) {
+                    validMatches.push(match);
+                } else if (match.length === 14 && isValidCNPJ(match)) {
+                    validMatches.push(match);
+                }
+            }
+        }
+    }
+
+    // Retorna o último CPF/CNPJ válido encontrado no chat
+    return validMatches.length > 0 ? validMatches[validMatches.length - 1] : null;
+}
+
+// ===================================================================================
+// ## FIM DA CORREÇÃO ##
+// ===================================================================================
+
+
 function extractDataFromHeader(headerElement) {
-    let firstName = "";
-    let phoneNumber = "";
+    let firstName = "", phoneNumber = "";
     if (headerElement) {
         let nameElement = headerElement.querySelector('.client_name');
         let phoneElement = headerElement.querySelector('.client_user');
-        if (!nameElement) nameElement = headerElement.querySelector('h2.font-medium');
-        if (!phoneElement) phoneElement = headerElement.querySelector('span.font-medium');
         if (nameElement) firstName = (nameElement.textContent || "").trim().split(' ')[0].toUpperCase();
         if (phoneElement) {
             const phoneDigits = (phoneElement.textContent || "").replace(/\D/g, '');
@@ -146,16 +183,15 @@ function isValidCPF(cpf) {
     if (typeof cpf !== 'string') return false;
     cpf = cpf.replace(/[^\d]/g, '');
     if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
-    let sum = 0;
-    let remainder;
+    let sum = 0, remainder;
     for (let i = 1; i <= 9; i++) sum += parseInt(cpf.substring(i - 1, i)) * (11 - i);
     remainder = (sum * 10) % 11;
-    if (remainder === 10 || remainder === 11) remainder = 0;
+    if ((remainder === 10) || (remainder === 11)) remainder = 0;
     if (remainder !== parseInt(cpf.substring(9, 10))) return false;
     sum = 0;
     for (let i = 1; i <= 10; i++) sum += parseInt(cpf.substring(i - 1, i)) * (12 - i);
     remainder = (sum * 10) % 11;
-    if (remainder === 10 || remainder === 11) remainder = 0;
+    if ((remainder === 10) || (remainder === 11)) remainder = 0;
     if (remainder !== parseInt(cpf.substring(10, 11))) return false;
     return true;
 }
@@ -165,7 +201,7 @@ function isValidCNPJ(cnpj) {
     cnpj = cnpj.replace(/[^\d]/g, '');
     if (cnpj.length !== 14 || /^(\d)\1{13}$/.test(cnpj)) return false;
     let length = cnpj.length - 2;
-    let numbers = cnpj.substring(0, length);
+    let numbers = cnpj.substring(0,length);
     let digits = cnpj.substring(length);
     let sum = 0;
     let pos = length - 7;
@@ -173,37 +209,19 @@ function isValidCNPJ(cnpj) {
         sum += numbers.charAt(length - i) * pos--;
         if (pos < 2) pos = 9;
     }
-    let result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+    let result = sum % 11 < 2 ? 0 : 11 - sum % 11;
     if (result != digits.charAt(0)) return false;
-    length = length + 1;
-    numbers = cnpj.substring(0, length);
+    length += 1;
+    numbers = cnpj.substring(0,length);
     sum = 0;
     pos = length - 7;
     for (let i = length; i >= 1; i--) {
         sum += numbers.charAt(length - i) * pos--;
         if (pos < 2) pos = 9;
     }
-    result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+    result = sum % 11 < 2 ? 0 : 11 - sum % 11;
     if (result != digits.charAt(1)) return false;
     return true;
-}
-
-function findCPF(allTexts) {
-    const cpfCnpjRegex = /\b(\d{11}|\d{14})\b/g;
-    const validMatches = [];
-    const blacklist = ['código de barras', 'boleto', 'fatura', 'pix', 'linha digitável'];
-    for (const text of allTexts) {
-        if (blacklist.some(keyword => text.toLowerCase().includes(keyword))) continue;
-        const cleanText = text.replace(/[.\-\/]/g, "");
-        const potentialMatches = cleanText.match(cpfCnpjRegex);
-        if (potentialMatches) {
-            for (const match of potentialMatches) {
-                if (match.length === 11 && isValidCPF(match)) validMatches.push(match);
-                else if (match.length === 14 && isValidCNPJ(match)) validMatches.push(match);
-            }
-        }
-    }
-    return validMatches.length > 0 ? validMatches[validMatches.length - 1] : null;
 }
 
 function extractClientChatAfterAssignment(chatContainerElement) {
@@ -225,4 +243,16 @@ function extractClientChatAfterAssignment(chatContainerElement) {
         }
     }
     return clientTexts;
+}
+
+function injectCSS(filePath) {
+    const cssFileId = 'ati-extension-styles';
+    if (document.getElementById(cssFileId)) return;
+    const link = document.createElement('link');
+    link.id = cssFileId;
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = chrome.runtime.getURL(filePath);
+    (document.head || document.documentElement).appendChild(link);
+    console.log("ATI Extensão: Arquivo de estilo injetado com sucesso.");
 }

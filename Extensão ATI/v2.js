@@ -1,24 +1,17 @@
-// v2.js - Versão FINAL com todas as correções
+// v2.js - VERSÃO FINAL CORRIGIDA PARA INJEÇÃO DE BOTÕES
 
-console.log("ATI Extensão: Script V2 (Final v3) carregado!");
+console.log("ATI Extensão: Script V2 (Final v5) carregado!");
 
-// --- Seletores de DOM para a V2 (mais estáveis) ---
-const V2_SIDEBAR_SELECTOR = 'div.chat_sidebar';
-const V2_CHAT_HEADER_SELECTOR = 'div.z-10 header';
-const V2_CHAT_BODY_SELECTOR = 'div#attendanceMessages';
-const V2_TEXTAREA_SELECTOR = 'textarea.chat_textarea';
-const V2_QUICK_REPLY_INJECTION_POINT_SELECTOR = 'div.flex.mx-auto';
-
-let osTemplates = [];
+var osTemplates = [];
 
 // --- Funções Auxiliares e de Lógica ---
 function showNotification(message, isError = false, duration = 3000) {
-    const notificationId = 'ati-v2-notification';
+    const notificationId = 'v2-notification';
     document.getElementById(notificationId)?.remove();
     const notification = document.createElement("div");
     notification.id = notificationId;
     notification.textContent = message;
-    notification.className = `ati-notification ${isError ? 'error' : 'success'}`;
+    notification.className = `notification ${isError ? 'error' : 'success'}`;
     document.body.appendChild(notification);
     setTimeout(() => { notification.remove(); }, duration);
 }
@@ -27,9 +20,8 @@ async function loadTemplatesV2() {
     osTemplates = await loadTemplatesFromStorage();
 }
 
-// --- Funções "Detetive" ---
-function findActiveChatHeaderV2() { return document.querySelector(V2_CHAT_HEADER_SELECTOR); }
-function findActiveChatBodyV2() { return document.querySelector(V2_CHAT_BODY_SELECTOR); }
+function findActiveChatHeaderV2() { return document.querySelector('div.z-10 header'); }
+function findActiveChatBodyV2() { return document.querySelector('div#attendanceMessages'); }
 
 function extractDataFromHeaderV2(headerElement) {
     if (!headerElement) return { firstName: "", phoneNumber: "" };
@@ -42,15 +34,11 @@ function extractDataFromHeaderV2(headerElement) {
         if (phoneDigits.startsWith('55') && (phoneDigits.length === 12 || phoneDigits.length === 13)) {
             const ddd = phoneDigits.substring(2, 4);
             const number = phoneDigits.substring(4);
-            const part1 = number.length === 9 ? number.slice(0, 5) : number.slice(0, 4);
-            const part2 = number.length === 9 ? number.slice(5) : number.slice(4);
-            phoneNumber = `${ddd} ${part1}-${part2}`;
+            phoneNumber = `${ddd} ${number.slice(0, number.length - 4)}-${number.slice(number.length - 4)}`;
         } else if (phoneDigits.length === 10 || phoneDigits.length === 11) {
             const ddd = phoneDigits.substring(0, 2);
             const number = phoneDigits.substring(2);
-            const part1 = number.length === 9 ? number.slice(0, 5) : number.slice(0, 4);
-            const part2 = number.length === 9 ? number.slice(5) : number.slice(4);
-            phoneNumber = `${ddd} ${part1}-${part2}`;
+            phoneNumber = `${ddd} ${number.slice(0, number.length - 4)}-${number.slice(number.length - 4)}`;
         } else {
             phoneNumber = phoneDigits;
         }
@@ -64,28 +52,14 @@ function collectTextFromMessagesV2(chatBody) {
     chatBody.querySelectorAll('p.mensagem').forEach(p => texts.push(p.textContent.trim()));
     return texts;
 }
+
 function processDynamicPlaceholders(text) {
     if (typeof text !== 'string') return '';
-    const now = new Date();
-    const hour = now.getHours();
-    let saudacao = '';
-    let despedida = '';
-    if (hour >= 5 && hour < 12) {
-        saudacao = 'Bom dia';
-        despedida = 'Tenha uma excelente manhã';
-    } else if (hour >= 12 && hour < 18) {
-        saudacao = 'Boa tarde';
-        despedida = 'Tenha uma excelente tarde';
-    } else {
-        saudacao = 'Boa noite';
-        despedida = 'Tenha uma excelente noite';
-    }
-    let processedText = text.replace(/\[SAUDACAO\]/gi, saudacao);
-    processedText = processedText.replace(/\[DESPEDIDA\]/gi, despedida);
-    return processedText;
+    const now = new Date(); const hour = now.getHours();
+    let saudacao = (hour >= 5 && hour < 12) ? 'Bom dia' : (hour >= 12 && hour < 18) ? 'Boa tarde' : 'Boa noite';
+    return text.replace(/\[SAUDACAO\]/gi, saudacao);
 }
 
-// Adicione esta função ao v2.js
 function findSuggestedTemplate(allTexts) {
     const osOnlyTemplates = osTemplates.filter(t => t.category !== 'quick_reply');
     const chatContent = allTexts.join(' ').toLowerCase();
@@ -97,9 +71,9 @@ function findSuggestedTemplate(allTexts) {
     }
     return null;
 }
-// --- Lógica das Respostas Rápidas (Restaurada) ---
+
 function insertReplyText(text) {
-    const textarea = document.querySelector(V2_TEXTAREA_SELECTOR);
+    const textarea = document.querySelector('textarea.chat_textarea');
     if (textarea) {
         textarea.value = processDynamicPlaceholders(text);
         textarea.dispatchEvent(new Event('input', { bubbles: true }));
@@ -134,7 +108,6 @@ function renderReplyUI(container, groupedReplies, activeCategory = null) {
     }
 }
 
-// --- Funções de Ação dos Botões ---
 function copyContactInfoV2() {
     const header = findActiveChatHeaderV2();
     if (!header) return showNotification("Nenhum chat ativo para copiar contato.", true);
@@ -160,85 +133,37 @@ function copyCPFFromChatV2() {
 }
 
 function showOSModalV2() {
-    // Evita abrir múltiplos modais
     if (document.getElementById('osModalV2')) return;
-
-    // 1. Coletar dados do chat ativo usando as funções da V2
     const chatHeader = findActiveChatHeaderV2();
     const chatBody = findActiveChatBodyV2();
-
-    if (!chatHeader || !chatBody) {
-        showNotification("Nenhum chat ativo para criar O.S.", true);
-        return;
-    }
-
+    if (!chatHeader || !chatBody) { showNotification("Nenhum chat ativo para criar O.S.", true); return; }
     const allMessageTexts = collectTextFromMessagesV2(chatBody);
     const { firstName, phoneNumber } = extractDataFromHeaderV2(chatHeader);
-
-    // 2. Preparar templates
     const suggestedTemplate = findSuggestedTemplate(allMessageTexts);
     const osOnlyTemplates = osTemplates.filter(t => t.category !== 'quick_reply');
     const templatesByCategory = osOnlyTemplates.reduce((acc, t) => {
-        const category = t.category || 'Outros';
-        if (!acc[category]) acc[category] = [];
-        acc[category].push(t);
-        return acc;
+        (acc[t.category || 'Outros'] = acc[t.category || 'Outros'] || []).push(t); return acc;
     }, {});
-
-    // 3. Construir o HTML dos botões de template
     let modelsHTML = '';
     for (const category in templatesByCategory) {
-        modelsHTML += `<h4 class="ati-modal-category-title">${category}</h4>`;
-        const buttonsHTML = templatesByCategory[category]
-            .map(t => `<button class="ati-template-btn" data-template-text="${t.text.replace(/"/g, '&quot;')}">${t.title}</button>`)
-            .join('');
-        modelsHTML += `<div class="ati-modal-btn-group">${buttonsHTML}</div>`;
+        modelsHTML += `<h4 class="modal-category-title">${category}</h4>`;
+        const buttonsHTML = templatesByCategory[category].map(t => `<button class="template-btn" data-template-text="${t.text.replace(/"/g, '&quot;')}">${t.title}</button>`).join('');
+        modelsHTML += `<div class="modal-btn-group">${buttonsHTML}</div>`;
     }
-    
-    // 4. Construir o HTML principal do modal
     const modalBackdrop = document.createElement('div');
     modalBackdrop.id = 'osModalV2';
-    modalBackdrop.className = 'ati-modal-backdrop';
-
+    modalBackdrop.className = 'modal-backdrop ati-os-modal';
     const modalContent = document.createElement('div');
-    modalContent.className = 'ati-modal-content';
-
-    const suggestionHTML = suggestedTemplate ?
-        `<div class="ati-modal-suggestion">
-            <strong>Sugestão:</strong>
-            <button class="ati-template-btn ati-template-btn--suggestion" data-template-text="${suggestedTemplate.text.replace(/"/g, '&quot;')}">${suggestedTemplate.title}</button>
-        </div>` : '';
-        
+    modalContent.className = 'modal-content';
+    const suggestionHTML = suggestedTemplate ? `<div class="modal-suggestion"><strong>Sugestão:</strong><button class="template-btn template-btn--suggestion" data-template-text="${suggestedTemplate.text.replace(/"/g, '&quot;')}">${suggestedTemplate.title}</button></div>` : '';
     const baseTextForOS = `${phoneNumber || ''} ${firstName || ''} | `;
-
-    modalContent.innerHTML = `
-        <div class="ati-modal-header">
-            <h3>Criar Ordem de Serviço</h3>
-            <button id="closeOsBtnV2" class="ati-modal-close-btn">&times;</button>
-        </div>
-        <div class="ati-modal-body">
-            ${suggestionHTML}
-            <label for="osTextAreaV2">Descrição da O.S.:</label>
-            <textarea id="osTextAreaV2" class="ati-modal-textarea"></textarea>
-            <div class="ati-modal-templates-container">
-                <strong>Todos os Modelos:</strong>
-                ${modelsHTML}
-            </div>
-        </div>
-        <div class="ati-modal-footer">
-            <button id="copyOsBtnV2" class="ati-main-btn ati-main-btn--confirm">Copiar O.S. e Fechar</button>
-        </div>`;
-    
-    // 5. Inserir o modal na página
+    modalContent.innerHTML = `<div class="modal-header"><h3>Criar Ordem de Serviço</h3><button id="closeOsBtnV2" class="modal-close-btn">&times;</button></div><div class="modal-body">${suggestionHTML}<label for="osTextAreaV2">Descrição da O.S.:</label><textarea id="osTextAreaV2" class="modal-textarea"></textarea><div class="modal-templates-container"><strong>Todos os Modelos:</strong>${modelsHTML}</div></div><div class="modal-footer"><button id="copyOsBtnV2" class="main-btn main-btn--confirm">Copiar O.S. e Fechar</button></div>`;
     modalBackdrop.appendChild(modalContent);
     document.body.appendChild(modalBackdrop);
-
-    // 6. Adicionar funcionalidade aos elementos do modal
     const osTextArea = document.getElementById('osTextAreaV2');
     osTextArea.value = processDynamicPlaceholders(baseTextForOS).toUpperCase();
     osTextArea.addEventListener('input', function() { this.value = this.value.toUpperCase(); });
-
-    modalContent.querySelectorAll('.ati-template-btn').forEach(btn => {
+    modalContent.querySelectorAll('.template-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const templateText = btn.getAttribute('data-template-text');
             const fullText = baseTextForOS + templateText;
@@ -246,67 +171,52 @@ function showOSModalV2() {
             osTextArea.focus();
         });
     });
-
     const closeModal = () => modalBackdrop.remove();
-
-    document.getElementById('copyOsBtnV2').onclick = () => {
-        navigator.clipboard.writeText(osTextArea.value)
-            .then(() => {
-                showNotification("O.S. copiada com sucesso!");
-                closeModal();
-            })
-            .catch(err => showNotification("Falha ao copiar O.S.", true));
-    };
-    
+    document.getElementById('copyOsBtnV2').onclick = () => { navigator.clipboard.writeText(osTextArea.value).then(() => { showNotification("O.S. copiada com sucesso!"); closeModal(); }).catch(err => showNotification("Falha ao copiar O.S.", true)); };
     document.getElementById('closeOsBtnV2').onclick = closeModal;
-    modalBackdrop.addEventListener('click', (e) => {
-        if (e.target === modalBackdrop) {
-            closeModal();
-        }
-    });
+    modalBackdrop.addEventListener('click', (e) => { if (e.target === modalBackdrop) { closeModal(); } });
 }
 
 // --- Funções de Injeção de UI ---
 function injectUIElements() {
-    const sidebar = document.querySelector(V2_SIDEBAR_SELECTOR);
+    // Injeção dos botões de ação (Copiar Contato, CPF, etc.)
+    const sidebar = document.querySelector('.chat_sidebar');
     if (sidebar && !document.getElementById('actionsContainerV2')) {
         const container = document.createElement("div");
         container.id = "actionsContainerV2";
+        sidebar.appendChild(container); // Injeta na sidebar
         container.innerHTML = `
-            <button class="ati-action-btn ati-action-btn--contact">Copiar Contato</button>
-            <button class="ati-action-btn ati-action-btn--cpf">Copiar CPF</button>
-            <button class="ati-action-btn ati-action-btn--os">Criar O.S.</button>
-        `;
-        sidebar.appendChild(container);
-        container.querySelector('.ati-action-btn--contact').onclick = copyContactInfoV2;
-        container.querySelector('.ati-action-btn--cpf').onclick = copyCPFFromChatV2;
-        container.querySelector('.ati-action-btn--os').onclick = showOSModalV2;
+            <button class="action-btn action-btn--contact">Copiar Contato</button>
+            <button class="action-btn action-btn--cpf">Copiar CPF</button>
+            <button class="action-btn action-btn--os">Criar O.S.</button>`;
+        container.querySelector('.action-btn--contact').onclick = copyContactInfoV2;
+        container.querySelector('.action-btn--cpf').onclick = copyCPFFromChatV2;
+        container.querySelector('.action-btn--os').onclick = showOSModalV2;
     }
 
-    const textarea = document.querySelector(V2_TEXTAREA_SELECTOR);
-    if (textarea && !document.getElementById('atiQuickRepliesContainerV2')) {
+    // Lógica de injeção das Respostas Rápidas
+    const injectionParent = document.querySelector('.flex-none.p-4.pb-6');
+    if (injectionParent && !document.getElementById('atiQuickRepliesContainerV2')) {
         const quickReplies = osTemplates.filter(t => t.category === 'quick_reply');
-        if (quickReplies.length === 0) return;
-        const repliesByCategory = quickReplies.reduce((acc, reply) => {
-            (acc[reply.subCategory || 'Geral'] = acc[reply.subCategory || 'Geral'] || []).push(reply);
-            return acc;
-        }, {});
-        const buttonContainer = document.createElement('div');
-        buttonContainer.id = 'atiQuickRepliesContainerV2';
-        buttonContainer.className = 'ati-quick-replies-container';
-        const targetArea = textarea.closest(V2_QUICK_REPLY_INJECTION_POINT_SELECTOR);
-        if (targetArea) {
-            targetArea.parentNode.insertBefore(buttonContainer, targetArea);
+        if (quickReplies.length > 0) {
+            const repliesByCategory = quickReplies.reduce((acc, reply) => {
+                (acc[reply.subCategory || 'Geral'] = acc[reply.subCategory || 'Geral'] || []).push(reply);
+                return acc;
+            }, {});
+
+            const buttonContainer = document.createElement('div');
+            buttonContainer.id = 'atiQuickRepliesContainerV2';
+            buttonContainer.className = 'quick-replies-container';
+
+            // Usamos prepend() para garantir que os botões apareçam no início da seção do rodapé
+            injectionParent.prepend(buttonContainer);
             renderReplyUI(buttonContainer, repliesByCategory, null);
         }
     }
 }
 
 // --- LÓGICA DE INICIALIZAÇÃO E O "VIGIA" ---
-const observer = new MutationObserver((mutations) => {
-    injectUIElements();
-});
-
+const observer = new MutationObserver(() => injectUIElements());
 (async function main() {
     await loadTemplatesV2();
     injectCSS('injected.css');

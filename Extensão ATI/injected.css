@@ -1,385 +1,241 @@
-/* injected.css - ESTILIZAÇÃO FINAL PARA O MODAL HIJACK */
-
-/* --- Estilos para os Botões de Ação (Copiar Contato, CPF, O.S.) --- */
-#actionsContainer {
-    position: fixed;
-    bottom: 20px; /* Distância da parte de baixo da tela */
-    left: 80px;  /* Distância da parte direita da tela */
+/* =================================================================== */
+/* ARQUIVO DE ESTILO FINAL - ATI EXTENSÃO */
+/* =================================================================== */
+#actionsContainer, #actionsContainerV2 {
     display: flex;
-    flex-direction: row; /* Garante que os botões fiquem lado a lado */
     gap: 8px;
     z-index: 9999;
-    font-family: 'Roboto', sans-serif;
+}
+#actionsContainer { position: fixed; bottom: 20px; left: 80px; }
+#actionsContainerV2 { padding: 12px; margin: 0 16px 12px 16px; flex-wrap: wrap; }
+
+.action-btn {
+    padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer;
+    font-weight: bold; font-size: 14px; transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.action-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+#actionsContainer .action-btn--contact { background-color: #007bff; color: white; }
+#actionsContainer .action-btn--contact:hover { background-color: #0056b3; }
+#actionsContainer .action-btn--cpf { background-color: #28a745; color: white; }
+#actionsContainer .action-btn--cpf:hover { background-color: #1e7e34; }
+#actionsContainer .action-btn--os { background-color: #ffc107; color: #333; }
+#actionsContainer .action-btn--os:hover { background-color: #e0a800; }
+#actionsContainerV2 .action-btn {
+    flex: 1 1 auto; min-width: 90px; padding: 8px 12px;
+    border: 1px solid #555; background-color: transparent; color: #ccc;
+    border-radius: 6px; font-size: 12px;
+}
+#actionsContainerV2 .action-btn:hover { background-color: #3a3a3a; border-color: #777; }
+#actionsContainerV2 .action-btn--contact { color: #10B981; border-color: #10B981; }
+#actionsContainerV2 .action-btn--cpf { color: #3B82F6; border-color: #3B82F6; }
+#actionsContainerV2 .action-btn--os { color: #F59E0B; border-color: #F59E0B; 
+}
+.notification {
+    position: fixed; top: 20px; right: 20px; padding: 12px 20px;
+    border-radius: 8px; color: white; z-index: 10000; font-size: 14px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+.notification.success { background-color: #22C55E; }
+.notification.error { background-color: #EF4444; }
+/* =================================================================== */
+/* == MODAL DE RESPOSTAS RÁPIDAS (V1) == */
+/* =================================================================== */
+.modal[data-modal="msg_model"] .modal-box {
+    background-color: #2d2d2d !important;
+    border: 1px solid #444 !important;
+    color: #e0e0e0 !important;
+    max-height: 820px;
 }
 
-.ati-action-btn {
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 14px;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Sombra para dar profundidade */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
+/* Ajusta o cabeçalho */
+.modal[data-modal="msg_model"] .modal-header {
+    background-color: transparent !important; /* Remove fundo para herdar do modal-box */
+    border-bottom: 1px solid #444 !important;
+}
+.modal[data-modal="msg_model"] .modal-header h1 {
+    color: #ffffff !important;
 }
 
-.ati-action-btn:hover {
-    transform: translateY(-2px); /* Efeito de "levitar" */
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+/* Ajusta o corpo do modal */
+.modal[data-modal="msg_model"] .modal-content {
+    background-color: transparent !important; /* Remove fundo para herdar do modal-box */
+    max-height: 60vh;
+    overflow-y: auto !important;
 }
 
-.ati-action-btn--contact {
-    background-color: #007bff; /* Azul primário */
-    color: white;
-}
-.ati-action-btn--contact:hover {
-    background-color: #0056b3;
-}
-
-.ati-action-btn--cpf {
-    background-color: #28a745; /* Verde para CPF */
-    color: white;
-}
-.ati-action-btn--cpf:hover {
-    background-color: #1e7e34;
-}
-
-.ati-action-btn--os {
-    background-color: #ffc107; /* Amarelo para O.S. */
-    color: #333;
-}
-.ati-action-btn--os:hover {
-    background-color: #e0a800;
-}
-
-/* --- Estilos para o Modal de Criação de O.S. (o modal customizado) --- */
-.ati-modal-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10000;
-}
-
-.ati-modal-content {
-    background-color: #fff;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    width: 90%;
-    max-width: 600px;
-    max-height: 80vh; /* Limita a altura para scroll se necessário */
-    overflow-y: auto; /* Adiciona scroll quando o conteúdo excede a altura */
-    font-family: 'Roboto', sans-serif;
-    color: #333;
-    display: flex;
-    flex-direction: column;
-}
-
-.ati-modal-content h3 {
-    margin-top: 0;
-    color: #007bff;
-    font-size: 22px;
-    border-bottom: 2px solid #eee;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-.ati-modal-content label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: bold;
-    color: #555;
-    font-size: 14px;
-}
-
-.ati-modal-content textarea {
-    width: 100%;
-    min-height: 120px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    margin-bottom: 20px;
-    font-size: 14px;
-    box-sizing: border-box; /* Garante que padding não aumente a largura */
-    resize: vertical; /* Permite redimensionar verticalmente */
-}
-
-.ati-modal-suggestion {
-    background-color: #e6f7ff;
-    border: 1px solid #91d5ff;
-    border-radius: 5px;
-    padding: 10px;
-    margin-bottom: 15px;
-    font-size: 14px;
-    color: #333;
-}
-
-.ati-modal-suggestion strong {
-    color: #0056b3;
-    margin-right: 5px;
-}
-
-.ati-modal-templates-container h4 {
-    margin-top: 20px;
-    margin-bottom: 10px;
-    color: #007bff;
-    font-size: 16px;
-    border-bottom: 1px dashed #eee;
-    padding-bottom: 5px;
-}
-
-.ati-modal-templates-container > div {
+/* Transforma a lista em um grid de botões */
+.modal[data-modal="msg_model"] .modal-content ul {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 15px;
+    gap: 8px 10px;
+    align-items: center;
 }
-
-.template-btn {
-    padding: 8px 12px;
-    border: 1px solid #007bff;
-    border-radius: 4px;
-    background-color: #e9f5ff;
-    color: #007bff;
-    cursor: pointer;
-    font-size: 13px;
-    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-}
-
-.template-btn:hover {
-    background-color: #007bff;
-    color: white;
-    border-color: #0056b3;
-}
-
-.template-btn--suggestion {
-    background-color: #007bff;
-    color: white;
-    border-color: #0056b3;
-}
-.template-btn--suggestion:hover {
-    background-color: #0056b3;
-}
-
-.ati-modal-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 20px;
-    border-top: 1px solid #eee;
-    padding-top: 15px;
-}
-
-.ati-main-btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 15px;
-    transition: background-color 0.2s ease;
-}
-
-.ati-main-btn--confirm {
-    background-color: #28a745; /* Verde */
-    color: white;
-}
-.ati-main-btn--confirm:hover {
-    background-color: #218838;
-}
-
-.ati-main-btn--cancel {
-    background-color: #dc3545; /* Vermelho */
-    color: white;
-}
-.ati-main-btn--cancel:hover {
-    background-color: #c82333;
-}
-
-
-/* --- ESTILOS ESPECÍFICOS PARA O MODAL DE RESPOSTAS RÁPIDAS (MODAL NATIVO DO CHATMIX) --- */
-/*
-    Vamos ser bem específicos para não interferir em outros modals do Chatmix.
-    O seletor `.modal_msg_model` garante que só estamos afetando o modal de modelos.
-*/
-.modal_msg_model .modal-header h1 {
-    font-size: 20px !important; /* Tamanho do título */
-    color: #007bff !important; /* Cor do título */
-    text-align: center !important;
-    margin-bottom: 15px !important;
-    border-bottom: 1px solid #eee !important;
-    padding-bottom: 10px !important;
-}
-
-.modal_msg_model .modal-content ul {
-    list-style: none !important; /* Remove marcadores de lista */
-    padding: 0 !important;
+.modal[data-modal="msg_model"] .modal-content ul li {
     margin: 0 !important;
-    max-height: 500px; /* Limita a altura da lista */
-    overflow-y: auto; /* Adiciona scroll quando a lista for longa */
+    width: auto;
+    background-color: transparent !important; /* CORREÇÃO: Remove o "rastro branco" */
+    padding: 0 !important;
 }
-
-.modal_msg_model .modal-content ul li {
-    margin-bottom: 0px !important; /* Reduz o espaço entre os itens */
-    padding: 0px 5px !important; /* Pequeno padding para itens da lista */
-    transition: background-color 0.1s ease;
+.modal[data-modal="msg_model"] .modal-content ul li:hover {
+    background-color: transparent !important; /* Garante que não haja fundo no hover */
 }
-
-/* Estilo para o título da categoria dentro do modal */
-.modal_msg_model .modal-content ul li b {
-    display: block; /* Garante que o título ocupe a linha inteira */
-    padding: 8px 5px !important;
-    margin-top: 10px !important; /* Espaço antes da nova categoria */
-    margin-bottom: 5px !important; /* Espaço depois da categoria */
-    background-color: #f0f8ff; /* Fundo leve para a categoria */
-    border-left: 4px solid #007bff; /* Borda lateral */
-    font-size: 15px !important;
-    color: #0056b3 !important; /* Cor mais escura para o texto da categoria */
-    text-transform: capitalize !important;
-    font-weight: bold !important;
-}
-
-/* Estilo para os parágrafos (nossas respostas) dentro do modal */
-.modal_msg_model .modal-content ul li p.message_model {
-    padding: 8px 10px !important;
-    margin: 2px 0 !important; /* Espaço mínimo entre as respostas */
-    background-color: #ffffff !important; /* Fundo branco para as respostas */
-    border-radius: 4px !important;
-    border: 1px solid #e0e0e0 !important; /* Borda sutil */
-    color: #333 !important; /* Cor de texto mais escura */
-    font-size: 14px !important;
-    cursor: pointer !important;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05); /* Sombra leve */
-}
-
-.modal_msg_model .modal-content ul li p.message_model:hover {
-    background-color: #e9f5ff !important; /* Cor de fundo ao passar o mouse */
-    border-color: #007bff !important; /* Borda ao passar o mouse */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Sombra mais acentuada */
-    transform: translateY(-1px); /* Pequeno efeito de elevação */
-}
-
-/* Ajustes no rodapé do modal nativo */
-.modal_msg_model .modal-footer {
-    padding-top: 15px !important;
-    border-top: 1px solid #eee !important;
-    margin-top: 20px !important;
-    display: flex;
-    justify-content: flex-end; /* Alinha o botão "Fechar" à direita */
-}
-
-/* Oculta a mensagem de "Novo / Digite /" que não precisamos mais */
-.modal_msg_model .modal-content p.text-muted {
+.modal[data-modal="msg_model"] ul li p.message_model::after {
     display: none !important;
 }
-
-textarea[placeholder="Digite aqui sua mensagem..."] {
-    min-height: 22px;      /* Altura inicial para uma linha */
-    max-height: 250px;     /* Altura máxima para evitar que cresça indefinidamente */
-    resize: vertical;      /* Permite que o usuário redimensione manualmente se quiser */
-    overflow-y: auto;      /* Garante a barra de rolagem quando max-height é atingido */
-    field-sizing: content; /* Propriedade que faz a mágica de auto-ajuste de altura */
+/* Estiliza os títulos de categoria */
+.modal[data-modal="msg_model"] ul li:has(b) {
+    flex-basis: 100%;
 }
-/* =================================================================== */
-/* ESTILOS PARA CHATMIX V2                                             */
-/* =================================================================== */
-
-#actionsContainerV2 {
-    margin-bottom: auto;
-    border-radius: 8px;
-    padding: 12px;
-    margin: 0 16px 12px 16px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+.modal[data-modal="msg_model"] ul li b {
+    display: inline-flex;
+    align-items: center;
+    color: #a0a0a0 !important;
+    margin-top: 15px !important;
+    font-size: 1rem !important;
+}
+.modal[data-modal="msg_model"] ul li b:first-child {
+    margin-top: 0 !important;
+}
+.modal[data-modal="msg_model"] ul li b::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 1.2em;
+    background-color: #007bff;
+    margin-right: 8px;
+    border-radius: 2px;
 }
 
-/* Estilo base para os botões de AÇÃO na V2, imitando a V1 */
-#actionsContainerV2 .ati-action-btn {
-    position: bottom;
-    flex: 1 1 auto;
-    min-width: 90px;
-    padding: 8px 12px;
-    border: 1px solid #d1d5db; /* Borda cinza sutil */
-    background-color: #000000; /* Fundo cinza muito claro */
-    color: #374151; /* Texto cinza escuro */
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 600;
-    text-align: center;
+/* Estiliza os botões de resposta */
+.modal[data-modal="msg_model"] ul li p.message_model {
+    padding: 8px 16px !important;
+    background-color: #3a3a3a !important;
+    border-radius: 20px !important;
+    border: 1px solid #555 !important;
+    color: #e0e0e0 !important;
     transition: all 0.2s;
 }
-
-#actionsContainerV2 .ati-action-btn:hover {
-    border-color: #9ca3af;
-    transform: translateY(-1px);
+.modal[data-modal="msg_model"] ul li p.message_model:hover {
+    background-color: #007bff !important;
+    border-color: #007bff !important;
+    color: white !important;
+    transform: translateY(-2px);
 }
 
-/* Cores específicas para cada botão */
-#actionsContainerV2 .ati-action-btn--contact { color: #10B981; border-color: #10B981; }
-#actionsContainerV2 .ati-action-btn--cpf { color: #3B82F6; border-color: #3B82F6; }
-#actionsContainerV2 .ati-action-btn--os { color: #F59E0B; border-color: #F59E0B; }
+/* Corrige o rodapé e remove a "saia" corretamente */
+.modal[data-modal="msg_model"] .modal-footer {
+    background-color: transparent !important; /* Remove fundo para herdar do modal-box */
+    border-top: 1px solid #444 !important;
+    margin-bottom: 0 !important; /* <-- A forma CORRETA de remover a "saia" */
+    padding: 0.8rem !important;
+    justify-content: center;
+}
+.modal[data-modal="msg_model"] .modal-footer .button {
+    background-color: #4a4a4a;
+    color: #e0e0e0;
+    font-weight: bold;
+    border-radius: 8px;
+}
+.modal[data-modal="msg_model"] .modal-footer .button:hover {
+    background-color: #5a5a5a;
+}
 
-/* --- Estilos para as RESPOSTAS RÁPIDAS --- */
+/* Oculta elementos desnecessários */
+.modal[data-modal="msg_model"] .tagline,
+.modal[data-modal="msg_model"] mark {
+    display: none !important;
+}
+/* =================================================================== */
+/* == MODAL DE O.S. CUSTOMIZADO (V1 e V2) == */
+/* =================================================================== */
+.ati-os-modal.modal-backdrop {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex; justify-content: center; align-items: center; z-index: 10000;
+}
+.ati-os-modal .modal-content {
+    background-color: #2d2d2d; padding: 25px; border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5); width: 90%; max-width: 650px;
+    max-height: 90vh; overflow-y: auto; color: #e0e0e0;
+    display: flex; flex-direction: column;
+}
+.ati-os-modal .modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid #444; padding-bottom: 15px; margin-bottom: 15px;
+}
+.ati-os-modal h3 { margin: 0; color: #0095ff; font-size: 1.25rem; }
+.ati-os-modal .modal-close-btn { background: none; border: none; font-size: 1.8rem; color: #888; cursor: pointer; }
+.ati-os-modal .modal-close-btn:hover { color: #fff; }
+.ati-os-modal .modal-body label {
+    display: block; margin-bottom: 8px; font-weight: bold;
+    color: #aaa; font-size: 0.9rem;
+}
+.ati-os-modal .modal-textarea {
+    width: 100%; min-height: 120px; padding: 10px; border: 1px solid #555;
+    border-radius: 5px; margin-bottom: 20px; font-size: 14px; box-sizing: border-box;
+    resize: vertical; background-color: #3a3a3a; color: #e0e0e0;
+}
+.ati-os-modal .modal-suggestion {
+    background-color: #3a3a3a; border: 1px solid #007bff;
+    border-radius: 5px; padding: 15px; margin-bottom: 20px;
+}
+.ati-os-modal .modal-category-title {
+    flex-basis: 100%; margin-top: 15px; margin-bottom: 10px; color: #0095ff;
+    font-size: 1rem; border-bottom: 1px dashed #555; padding-bottom: 5px;
+}
+.ati-os-modal .modal-btn-group { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
+.ati-os-modal .template-btn {
+    padding: 8px 16px; border: 1px solid #555; border-radius: 20px;
+    background-color: #444; color: #ccc; cursor: pointer; font-size: 13px;
+    transition: all 0.2s;
+}
+.ati-os-modal .template-btn:hover { background-color: #555; color: white; border-color: #777; }
+.ati-os-modal .template-btn--suggestion { background-color: #007bff; color: white; border-color: #0056b3; }
+.ati-os-modal .template-btn--suggestion:hover { background-color: #0056b3; }
+.ati-os-modal .modal-footer {
+    display: flex; justify-content: flex-end; gap: 10px;
+    margin-top: 20px; border-top: 1px solid #444; padding-top: 20px;
+    margin-bottom: 0 !important;
+}
+.ati-os-modal .main-btn {
+    padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;
+    font-weight: bold; font-size: 15px; transition: background-color 0.2s;
+}
+.ati-os-modal .main-btn--confirm { background-color: #28a745; color: white; }
+.ati-os-modal .main-btn--confirm:hover { background-color: #218838; }
+.ati-os-modal .main-btn--cancel { background-color: #6c757d; color: white; }
+.ati-os-modal .main-btn--cancel:hover { background-color: #5a6268; }
+/* =================================================================== */
+/* == Respostas Rápidas (V2) - Com Estilos de Alta Prioridade       == */
+/* =================================================================== */
 
-.ati-quick-replies-container {
+#atiQuickRepliesContainerV2.quick-replies-container {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    padding: 0 8px 12px 8px; /* Espaçamento antes do campo de texto */
-    margin: 0 8px;
+    padding: 0 8px 12px 8px;
+    margin: 12px 8px 0 8px; /* Adicionado margem no topo para separar */
 }
-
-/* Estilo base para os botões de reply */
-.qr-btn {
+#atiQuickRepliesContainerV2 .qr-btn {
     padding: 6px 14px;
     border-radius: 16px;
-    border: 1px solid #d1d5db;
-    color: #ffffff;
+    border: 1px solid #555;
+    background-color: #3a3a3a;
+    color: #ccc;
     cursor: pointer;
     font-size: 13px;
     font-weight: 500;
     transition: all 0.2s;
 }
-
-.qr-btn:hover {
-    background-color: #f3f4f6;
-    border-color: #9ca3af;
+#atiQuickRepliesContainerV2 .qr-btn:hover {
+    background-color: #4a4a4a;
+    border-color: #777;
 }
-
-/* Botão de "Voltar" */
-.qr-btn--back {
+#atiQuickRepliesContainerV2 .qr-btn--back {
     color: white;
-    border-color: #6b7280;
+    border-color: #888;
 }
-.qr-btn--back:hover {
-    background-color: #4b5567;
+#atiQuickRepliesContainerV2 .qr-btn--back:hover {
+    background-color: #555;
 }
-
-/* --- Estilos para Notificações e Outros --- */
-.ati-notification {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 12px 20px;
-    border-radius: 8px;
-    color: white;
-    z-index: 10000;
-    font-size: 14px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-.ati-notification.success { background-color: #22C55E; }
-.ati-notification.error { background-color: #EF4444; }

@@ -246,7 +246,7 @@ function extractClientChatAfterAssignment(chatContainerElement) {
 }
 
 function injectCSS(filePath) {
-    const cssFileId = 'ati-extension-styles';
+    const cssFileId = 'extension-styles';
     if (document.getElementById(cssFileId)) return;
     const link = document.createElement('link');
     link.id = cssFileId;

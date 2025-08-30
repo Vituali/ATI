@@ -53,13 +53,6 @@ function collectTextFromMessagesV2(chatBody) {
     return texts;
 }
 
-function processDynamicPlaceholders(text) {
-    if (typeof text !== 'string') return '';
-    const now = new Date(); const hour = now.getHours();
-    let saudacao = (hour >= 5 && hour < 12) ? 'Bom dia' : (hour >= 12 && hour < 18) ? 'Boa tarde' : 'Boa noite';
-    return text.replace(/\[SAUDACAO\]/gi, saudacao);
-}
-
 function findSuggestedTemplate(allTexts) {
     const osOnlyTemplates = osTemplates.filter(t => t.category !== 'quick_reply');
     const chatContent = allTexts.join(' ').toLowerCase();

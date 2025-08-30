@@ -1,12 +1,13 @@
 {
   "manifest_version": 3,
   "name": "ATI - Auxiliar de Atendimentos",
-  "version": "6.0",
+  "version": "6.1",
   "description": "Copia dados, sugere e cria Ordens de Serviço a partir do chat.",
   "permissions": [
     "storage",
     "activeTab",
     "clipboardWrite",
+    "clipboardRead",
     "tabs",
     "commands"
   ],
@@ -55,6 +56,14 @@
       "matches": ["https://vituali.github.io/ATI/"],
       "js": ["bridge-listener.js"],
        "all_frames": true
+    },
+    {
+      "comment": "NOVO: Script para automatizar o SGP.",
+      "matches": ["https://sgp.atiinternet.com.br/admin/atendimento/cliente/*/ocorrencia/add/"],
+      "js": [
+        "jquery.min.js",
+        "sgp.js"
+      ]
     }
   ],
   "web_accessible_resources": [

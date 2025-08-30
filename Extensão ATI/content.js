@@ -41,7 +41,6 @@ async function runExtension() {
 }
 
 const startupInterval = setInterval(() => {
-    // Espera por um elemento que com certeza só existe quando a página carregou
     const targetElement = document.querySelector("section.attendances");
     if (targetElement) {
         clearInterval(startupInterval);

@@ -178,15 +178,17 @@ function showOSModal() {
 }
 
 function createActionsContainer() {
+    // Se o container já existe, não faz nada.
     if (document.getElementById("actionsContainer")) return;
-    const targetParent = document.querySelector("section.attendances .header");
+
     const container = document.createElement("div");
     container.id = "actionsContainer";
-    if (targetParent) {
-        targetParent.appendChild(container);
-    } else {
-        document.body.appendChild(container);
-    }
+
+    // Anexa o container diretamente ao BODY da página.
+    // Isso evita qualquer interferência com os scripts do Chatmix,
+    // pois não estamos modificando os elementos deles.
+    // O CSS em "injected.css" já posiciona o container corretamente.
+    document.body.appendChild(container);
 }
 
 function initializeActions() {

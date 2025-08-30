@@ -40,13 +40,23 @@ async function loadTemplatesFromStorage() {
 }
 
 function findActiveAttendanceElement() {
-    const activeChatContainer = document.querySelector('section.chat > div[data-navigation_to="attendance"]');
-    if (activeChatContainer) {
-        const style = window.getComputedStyle(activeChatContainer);
-        if (style.display !== 'none' && style.visibility !== 'hidden' && activeChatContainer.offsetHeight > 0) {
-            return activeChatContainer.querySelector('.attendance');
+    // CORREÇÃO: O seletor agora busca por CADA painel de atendimento individual
+    // que tenha o atributo 'data-message_to'.
+    const allChatPanels = document.querySelectorAll('section.chat .attendance[data-message_to]');
+
+    // Itera sobre cada painel encontrado para verificar qual está visível.
+    for (const panel of allChatPanels) {
+        const style = window.getComputedStyle(panel);
+        
+        // A condição para ser o "ativo" é simplesmente estar visível na tela.
+        if (style.display !== 'none' && style.visibility !== 'hidden' && panel.offsetHeight > 0) {
+            // Encontramos o painel ativo! Retornamos ele imediatamente.
+            // No seu HTML, o painel da "Heglaia" vai passar aqui, e o da "Valeria" não.
+            return panel; 
         }
     }
+
+    // Se, por algum motivo, nenhum chat ativo for encontrado, retorna nulo.
     return null;
 }
 

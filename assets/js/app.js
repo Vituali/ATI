@@ -227,4 +227,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             profileModal.style.display = 'none';
         }
     });
+        document.addEventListener('click', (e) => {
+        // Verifica se o elemento clicado (ou um parente próximo) tem a classe 'copiable'
+        const copiableElement = e.target.closest('.copiable');
+        if (copiableElement) {
+            navigator.clipboard.writeText(copiableElement.textContent).then(() => {
+                showPopup(`'${copiableElement.textContent}' copiado!`, 'success');
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+                showPopup('Não foi possível copiar.', 'error');
+            });
+        }
+    });
 });

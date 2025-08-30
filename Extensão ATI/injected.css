@@ -45,69 +45,60 @@
     background-color: #2d2d2d !important;
     border: 1px solid #444 !important;
     color: #e0e0e0 !important;
-    max-height: 820px;
+    min-height: auto !important;
+    height: fit-content !important;
+    max-height: 85vh !important;
+    display: flex;
+    flex-direction: column;
 }
 
-/* Ajusta o cabeçalho */
+.modal[data-modal="msg_model"] .modal-header,
+.modal[data-modal="msg_model"] .modal-content,
+.modal[data-modal="msg_model"] .modal-footer {
+    background-color: transparent !important;
+}
+
 .modal[data-modal="msg_model"] .modal-header {
-    background-color: transparent !important; /* Remove fundo para herdar do modal-box */
     border-bottom: 1px solid #444 !important;
+    flex-shrink: 0;
 }
 .modal[data-modal="msg_model"] .modal-header h1 {
     color: #ffffff !important;
 }
 
-/* Ajusta o corpo do modal */
 .modal[data-modal="msg_model"] .modal-content {
-    background-color: transparent !important; /* Remove fundo para herdar do modal-box */
-    max-height: 60vh;
     overflow-y: auto !important;
+    padding: 20px;
 }
 
-/* Transforma a lista em um grid de botões */
 .modal[data-modal="msg_model"] .modal-content ul {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px 10px;
-    align-items: center;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 0;
+    list-style: none;
 }
 .modal[data-modal="msg_model"] .modal-content ul li {
     margin: 0 !important;
-    width: auto;
-    background-color: transparent !important; /* CORREÇÃO: Remove o "rastro branco" */
     padding: 0 !important;
-}
-.modal[data-modal="msg_model"] .modal-content ul li:hover {
-    background-color: transparent !important; /* Garante que não haja fundo no hover */
-}
-.modal[data-modal="msg_model"] ul li p.message_model::after {
-    display: none !important;
-}
-/* Estiliza os títulos de categoria */
-.modal[data-modal="msg_model"] ul li:has(b) {
-    flex-basis: 100%;
-}
-.modal[data-modal="msg_model"] ul li b {
-    display: inline-flex;
-    align-items: center;
-    color: #a0a0a0 !important;
-    margin-top: 15px !important;
-    font-size: 1rem !important;
-}
-.modal[data-modal="msg_model"] ul li b:first-child {
-    margin-top: 0 !important;
-}
-.modal[data-modal="msg_model"] ul li b::before {
-    content: '';
-    display: inline-block;
-    width: 4px;
-    height: 1.2em;
-    background-color: #007bff;
-    margin-right: 8px;
-    border-radius: 2px;
+    background: none !important;
+    width: auto;
+    display: flex;
 }
 
-/* Estiliza os botões de resposta */
+.modal[data-modal="msg_model"] ul li:has(b) {
+    flex-basis: 100%;
+    margin-bottom: 5px !important;
+}
+.modal[data-modal="msg_model"] ul li b {
+    color: #a0a0a0 !important;
+    font-size: 1rem !important;
+    padding-left: 4px;
+    border-left: 3px solid #007bff;
+}
+
+/* Botões de Resposta */
 .modal[data-modal="msg_model"] ul li p.message_model {
     padding: 8px 16px !important;
     background-color: #3a3a3a !important;
@@ -115,36 +106,30 @@
     border: 1px solid #555 !important;
     color: #e0e0e0 !important;
     transition: all 0.2s;
+    margin: 0;
+    line-height: 1.4;
 }
 .modal[data-modal="msg_model"] ul li p.message_model:hover {
     background-color: #007bff !important;
     border-color: #007bff !important;
-    color: white !important;
+    color: #ffffff !important;
     transform: translateY(-2px);
 }
+.modal[data-modal="msg_model"] ul li p.message_model::after {
+    display: none !important;
+}
 
-/* Corrige o rodapé e remove a "saia" corretamente */
+/* Rodapé */
 .modal[data-modal="msg_model"] .modal-footer {
-    background-color: transparent !important; /* Remove fundo para herdar do modal-box */
     border-top: 1px solid #444 !important;
-    margin-bottom: 0 !important; /* <-- A forma CORRETA de remover a "saia" */
-    padding: 0.8rem !important;
+    margin-bottom: 0 !important;
+    padding: 1rem !important;
     justify-content: center;
+    flex-shrink: 0;
 }
 .modal[data-modal="msg_model"] .modal-footer .button {
     background-color: #4a4a4a;
-    color: #e0e0e0;
-    font-weight: bold;
     border-radius: 8px;
-}
-.modal[data-modal="msg_model"] .modal-footer .button:hover {
-    background-color: #5a5a5a;
-}
-
-/* Oculta elementos desnecessários */
-.modal[data-modal="msg_model"] .tagline,
-.modal[data-modal="msg_model"] mark {
-    display: none !important;
 }
 /* =================================================================== */
 /* == MODAL DE O.S. CUSTOMIZADO (V1 e V2) == */

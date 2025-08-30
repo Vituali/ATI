@@ -739,3 +739,36 @@ input:checked + .slider:before {
     color: var(--button-text);
     font-weight: bold;
 }
+/*=============================================================================*/
+/* == TEXTO COPIADOS = */
+@font-face {
+    font-family: Orbitron;
+    font-style: normal;
+    font-weight: 400;
+    src: url(https://fonts.gstatic.com/s/orbitron/v31/yMJRMIlzdpvBhQQL_Qq7dy0.woff2) format('woff2')            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+.password-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+}
+.password-grid .card hr {
+    margin: 10px 0;
+    border-color: rgba(128, 128, 128, 0.2);
+}
+.copiable {
+    cursor: pointer;
+    background-color: rgba(255, 255, 255, 0.08);
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    display: inline-block; /* Garante que o fundo se aplique corretamente */
+}
+
+.copiable:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.copiable:active {
+    transform: translateY(1px); /* Efeito de clique */
+}

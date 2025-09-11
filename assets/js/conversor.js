@@ -247,6 +247,8 @@ export function initializeConversor() {
         
         const fullOutput = `${scheduleLines}\n\n${osTextData.os}`;
         elements.output.textContent = replacePlaceholders(fullOutput);
+        elements.output.style.height = 'auto';
+        elements.output.style.height = (elements.output.scrollHeight) + 'px';
         elements.copyButtons.style.display = 'flex';
     }
 

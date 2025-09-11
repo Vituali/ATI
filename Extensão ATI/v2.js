@@ -49,8 +49,50 @@ function extractDataFromHeaderV2(headerElement) {
 function collectTextFromMessagesV2(chatBody) {
     const texts = [];
     if (!chatBody) return texts;
-    chatBody.querySelectorAll('p.mensagem').forEach(p => texts.push(p.textContent.trim()));
+    // Seleciona todas as mensagens e pega o texto de cada uma
+    chatBody.querySelectorAll('p.mensagem').forEach(p => {
+        texts.push(p.textContent.trim());
+    });
     return texts;
+}
+
+function extractAndFormatConversationV2(chatBody) {
+    if (!chatBody) return "";
+
+    const allMessages = Array.from(chatBody.querySelectorAll('p.mensagem'));
+    const assignmentKeyword = "atendimento atribuído ao atendente";
+    let conversationStarted = false;
+    const relevantTexts = [];
+
+    for (const message of allMessages) {
+        const text = message.textContent.trim();
+        const lowerCaseText = text.toLowerCase();
+
+        // Procura pelo marco zero da conversa
+        if (lowerCaseText.includes(assignmentKeyword)) {
+            conversationStarted = true;
+            continue; // Pula para a próxima mensagem
+        }
+
+        // Se a conversa humana já começou, captura a mensagem
+        if (conversationStarted) {
+            // Verifica se a mensagem é do próprio atendente
+            if (lowerCaseText.startsWith("victor disse:")) {
+                 // Remove o "VICTOR disse:" e adiciona um marcador claro
+                relevantTexts.push(`VICTOR: ${text.substring(13).trim()}`);
+            } else {
+                // Se não for do atendente, assume que é do cliente
+                relevantTexts.push(`CLIENTE: ${text}`);
+            }
+        }
+    }
+    
+    // Se, por algum motivo, não encontrar a atribuição, retorna as últimas 10 mensagens como fallback
+    if (!conversationStarted) {
+        return allMessages.slice(-10).map(m => m.textContent.trim()).join('\n');
+    }
+
+    return relevantTexts.join('\n');
 }
 
 function findSuggestedTemplate(allTexts) {
@@ -181,10 +223,13 @@ function injectUIElements() {
         container.innerHTML = `
             <button class="action-btn action-btn--contact">Copiar Contato</button>
             <button class="action-btn action-btn--cpf">Copiar CPF</button>
-            <button class="action-btn action-btn--os">Criar O.S.</button>`;
+            <button class="action-btn action-btn--os">Criar O.S.</button>
+            <button class="action-btn action-btn--ai">🤖 Copiar Prompt IA</button>
+        `;
         container.querySelector('.action-btn--contact').onclick = copyContactInfoV2;
         container.querySelector('.action-btn--cpf').onclick = copyCPFFromChatV2;
         container.querySelector('.action-btn--os').onclick = showOSModalV2;
+        container.querySelector('.action-btn--ai').onclick = handleCopyPromptClick;
     }
 
     // Lógica de injeção das Respostas Rápidas
@@ -208,6 +253,61 @@ function injectUIElements() {
     }
 }
 
+async function handleCopyPromptClick() {
+    showNotification("🤖 Copiando prompt filtrado...");
+
+    const chatBody = findActiveChatBodyV2();
+    if (!chatBody) return showNotification("Nenhum chat ativo para copiar.", true);
+    
+    // --- MUDANÇA PRINCIPAL AQUI ---
+    // Chamamos a nova função que filtra a automação
+    const customerText = extractAndFormatConversationV2(chatBody);
+    // --- FIM DA MUDANÇA ---
+
+    if (!customerText) return showNotification("Não há mensagens de cliente para analisar.", true);
+    
+    const companyProceduresContext = `
+- Para problemas de conexão, primeiro entenda a situação e depois siga as etapas de diagnóstico. Somente como último caso, acione uma equipe técnica.
+- O horário do suporte é de Seg a Sab de 08:00 as 21:00 e Dom/Feriados de 09:00 as 21:00.
+- Os planos de internet são: 600 MEGA, 800 MEGA e 920 MEGA.
+
+- Etapas de Diagnóstico Obrigatórias (siga na ordem):
+1. Verificar se o cliente já reiniciou o modem/roteador. **Se não, peça para fazer.**
+2. Testar a conexão via cabo. **Pergunte ao cliente se é possível testar com um cabo de rede.**
+3. Realizar o teste de velocidade. **Peça ao cliente para acessar speedtest.net e informar os resultados de download e upload.**
+4. Confirmar o número de dispositivos conectados. **Pergunte quantos aparelhos estão usando a internet no momento.**
+
+- Somente se todos os passos acima não resolverem, ofereça o acionamento da equipe técnica com prazo de até 48h.
+`;
+
+    const prompt = `
+Você é um atendente de suporte da empresa 'ATI Internet'. Seu nome é Victor.
+Sua resposta deve ser profissional, amigável e resolver o problema do cliente.
+
+---
+REGRAS IMPORTANTES:
+1. Gere respostas CURTAS e DIRETAS, ideais para um chat.
+2. Se uma explicação for longa, divida-a em 2 mensagens curtas e sequenciais.
+3. Siga estritamente os procedimentos e informações da empresa listados abaixo.
+---
+PROCEDIMENTOS E INFORMAÇÕES DA EMPRESA:
+${companyProceduresContext}
+---
+CONVERSA COM O CLIENTE:
+${customerText}
+---
+
+Sugira a resposta ideal seguindo TODAS as regras:
+    `;
+
+    try {
+        await navigator.clipboard.writeText(prompt.trim());
+        showNotification("✅ Prompt para IA copiado!", false);
+    } catch (error) {
+        console.error("Erro ao copiar o prompt:", error);
+        showNotification("Falha ao copiar o prompt.", true);
+    }
+}
 // --- LÓGICA DE INICIALIZAÇÃO E O "VIGIA" ---
 const observer = new MutationObserver(() => injectUIElements());
 (async function main() {

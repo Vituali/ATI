@@ -1,19 +1,36 @@
-// sgp.js - Versão final com seletor de atendente e preenchimento estável
+// sgp.js - Versão com 3 fluxos: Padrão, Comprovante e Promessa (v8)
 
 // --- CONFIGURAÇÃO DOS ATENDENTES ---
-// Adicione ou remova atendentes aqui. O 'valor' deve ser o código do SGP.
+
 const ATTENDANTS = {
     'VICTORH': '99',
     'LUCASJ': '100',
-    // Adicione mais atendentes se precisar, no formato: 'NOME': 'CODIGO'
+    
 };
 // ------------------------------------
 
 /**
- * Função auxiliar robusta para definir o valor de um campo select2 e disparar o evento.
- * @param {string} selector - O seletor jQuery do elemento.
- * @param {string} value - O valor a ser definido.
- * @param {number} delay - O tempo de espera em milissegundos.
+ * Função auxiliar para criar uma pausa.
+ * @param {number} ms - Tempo em milissegundos para esperar.
+ */
+const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+/**
+ * Função auxiliar para formatar a data e hora atuais no padrão DD/MM/AAAA HH:mm:ss.
+ */
+function getCurrentFormattedDateTime() {
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = now.getFullYear();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+}
+
+/**
+ * Função de preenchimento que usa dispatchEvent nativo.
  */
 const setValueWithDelay = (selector, value, delay) => {
     return new Promise(resolve => {
@@ -29,42 +46,86 @@ const setValueWithDelay = (selector, value, delay) => {
                 resolve();
             } catch (error) {
                 console.error(`[Extensão ATI] Erro ao preencher o campo ${selector}:`, error);
-                resolve(); // Continua mesmo se um campo falhar
+                resolve();
             }
         }, delay);
     });
 };
 
 /**
- * Função principal que lê os dados da área de transferência e preenche o formulário.
+ * Função principal que lê os dados e preenche o formulário.
  */
 async function fillSgpForm() {
     try {
+
         const clipboardText = await navigator.clipboard.readText();
-        if (!clipboardText.includes(' | ')) {
-            alert('O texto na área de transferência não parece ser uma O.S. válida.');
-            return;
-        }
+        const upperCaseText = clipboardText.toUpperCase();
 
-        console.log('[Extensão ATI] Preenchendo formulário...');
-        const osContent = clipboardText;
-        $('#id_conteudo').val(osContent.toUpperCase());
+        // --- 1. PREENCHIMENTO DE CAMPOS COMUNS A TODOS OS FLUXOS ---
 
-        // Usa a função robusta para preencher os campos necessários
-        await setValueWithDelay('#id_setor', '2', 100);      // Fixo: Suporte Tecnico
-        await setValueWithDelay('#id_metodo', '3', 100);     // Fixo: Suporte Online
-
+        // Define o responsável (usuário logado)
         const selectedAttendant = localStorage.getItem('sgp_selected_attendant');
         if (selectedAttendant) {
             await setValueWithDelay('#id_responsavel', selectedAttendant, 100);
         }
 
-        const contratoOptions = $('#id_clientecontrato option');
-        if (contratoOptions.length === 2) {
-            const contratoValue = $(contratoOptions[1]).val();
-            await setValueWithDelay('#id_clientecontrato', contratoValue, 100);
+        // Filtra as opções para encontrar contratos que não estão "Cancelados"
+        const validContracts = $('#id_clientecontrato option').filter(function() {
+            // A opção deve ter um valor e o texto não pode incluir 'Cancelado'
+            return $(this).val() !== '' && !$(this).text().toUpperCase().includes('CANCELADO');
+        });
+
+        // Decide o que fazer com base no número de contratos válidos encontrados
+        if (validContracts.length > 1) {
+            // Se houver mais de um contrato válido, avisa o usuário para selecionar
+            alert('[Extensão ATI] Existem múltiplos contratos ativos. Por favor, selecione o contrato correto manualmente.');
+        
+        } else if (validContracts.length === 1) {
+            // Se houver exatamente um contrato válido, seleciona-o
+            const contractId = validContracts.val();
+            await setValueWithDelay('#id_clientecontrato', contractId, 100);
+        }
+        // Se validContracts.length for 0, nenhum contrato será selecionado.
+
+        // Define os valores fixos para todos os atendimentos
+        await setValueWithDelay('#id_setor', '2', 100);     // Suporte
+        await setValueWithDelay('#id_metodo', '3', 100);    // Suporte Online
+        await setValueWithDelay('#id_status', '1', 100);    // Encerrada
+
+        // Preenche conteúdo e data
+        $('#id_conteudo').val(clipboardText); // Pode usar o texto original ou upperCaseText
+        $('#id_data_agendamento').val(getCurrentFormattedDateTime());
+        
+        // Garante que a O.S. esteja sempre desmarcada
+        $('#id_os').prop('checked', false);
+
+        // --- 2. TRATAMENTO DOS CASOS ESPECIAIS ---
+
+        // Pausa estratégica APÓS definir o setor, caso o campo "tipo" dependa dele
+        await wait(200); 
+
+        const isComprovante = upperCaseText.includes('ENVIO DE COMPROVANTE');
+        const isPromessa = upperCaseText.includes('PROMESSA DE PAGAMENTO');
+        const isLentidao = upperCaseText.includes('CLIENTE RELATA LENTIDÃO');
+
+        let tipoOcorrencia = ''; // Por padrão, o tipo fica vazio
+
+        if (isComprovante) {
+            tipoOcorrencia = '42'; // Financeiro- Comunicação de pagamento
+        }
+
+        else if (isPromessa) {
+            tipoOcorrencia = '41'; // Financeiro - Promessa de pagamento
         }
         
+        else if (isLentidao) {
+            tipoOcorrencia = '3'; // Suporte - Acesso lento
+        }
+        // Se um tipo foi definido, preenche o campo
+        if (tipoOcorrencia) {
+            await setValueWithDelay('#id_tipo', tipoOcorrencia, 100);
+        }
+
         console.log('[Extensão ATI] Preenchimento concluído!');
 
     } catch (error) {
@@ -104,7 +165,7 @@ function injectAttendantSelector() {
     if (savedAttendant) {
         select.value = savedAttendant;
     } else {
-        // Se nada estiver salvo, salva o primeiro da lista como padrão
+
         localStorage.setItem('sgp_selected_attendant', select.value);
     }
 

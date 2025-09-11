@@ -1,6 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 
+// Extensões de arquivo permitidas
+const extensoesPermitidas = ['.html', '.css', '.js', '.md', '.txt'];
+
 // Configuração dos merges
 const merges = [
   {
@@ -11,12 +14,15 @@ const merges = [
       'assets/css',
       'assets/js'
     ],
-    ignorar: ['merge_site.txt', 'merge_extensao.txt', '.git']
+    ignorar: ['merge_site.txt', 'merge_extensao.txt', '.git', 'assets/extension', 'assets/images']
   },
   {
     nome: 'merge_extensao.txt',
     pastas: [
-      'Extensão ATI'   // substitua pelo caminho da pasta da extensão
+      'Extensão ATI',
+      'Extensão ATI/css',
+      'Extensão ATI/scripts',
+      'Extensão ATI/libs'
     ],
     ignorar: []
   }
@@ -25,6 +31,10 @@ const merges = [
 // Função para ler arquivos recursivamente
 function lerArquivosRecursivo(pasta, ignorar) {
   let arquivosTodos = [];
+  
+  // Verifica se a pasta existe
+  if (!fs.existsSync(pasta)) return arquivosTodos;
+
   const itens = fs.readdirSync(pasta);
 
   itens.forEach(item => {
@@ -36,7 +46,11 @@ function lerArquivosRecursivo(pasta, ignorar) {
     if (stats.isDirectory()) {
       arquivosTodos = arquivosTodos.concat(lerArquivosRecursivo(itemPath, ignorar));
     } else {
-      arquivosTodos.push(itemPath);
+      // Verifica se a extensão do arquivo é permitida
+      const extensao = path.extname(itemPath).toLowerCase();
+      if (extensoesPermitidas.includes(extensao)) {
+        arquivosTodos.push(itemPath);
+      }
     }
   });
 
@@ -48,16 +62,23 @@ merges.forEach(merge => {
   let conteudoFinal = '';
 
   merge.pastas.forEach(pasta => {
-    if (!fs.existsSync(pasta)) return;
+    if (!fs.existsSync(pasta)) {
+      console.warn(`Aviso: A pasta "${pasta}" não existe.`);
+      return;
+    }
 
     const arquivos = lerArquivosRecursivo(pasta, merge.ignorar);
 
     arquivos.forEach(filePath => {
-      const fileConteudo = fs.readFileSync(filePath, 'utf-8');
-      const relativePath = path.relative('.', filePath);
+      try {
+        const fileConteudo = fs.readFileSync(filePath, 'utf-8');
+        const relativePath = path.relative('.', filePath);
 
-      conteudoFinal += `\n\n// --- ${relativePath} ---\n\n`;
-      conteudoFinal += fileConteudo;
+        conteudoFinal += `\n\n// --- ${relativePath} ---\n\n`;
+        conteudoFinal += fileConteudo;
+      } catch (err) {
+        console.error(`Erro ao ler o arquivo ${filePath}: ${err.message}`);
+      }
     });
   });
 

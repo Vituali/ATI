@@ -1,23 +1,14 @@
-// sgp.js - Versão com 3 fluxos: Padrão, Comprovante e Promessa (v8)
+// sgp.js - Versão com preenchimento padrão unificado (v11)
 
 // --- CONFIGURAÇÃO DOS ATENDENTES ---
-
 const ATTENDANTS = {
     'VICTORH': '99',
     'LUCASJ': '100',
-    
 };
 // ------------------------------------
 
-/**
- * Função auxiliar para criar uma pausa.
- * @param {number} ms - Tempo em milissegundos para esperar.
- */
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-/**
- * Função auxiliar para formatar a data e hora atuais no padrão DD/MM/AAAA HH:mm:ss.
- */
 function getCurrentFormattedDateTime() {
     const now = new Date();
     const day = String(now.getDate()).padStart(2, '0');
@@ -29,9 +20,6 @@ function getCurrentFormattedDateTime() {
     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
 }
 
-/**
- * Função de preenchimento que usa dispatchEvent nativo.
- */
 const setValueWithDelay = (selector, value, delay) => {
     return new Promise(resolve => {
         setTimeout(() => {
@@ -41,7 +29,6 @@ const setValueWithDelay = (selector, value, delay) => {
                     element.val(value);
                     const event = new Event('change', { bubbles: true });
                     element[0].dispatchEvent(event);
-                    console.log(`[Extensão ATI] Campo ${selector} preenchido com valor ${value}.`);
                 }
                 resolve();
             } catch (error) {
@@ -53,77 +40,67 @@ const setValueWithDelay = (selector, value, delay) => {
 };
 
 /**
- * Função principal que lê os dados e preenche o formulário.
+ * Função principal que lê os dados do clipboard e preenche o formulário.
  */
 async function fillSgpForm() {
     try {
-
         const clipboardText = await navigator.clipboard.readText();
+        if (!clipboardText) {
+            return alert('[Extensão ATI] A área de transferência está vazia.');
+        }
+
         const upperCaseText = clipboardText.toUpperCase();
+        console.log('[Extensão ATI] Iniciando preenchimento manual...');
 
-        // --- 1. PREENCHIMENTO DE CAMPOS COMUNS A TODOS OS FLUXOS ---
-
-        // Define o responsável (usuário logado)
+        // --- PREENCHIMENTO PADRÃO PARA TODOS OS FLUXOS ---
+        
+        // 1. Usuário/Responsável
         const selectedAttendant = localStorage.getItem('sgp_selected_attendant');
         if (selectedAttendant) {
-            await setValueWithDelay('#id_responsavel', selectedAttendant, 100);
+            await setValueWithDelay('#id_responsavel', selectedAttendant, 50);
         }
 
-        // Filtra as opções para encontrar contratos que não estão "Cancelados"
+        // 2. Contrato
         const validContracts = $('#id_clientecontrato option').filter(function() {
-            // A opção deve ter um valor e o texto não pode incluir 'Cancelado'
             return $(this).val() !== '' && !$(this).text().toUpperCase().includes('CANCELADO');
         });
-
-        // Decide o que fazer com base no número de contratos válidos encontrados
-        if (validContracts.length > 1) {
-            // Se houver mais de um contrato válido, avisa o usuário para selecionar
-            alert('[Extensão ATI] Existem múltiplos contratos ativos. Por favor, selecione o contrato correto manualmente.');
-        
-        } else if (validContracts.length === 1) {
-            // Se houver exatamente um contrato válido, seleciona-o
-            const contractId = validContracts.val();
-            await setValueWithDelay('#id_clientecontrato', contractId, 100);
+        if (validContracts.length === 1) {
+            await setValueWithDelay('#id_clientecontrato', validContracts.val(), 50);
+        } else if (validContracts.length > 1) {
+            alert('[Extensão ATI] Múltiplos contratos ativos. Selecione o correto manualmente.');
         }
-        // Se validContracts.length for 0, nenhum contrato será selecionado.
-
-        // Define os valores fixos para todos os atendimentos
-        await setValueWithDelay('#id_setor', '2', 100);     // Suporte
-        await setValueWithDelay('#id_metodo', '3', 100);    // Suporte Online
-        await setValueWithDelay('#id_status', '1', 100);    // Encerrada
-
-        // Preenche conteúdo e data
-        $('#id_conteudo').val(clipboardText); // Pode usar o texto original ou upperCaseText
-        $('#id_data_agendamento').val(getCurrentFormattedDateTime());
         
-        // Garante que a O.S. esteja sempre desmarcada
+        // 3. Setor, Método e Status (padrão para Suporte Técnico)
+        await setValueWithDelay('#id_setor', '2', 100);    // Suporte Tecnico / Financeiro (usa o mesmo ID)
+        await setValueWithDelay('#id_metodo', '3', 100);   // Suporte Online
+        await setValueWithDelay('#id_status', '1', 100);   // Encerrada
+        
+        // 4. Data de Agendamento e Checkbox "Gerar O.S."
+        $('#id_data_agendamento').val(getCurrentFormattedDateTime());
         $('#id_os').prop('checked', false);
 
-        // --- 2. TRATAMENTO DOS CASOS ESPECIAIS ---
-
-        // Pausa estratégica APÓS definir o setor, caso o campo "tipo" dependa dele
-        await wait(200); 
-
+        // 5. Conteúdo da Ocorrência
+        $('#id_conteudo').val(upperCaseText);
+        
+        // --- LÓGICA ESPECÍFICA PARA O TIPO DE OCORRÊNCIA ---
         const isComprovante = upperCaseText.includes('ENVIO DE COMPROVANTE');
         const isPromessa = upperCaseText.includes('PROMESSA DE PAGAMENTO');
-        const isLentidao = upperCaseText.includes('CLIENTE RELATA LENTIDÃO');
-
-        let tipoOcorrencia = ''; // Por padrão, o tipo fica vazio
 
         if (isComprovante) {
-            tipoOcorrencia = '42'; // Financeiro- Comunicação de pagamento
-        }
-
-        else if (isPromessa) {
-            tipoOcorrencia = '41'; // Financeiro - Promessa de pagamento
-        }
+            console.log('[Extensão ATI] Detectado fluxo de "Envio de Comprovante". Alterando tipo...');
+            await wait(500); // Pausa estratégica para o SGP carregar os tipos do setor
+            await setValueWithDelay('#id_tipo', '42', 100); // Financeiro - Comunicação de pagamento
         
-        else if (isLentidao) {
-            tipoOcorrencia = '3'; // Suporte - Acesso lento
-        }
-        // Se um tipo foi definido, preenche o campo
-        if (tipoOcorrencia) {
-            await setValueWithDelay('#id_tipo', tipoOcorrencia, 100);
+        } else if (isPromessa) {
+            console.log('[Extensão ATI] Detectado fluxo de "Promessa de Pagamento". Alterando tipo...');
+            await wait(500); // Pausa estratégica
+            await setValueWithDelay('#id_tipo', '41', 100); // Financeiro - Promessa de pagamento
+        
+        } else {
+            console.log('[Extensão ATI] Fluxo padrão de O.S. (nenhum tipo específico será selecionado).');
+            if (!clipboardText.includes(' | ')) {
+                alert('O texto na área de transferência não parece ser uma O.S. válida.');
+            }
         }
 
         console.log('[Extensão ATI] Preenchimento concluído!');
@@ -134,9 +111,6 @@ async function fillSgpForm() {
     }
 }
 
-/**
- * Cria e injeta o seletor de atendente na página.
- */
 function injectAttendantSelector() {
     if (document.getElementById('attendant-selector-container')) return;
 
@@ -165,7 +139,6 @@ function injectAttendantSelector() {
     if (savedAttendant) {
         select.value = savedAttendant;
     } else {
-
         localStorage.setItem('sgp_selected_attendant', select.value);
     }
 
@@ -179,9 +152,6 @@ function injectAttendantSelector() {
     document.getElementById('header-right').prepend(container);
 }
 
-/**
- * Adiciona o botão de preenchimento automático na página.
- */
 function injectSgpButton() {
     if (document.getElementById('fill-from-chatmix-btn')) return;
     
@@ -198,7 +168,7 @@ function injectSgpButton() {
     }
 }
 
-// Inicia o script
+// Inicia o script injetando apenas os elementos manuais
 const readyCheckInterval = setInterval(() => {
     if (document.getElementById('btacao') && document.getElementById('header-right')) {
         clearInterval(readyCheckInterval);

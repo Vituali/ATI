@@ -1,0 +1,12 @@
+1. criar um sistema para automatizar o processo do sgp (em andamento. metade feito)
+2. arrumar a parte da extensão que ao entrar e fazer o aditivo se clickar fora da pagina ele recarrega a pagina e perde os dados.
+3. criar um sistema para justificativa de ponto e etc automatico baseado no nome.
+4. criar melhorar o readme.md
+5. criar um sistema de sugestão de texto baseado na leitura do chat.
+6. melhorar o sistema de criador de o.s permitindo escolher datas e extrair melhor os dados do cliente. (requer vinculo com o sgp).
+
+
+//futuro//
+1. transformar o html em react para melhor dinamica.
+2. transformar o banco de dados no firebase para dockerfile.
+3. revisar o codigo para comentar melhor para melhor localização.

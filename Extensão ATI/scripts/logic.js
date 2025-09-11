@@ -38,7 +38,16 @@ async function loadTemplatesFromStorage() {
     });
   });
 }
-
+/**
+ * [NOVO]
+ * Armazena o CPF/CNPJ e o texto da O.S. no storage local para
+ * que o background script possa acessá-los e realizar a busca no SGP.
+ * @param {string} cpfCnpj - O CPF ou CNPJ do cliente.
+ * @param {string} osText - O texto completo da O.S. a ser colado.
+ */
+async function storeDataForSgp(cpfCnpj, osText) {
+    await chrome.storage.local.set({ cpfCnpj, osText });
+}
 function findActiveAttendanceElement() {
     // CORREÇÃO: O seletor agora busca por CADA painel de atendimento individual
     // que tenha o atributo 'data-message_to'.
@@ -253,6 +262,22 @@ function extractClientChatAfterAssignment(chatContainerElement) {
         }
     }
     return clientTexts;
+}
+/**
+ * [NOVO] Armazena os dados necessários para o background script abrir o SGP.
+ * @param {string} cpfCnpj O CPF ou CNPJ do cliente.
+ * @param {string} osText O texto da Ordem de Serviço para o clipboard do SGP.
+ */
+async function storeDataForSgp(cpfCnpj, osText) {
+  try {
+    await chrome.storage.local.set({
+      cpfCnpj: cpfCnpj,
+      osText: osText
+    });
+    console.log("[Extensão ATI] Dados para o SGP salvos no storage local.");
+  } catch (error) {
+    console.error("[Extensão ATI] Erro ao salvar dados para o SGP.", error);
+  }
 }
 
 function injectCSS(filePath) {

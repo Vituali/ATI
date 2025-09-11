@@ -52,7 +52,8 @@ export function initializeTheme() {
         document.body.classList.toggle('no-neon', !settings.neonBorders);
 
         const contrastColorForIcons = getLuminance(settings.iconColor) > 0.5 ? '#000000' : '#FFFFFF';
-        const contrastColorForButtons = getLuminance(settings.borderColor) > 0.5 ? '#111111' : '#FFFFFF';
+        const contrastColorForButtons = getLuminance(settings.borderColor) > 0.5 ?
+            '#111111' : '#FFFFFF';
         
         elements.styleTag.textContent = `
             :root {
@@ -69,6 +70,13 @@ export function initializeTheme() {
                 color: ${contrastColorForIcons} !important;
             }
         `;
+
+        // --- ADIÇÃO IMPORTANTE ---
+        // Envia as configurações de tema para a extensão através da ponte.
+        window.postMessage({
+            type: "ATI_THEME_UPDATE",
+            themeSettings: settings
+        }, "*");
     };
 
     const loadSettings = () => {

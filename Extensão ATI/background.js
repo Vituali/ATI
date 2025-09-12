@@ -60,7 +60,7 @@ async function searchClientInSgp() {
         if (data && data.length > 0) {
             const client = data[0];
             const clientId = client.id;
-            const clientPageUrl = `https://sgp.atiinternet.com.br/admin/cliente/${clientId}/edit`;
+            const clientPageUrl = `https://sgp.atiinternet.com.br/admin/cliente/${clientId}/contratos`;
             
             // A linha que preparava o preenchimento automático foi removida daqui.
             

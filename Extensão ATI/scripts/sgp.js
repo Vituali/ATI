@@ -85,6 +85,7 @@ async function fillSgpForm() {
         // --- LÓGICA ESPECÍFICA PARA O TIPO DE OCORRÊNCIA ---
         const isComprovante = upperCaseText.includes('ENVIO DE COMPROVANTE');
         const isPromessa = upperCaseText.includes('PROMESSA DE PAGAMENTO');
+        const isSemAcesso = upperCaseText.includes('CLIENTE SEM ACESSO')
 
         if (isComprovante) {
             console.log('[Extensão ATI] Detectado fluxo de "Envio de Comprovante". Alterando tipo...');
@@ -96,6 +97,11 @@ async function fillSgpForm() {
             await wait(500); // Pausa estratégica
             await setValueWithDelay('#id_tipo', '41', 100); // Financeiro - Promessa de pagamento
         
+        } else if (isSemAcesso) {
+            console.log('[Extensão ATI] Detectado fluxo de "CLIENTE SEM ACESSO". Alterando tipo...');
+            await wait(500);
+            await setValueWithDelay('#id_tipo', 1);
+            
         } else {
             console.log('[Extensão ATI] Fluxo padrão de O.S. (nenhum tipo específico será selecionado).');
             if (!clipboardText.includes(' | ')) {

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ATI - Auxiliar de Atendimentos",
-  "version": "6.5",
+  "version": "1.0",
   "description": "Copia dados, sugere e cria Ordens de Serviço a partir do chat.",
   "permissions": [
     "storage",

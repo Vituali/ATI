@@ -133,6 +133,23 @@ async function updateUserData(username, field, value) {
     const userFieldRef = ref(db, `atendentes/${username}/${field}`);
     return set(userFieldRef, value);
 }
+export async function loadOsTemplatesForAttendant(attendant) {
+    if (!attendant || !auth.currentUser) return [];
+    // O novo caminho no banco de dados, separado das respostas
+    const dbRef = ref(db, `modelos_os/${attendant}`);
+    const snapshot = await get(dbRef);
+    return snapshot.exists() ? snapshot.val() : [];
+}
+
+export async function saveOsTemplatesForAttendant(attendant, data) {
+    if (!attendant || !auth.currentUser) {
+        console.error("Tentativa de salvar modelos de O.S. sem um atendente definido.");
+        return;
+    }
+    // O novo caminho no banco de dados
+    const dbRef = ref(db, `modelos_os/${attendant}`);
+    await set(dbRef, data);
+}
 
 export const updateUserRole = (username, newRole) => updateUserData(username, 'role', newRole);
 export const updateUserStatus = (username, newStatus) => updateUserData(username, 'status', newStatus);

@@ -2,6 +2,7 @@ import { initializeUI, showSection, updateGreeting, showPopup } from './ui.js';
 import {
     initializeFirebase,
     loadDataForAttendant,
+    loadOsTemplatesForAttendant,
     loadAtendentes,
     loginUser,
     loginWithUsername,
@@ -79,15 +80,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         chatLoader.style.display = 'flex';
         try {
-            // 1. Carrega TODOS os dados (respostas e O.S.)
-            const data = await loadDataForAttendant(attendantKey);
-
-            // 2. REMOVA A LINHA QUE CRIA a constante 'chatResponses'
-            // const chatResponses = data.filter(item => item.category === 'quick_reply'); // <-- APAGUE ESTA LINHA
-
-            // 3. Passe a lista COMPLETA 'data' para ambos os módulos
-            chatModule.setResponses(data); // <-- ALTERE DE VOLTA PARA 'data'
-            osEditorModule.setTemplates(data, attendantKey);
+            const chatData = await loadDataForAttendant(attendantKey);
+            const osData = await loadOsTemplatesForAttendant(attendantKey);
+            chatModule.setResponses(chatData);
+            osEditorModule.setTemplates(osData, attendantKey);
 
         } catch (error) {
             console.error("Erro ao carregar dados do chat:", error);

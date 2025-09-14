@@ -1,7 +1,7 @@
 // assets/js/os-editor.js
 
 import { showPopup } from './ui.js';
-import { saveDataForAttendant, db } from './firebase.js'; // Precisaremos do 'db' para buscar o modelo mestre
+import { loadOsTemplatesForAttendant, saveOsTemplatesForAttendant, db } from './firebase.js';
 import { ref, get } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
 // Variável para guardar todos os templates do usuário (O.S. e Quick Replies)
@@ -24,7 +24,7 @@ const elements = {
 };
 
 function getOsTemplates() {
-    return allUserTemplates.filter(t => t.category !== 'quick_reply');
+    return allUserTemplates;
 }
 
 function renderList() {
@@ -95,8 +95,8 @@ function resetForm() {
 
 async function saveAllTemplates() {
     if (!currentUsername) return;
-    await saveDataForAttendant(currentUsername, allUserTemplates);
-    renderList(); // Re-renderiza a lista para refletir as mudanças
+    await saveOsTemplatesForAttendant(currentUsername, allUserTemplates);
+    renderList();
 }
 
 async function handleFormSubmit(e) {
@@ -115,18 +115,37 @@ async function handleFormSubmit(e) {
 
     const editIndex = elements.editIndex.value;
 
-    if (editIndex !== '') { // Editando um existente
-        const template = allUserTemplates[parseInt(editIndex)];
-        Object.assign(template, data);
-    } else { // Criando um novo
-        // Garante que não é confundido com uma resposta rápida
-        if (data.category === 'quick_reply') data.category = 'Geral'; 
-        allUserTemplates.push(data);
-    }
+    try {
+        if (editIndex !== '') { // Editando um existente
+            console.log(`Modo Edição: Modificando item no índice ${editIndex}`);
+            const template = allUserTemplates[parseInt(editIndex)];
+            Object.assign(template, data);
+        } else { // Criando um novo
+            console.log("--- DEBUG: Entrou no bloco de ADIÇÃO ---");
+            console.log("1. Novo item a ser adicionado:", data);
+            
+            // --- ESTA É A MUDANÇA FUNDAMENTAL ---
+            // Em vez de: allUserTemplates.push(data);
+            // Criamos um NOVO array usando o spread operator (...)
+            allUserTemplates = [...allUserTemplates, data];
+            // -----------------------------------------
 
-    await saveAllTemplates();
-    showPopup('Modelo salvo com sucesso!', 'success');
-    resetForm();
+            console.log("2. Array foi RECONSTRUÍDO. Novo total de itens:", allUserTemplates.length);
+            console.log("3. Verificando o último item no novo array:", allUserTemplates[allUserTemplates.length - 1]);
+        }
+
+        console.log("Enviando para o Firebase. Total de itens:", allUserTemplates.length);
+        await saveAllTemplates();
+        showPopup('Modelo salvo com sucesso!', 'success');
+
+    } catch (error) {
+        showPopup('Erro ao salvar o modelo.', 'error');
+        console.error("Falha em handleFormSubmit:", error);
+
+    } finally {
+        // Garante que o formulário seja limpo após a operação
+        resetForm();
+    }
 }
 
 async function handleDelete() {
@@ -150,11 +169,8 @@ async function resetToDefaults() {
         const masterRef = ref(db, 'os_templates_master');
         const snapshot = await get(masterRef);
         if (snapshot.exists()) {
-            const masterTemplates = snapshot.val();
-            // Remove todos os modelos de O.S. antigos
-            const quickReplies = allUserTemplates.filter(t => t.category === 'quick_reply');
-            // Cria a nova lista com as respostas rápidas + os modelos mestre
-            allUserTemplates = [...quickReplies, ...masterTemplates];
+            // Simplesmente substitui os modelos de O.S. pelos modelos mestre.
+            allUserTemplates = snapshot.val(); 
             await saveAllTemplates();
             showPopup('Modelos de O.S. resetados para o padrão!', 'success');
         } else {
@@ -165,7 +181,6 @@ async function resetToDefaults() {
         console.error("Erro ao resetar:", error);
     }
 }
-
 
 export function initializeOsEditor() {
     elements.form.addEventListener('submit', handleFormSubmit);

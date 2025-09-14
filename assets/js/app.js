@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- 1. INICIALIZAÇÃO E SELETORES ---
     initializeUI();
     initializeTheme();
-    initializeOsEditor();
+    initializeOsEditor(); // <-- CHAMADA DE VOLTA AO LOCAL CORRETO
     initializeConversor();
     initializeFirebase();
     const chatModule = initializeChat();
@@ -46,52 +46,43 @@ document.addEventListener('DOMContentLoaded', async () => {
     const profileUsernameSpan = document.getElementById('profileUsername');
 
     // --- 2. DEFINIÇÃO DAS FUNÇÕES PRINCIPAIS ---
-
     const startApp = async (user, allAtendentes) => {
         const attendantKey = Object.keys(allAtendentes).find(key => allAtendentes[key].uid === user.uid);
-        
         if (!attendantKey) {
             showPopup("Não foi possível carregar os dados do seu perfil. Por favor, faça o login novamente.", 'error');
             await logoutUser();
             return;
         }
-
         currentUsername = attendantKey;
         authOverlay.style.display = 'none';
         mainContent.style.display = 'flex';
         sidebar.style.display = 'flex';
-        
         const attendantData = allAtendentes[attendantKey];
         if (attendantData.status === 'inativo') {
             showPopup("Sua conta foi desativada.", 'error');
             await logoutUser();
             return;
         }
-
         if (atendenteToggleBtn) {
             const atendenteTextSpan = atendenteToggleBtn.querySelector('.text');
             if (atendenteTextSpan) atendenteTextSpan.textContent = attendantKey.charAt(0).toUpperCase() + attendantKey.slice(1);
         }
         localStorage.setItem("atendenteAtual", attendantKey);
-        
         if (newFullNameInput) newFullNameInput.value = attendantData.nomeCompleto;
         if (profileUsernameSpan) profileUsernameSpan.textContent = attendantKey;
         if (adminLinkContainer) adminLinkContainer.style.display = attendantData.role === 'admin' ? 'block' : 'none';
-
         chatLoader.style.display = 'flex';
         try {
             const chatData = await loadDataForAttendant(attendantKey);
             const osData = await loadOsTemplatesForAttendant(attendantKey);
             chatModule.setResponses(chatData);
             osEditorModule.setTemplates(osData, attendantKey);
-
         } catch (error) {
-            console.error("Erro ao carregar dados do chat:", error);
+            console.error("Erro ao carregar dados:", error);
             showPopup("Não foi possível carregar suas respostas.", "error");
         } finally {
             chatLoader.style.display = 'none';
         }
-
         updateGreeting(attendantKey);
         setInterval(() => updateGreeting(currentUsername), 60000);
     };
@@ -120,10 +111,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // --- 4. EVENT LISTENERS DA INTERFACE ---
+
+    // Listener para os botões da barra lateral (versão simples e correta)
+    document.querySelectorAll('.sidebar-button[data-section]').forEach(button => {
+        button.addEventListener('click', () => {
+            showSection(button.dataset.section, currentUsername);
+        });
+    });
+
     if (atendenteToggleBtn) atendenteToggleBtn.addEventListener('click', () => { profileModal.style.display = 'flex'; });
     if (modalCloseProfileBtn) modalCloseProfileBtn.addEventListener('click', () => { profileModal.style.display = 'none'; });
     if (modalLogoutBtn) modalLogoutBtn.addEventListener('click', async () => { try { await logoutUser(); profileModal.style.display = 'none'; } catch (error) { showPopup("Erro ao fazer logout: " + error.message, 'error'); } });
-
     if (updateFullNameForm) {
         updateFullNameForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -139,7 +137,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     }
-
     if (updatePasswordForm) {
         updatePasswordForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -155,8 +152,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     }
-
-    if(loginForm) {
+    if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const identifier = document.getElementById('loginIdentifier').value;
@@ -186,45 +182,30 @@ document.addEventListener('DOMContentLoaded', async () => {
                 password: document.getElementById('registerPassword').value,
             };
             if (!userDetails.username || !userDetails.fullName) return showPopup("Todos os campos são obrigatórios.", 'error');
-            
             try {
-                // CORREÇÃO DO FLUXO PÓS-REGISTRO
                 const { userCredential, sanitizedUsername, newAtendenteData } = await createUserAccount(userDetails);
-                
-                // Em vez de esperar o listener, iniciamos o app manualmente com os dados que acabamos de criar.
-                // Isso evita a "tela presa" e a "condição de corrida".
                 const allAtendentes = await loadAtendentes();
                 allAtendentes[sanitizedUsername] = newAtendenteData;
                 await startApp(userCredential.user, allAtendentes);
-                
             } catch (error) {
                 let friendlyMessage = "Ocorreu um erro desconhecido.";
                 if (error.code === 'auth/email-already-in-use') friendlyMessage = "Este e-mail já está cadastrado.";
                 else if (error.code === 'auth/weak-password') friendlyMessage = "A senha é muito fraca.";
                 else if (error.message.includes('Este nome de usuário já pode estar em uso')) friendlyMessage = "Este nome de usuário já está em uso.";
-                
                 showPopup("Erro no registro: " + friendlyMessage, 'error');
             }
         });
     }
-
-    document.querySelectorAll('.sidebar-button[data-section]').forEach(button => {
-        button.addEventListener('click', () => {
-            showSection(button.dataset.section, currentUsername); 
-        });
-    });
     const showRegisterBtn = document.getElementById('show-register');
     if (showRegisterBtn) showRegisterBtn.addEventListener('click', (e) => { e.preventDefault(); loginForm.style.display = 'none'; registerForm.style.display = 'block'; });
     const showLoginBtn = document.getElementById('show-login');
     if (showLoginBtn) showLoginBtn.addEventListener('click', (e) => { e.preventDefault(); registerForm.style.display = 'none'; loginForm.style.display = 'block'; });
-
     document.addEventListener('click', (e) => {
         if (profileModal && atendenteToggleBtn && !atendenteToggleBtn.contains(e.target) && !profileModal.contains(e.target)) {
             profileModal.style.display = 'none';
         }
     });
-        document.addEventListener('click', (e) => {
-        // Verifica se o elemento clicado (ou um parente próximo) tem a classe 'copiable'
+    document.addEventListener('click', (e) => {
         const copiableElement = e.target.closest('.copiable');
         if (copiableElement) {
             navigator.clipboard.writeText(copiableElement.textContent).then(() => {

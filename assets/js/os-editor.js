@@ -1,43 +1,24 @@
-// assets/js/os-editor.js
+// assets/js/os-editor.js - VERSÃO CORRIGIDA E FINAL
 
 import { showPopup } from './ui.js';
-import { loadOsTemplatesForAttendant, saveOsTemplatesForAttendant, db } from './firebase.js';
+import { saveOsTemplatesForAttendant, db } from './firebase.js'; 
 import { ref, get } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
-// Variável para guardar todos os templates do usuário (O.S. e Quick Replies)
+let elements = {};
 let allUserTemplates = []; 
 let currentUsername = '';
 
-const elements = {
-    list: document.getElementById('os-list'),
-    form: document.getElementById('os-form'),
-    formTitle: document.getElementById('os-form-title'),
-    editIndex: document.getElementById('os-edit-index'),
-    title: document.getElementById('os-title'),
-    text: document.getElementById('os-text'),
-    category: document.getElementById('os-category'),
-    keywords: document.getElementById('os-keywords'),
-    saveBtn: document.getElementById('os-save-btn'),
-    newBtn: document.getElementById('os-new-btn'),
-    deleteBtn: document.getElementById('os-delete-btn'),
-    resetBtn: document.getElementById('os-reset-btn'),
-};
-
-function getOsTemplates() {
-    return allUserTemplates;
-}
-
 function renderList() {
-    const osTemplates = getOsTemplates();
+    // Como agora só temos modelos de O.S., não precisamos mais filtrar.
+    const osTemplates = allUserTemplates;
     elements.list.innerHTML = '';
     if (osTemplates.length === 0) {
         elements.list.innerHTML = '<p>Nenhum modelo de O.S. encontrado.</p>';
         return;
     }
 
-    // 1. Agrupa os templates por categoria usando reduce
     const groupedByCategory = osTemplates.reduce((acc, template) => {
-        const category = template.category || 'Geral'; // Usa 'Geral' se não houver categoria
+        const category = template.category || 'Geral';
         if (!acc[category]) {
             acc[category] = [];
         }
@@ -45,15 +26,12 @@ function renderList() {
         return acc;
     }, {});
 
-    // 2. Itera sobre as categorias agrupadas para criar a lista
     for (const category in groupedByCategory) {
-        // Cria o título da categoria (ex: <h3>Financeiro</h3>)
         const categoryHeader = document.createElement('div');
         categoryHeader.className = 'os-category-header';
         categoryHeader.textContent = category;
         elements.list.appendChild(categoryHeader);
 
-        // Itera sobre os templates dentro de cada categoria
         groupedByCategory[category].forEach(template => {
             const originalIndex = allUserTemplates.indexOf(template);
             const item = document.createElement('div');
@@ -86,7 +64,12 @@ function fillFormForEdit(index) {
 }
 
 function resetForm() {
-    elements.form.reset();
+    // --- CORREÇÃO FINAL: Reset manual e explícito dos campos ---
+    elements.title.value = '';
+    elements.text.value = '';
+    elements.keywords.value = '';
+    elements.category.selectedIndex = 0;
+
     elements.formTitle.textContent = 'Crie um Novo Modelo';
     elements.editIndex.value = '';
     elements.deleteBtn.style.display = 'none';
@@ -95,6 +78,7 @@ function resetForm() {
 
 async function saveAllTemplates() {
     if (!currentUsername) return;
+    // Chama a função dedicada para salvar os modelos de O.S.
     await saveOsTemplatesForAttendant(currentUsername, allUserTemplates);
     renderList();
 }
@@ -116,25 +100,13 @@ async function handleFormSubmit(e) {
     const editIndex = elements.editIndex.value;
 
     try {
-        if (editIndex !== '') { // Editando um existente
-            console.log(`Modo Edição: Modificando item no índice ${editIndex}`);
+        if (editIndex !== '') { // Editando
             const template = allUserTemplates[parseInt(editIndex)];
             Object.assign(template, data);
-        } else { // Criando um novo
-            console.log("--- DEBUG: Entrou no bloco de ADIÇÃO ---");
-            console.log("1. Novo item a ser adicionado:", data);
-            
-            // --- ESTA É A MUDANÇA FUNDAMENTAL ---
-            // Em vez de: allUserTemplates.push(data);
-            // Criamos um NOVO array usando o spread operator (...)
+        } else { // Criando um novo (com a correção de imutabilidade)
             allUserTemplates = [...allUserTemplates, data];
-            // -----------------------------------------
-
-            console.log("2. Array foi RECONSTRUÍDO. Novo total de itens:", allUserTemplates.length);
-            console.log("3. Verificando o último item no novo array:", allUserTemplates[allUserTemplates.length - 1]);
         }
 
-        console.log("Enviando para o Firebase. Total de itens:", allUserTemplates.length);
         await saveAllTemplates();
         showPopup('Modelo salvo com sucesso!', 'success');
 
@@ -143,7 +115,7 @@ async function handleFormSubmit(e) {
         console.error("Falha em handleFormSubmit:", error);
 
     } finally {
-        // Garante que o formulário seja limpo após a operação
+        // O finally garante que o formulário sempre será limpo.
         resetForm();
     }
 }
@@ -169,7 +141,6 @@ async function resetToDefaults() {
         const masterRef = ref(db, 'os_templates_master');
         const snapshot = await get(masterRef);
         if (snapshot.exists()) {
-            // Simplesmente substitui os modelos de O.S. pelos modelos mestre.
             allUserTemplates = snapshot.val(); 
             await saveAllTemplates();
             showPopup('Modelos de O.S. resetados para o padrão!', 'success');
@@ -183,16 +154,32 @@ async function resetToDefaults() {
 }
 
 export function initializeOsEditor() {
+    // A CORREÇÃO PRINCIPAL: Preenchemos 'elements' aqui, depois que a página carregou.
+    elements = {
+        list: document.getElementById('os-list'),
+        form: document.getElementById('os-form'),
+        formTitle: document.getElementById('os-form-title'),
+        editIndex: document.getElementById('os-edit-index'),
+        title: document.getElementById('os-title'),
+        text: document.getElementById('os-text'),
+        category: document.getElementById('os-category'),
+        keywords: document.getElementById('os-keywords'),
+        saveBtn: document.getElementById('os-save-btn'),
+        newBtn: document.getElementById('os-new-btn'),
+        deleteBtn: document.getElementById('os-delete-btn'),
+        resetBtn: document.getElementById('os-reset-btn'),
+    };
+
+    // E então adicionamos os eventos
     elements.form.addEventListener('submit', handleFormSubmit);
     elements.newBtn.addEventListener('click', resetForm);
     elements.deleteBtn.addEventListener('click', handleDelete);
     elements.resetBtn.addEventListener('click', resetToDefaults);
 }
 
-// API pública para o app.js
 export const osEditorModule = {
     setTemplates: (templates, username) => {
-        allUserTemplates = templates;
+        allUserTemplates = templates || []; // Garante que seja um array
         currentUsername = username;
         renderList();
         resetForm();

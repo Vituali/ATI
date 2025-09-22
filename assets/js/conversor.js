@@ -84,7 +84,7 @@ function triggerDistanceCalculation() {
 function handleRouteResponse(result, status) {
     if (status === 'OK') {
         const route = result.routes[0].legs[0];
-        elements.distanceResult.innerHTML = `Distância: <strong>${route.distance.text}</strong> | Tempo: <strong>${route.duration.text}</strong>`;
+        elements.distanceResult.innerHTML = `Distância: <strong>${route.distance.text}</strong>`;
         elements.distanceResult.style.display = 'block';
     } else {
         console.warn('Cálculo de rota automático falhou:', status);

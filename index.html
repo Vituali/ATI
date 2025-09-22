@@ -11,15 +11,19 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    
+    <!-- Script do Google Maps com async/defer para melhor performance -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5wO0x-7NFmh6waMKzWzRew4ezfYOmYBI&libraries=places,routes&callback=initMap" async defer></script>
 </head>
 
 <body class="dark-mode">
 
     <div id="popup" class="popup"></div>
     
+    <!-- ========= ESTRUTURA DE AUTENTICAÇÃO ========= -->
     <div id="auth-overlay" class="modal-overlay" style="display: none;">
         <div class="modal-content card" style="max-width: 450px;">
-                    <form id="login-form">
+            <form id="login-form">
                 <h3>Login - ATI</h3>
                 <div class="modal-form-group">
                     <label for="loginIdentifier">Usuário ou E-mail:</label>
@@ -34,7 +38,7 @@
                 </div>
                 <p class="auth-toggle-link">Ainda não tem conta? <a href="#" id="show-register">Registre-se</a></p>
             </form>
-                    <form id="register-form" style="display: none;">
+            <form id="register-form" style="display: none;">
                 <h3>Registro - Novo Atendente</h3>
                 <div class="modal-form-group">
                     <label for="registerUsername">Nome de Usuário (Login):</label>
@@ -59,404 +63,226 @@
             </form>
         </div>
     </div>
-                    <div class="chatbox" style="display: none;">
-    <div id="sidebar" class="sidebar">
-        <button id="toggleSidebarBtn" class="toggle-sidebar" aria-label="Abrir ou fechar menu lateral">☰</button>
-        <button class="sidebar-button active" data-section="chat"><span class="icon">🗨️</span><span class="text">Chat</span></button>
-        <button class="sidebar-button" data-section="os"><span class="icon">📝</span><span class="text">Modelos O.S.</span></button>
-        <button class="sidebar-button" data-section="conversor"><span class="icon">📄</span><span class="text">Conversor</span></button>
-        <button class="sidebar-button" data-section="senhas"><span class="icon">🔑</span><span class="text">Senhas</span></button>
-        <a href="https://chromewebstore.google.com/detail/ati-auxiliar-de-atendimen/mlgmmjacfbnkolflbankfiackpcnmckl" class="sidebar-button" target="_blank" rel="noopener noreferrer">
-            <span class="icon">🚀</span>
-            <span class="text">Extensão</span>
-        </a>
-                    <div class="sidebar-footer">
+            
+    <!-- ========= ESTRUTURA PRINCIPAL DA APLICAÇÃO ========= -->
+    <div class="chatbox" style="display: none;">
+        <div id="sidebar" class="sidebar">
+            <button id="toggleSidebarBtn" class="toggle-sidebar" aria-label="Abrir ou fechar menu lateral">☰</button>
+            <button class="sidebar-button active" data-section="chat"><span class="icon">🗨️</span><span class="text">Chat</span></button>
+            <button class="sidebar-button" data-section="os"><span class="icon">📝</span><span class="text">Modelos O.S.</span></button>
+            <button class="sidebar-button" data-section="conversor"><span class="icon">📄</span><span class="text">Conversor</span></button>
+            <button class="sidebar-button" data-section="senhas"><span class="icon">🔑</span><span class="text">Senhas</span></button>
+            <a href="https://chromewebstore.google.com/detail/ati-auxiliar-de-atendimen/mlgmmjacfbnkolflbankfiackpcnmckl" class="sidebar-button" target="_blank" rel="noopener noreferrer">
+                <span class="icon">🚀</span>
+                <span class="text">Extensão</span>
+            </a>
+            <div class="sidebar-footer">
                 <button id="atendenteToggleBtn" class="bottom-toggle" data-tooltip="Abrir perfil do usuário">
                     <span class="icon">👤</span>
                     <span class="text">Perfil</span>
                 </button>
-                    <button id="darkModeToggleBtn" class="bottom-toggle" data-tooltip="Personalizar interface">
+                <button id="darkModeToggleBtn" class="bottom-toggle" data-tooltip="Personalizar interface">
                     <span class="icon">⚙️</span><span class="text">Personalizar</span>
                 </button>
             </div>
         </div>
-                    <div class="content">
+        
+        <div class="content">
 
+            <!-- Seção de Chat -->
             <div id="chatSection">
                 <h1 id="saudacaoChat"></h1>
                 <h2>🤖 Automatizador de Chat Humanizado 🤖</h2>
                 <div class="card">
-                    <div class="card-loader" id="chatLoader" style="display: none;">
-                        <div class="loader"></div>
-                    </div>
-
+                    <div class="card-loader" id="chatLoader" style="display: none;"><div class="loader"></div></div>
                     <div class="grupo">
                         <div id="custom-select" class="custom-select">
                             <div class="select-selected" id="select-display">Selecione uma resposta</div>
-                            <div class="select-items select-hide" id="select-items">
-                                </div>
+                            <div class="select-items select-hide" id="select-items"></div>
                         </div>
-                    </div>                 
-                    
+                    </div>                    
                     <div id="titleContainer" class="title-container" style="display: none;">
                         <input type="text" id="titulo" placeholder="Título da resposta">
                         <button id="saveTitleBtn" class="button">Salvar Título</button>
                     </div>
-                    
                     <div class="grupo">
                         <label for="resposta">Mensagem:</label>
                         <textarea id="resposta" rows="4"></textarea>
                     </div>
                     <div class="controls">
                         <button id="copyBtn" class="button copy-btn" data-tooltip="Copiar mensagem">📋 Copiar</button>
-                        <button id="editTitleBtn" class="button" data-tooltip="Editar título">✏️ Editar Título</button>
+                        <button id="editTitleBtn" class="button" data-tooltip="Editar título">✏️ Editar</button>
                         <button id="saveEditBtn" class="button" data-tooltip="Salvar mensagem">💾 Salvar</button>
                         <button id="deleteBtn" class="button" data-tooltip="Apagar resposta">🗑️ Apagar</button>
                         <button id="addBtn" class="button" data-tooltip="Adicionar nova resposta">➕ Adicionar</button>
                     </div>
-                    
                     <p id="saudacaoDespedidaText">Use [SAUDACAO] e [DESPEDIDA] para textos dinâmicos.</p>
                 </div>
             </div>
+            
+            <!-- Seção de Modelos de O.S. -->
             <div id="osSection" style="display: none;">
-                    <h1>Editor de Modelos de O.S.</h1>
-                    <h2>Crie e gerencie os templates para a criação de Ordens de Serviço.</h2>
-
-    <div class="os-editor-layout">
-        <div class="os-list-container card">
-            <h3>Seus Modelos</h3>
-            <div id="os-list" class="os-list">
+                <h1>Editor de Modelos de O.S.</h1>
+                <h2>Crie e gerencie os templates para a criação de Ordens de Serviço.</h2>
+                <div class="os-editor-layout">
+                    <div class="os-list-container card">
+                        <h3>Seus Modelos</h3>
+                        <div id="os-list" class="os-list"></div>
+                        <button id="os-reset-btn" class="button back" style="width: 100%; margin-top: 15px;">Resetar para Padrão</button>
+                    </div>
+                    <div class="os-form-container card">
+                        <form id="os-form">
+                            <input type="hidden" id="os-edit-index">
+                            <h3 id="os-form-title">Selecione ou crie um modelo</h3>
+                            <div class="grupo"><label for="os-title">Título do Modelo:</label><input type="text" id="os-title" placeholder="Ex: Sem Conexão" required></div>
+                            <div class="grupo"><label for="os-text">Texto da O.S.:</label><textarea id="os-text" rows="5" placeholder="Ex: CLIENTE SEM ACESSO..."></textarea></div>
+                            <div class="grupo"><label for="os-category">Categoria:</label><select id="os-category"><option value="Suporte">Suporte</option><option value="Financeiro">Financeiro</option><option value="Comercial">Comercial</option><option value="Geral">Geral</option></select></div>
+                            <div class="grupo"><label for="os-keywords">Palavras-chave (separadas por vírgula):</label><input type="text" id="os-keywords" placeholder="sem conexao, nao funciona, caiu"></div>
+                            <div class="controls"><button type="submit" id="os-save-btn" class="button">Salvar</button><button type="button" id="os-new-btn" class="button">Limpar</button><button type="button" id="os-delete-btn" class="button back" style="display: none;">Apagar</button></div>
+                        </form>
+                    </div>
                 </div>
+            </div>
 
-             <button id="os-reset-btn" class="button back" style="width: 100%; margin-top: 15px;">Resetar para Padrão</button>
-        </div>
-
-        <div class="os-form-container card">
-            <form id="os-form">
-                <input type="hidden" id="os-edit-index">
-                <h3 id="os-form-title">Selecione ou crie um modelo</h3>
-
-                <div class="grupo">
-                    <label for="os-title">Título do Modelo:</label>
-                    <input type="text" id="os-title" placeholder="Ex: Sem Conexão" required>
-                </div>
-
-                <div class="grupo">
-                    <label for="os-text">Texto da O.S.:</label>
-                    <textarea id="os-text" rows="5" placeholder="Ex: CLIENTE SEM ACESSO. REALIZADO OS PROCEDIMENTOS..."></textarea>
-                </div>
-
-                <div class="grupo">
-                    <label for="os-category">Categoria:</label>
-                    <select id="os-category">
-                        <option value="Suporte">Suporte</option>
-                        <option value="Financeiro">Financeiro</option>
-                        <option value="Comercial">Comercial</option>
-                        <option value="Geral">Geral</option>
-                        </select>
-                </div>
-
-                <div class="grupo">
-                    <label for="os-keywords">Palavras-chave (separadas por vírgula):</label>
-                    <input type="text" id="os-keywords" placeholder="sem conexao, nao funciona, caiu">
-                </div>
-
-                <div class="controls">
-                    <button type="submit" id="os-save-btn" class="button">Salvar</button>
-                    <button type="button" id="os-new-btn" class="button">Limpar</button>
-                    <button type="button" id="os-delete-btn" class="button back" style="display: none;">Apagar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-                    <div id="conversorSection" style="display: none;">
+            <!-- Seção do Conversor de Aditivo -->
+            <div id="conversorSection" style="display: none;">
                 <h1 id="saudacaoConversor"></h1>
                 <h2>Conversor de Aditivo</h2>
-                
                 <div id="uploadSection" class="upload-card">
                     <div class="upload-content">
                         <h3>Carregar Aditivo PDF</h3>
-                        <div class="file-upload-wrapper">
-                            <label for="pdfUpload" class="file-label">Escolher Arquivo</label>
-                            <input type="file" id="pdfUpload" class="file-input" accept="application/pdf">
-                            <span id="fileName" class="file-name">Nenhum arquivo selecionado</span>
-                        </div>
+                        <div class="file-upload-wrapper"><label for="pdfUpload" class="file-label">Escolher Arquivo</label><input type="file" id="pdfUpload" class="file-input" accept="application/pdf"><span id="fileName" class="file-name">Nenhum arquivo selecionado</span></div>
                         <button class="button" id="loadPdfBtn">Carregar e Extrair Dados</button>
                     </div>
                 </div>
-                
                 <div id="dataSection" style="display: none;">
                     <button class="button back" id="backToUploadBtn">Voltar</button>
                     <h3>Agendamento para Contrato - <span id="contratoSpan"></span></h3>
-                
                     <div class="dual-grid">
                         <div class="card">
                             <h4>Dados Gerais</h4>
                             <div class="grupo">
-                                <p><strong>Contrato:</strong> <span id="contrato"></span></p>
-                                <p><strong>Nome:</strong> <span id="nome"></span></p>
-                                <p><strong>Endereço Antigo:</strong> <span id="oldAddress"></span></p>
-                                <p><strong>Endereço Novo:</strong> <span id="newAddress"></span></p>
+                                <p><strong>Contrato:</strong> <span id="contrato"></span></p><p><strong>Nome:</strong> <span id="nome"></span></p>
+                                <!-- CORREÇÃO: Utiliza inputs de texto padrão para robustez -->
+                                <div class="grupo">
+                                    <label for="oldAddressInput">Endereço Antigo (Origem):</label>
+                                    <input type="text" id="oldAddressInput" placeholder="Endereço extraído ou digite aqui">
+                                </div>
+                                <div class="grupo">
+                                    <label for="newAddressInput">Endereço Novo (Destino):</label>
+                                    <input type="text" id="newAddressInput" placeholder="Endereço extraído ou digite aqui">
+                                </div>
                                 <div class="inline-group">
-                                    <div>
-                                        <label for="phone">Número de Telefone:</label>
-                                        <input type="text" id="phone" placeholder="21 99999-9999" autocomplete="tel">
-                                        <span id="phoneError" class="error"></span>
-                                    </div>
-                                    <div>
-                                        <label for="equipmentType">Tipo de Comodato:</label>
-                                        <select id="equipmentType">
-                                            <option value="alcl">ALCL</option>
-                                            <option value="proprio">PROPRIO</option>
-                                            <option value="huawei">HUAWEI</option>
-                                            <option value="tp link">TP LINK</option>
-                                        </select>
-                                    </div>
+                                    <div><label for="phone">Telefone:</label><input type="text" id="phone" placeholder="21 99999-9999" autocomplete="tel"><span id="phoneError" class="error"></span></div>
+                                    <div><label for="equipmentType">Comodato:</label><select id="equipmentType"><option value="alcl">ALCL</option><option value="proprio">PROPRIO</option><option value="huawei">HUAWEI</option><option value="tp link">TP LINK</option></select></div>
                                 </div>
                             </div>
                         </div>
                         <div class="card">
                             <h4>Detalhes do Contrato</h4>
                             <div class="grupo checkbox-group">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="renewal">
-                                    <span class="checkbox-custom"></span> É Renovação? (Isento de taxa)
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="migration">
-                                    <span class="checkbox-custom"></span> É Migração? (Isento de taxa)
-                                </label>
-                            <div id="carrierSection" class="grupo" style="display: none; margin-top: 15px;">
-                                <label for="oldCarrier">Antigo Portador:</label>
-                                <select id="oldCarrier">
-                                <option value="none">Sem alteração ou digitais</option>
-                                <option value="ITAU AGT">BANCO ITAÚ - AGANTANGELO</option>
-                                <option value="GERENCIANET AGT">GERENCIANET - AGATANGELO</option>
-                                <option value="ITAU ATI">BANCO ITAU - ATI</option>
-                                <option value="GERENCIANET - BANDA LARGA">GERENCIANET - ATI INTERNET BANDA LARGA</option>
-                                </select>
+                                <label class="checkbox-label"><input type="checkbox" id="renewal"><span class="checkbox-custom"></span> É Renovação? (Isento)</label>
+                                <label class="checkbox-label"><input type="checkbox" id="migration"><span class="checkbox-custom"></span> É Migração? (Isento)</label>
                             </div>
-                                <p id="renewalMessage" style="display: none;">Taxa isenta devido à renovação.</p>
-                                <p id="migrationMessage" style="display: none;">Taxa isenta devido à migração.</p>
-                            </div>
+                            <div id="carrierSection" class="grupo" style="display: none; margin-top: 15px;"><label for="oldCarrier">Antigo Portador:</label><select id="oldCarrier"><option value="none">Nenhum</option><option value="ITAU AGT">BANCO ITAÚ - AGANTANGELO</option><option value="GERENCIANET AGT">GERENCIANET - AGATANGELO</option><option value="ITAU ATI">BANCO ITAU - ATI</option><option value="GERENCIANET - BANDA LARGA">GERENCIANET - ATI BANDA LARGA</option></select></div>
+                            <p id="renewalMessage" style="display: none;">Taxa isenta.</p><p id="migrationMessage" style="display: none;">Taxa isenta.</p>
                             <div class="inline-group">
-                                <div>
-                                    <label for="taxValue">Valor da Taxa:</label>
-                                    <select id="taxValue">
-                                        <option value="100">R$ 100</option>
-                                        <option value="65">R$ 65</option>
-                                        <option value="50">R$ 50</option>
-                                        <option value="isento">Isento</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label for="signature">Tipo de Assinatura:</label>
-                                    <select id="signature">
-                                        <option value="digital">Assinatura Digital</option>
-                                        <option value="local">Assinatura no Local</option>
-                                    </select>
-                                </div>
+                                <div><label for="taxValue">Valor da Taxa:</label><select id="taxValue"><option value="100">R$ 100</option><option value="65">R$ 65</option><option value="50">R$ 50</option><option value="isento">Isento</option></select></div>
+                                <div><label for="signature">Assinatura:</label><select id="signature"><option value="digital">Assinatura Digital</option><option value="local">Assinatura no Local</option></select></div>
                             </div>
                         </div>
                     </div>
-
+                    <div class="card">
+                        <h4>🗺️ Calculadora de Distância</h4>
+                        <div class="controls"><button class="button" id="calculateDistanceBtn">Calcular Rota</button></div>
+                        <div id="distanceResult" class="output" style="display: none;"></div>
+                    </div>
                     <div class="dual-grid">
                         <div class="card">
                             <h4>Retirada</h4>
-                            <div class="grupo checkbox-group">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="selfWithdrawal">
-                                    <span class="checkbox-custom"></span> Cliente faz a retirada
-                                </label>
-                            </div>
-                            <div id="withdrawalSection" class="grupo">
-                                <label for="withdrawalDate">Data de Retirada:</label>
-                                <input type="date" id="withdrawalDate">
-                                <label for="withdrawalPeriod">Período de Retirada:</label>
-                                <select id="withdrawalPeriod">
-                                    <option value="Manhã">Manhã</option>
-                                    <option value="Tarde">Tarde</option>
-                                </select>
-                            </div>
+                            <div class="grupo checkbox-group"><label class="checkbox-label"><input type="checkbox" id="selfWithdrawal"><span class="checkbox-custom"></span> Cliente faz a retirada</label></div>
+                            <div id="withdrawalSection" class="grupo"><label for="withdrawalDate">Data:</label><input type="date" id="withdrawalDate"><label for="withdrawalPeriod">Período:</label><select id="withdrawalPeriod"><option value="Manhã">Manhã</option><option value="Tarde">Tarde</option></select></div>
                         </div>
                         <div class="card">
                             <h4>Instalação</h4>
-                            <div class="grupo">
-                                <label for="installationDate">Data de Instalação:</label>
-                                <input type="date" id="installationDate">
-                                <label for="installationPeriod">Período de Instalação:</label>
-                                <select id="installationPeriod">
-                                    <option value="Manhã">Manhã</option>
-                                    <option value="Tarde">Tarde</option>
-                                </select>
-                            </div>
+                            <div class="grupo"><label for="installationDate">Data:</label><input type="date" id="installationDate"><label for="installationPeriod">Período:</label><select id="installationPeriod"><option value="Manhã">Manhã</option><option value="Tarde">Tarde</option></select></div>
                         </div>
                     </div>
-                  
                     <div class="card">
                         <button class="button" id="generateOsBtn">Gerar O.S</button>
                         <textarea id="output" class="output" readonly></textarea>
-                        <div id="copyButtons" class="copy-buttons" style="display: none;">
-                            <button class="button copy-btn" id="copyWithdrawalBtn">Copiar Retirada</button>
-                            <button class="button copy-btn" id="copyInstallationBtn">Copiar Instalação</button>
-                            <button class="button copy-btn" id="copyOsBtn">Copiar O.S</button>
-                        </div>
+                        <div id="copyButtons" class="copy-buttons" style="display: none;"><button class="button copy-btn" id="copyWithdrawalBtn">Copiar Retirada</button><button class="button copy-btn" id="copyInstallationBtn">Copiar Instalação</button><button class="button copy-btn" id="copyOsBtn">Copiar O.S</button></div>
                     </div>
                 </div>
             </div>
             
-        <div id="senhasSection" style="display: none;">
-            <h1>Senhas de Equipamentos</h1>
-            <h2>Acesso rápido aos logins e senhas dos roteadores. Clique para copiar.</h2>
-            <div class="password-grid">
-                <div class="card">
-                    <h4>ALCL OLT NOKIA</h4>
-                    <p><strong>LOGIN:</strong> <span class="copiable">ATI-GPON</span></p>
-                    <p><strong>SENHA:</strong> <span class="copiable">@adminATI26422001</span></p>
-                </div>
-                <div class="card">
-                    <h4>ALCL OLT FIBER</h4>
-                    <p><strong>LOGIN:</strong> <span class="copiable">AdminGPON</span></p>
-                    <p><strong>SENHA:</strong> <span class="copiable">adminati2001</span></p>
-                    <hr>
-                    <h4>Padrão de fabrica</h4>
-                    <p><strong>LOGIN:</strong> <span class="copiable">AdminGPON</span></p>
-                    <p><strong>SENHA:</strong> <span class="copiable">ALC#FGU</span></p>
-                </div>
-                <div class="card">
-                    <h4>NBEL</h4>
-                    <p><strong>Endereço:</strong> <span class="copiable">IP/login.cgi</span></p>
-                    <hr>
-                    <p><strong>LOGIN:</strong> <span class="copiable">atiinternet</span></p>
-                    <p><strong>SENHA:</strong> <span class="copiable">@dminati2001</span></p>
-                    <hr>
-                    <h4>Alternativa</h4>
-                    <p><strong>LOGIN:</strong> <span class="copiable">telecomadmin</span></p>
-                    <p><strong>SENHA:</strong> <span class="copiable">admintelecom</span></p>
-                </div>
-                <div class="card">
-                    <h4>HUAWEI E TP LINK</h4>
-                    <p><strong>IP HUAWEI:</strong> <span class="copiable">192.168.3.1</span></p><br>
-                    <p><strong>IP TP LINK:</strong> <span class="copiable">192.168.0.1</span></p>
-                    <hr>
-                    <p><strong>SENHA:</strong> <span class="copiable">atiadmin258963</span></p>
-                    <hr>
-                    <h4>Alternativa</h4>
-                    <p><strong>SENHA:</strong> <span class="copiable">ATIADMIN258963</span></p>
-                </div>
-                <div class="card">
-                    <h4>Ura</h4>
-                    <p>
-                    <h4><a href="http://201.158.20.39:8022/login" style="color: var(--heading-color);" target="_blank" rel="noopener noreferrer">Acessar o Sistema</a></h4>
-                    </p>
-                    <hr>
-                    <p><strong>Login:</strong> <span class="copiable">christian</span></p>
-                    <p><strong>senha:</strong> <span class="copiable">@Ati26422001!10547580770</span></p>
-                </div>
-                <div class="card">
-                    <h4>Sites importantes</h4>
-                    <h4><a href="https://painel.autentique.com.br/documentos/todos" style="color: var(--heading-color);" target="_blank" rel="noopener noreferrer">Autentique</a></h4>
-                    <h4><a href="http://201.158.20.46:3000/" style="color: var(--heading-color);" target="_blank" rel="noopener noreferrer">ACS</a></h4>
-                    <h4><a href="https://atiinternet.cademi.com.br/area/vitrine" style="color: var(--heading-color);" target="_blank" rel="noopener noreferrer">Curso</a></h4>
-                    <h4><a href="http://201.158.20.35:8000/" style="color: var(--heading-color);" target="_blank" rel="noopener noreferrer">SGP interno</a></h4>
-                    <h4><a href="https://sgp.atiinternet.com.br/admin/" style="color: var(--heading-color);" target="_blank" rel="noopener noreferrer">SGP externo</a></h4>
+            <!-- Seção de Senhas -->
+            <div id="senhasSection" style="display: none;">
+                <h1>Senhas de Equipamentos</h1>
+                <h2>Acesso rápido aos logins e senhas. Clique para copiar.</h2>
+                <div class="password-grid">
+                    <div class="card"><h4>ALCL OLT NOKIA</h4><p><strong>LOGIN:</strong> <span class="copiable">ATI-GPON</span></p><p><strong>SENHA:</strong> <span class="copiable">@adminATI26422001</span></p></div>
+                    <div class="card"><h4>ALCL OLT FIBER</h4><p><strong>LOGIN:</strong> <span class="copiable">AdminGPON</span></p><p><strong>SENHA:</strong> <span class="copiable">adminati2001</span></p><hr><h4>Padrão de fabrica</h4><p><strong>LOGIN:</strong> <span class="copiable">AdminGPON</span></p><p><strong>SENHA:</strong> <span class="copiable">ALC#FGU</span></p></div>
+                    <div class="card"><h4>NBEL</h4><p><strong>Endereço:</strong> <span class="copiable">IP/login.cgi</span></p><hr><p><strong>LOGIN:</strong> <span class="copiable">atiinternet</span></p><p><strong>SENHA:</strong> <span class="copiable">@dminati2001</span></p><hr><h4>Alternativa</h4><p><strong>LOGIN:</strong> <span class="copiable">telecomadmin</span></p><p><strong>SENHA:</strong> <span class="copiable">admintelecom</span></p></div>
+                    <div class="card"><h4>HUAWEI E TP LINK</h4><p><strong>IP HUAWEI:</strong> <span class="copiable">192.168.3.1</span></p><br><p><strong>IP TP LINK:</strong> <span class="copiable">192.168.0.1</span></p><hr><p><strong>SENHA:</strong> <span class="copiable">atiadmin258963</span></p><hr><h4>Alternativa</h4><p><strong>SENHA:</strong> <span class="copiable">ATIADMIN258963</span></p></div>
+                    <div class="card"><h4>Ura</h4><h4><a href="http://201.158.20.39:8022/login" style="color: var(--heading-color);" target="_blank" rel="noopener noreferrer">Acessar o Sistema</a></h4><hr><p><strong>Login:</strong> <span class="copiable">christian</span></p><p><strong>senha:</strong> <span class="copiable">@Ati26422001!10547580770</span></p></div>
+                    <div class="card"><h4>Sites importantes</h4><h4><a href="https://painel.autentique.com.br/documentos/todos" style="color: var(--heading-color);" target="_blank" rel="noopener noreferrer">Autentique</a></h4><h4><a href="http://201.158.20.46:3000/" style="color: var(--heading-color);" target="_blank" rel="noopener noreferrer">ACS</a></h4><h4><a href="https://atiinternet.cademi.com.br/area/vitrine" style="color: var(--heading-color);" target="_blank" rel="noopener noreferrer">Curso</a></h4><h4><a href="http://201.158.20.35:8000/" style="color: var(--heading-color);" target="_blank" rel="noopener noreferrer">SGP interno</a></h4><h4><a href="https://sgp.atiinternet.com.br/admin/" style="color: var(--heading-color);" target="_blank" rel="noopener noreferrer">SGP externo</a></h4></div>
                 </div>
             </div>
-        </div>
-                    <div id="customizationPopup" class="customization-popup" style="display: none;">
-        <h2>Personalizar Cores</h2>
-        <div class="customization-grid">
-            <div class="popup-column">
-                <label class="popup-label">
-                    <span>Modo Escuro</span>
-                    <label class="switch"><input type="checkbox" id="themeToggle"><span class="slider"></span></label>
-                </label>
-                <label class="popup-label">
-                    <span>Ativar Bordas Neon</span>
-                    <label class="switch"><input type="checkbox" id="neonBorders"><span class="slider"></span></label>
-                </label>
-            </div>
-            <div class="popup-column">
-                <label class="popup-label">
-                    <span>Cor dos Ícones</span>
-                    <input type="color" id="iconColor">
-                </label>
-                <label class="popup-label">
-                    <span>Cor das Bordas e Botões</span>
-                    <input type="color" id="borderColor">
-                </label>
-                <label class="popup-label">
-                    <span>Cor dos Títulos</span>
-                    <input type="color" id="textColor">
-                </label>
-            </div>
-        </div>
-        <div class="customization-buttons">
-            <button class="button" id="saveCustomizationBtn">Salvar</button>
-            <button class="button back" id="closeCustomizationBtn">Cancelar</button>
-        </div>
-    </div>
-                    <div id="profileModal" class="modal-overlay" style="display: none;">
-        <div class="modal-content card">
-            <h3>Perfil do Usuário</h3>
-          
-            <form id="update-fullname-form">
-                <div class="modal-form-group">
-                    <label for="newFullName">Alterar Nome Completo:</label>
-                    <input type="text" id="newFullName" placeholder="Seu nome e sobrenome">
+
+            <!-- ========= MODAIS E POPUPS GLOBAIS (ESSENCIAL PARA OS SCRIPTS) ========= -->
+            <div id="customizationPopup" class="customization-popup" style="display: none;">
+                <h2>Personalizar Cores</h2>
+                <div class="customization-grid">
+                    <div class="popup-column">
+                        <label class="popup-label"><span>Modo Escuro</span><label class="switch"><input type="checkbox" id="themeToggle"><span class="slider"></span></label></label>
+                        <label class="popup-label"><span>Ativar Bordas Neon</span><label class="switch"><input type="checkbox" id="neonBorders"><span class="slider"></span></label></label>
+                    </div>
+                    <div class="popup-column">
+                        <label class="popup-label"><span>Cor dos Ícones</span><input type="color" id="iconColor"></label>
+                        <label class="popup-label"><span>Cor das Bordas</span><input type="color" id="borderColor"></label>
+                        <label class="popup-label"><span>Cor dos Títulos</span><input type="color" id="textColor"></label>
+                    </div>
                 </div>
-                <button type="submit" class="button">Salvar Nome</button>
-            </form>
-            <hr style="margin: 20px 0;">
-          
-            <form id="update-password-form">
-                <div class="modal-form-group">
-                    <label for="newPassword">Alterar Senha:</label>
-                    <input type="password" id="newPassword" placeholder="Nova senha (mín. 6 caracteres)" autocomplete="new-password">
-                </div>
-                <button type="submit" class="button">Salvar Nova Senha</button>
-            </form>
-            <hr style="margin: 20px 0;">
-                    <div id="admin-link-container" style="display: none;">
-                <a href="admin.html" class="button">Painel do Administrador</a>
+                <div class="customization-buttons"><button class="button" id="saveCustomizationBtn">Salvar</button><button class="button back" id="closeCustomizationBtn">Cancelar</button></div>
             </div>
-            <div class="modal-buttons" style="margin-top: 20px;">
-                <button id="modalLogoutBtn" class="button back">Sair (Logout)</button>
-                <button id="modalCloseProfileBtn" class="button back">Fechar</button>
+
+            <div id="profileModal" class="modal-overlay" style="display: none;">
+                <div class="modal-content card">
+                    <h3>Perfil do Usuário (<span id="profileUsername"></span>)</h3>
+                    <form id="update-fullname-form"><div class="modal-form-group"><label for="newFullName">Alterar Nome Completo:</label><input type="text" id="newFullName" placeholder="Seu nome e sobrenome"></div><button type="submit" class="button">Salvar Nome</button></form><hr style="margin: 20px 0;">
+                    <form id="update-password-form"><div class="modal-form-group"><label for="newPassword">Alterar Senha:</label><input type="password" id="newPassword" placeholder="Nova senha (mín. 6 caracteres)" autocomplete="new-password"></div><button type="submit" class="button">Salvar Nova Senha</button></form><hr style="margin: 20px 0;">
+                    <div id="admin-link-container" style="display: none;"><a href="admin.html" class="button">Painel do Administrador</a></div>
+                    <div class="modal-buttons" style="margin-top: 20px;"><button id="modalLogoutBtn" class="button back">Sair</button><button id="modalCloseProfileBtn" class="button back">Fechar</button></div>
+                </div>
+            </div>
+
+            <div id="confirmationModal" class="modal-overlay" style="display: none;">
+                <div class="modal-content card">
+                    <h3 id="modalTitle">Confirmar Ação</h3><p id="modalMessage">Você tem certeza?</p>
+                    <div class="modal-buttons"><button id="modalConfirmBtn" class="button">Confirmar</button><button id="modalCancelBtn" class="button back">Cancelar</button></div>
+                </div>
+            </div>
+
+            <div id="addResponseModal" class="modal-overlay" style="display: none;">
+                <div class="modal-content card">
+                    <h3>Adicionar Nova Resposta</h3>
+                    <div class="modal-form-group"><label for="newResponseTitle">Título:</label><input type="text" id="newResponseTitle" placeholder="Ex: Problema de conexão"></div>
+                    <div class="modal-form-group"><label for="newResponseCategory">Categoria:</label><input type="text" id="newResponseCategory" placeholder="Ex: suporte (ou deixe em branco)"></div>
+                    <div class="modal-buttons"><button id="modalSaveNewBtn" class="button">Salvar</button><button id="modalCancelNewBtn" class="button back">Cancelar</button></div>
+                </div>
             </div>
         </div>
     </div>
-                    <div id="confirmationModal" class="modal-overlay" style="display: none;">
-        <div class="modal-content card">
-            <h3 id="modalTitle">Confirmar Ação</h3>
-            <p id="modalMessage">Você tem certeza que deseja continuar?</p>
-            <div class="modal-buttons">
-                <button id="modalConfirmBtn" class="button">Confirmar</button>
-                <button id="modalCancelBtn" class="button back">Cancelar</button>
-            </div>
-        </div>
-    </div>
-                    <div id="addResponseModal" class="modal-overlay" style="display: none;">
-        <div class="modal-content card">
-            <h3>Adicionar Nova Resposta</h3>
-            <div class="modal-form-group">
-                <label for="newResponseTitle">Título da Resposta:</label>
-                <input type="text" id="newResponseTitle" placeholder="Ex: Problema de conexão">
-            </div>
-            <div class="modal-form-group">
-                <label for="newResponseCategory">Categoria:</label>
-                <input type="text" id="newResponseCategory" placeholder="Ex: suporte (ou deixe em branco para 'geral')">
-            </div>
-            <div class="modal-buttons">
-                <button id="modalSaveNewBtn" class="button">Salvar</button>
-                <button id="modalCancelNewBtn" class="button back">Cancelar</button>
-            </div>
-        </div>
-    </div>
-   
+    
     <script type="module" src="assets/js/app.js"></script>
+    <script>
+        function initMap() {
+            // Dispara um evento global para que os scripts saibam que a API está pronta.
+            window.dispatchEvent(new CustomEvent('google-maps-loaded'));
+        }
+    </script>
 
 </body>
-
 </html>
+

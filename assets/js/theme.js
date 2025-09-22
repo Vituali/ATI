@@ -17,7 +17,7 @@ function hexToRgba(hex, alpha) {
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 function getLuminance(hex) {
-    if (!hex || hex.length < 4) return 0; // Proteção contra cores inválidas
+    if (!hex || hex.length < 4) return 0;
     hex = hex.replace("#", "");
     const r = parseInt(hex.substring(0, 2), 16) / 255;
     const g = parseInt(hex.substring(2, 4), 16) / 255;
@@ -28,6 +28,8 @@ function getLuminance(hex) {
 
 // --- Função Principal de Inicialização do Tema ---
 export function initializeTheme() {
+    // Esta função é chamada pelo app.js DENTRO do 'DOMContentLoaded',
+    // então os elementos já devem existir.
     const elements = {
         popup: document.getElementById('customizationPopup'),
         openBtn: document.getElementById('darkModeToggleBtn'),
@@ -40,6 +42,13 @@ export function initializeTheme() {
         textColor: document.getElementById('textColor'),
         styleTag: document.getElementById('custom-styles') || document.createElement('style')
     };
+    
+    // Verificação de segurança: se os elementos não existem, aborta.
+    if (!elements.popup || !elements.openBtn || !elements.saveBtn || !elements.closeBtn) {
+        console.error("Elementos de personalização do tema não encontrados. Verifique o HTML.");
+        return; 
+    }
+    
     if (!document.getElementById('custom-styles')) {
         elements.styleTag.id = 'custom-styles';
         document.head.appendChild(elements.styleTag);
@@ -52,8 +61,7 @@ export function initializeTheme() {
         document.body.classList.toggle('no-neon', !settings.neonBorders);
 
         const contrastColorForIcons = getLuminance(settings.iconColor) > 0.5 ? '#000000' : '#FFFFFF';
-        const contrastColorForButtons = getLuminance(settings.borderColor) > 0.5 ?
-            '#111111' : '#FFFFFF';
+        const contrastColorForButtons = getLuminance(settings.borderColor) > 0.5 ? '#111111' : '#FFFFFF';
         
         elements.styleTag.textContent = `
             :root {
@@ -70,17 +78,10 @@ export function initializeTheme() {
                 color: ${contrastColorForIcons} !important;
             }
         `;
-
-        // --- ADIÇÃO IMPORTANTE ---
-        // Envia as configurações de tema para a extensão através da ponte.
-        window.postMessage({
-            type: "ATI_THEME_UPDATE",
-            themeSettings: settings
-        }, "*");
     };
 
     const loadSettings = () => {
-        const isDarkMode = localStorage.getItem('darkMode') === 'true';
+        const isDarkMode = localStorage.getItem('darkMode') !== 'false'; // Padrão é true
         const defaultColors = {
             iconColor: isDarkMode ? '#0AEEF5' : '#D12E66',
             borderColor: isDarkMode ? '#0AEEF5' : '#D12E66',
@@ -119,7 +120,7 @@ export function initializeTheme() {
 
     elements.closeBtn.addEventListener('click', () => {
         elements.popup.style.display = 'none';
-        applyCustomizations(originalSettings);
+        applyCustomizations(originalSettings); // Reverte para as configurações originais
     });
 
     elements.saveBtn.addEventListener('click', () => {
@@ -136,6 +137,7 @@ export function initializeTheme() {
         showPopup('Personalização salva!');
     });
     
+    // Aplica preview das cores em tempo real
     ['input', 'change'].forEach(eventType => {
         elements.popup.addEventListener(eventType, () => {
             const previewSettings = {
@@ -149,6 +151,8 @@ export function initializeTheme() {
         });
     });
 
+    // Aplica o tema inicial ao carregar a página
     const initialSettings = loadSettings();
     applyCustomizations(initialSettings);
 }
+

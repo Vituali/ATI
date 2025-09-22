@@ -12,8 +12,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     
-    <!-- Script do Google Maps com async/defer para melhor performance -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5wO0x-7NFmh6waMKzWzRew4ezfYOmYBI&libraries=places,routes&callback=initMap" async defer></script>
 </head>
 
 <body class="dark-mode">
@@ -190,12 +188,10 @@
                                 <div><label for="taxValue">Valor da Taxa:</label><select id="taxValue"><option value="100">R$ 100</option><option value="65">R$ 65</option><option value="50">R$ 50</option><option value="isento">Isento</option></select></div>
                                 <div><label for="signature">Assinatura:</label><select id="signature"><option value="digital">Assinatura Digital</option><option value="local">Assinatura no Local</option></select></div>
                             </div>
+                                <h4 style="margin-top: 20px;">🗺️ Calculadora de Distância</h4>
+                                <div class="controls"><button class="button" id="calculateDistanceBtn">Calcular Rota</button></div>
+                                <div id="distanceResult" class="output" style="display: none;"></div>
                         </div>
-                    </div>
-                    <div class="card">
-                        <h4>🗺️ Calculadora de Distância</h4>
-                        <div class="controls"><button class="button" id="calculateDistanceBtn">Calcular Rota</button></div>
-                        <div id="distanceResult" class="output" style="display: none;"></div>
                     </div>
                     <div class="dual-grid">
                         <div class="card">

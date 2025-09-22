@@ -16,11 +16,18 @@ import { initializeTheme } from './theme.js';
 import { initializeChat } from './chat.js';
 import { osEditorModule, initializeOsEditor } from './os-editor.js';
 import { initializeConversor } from './conversor.js';
-
+    function loadGoogleMapsScript() {
+        const script = document.createElement('script');
+        script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyB5wO0x-7NFmh6waMKzWzRew4ezfYOmYBI&libraries=places,routes&callback=initMap';
+        script.async = true; // Define o carregamento como assíncrono
+        script.defer = true;
+        document.head.appendChild(script);
+    }
 // A execução principal agora espera o DOM estar completamente carregado.
 document.addEventListener('DOMContentLoaded', async () => {
     
     // --- 1. INICIALIZAÇÃO DOS MÓDULOS ---
+    loadGoogleMapsScript();
     initializeUI();
     initializeTheme();
     initializeOsEditor();

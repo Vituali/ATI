@@ -1,158 +1,128 @@
-import { showPopup } from './ui.js';
+/**
+ * Este módulo gerencia o carregamento, a aplicação e o salvamento
+ * das configurações de personalização da interface (tema, cores, etc.).
+ */
 
-// Funções auxiliares de cor
-function lightenColor(hex, percent) {
-    hex = hex.replace("#", "");
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
-    const increase = percent / 100;
-    return `#${Math.min(255, Math.round(r + (255 - r) * increase)).toString(16).padStart(2, "0")}${Math.min(255, Math.round(g + (255 - g) * increase)).toString(16).padStart(2, "0")}${Math.min(255, Math.round(b + (255 - b) * increase)).toString(16).padStart(2, "0")}`;
-}
-function hexToRgba(hex, alpha) {
-    hex = hex.replace("#", "");
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
-function getLuminance(hex) {
-    if (!hex || hex.length < 4) return 0;
-    hex = hex.replace("#", "");
-    const r = parseInt(hex.substring(0, 2), 16) / 255;
-    const g = parseInt(hex.substring(2, 4), 16) / 255;
-    const b = parseInt(hex.substring(4, 6), 16) / 255;
-    const a = [r, g, b].map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
-    return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
+// --- SELETORES DE ELEMENTOS ---
+const alphaSlider = document.getElementById('alphaSlider');
+const alphaValueSpan = document.getElementById('alphaValue');
+const themeToggle = document.getElementById('themeToggle');
+const neonBordersToggle = document.getElementById('neonBorders');
+const iconColorPicker = document.getElementById('iconColor');
+const borderColorPicker = document.getElementById('borderColor');
+const textColorPicker = document.getElementById('textColor');
+const saveCustomizationBtn = document.getElementById('saveCustomizationBtn');
+const closeCustomizationBtn = document.getElementById('closeCustomizationBtn');
+const customizationPopup = document.getElementById('customizationPopup');
+const darkModeToggleBtn = document.getElementById('darkModeToggleBtn');
+
+/**
+ * Aplica as configurações de tema na própria página do painel.
+ * @param {object} settings - O objeto com as configurações de tema.
+ */
+function applyLocalTheme(settings) {
+    if (settings.isDarkMode) {
+        document.body.classList.add('dark-mode');
+    } else {
+        document.body.classList.remove('dark-mode');
+    }
+    
+    const root = document.documentElement;
+    root.style.setProperty('--icon-color', settings.iconColor);
+    root.style.setProperty('--border-color', settings.borderColor);
+    root.style.setProperty('--heading-color', settings.textColor);
+
+    // No seu CSS, a classe `neon-borders` não existe, o efeito é aplicado por padrão e
+    // removido com `no-neon`. A lógica abaixo está correta.
+    if (settings.neonBorders) {
+        document.body.classList.remove('no-neon');
+    } else {
+        document.body.classList.add('no-neon');
+    }
 }
 
-// --- Função Principal de Inicialização do Tema ---
+/**
+ * Carrega as configurações de tema salvas no localStorage e atualiza a interface.
+ */
+function loadCustomizationSettings() {
+    // O nome da chave no seu `theme.js` antigo era 'ati-theme-settings', vamos usar esse.
+    const savedSettings = JSON.parse(localStorage.getItem('ati-theme-settings'));
+    
+    const defaultSettings = {
+        isDarkMode: true,
+        neonBorders: true,
+        iconColor: '#0AEEF5', // Cor padrão do seu tema antigo
+        borderColor: '#0AEEF5', // Cor padrão do seu tema antigo
+        textColor: '#E5E5E5',
+        chatPrimaryAlpha: 0.37 // Valor padrão para a nova funcionalidade
+    };
+
+    const settings = { ...defaultSettings, ...savedSettings };
+
+    // Aplica as configurações aos inputs do popup
+    themeToggle.checked = settings.isDarkMode;
+    neonBordersToggle.checked = settings.neonBorders;
+    iconColorPicker.value = settings.iconColor;
+    borderColorPicker.value = settings.borderColor;
+    textColorPicker.value = settings.textColor;
+    alphaSlider.value = settings.chatPrimaryAlpha;
+    alphaValueSpan.textContent = settings.chatPrimaryAlpha;
+
+    // Aplica o tema na própria página do painel
+    applyLocalTheme(settings);
+}
+
+/**
+ * Salva as configurações atuais do popup de personalização e notifica a extensão.
+ */
+function saveCustomizationSettings() {
+    const settings = {
+        isDarkMode: themeToggle.checked,
+        neonBorders: neonBordersToggle.checked,
+        iconColor: iconColorPicker.value,
+        borderColor: borderColorPicker.value,
+        textColor: textColorPicker.value,
+        chatPrimaryAlpha: parseFloat(alphaSlider.value) // Garante que seja um número
+    };
+
+    localStorage.setItem('ati-theme-settings', JSON.stringify(settings));
+    
+    // Aplica o tema na página atual
+    applyLocalTheme(settings);
+
+    // Envia as configurações para a extensão (que irá aplicá-las no Chatmix)
+    window.postMessage({
+        type: 'ATI_THEME_UPDATE',
+        themeSettings: settings
+    }, "*");
+
+    // Fornece um feedback visual simples
+    const originalText = saveCustomizationBtn.textContent;
+    saveCustomizationBtn.textContent = 'Salvo!';
+    setTimeout(() => {
+        saveCustomizationBtn.textContent = originalText;
+        customizationPopup.style.display = 'none';
+    }, 1000);
+}
+
+/**
+ * Função principal exportada que inicializa todos os event listeners do tema.
+ */
 export function initializeTheme() {
-    // Esta função é chamada pelo app.js DENTRO do 'DOMContentLoaded',
-    // então os elementos já devem existir.
-    const elements = {
-        popup: document.getElementById('customizationPopup'),
-        openBtn: document.getElementById('darkModeToggleBtn'),
-        saveBtn: document.getElementById('saveCustomizationBtn'),
-        closeBtn: document.getElementById('closeCustomizationBtn'),
-        themeToggle: document.getElementById('themeToggle'),
-        neonBorders: document.getElementById('neonBorders'),
-        iconColor: document.getElementById('iconColor'),
-        borderColor: document.getElementById('borderColor'),
-        textColor: document.getElementById('textColor'),
-        styleTag: document.getElementById('custom-styles') || document.createElement('style')
-    };
-    
-    // Verificação de segurança: se os elementos não existem, aborta.
-    if (!elements.popup || !elements.openBtn || !elements.saveBtn || !elements.closeBtn) {
-        console.error("Elementos de personalização do tema não encontrados. Verifique o HTML.");
-        return; 
-    }
-    
-    if (!document.getElementById('custom-styles')) {
-        elements.styleTag.id = 'custom-styles';
-        document.head.appendChild(elements.styleTag);
-    }
-
-    let originalSettings = {};
-
-    const applyCustomizations = (settings) => {
-        document.body.classList.toggle('dark-mode', settings.isDarkMode);
-        document.body.classList.toggle('no-neon', !settings.neonBorders);
-
-        const contrastColorForIcons = getLuminance(settings.iconColor) > 0.5 ? '#000000' : '#FFFFFF';
-        const contrastColorForButtons = getLuminance(settings.borderColor) > 0.5 ? '#111111' : '#FFFFFF';
-        
-        elements.styleTag.textContent = `
-            :root {
-                --icon-color: ${settings.iconColor};
-                --border-color: ${settings.borderColor};
-                --button-bg: ${settings.borderColor};
-                --heading-color: ${settings.textColor};
-                --button-text: ${contrastColorForButtons};
-                --button-hover-bg: ${lightenColor(settings.borderColor, 20)};
-                --shadow-color: ${hexToRgba(settings.borderColor, 0.5)};
-            }
-            .sidebar-button.active {
-                background-color: ${settings.iconColor} !important;
-                color: ${contrastColorForIcons} !important;
-            }
-        `;
-    };
-
-    const loadSettings = () => {
-        const isDarkMode = localStorage.getItem('darkMode') !== 'false'; // Padrão é true
-        const defaultColors = {
-            iconColor: isDarkMode ? '#0AEEF5' : '#D12E66',
-            borderColor: isDarkMode ? '#0AEEF5' : '#D12E66',
-            textColor: isDarkMode ? '#E5E5E5' : '#1A3C5A',
-        };
-        return {
-            isDarkMode: isDarkMode,
-            neonBorders: localStorage.getItem('neonBorders') !== 'false',
-            iconColor: localStorage.getItem('iconColor') || defaultColors.iconColor,
-            borderColor: localStorage.getItem('borderColor') || defaultColors.borderColor,
-            textColor: localStorage.getItem('textColor') || defaultColors.textColor,
-        };
-    };
-
-    const saveSettings = (settings) => {
-        localStorage.setItem('darkMode', settings.isDarkMode);
-        localStorage.setItem('neonBorders', settings.neonBorders);
-        localStorage.setItem('iconColor', settings.iconColor);
-        localStorage.setItem('borderColor', settings.borderColor);
-        localStorage.setItem('textColor', settings.textColor);
-    };
-
-    const updatePopupUI = (settings) => {
-        elements.themeToggle.checked = settings.isDarkMode;
-        elements.neonBorders.checked = settings.neonBorders;
-        elements.iconColor.value = settings.iconColor;
-        elements.borderColor.value = settings.borderColor;
-        elements.textColor.value = settings.textColor;
-    };
-
-    elements.openBtn.addEventListener('click', () => {
-        originalSettings = loadSettings();
-        updatePopupUI(originalSettings);
-        elements.popup.style.display = 'block';
+    // Listeners para os controles de personalização
+    alphaSlider.addEventListener('input', () => {
+        alphaValueSpan.textContent = alphaSlider.value;
+    });
+    saveCustomizationBtn.addEventListener('click', saveCustomizationSettings);
+    darkModeToggleBtn.addEventListener('click', () => {
+        customizationPopup.style.display = 'block';
+    });
+    closeCustomizationBtn.addEventListener('click', () => {
+        customizationPopup.style.display = 'none';
+        loadCustomizationSettings(); // Recarrega para descartar alterações não salvas
     });
 
-    elements.closeBtn.addEventListener('click', () => {
-        elements.popup.style.display = 'none';
-        applyCustomizations(originalSettings); // Reverte para as configurações originais
-    });
-
-    elements.saveBtn.addEventListener('click', () => {
-        const newSettings = {
-            isDarkMode: elements.themeToggle.checked,
-            neonBorders: elements.neonBorders.checked,
-            iconColor: elements.iconColor.value,
-            borderColor: elements.borderColor.value,
-            textColor: elements.textColor.value,
-        };
-        saveSettings(newSettings);
-        applyCustomizations(newSettings);
-        elements.popup.style.display = 'none';
-        showPopup('Personalização salva!');
-    });
-    
-    // Aplica preview das cores em tempo real
-    ['input', 'change'].forEach(eventType => {
-        elements.popup.addEventListener(eventType, () => {
-            const previewSettings = {
-                isDarkMode: elements.themeToggle.checked,
-                neonBorders: elements.neonBorders.checked,
-                iconColor: elements.iconColor.value,
-                borderColor: elements.borderColor.value,
-                textColor: elements.textColor.value,
-            };
-            applyCustomizations(previewSettings);
-        });
-    });
-
-    // Aplica o tema inicial ao carregar a página
-    const initialSettings = loadSettings();
-    applyCustomizations(initialSettings);
+    // Carrega as configurações iniciais ao carregar a página
+    loadCustomizationSettings();
 }
 

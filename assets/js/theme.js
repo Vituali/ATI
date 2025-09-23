@@ -17,6 +17,25 @@ const customizationPopup = document.getElementById('customizationPopup');
 const darkModeToggleBtn = document.getElementById('darkModeToggleBtn');
 
 /**
+ * Calcula a luminância de uma cor hexadecimal para determinar se o texto
+ * sobre ela deve ser claro ou escuro.
+ * @param {string} hex - A cor em formato hexadecimal (ex: "#RRGGBB").
+ * @returns {number} - Um valor de luminância. Valores > 0.5 são considerados claros.
+ */
+function getLuminance(hex) {
+    if (!hex) return 0;
+    let color = hex.startsWith('#') ? hex.slice(1) : hex;
+    if (color.length === 3) {
+        color = color.split('').map(char => char + char).join('');
+    }
+    const r = parseInt(color.substring(0, 2), 16) / 255;
+    const g = parseInt(color.substring(2, 4), 16) / 255;
+    const b = parseInt(color.substring(4, 6), 16) / 255;
+    const a = [r, g, b].map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+    return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
+}
+
+/**
  * Aplica as configurações de tema na própria página do painel.
  * @param {object} settings - O objeto com as configurações de tema.
  */
@@ -27,13 +46,19 @@ function applyLocalTheme(settings) {
         document.body.classList.remove('dark-mode');
     }
     
+    // CORREÇÃO: Define todas as variáveis de cor necessárias.
     const root = document.documentElement;
+    const contrastColorForButtons = getLuminance(settings.borderColor) > 0.5 ? '#111111' : '#FFFFFF';
+
     root.style.setProperty('--icon-color', settings.iconColor);
     root.style.setProperty('--border-color', settings.borderColor);
     root.style.setProperty('--heading-color', settings.textColor);
+    root.style.setProperty('--button-bg', settings.borderColor);
+    root.style.setProperty('--button-text', contrastColorForButtons);
+    // CORREÇÃO: Define a cor da sombra para o efeito neon.
+    root.style.setProperty('--shadow-color', `${settings.borderColor}80`);
 
-    // No seu CSS, a classe `neon-borders` não existe, o efeito é aplicado por padrão e
-    // removido com `no-neon`. A lógica abaixo está correta.
+
     if (settings.neonBorders) {
         document.body.classList.remove('no-neon');
     } else {
@@ -45,16 +70,15 @@ function applyLocalTheme(settings) {
  * Carrega as configurações de tema salvas no localStorage e atualiza a interface.
  */
 function loadCustomizationSettings() {
-    // O nome da chave no seu `theme.js` antigo era 'ati-theme-settings', vamos usar esse.
     const savedSettings = JSON.parse(localStorage.getItem('ati-theme-settings'));
     
     const defaultSettings = {
         isDarkMode: true,
         neonBorders: true,
-        iconColor: '#0AEEF5', // Cor padrão do seu tema antigo
-        borderColor: '#0AEEF5', // Cor padrão do seu tema antigo
+        iconColor: '#0AEEF5',
+        borderColor: '#0AEEF5',
         textColor: '#E5E5E5',
-        chatPrimaryAlpha: 0.37 // Valor padrão para a nova funcionalidade
+        chatPrimaryAlpha: 0.37
     };
 
     const settings = { ...defaultSettings, ...savedSettings };
@@ -82,34 +106,33 @@ function saveCustomizationSettings() {
         iconColor: iconColorPicker.value,
         borderColor: borderColorPicker.value,
         textColor: textColorPicker.value,
-        chatPrimaryAlpha: parseFloat(alphaSlider.value) // Garante que seja um número
+        chatPrimaryAlpha: parseFloat(alphaSlider.value)
     };
 
     localStorage.setItem('ati-theme-settings', JSON.stringify(settings));
     
-    // Aplica o tema na página atual
     applyLocalTheme(settings);
 
-    // Envia as configurações para a extensão (que irá aplicá-las no Chatmix)
     window.postMessage({
         type: 'ATI_THEME_UPDATE',
         themeSettings: settings
     }, "*");
 
-    // Fornece um feedback visual simples
+    // CORREÇÃO: Melhora o feedback visual do botão.
     const originalText = saveCustomizationBtn.textContent;
-    saveCustomizationBtn.textContent = 'Salvo!';
+    saveCustomizationBtn.textContent = '✔️ Salvo!';
+    saveCustomizationBtn.style.background = 'var(--success-color, #22C55E)';
     setTimeout(() => {
         saveCustomizationBtn.textContent = originalText;
+        saveCustomizationBtn.style.background = ''; // Volta ao estilo normal
         customizationPopup.style.display = 'none';
-    }, 1000);
+    }, 1200);
 }
 
 /**
  * Função principal exportada que inicializa todos os event listeners do tema.
  */
 export function initializeTheme() {
-    // Listeners para os controles de personalização
     alphaSlider.addEventListener('input', () => {
         alphaValueSpan.textContent = alphaSlider.value;
     });
@@ -119,10 +142,9 @@ export function initializeTheme() {
     });
     closeCustomizationBtn.addEventListener('click', () => {
         customizationPopup.style.display = 'none';
-        loadCustomizationSettings(); // Recarrega para descartar alterações não salvas
+        loadCustomizationSettings();
     });
 
-    // Carrega as configurações iniciais ao carregar a página
     loadCustomizationSettings();
 }
 

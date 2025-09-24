@@ -28,7 +28,6 @@ export async function getOsTemplates(atendente) {
 
 /**
  * Salva TODOS os modelos de O.S. de um usuário, substituindo os dados antigos.
- * Isso é usado para garantir a consistência dos dados após a migração de formato.
  */
 export async function saveAllOsTemplates(atendente, templatesObject) {
     if (!atendente) throw new Error("Atendente não especificado.");
@@ -44,6 +43,15 @@ export async function getQuickReplies(atendente) {
 export async function saveQuickReplies(atendente, data) {
     if (!atendente) throw new Error("Atendente não especificado.");
     await set(ref(db, `respostas/${atendente}`), data);
+}
+
+/**
+ * Busca a lista mestre de modelos de O.S. padrão.
+ */
+export async function getMasterOsTemplates() {
+    // CORREÇÃO: Aponta diretamente para a lista de templates e retorna um array.
+    const snapshot = await get(ref(db, 'os_templates_master/os_templates'));
+    return snapshot.exists() ? snapshot.val() : [];
 }
 
 // --- FUNÇÕES DE ADMINISTRAÇÃO ---

@@ -1,4 +1,4 @@
-import { getOsTemplates, saveAllOsTemplates, getSgpOccurrenceTypes } from './firebase-service.js';
+import { getOsTemplates, saveAllOsTemplates, getSgpOccurrenceTypes, getMasterOsTemplates } from './firebase-service.js';
 import { showPopup } from './ui.js';
 import { db } from './firebase-init.js';
 import { ref, push, child } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
@@ -198,6 +198,48 @@ async function handleListClick(event) {
     }
 }
 
+async function loadDefaultTemplates() {
+    if (!currentUser) return;
+    try {
+        // A função getMasterOsTemplates agora retorna um array.
+        const defaultTemplates = await getMasterOsTemplates();
+        
+        // CORREÇÃO: Verifica se o array é válido e não está vazio.
+        if (!Array.isArray(defaultTemplates) || defaultTemplates.length === 0) {
+            return showPopup("Nenhum modelo padrão encontrado para carregar.", "info");
+        }
+
+        let newTemplatesCount = 0;
+        
+        // CORREÇÃO: Itera diretamente sobre o array de modelos.
+        defaultTemplates.forEach(defaultTemplate => {
+            if (!defaultTemplate) return; // Pula itens nulos/inválidos no array
+            
+            // Verifica se um modelo com o mesmo título já existe no cache do usuário
+            const exists = Object.values(templatesCache).some(userTemplate => userTemplate.title === defaultTemplate.title);
+            if (!exists) {
+                // Se não existir, adiciona como um novo modelo
+                const newId = push(child(ref(db), `modelos_os/${currentUser}`)).key;
+                templatesCache[newId] = { ...defaultTemplate, id: newId };
+                newTemplatesCount++;
+            }
+        });
+
+        if (newTemplatesCount > 0) {
+            await saveAllOsTemplates(currentUser, templatesCache);
+            await loadAndRenderTemplates();
+            showPopup(`${newTemplatesCount} novo(s) modelo(s) padrão foram adicionados!`, "success");
+        } else {
+            showPopup("Seus modelos já estão atualizados com os padrões.", "info");
+        }
+
+    } catch (error) {
+        showPopup("Erro ao carregar modelos padrão.", "error");
+        console.error("Erro ao carregar modelos padrão:", error);
+    }
+}
+
+
 export function initializeOsEditor() {
     const osSection = document.getElementById('osSection');
     if (!osSection || osSection.dataset.initialized) return;
@@ -212,6 +254,7 @@ export function initializeOsEditor() {
         keywords: osSection.querySelector('#os-keywords'),
         list: osSection.querySelector('#os-templates-list'),
         cancelBtn: osSection.querySelector('#os-cancel-btn'),
+        loadDefaultsBtn: osSection.querySelector('#os-load-defaults-btn'), // Pega o novo botão
         typeFilter: osSection.querySelector('#os-type-filter'),
         occurrenceTypeSearch: osSection.querySelector('#os-occurrence-type-search'),
         occurrenceTypeId: osSection.querySelector('#os-occurrence-type-id'),
@@ -229,6 +272,7 @@ export function initializeOsEditor() {
     elements.cancelBtn.addEventListener('click', resetForm);
     elements.list.addEventListener('click', handleListClick);
     elements.typeFilter.addEventListener('change', filterAndRenderList);
+    elements.loadDefaultsBtn.addEventListener('click', loadDefaultTemplates); // Adiciona o evento ao botão
 
     // Lógica do seletor com busca
     const searchInput = elements.occurrenceTypeSearch;

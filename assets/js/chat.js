@@ -1,11 +1,15 @@
 import { showPopup, adjustTextareaHeight, replacePlaceholders } from './ui.js';
+// CORREÇÃO: Importa a função correta do arquivo de serviço do Firebase.
 import { saveQuickReplies } from './firebase-service.js';
 
 export function initializeChat() {
-    let allUserTemplates = [];
-    let currentSelection = { value: "", text: "Selecione uma resposta" };
+    // --- ESTADO DO MÓDULO ---
+    let quickReplies = [];
+    let osTemplates = [];
+    let currentSelection = { index: null, text: "Selecione uma resposta" };
     let sortableInstances = [];
 
+    // --- SELETORES DE ELEMENTOS ---
     const elements = {
         selectDisplay: document.getElementById('select-display'),
         selectItems: document.getElementById('select-items'),
@@ -22,10 +26,28 @@ export function initializeChat() {
 
     const getCurrentAttendant = () => localStorage.getItem('atendenteAtual');
 
+    /**
+     * Salva a lista combinada de templates no Firebase.
+     */
+    const saveData = async () => {
+        const attendant = getCurrentAttendant();
+        if (!attendant) return;
+        const fullDataToSave = [...quickReplies, ...osTemplates];
+        try {
+            // CORREÇÃO: Chama a função renomeada para salvar apenas as respostas rápidas.
+            // A lógica de salvar modelos de O.S. está agora no os-editor.js
+            await saveQuickReplies(attendant, quickReplies);
+        } catch (error) {
+            showPopup("Erro ao salvar as alterações.", 'error');
+            console.error("Erro no Firebase:", error);
+        }
+    };
+
+    /**
+     * Atualiza a lista de respostas na tela com base no estado atual.
+     */
     const updateResponseSelector = () => {
         elements.selectItems.innerHTML = '';
-        const quickReplies = allUserTemplates.filter(r => r.category !== 'os_template');
-
         if (quickReplies.length === 0) {
             elements.selectDisplay.textContent = 'Nenhuma resposta encontrada';
             return;
@@ -33,20 +55,20 @@ export function initializeChat() {
 
         const groupedByCategory = quickReplies.reduce((acc, template) => {
             const category = template.subCategory || 'Geral';
-            (acc[category] = acc[category] || []).push(template);
+            if (!acc[category]) acc[category] = [];
+            acc[category].push(template);
             return acc;
         }, {});
 
-        // Destrói instâncias antigas para evitar múltiplos listeners
         sortableInstances.forEach(sortable => sortable.destroy());
         sortableInstances = [];
 
-        Object.keys(groupedByCategory).sort().forEach(categoryName => {
+        for (const categoryName in groupedByCategory) {
             const categoryGroup = document.createElement("div");
             categoryGroup.className = 'category-group';
             const optgroup = document.createElement("div");
             optgroup.className = 'optgroup-label';
-            optgroup.textContent = categoryName;
+            optgroup.textContent = categoryName.charAt(0).toUpperCase() + categoryName.slice(1);
             categoryGroup.appendChild(optgroup);
             const optionsContainer = document.createElement("div");
             optionsContainer.className = 'options-container';
@@ -56,9 +78,9 @@ export function initializeChat() {
                 const opt = document.createElement("div");
                 opt.className = 'option-item';
                 opt.textContent = template.title;
-                opt.dataset.value = allUserTemplates.indexOf(template);
+                opt.dataset.index = quickReplies.indexOf(template);
                 opt.addEventListener('click', () => {
-                    currentSelection = { value: opt.dataset.value, text: opt.textContent };
+                    currentSelection = { index: opt.dataset.index, text: opt.textContent };
                     elements.selectDisplay.textContent = opt.textContent;
                     elements.selectItems.classList.add('select-hide');
                     displaySelectedResponse();
@@ -67,65 +89,51 @@ export function initializeChat() {
             });
             categoryGroup.appendChild(optionsContainer);
             elements.selectItems.appendChild(categoryGroup);
-        });
+        }
 
-        // Inicializa o Sortable para os ITENS dentro de cada categoria
         elements.selectItems.querySelectorAll('.options-container').forEach(container => {
             sortableInstances.push(Sortable.create(container, {
-                group: 'shared-options',
-                animation: 150,
-                ghostClass: 'sortable-ghost',
-                onEnd: () => saveOrderAndCategories(), // Salva ao mover um item
+                group: 'shared-options', animation: 150, ghostClass: 'sortable-ghost',
+                onEnd: (evt) => {
+                    const itemEl = evt.item;
+                    const originalIndex = parseInt(itemEl.dataset.index, 10);
+                    const newCategoryName = evt.to.dataset.categoryName;
+                    if (quickReplies[originalIndex] && newCategoryName) {
+                        quickReplies[originalIndex].subCategory = newCategoryName;
+                    }
+                    saveOrderAndCategories();
+                },
             }));
         });
-        
-        // CORREÇÃO: Inicializa o Sortable para as CATEGORIAS
+
         sortableInstances.push(Sortable.create(elements.selectItems, {
-            handle: '.optgroup-label', // Define que o arrasto é pelo título da categoria
-            animation: 150,
-            ghostClass: 'sortable-ghost',
-            onEnd: () => saveOrderAndCategories(), // Salva ao mover uma categoria
+            handle: '.optgroup-label', animation: 150, ghostClass: 'sortable-ghost',
+            onEnd: saveOrderAndCategories,
         }));
     };
-
+    
     const saveOrderAndCategories = async () => {
-        const attendant = getCurrentAttendant();
-        if (!attendant) return;
-
         const newOrderedQuickReplies = [];
-        // Lê a ordem visual do DOM para reconstruir os dados
-        elements.selectItems.querySelectorAll('.category-group').forEach(group => {
-            const categoryName = group.querySelector('.options-container').dataset.categoryName;
-            group.querySelectorAll('.option-item').forEach(item => {
-                const originalIndex = parseInt(item.dataset.value);
-                const template = allUserTemplates[originalIndex];
-                if (template) {
-                    // Atualiza a categoria do template caso ele tenha sido movido
-                    template.subCategory = categoryName;
-                    newOrderedQuickReplies.push(template);
-                }
-            });
+        elements.selectItems.querySelectorAll('.option-item').forEach(item => {
+            const originalIndex = parseInt(item.dataset.index, 10);
+            if (quickReplies[originalIndex]) {
+                newOrderedQuickReplies.push(quickReplies[originalIndex]);
+            }
         });
-
-        const osTemplates = allUserTemplates.filter(r => r.category === 'os_template');
-        // Atualiza o array principal com a nova ordem
-        allUserTemplates = [...newOrderedQuickReplies, ...osTemplates];
-
-        try {
-            await saveQuickReplies(attendant, allUserTemplates);
-            // Não precisa recarregar a lista, apenas mostrar a notificação
-            showPopup("Ordem e categorias salvas!", 'success');
-        } catch (error) {
-            showPopup("Erro ao salvar as alterações.", 'error');
-        }
+        
+        quickReplies = newOrderedQuickReplies;
+        await saveData();
+        
+        updateResponseSelector();
+        showPopup("Ordem e categoria salvas!", 'success');
     };
 
     const displaySelectedResponse = () => {
-        const selectedIndex = currentSelection.value;
-        if (selectedIndex === "") {
+        const selectedIndex = currentSelection.index;
+        if (selectedIndex === null) {
             elements.response.value = "Selecione uma opção para ver a mensagem.";
         } else {
-            const template = allUserTemplates[parseInt(selectedIndex)];
+            const template = quickReplies[parseInt(selectedIndex)];
             elements.response.value = template ? template.text : "Resposta não encontrada.";
         }
         adjustTextareaHeight(elements.response);
@@ -133,74 +141,75 @@ export function initializeChat() {
     };
 
     const saveChanges = async () => {
-        const attendant = getCurrentAttendant();
-        const selectedIndex = currentSelection.value;
-        if (!attendant || selectedIndex === "") return showPopup("Selecione uma resposta para salvar.", 'error');
-        allUserTemplates[parseInt(selectedIndex)].text = elements.response.value.trim();
-        await saveQuickReplies(attendant, allUserTemplates);
+        const selectedIndex = currentSelection.index;
+        if (selectedIndex === null) return showPopup("Selecione uma resposta para salvar.");
+        quickReplies[parseInt(selectedIndex)].text = elements.response.value.trim();
+        await saveData();
         showPopup("Resposta salva com sucesso!", 'success');
     };
-
+    
     const deleteResponse = () => {
-        const attendant = getCurrentAttendant();
-        const selectedIndex = currentSelection.value;
-        if (!attendant || selectedIndex === "") return showPopup("Selecione uma resposta para apagar.", 'error');
+        const selectedIndex = currentSelection.index;
+        if (selectedIndex === null) return showPopup("Selecione uma resposta para apagar.");
         
-        if (confirm('Tem certeza que deseja apagar esta resposta permanentemente?')) {
-            allUserTemplates.splice(parseInt(selectedIndex), 1);
-            saveQuickReplies(attendant, allUserTemplates).then(() => {
-                currentSelection = { value: "", text: "Selecione uma resposta" };
-                updateResponseSelector();
-                displaySelectedResponse();
-                showPopup("Resposta apagada com sucesso!");
-            });
-        }
+        const modal = document.getElementById('confirmationModal');
+        document.getElementById('modalTitle').textContent = 'Apagar Resposta';
+        document.getElementById('modalMessage').textContent = 'Tem certeza que deseja apagar esta resposta permanentemente?';
+        const confirmBtn = document.getElementById('modalConfirmBtn');
+        const cancelBtn = document.getElementById('modalCancelBtn');
+        modal.style.display = 'flex';
+
+        const onConfirm = async () => {
+            quickReplies.splice(parseInt(selectedIndex), 1);
+            await saveData();
+            currentSelection = { index: null, text: "Selecione uma resposta" };
+            elements.selectDisplay.textContent = currentSelection.text;
+            updateResponseSelector();
+            displaySelectedResponse();
+            showPopup("Resposta apagada com sucesso!");
+            closeModal();
+        };
+        
+        const closeModal = () => {
+            modal.style.display = 'none';
+            confirmBtn.removeEventListener('click', onConfirm);
+            cancelBtn.removeEventListener('click', closeModal);
+        };
+        
+        confirmBtn.addEventListener('click', onConfirm, { once: true });
+        cancelBtn.addEventListener('click', closeModal, { once: true });
     };
 
     const addNewResponse = () => {
-        const attendant = getCurrentAttendant();
-        if (!attendant) return showPopup("Selecione um atendente primeiro.", 'error');
-
         const modal = document.getElementById('addResponseModal');
         const titleInput = document.getElementById('newResponseTitle');
         const categorySelect = document.getElementById('newResponseCategorySelect');
-        const categoryInput = document.getElementById('newResponseCategoryInput');
+        const newCategoryInput = document.getElementById('newResponseCategoryInput');
         const saveBtn = document.getElementById('modalSaveNewBtn');
         const cancelBtn = document.getElementById('modalCancelNewBtn');
 
-        const existingCategories = [...new Set(allUserTemplates.filter(r => r.subCategory).map(r => r.subCategory))];
-        categorySelect.innerHTML = '<option value="">-- Selecione ou crie uma --</option>';
-        existingCategories.sort().forEach(cat => {
-            const option = document.createElement('option');
-            option.value = cat;
-            option.textContent = cat;
-            categorySelect.appendChild(option);
-        });
+        const existingCategories = [...new Set(quickReplies.map(r => r.subCategory || 'Geral'))];
+        categorySelect.innerHTML = existingCategories.map(c => `<option value="${c}">${c}</option>`).join('');
         categorySelect.innerHTML += '<option value="new_category">-- Nova Categoria --</option>';
-
+        newCategoryInput.style.display = 'none';
+        newCategoryInput.value = '';
         titleInput.value = '';
-        categoryInput.value = '';
-        categoryInput.style.display = 'none';
-        categorySelect.selectedIndex = 0;
         
+        categorySelect.onchange = () => {
+            newCategoryInput.style.display = categorySelect.value === 'new_category' ? 'block' : 'none';
+        };
+
         modal.style.display = 'flex';
         titleInput.focus();
 
-        const onCategoryChange = () => {
-            categoryInput.style.display = categorySelect.value === 'new_category' ? 'block' : 'none';
-            if (categorySelect.value === 'new_category') categoryInput.focus();
-        };
-
         const onSave = async () => {
             const title = titleInput.value.trim();
-            if (!title) return showPopup("O título não pode estar em branco.", 'error');
-
-            let categoryName = '';
-            if (categorySelect.value === 'new_category') {
-                categoryName = categoryInput.value.trim();
-                if (!categoryName) return showPopup("O nome da nova categoria é obrigatório.", 'error');
-            } else {
-                categoryName = categorySelect.value || 'Geral';
+            if (!title) return showPopup("O título não pode estar em branco.");
+            
+            let categoryName = categorySelect.value;
+            if (categoryName === 'new_category') {
+                categoryName = newCategoryInput.value.trim();
+                if (!categoryName) return showPopup("O nome da nova categoria não pode estar em branco.");
             }
 
             const newTemplate = {
@@ -210,59 +219,64 @@ export function initializeChat() {
                 subCategory: categoryName,
                 keywords: []
             };
+            
+            quickReplies.push(newTemplate);
+            await saveData();
 
-            allUserTemplates.push(newTemplate);
-            await saveQuickReplies(attendant, allUserTemplates);
-
-            currentSelection = { value: (allUserTemplates.length - 1).toString(), text: title };
+            currentSelection = { index: (quickReplies.length - 1).toString(), text: title };
+            elements.selectDisplay.textContent = title;
             updateResponseSelector();
             displaySelectedResponse();
             showPopup("Nova resposta adicionada!");
-            cleanup();
+            closeModal();
         };
         
-        const cleanup = () => {
+        const closeModal = () => {
             modal.style.display = 'none';
             saveBtn.removeEventListener('click', onSave);
-            cancelBtn.removeEventListener('click', cleanup);
-            categorySelect.removeEventListener('change', onCategoryChange);
+            cancelBtn.removeEventListener('click', closeModal);
         };
-        
-        saveBtn.addEventListener('click', onSave);
-        cancelBtn.addEventListener('click', cleanup);
-        categorySelect.addEventListener('change', onCategoryChange);
-    };
 
+        saveBtn.addEventListener('click', onSave, { once: true });
+        cancelBtn.addEventListener('click', closeModal, { once: true });
+    };
+    
     const editTitle = () => {
-        const selectedIndex = currentSelection.value;
-        if (selectedIndex === "") return showPopup("Selecione uma resposta para editar.", 'error');
-        const template = allUserTemplates[parseInt(selectedIndex)];
-        elements.title.value = template.title;
-        elements.titleContainer.style.display = 'flex';
-        elements.title.focus();
+        const selectedIndex = currentSelection.index;
+        if (selectedIndex === null) return showPopup("Selecione uma resposta para editar o título.");
+        const template = quickReplies[parseInt(selectedIndex)];
+        if (template) {
+            elements.title.value = template.title;
+            elements.titleContainer.style.display = 'flex';
+            elements.title.focus();
+        }
     };
-
+    
     const saveNewTitle = async () => {
-        const attendant = getCurrentAttendant();
-        const selectedIndex = currentSelection.value;
-        if (!attendant || selectedIndex === "") return;
+        const selectedIndex = currentSelection.index;
+        if (selectedIndex === null) return;
         const newTitle = elements.title.value.trim();
-        if (!newTitle) return showPopup("O título não pode ser vazio.", 'error');
-        allUserTemplates[parseInt(selectedIndex)].title = newTitle;
-        await saveQuickReplies(attendant, allUserTemplates);
+        if (!newTitle) return showPopup("O título não pode estar em branco.");
+        
+        quickReplies[parseInt(selectedIndex)].title = newTitle;
+        await saveData();
+        
         currentSelection.text = newTitle;
+        elements.selectDisplay.textContent = newTitle;
+        elements.titleContainer.style.display = 'none';
         updateResponseSelector();
-        displaySelectedResponse();
         showPopup("Título alterado com sucesso!");
     };
 
+    // --- Event Listeners ---
     elements.selectDisplay.addEventListener('click', () => elements.selectItems.classList.toggle('select-hide'));
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.custom-select')) elements.selectItems.classList.add('select-hide');
     });
     elements.response.addEventListener('input', () => adjustTextareaHeight(elements.response));
     elements.copyBtn.addEventListener('click', () => {
-        const processedText = replacePlaceholders(elements.response.value);
+        const rawText = elements.response.value;
+        const processedText = replacePlaceholders(rawText);
         navigator.clipboard.writeText(processedText).then(() => showPopup('Texto copiado!'));
     });
     elements.saveEditBtn.addEventListener('click', saveChanges);
@@ -271,10 +285,14 @@ export function initializeChat() {
     elements.editTitleBtn.addEventListener('click', editTitle);
     elements.saveTitleBtn.addEventListener('click', saveNewTitle);
 
+    // --- API PÚBLICA DO MÓDULO ---
     return {
         setResponses: (data) => {
-            allUserTemplates = Array.isArray(data) ? data : [];
-            currentSelection = { value: "", text: "Selecione uma resposta" };
+            const allData = Array.isArray(data) ? data : [];
+            quickReplies = allData.filter(r => r.category === 'quick_reply');
+            osTemplates = allData.filter(r => r.category !== 'quick_reply');
+            
+            currentSelection = { index: null, text: "Selecione uma resposta" };
             updateResponseSelector();
             displaySelectedResponse();
         }

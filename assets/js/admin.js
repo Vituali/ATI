@@ -1,4 +1,4 @@
-import { initializeFirebase, checkAuthState, loadAtendentes, updateUserRole, updateUserStatus } from './firebase.js';
+import { initializeFirebase, checkAuthState, loadAtendentes, updateUserRole, updateUserStatus } from './firebase-service.js';
 import { showPopup } from './ui.js';
 
 document.addEventListener('DOMContentLoaded', () => {

@@ -1,43 +1,71 @@
 import { initializeUI, showSection, updateGreeting, showPopup } from './ui.js';
-import {
-    initializeFirebase,
-    loadDataForAttendant,
-    loadOsTemplatesForAttendant,
-    loadAtendentes,
+import { 
+    db, 
+    auth,
     loginUser,
-    loginWithUsername,
     logoutUser,
     checkAuthState,
-    createUserAccount,
-    updateUserPassword,
-    updateUserFullName
-} from './firebase.js';
+    updateUserPassword
+} from './firebase-init.js';
+import { 
+    getAllAtendentes, 
+    getAtendenteByUsername, 
+    getQuickReplies,
+} from './firebase-service.js';
 import { initializeTheme } from './theme.js';
 import { initializeChat } from './chat.js';
-import { osEditorModule, initializeOsEditor } from './os-editor.js';
+import { initializeOsEditor } from './os-editor.js';
 import { initializeConversor } from './conversor.js';
-    function loadGoogleMapsScript() {
-        const script = document.createElement('script');
-        script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyB5wO0x-7NFmh6waMKzWzRew4ezfYOmYBI&libraries=places,routes&callback=initMap';
-        script.async = true; // Define o carregamento como assíncrono
-        script.defer = true;
-        document.head.appendChild(script);
+import { createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { set, ref } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+async function loginWithUsername(username, password) {
+    const attendantData = await getAtendenteByUsername(username.trim().toLowerCase());
+    if (!attendantData || !attendantData.email) {
+        throw new Error("Credenciais inválidas.");
     }
-// A execução principal agora espera o DOM estar completamente carregado.
+    return loginUser(attendantData.email, password);
+}
+
+async function createUserAccount(details) {
+     const { email, password, username, fullName } = details;
+    const sanitizedUsername = username.trim().toLowerCase().replace(/\s+/g, "_");
+    if (/[.$#[\]/]/.test(sanitizedUsername)) {
+        throw new Error('Nome de usuário inválido.');
+    }
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    await updateProfile(user, { displayName: fullName });
+    const newAtendenteData = {
+        nomeCompleto: fullName, role: "usuario", status: "ativo", uid: user.uid, email: email
+    };
+    await set(ref(db, `atendentes/${sanitizedUsername}`), newAtendenteData);
+}
+
+async function updateUserFullName(username, newFullName) {
+     if (!auth.currentUser) throw new Error("Usuário não autenticado.");
+     await set(ref(db, `atendentes/${username}/nomeCompleto`), newFullName);
+     await updateProfile(auth.currentUser, { displayName: newFullName });
+}
+
+function loadGoogleMapsScript() {
+    const script = document.createElement('script');
+    script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyB5wO0x-7NFmh6waMKzWzRew4ezfYOmYBI&libraries=places,routes&callback=initMap';
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     
-    // --- 1. INICIALIZAÇÃO DOS MÓDULOS ---
-    loadGoogleMapsScript();
     initializeUI();
     initializeTheme();
     initializeOsEditor();
     initializeConversor();
-    initializeFirebase();
     const chatModule = initializeChat();
 
     let currentUsername = null;
 
-    // --- 2. SELETORES DE ELEMENTOS DA INTERFACE ---
     const authOverlay = document.getElementById('auth-overlay');
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
@@ -54,11 +82,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const newFullNameInput = document.getElementById('newFullName');
     const profileUsernameSpan = document.getElementById('profileUsername');
 
-    // --- 3. FUNÇÕES PRINCIPAIS DA APLICAÇÃO ---
     const startApp = async (user, allAtendentes) => {
         const attendantKey = Object.keys(allAtendentes).find(key => allAtendentes[key].uid === user.uid);
         if (!attendantKey) {
-            showPopup("Não foi possível carregar os dados do seu perfil. Tente fazer o login novamente.", 'error');
+            showPopup("Não foi possível carregar os dados do seu perfil.", 'error');
             await logoutUser();
             return;
         }
@@ -70,23 +97,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        // Atualiza a UI
         authOverlay.style.display = 'none';
         mainContent.style.display = 'flex';
         sidebar.style.display = 'flex';
         localStorage.setItem("atendenteAtual", attendantKey);
         
-        // Atualiza UI do perfil
+        window.dispatchEvent(new CustomEvent('atendenteAtualChanged', { detail: { newUser: attendantKey } }));
+        
         if (profileUsernameSpan) profileUsernameSpan.textContent = attendantKey;
         if (newFullNameInput) newFullNameInput.value = attendantData.nomeCompleto;
         if (adminLinkContainer) adminLinkContainer.style.display = attendantData.role === 'admin' ? 'block' : 'none';
 
         chatLoader.style.display = 'flex';
         try {
-            const chatData = await loadDataForAttendant(attendantKey);
-            const osData = await loadOsTemplatesForAttendant(attendantKey);
+            const chatData = await getQuickReplies(attendantKey);
             chatModule.setResponses(chatData);
-            osEditorModule.setTemplates(osData, attendantKey);
         } catch (error) {
             console.error("Erro ao carregar dados:", error);
             showPopup("Não foi possível carregar suas respostas.", "error");
@@ -103,13 +128,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         sidebar.style.display = 'none';
         authOverlay.style.display = 'flex';
         currentUsername = null;
+        localStorage.removeItem("atendenteAtual");
+        window.dispatchEvent(new CustomEvent('atendenteAtualChanged', { detail: { newUser: null } }));
     };
 
-    // --- 4. FLUXO DE AUTENTICAÇÃO INICIAL ---
     checkAuthState(async (user) => {
         if (user) {
             try {
-                const allAtendentes = await loadAtendentes();
+                const allAtendentes = await getAllAtendentes();
                 await startApp(user, allAtendentes);
             } catch (error) {
                 console.error("Erro ao carregar atendentes ou iniciar o app:", error);
@@ -120,7 +146,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // --- 5. EVENT LISTENERS ---
     document.querySelectorAll('.sidebar-button[data-section]').forEach(button => {
         button.addEventListener('click', () => showSection(button.dataset.section, currentUsername));
     });
@@ -191,4 +216,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             navigator.clipboard.writeText(copiableElement.textContent).then(() => showPopup(`'${copiableElement.textContent}' copiado!`, 'success'));
         }
     });
+
+    loadGoogleMapsScript();
 });
+

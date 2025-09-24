@@ -2,22 +2,19 @@ import { showPopup, replacePlaceholders } from './ui.js';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-// --- Variáveis Globais do Módulo ---
 let elements = {};
 let pdfData = {};
 let osTextData = { withdrawal: '', installation: '', os: '' };
 let oldPlaceDetails = null;
 let newPlaceDetails = null;
-let isApiReady = false; // Flag para controlar o estado da API do Google
-let hasPdfData = false; // Flag para controlar se os dados do PDF já foram lidos
+let isApiReady = false;
+let hasPdfData = false;
 
-// --- Funções Auxiliares ---
 function formatAddress(fullAddress) {
     if (!fullAddress || typeof fullAddress !== 'string') return 'N/A';
     const parts = fullAddress.split(',');
     if (parts.length < 3) return fullAddress;
-    let address = parts.slice(0, 3).join(',');
-    return address.replace(',', ' ').trim();
+    return parts.slice(0, 3).join(',').replace(',', ' ').trim();
 }
 
 function formatPhone(phone) {
@@ -37,95 +34,64 @@ function formatDate(dateStr) {
     return `${day}/${month}`;
 }
 
-// --- Lógica da API do Google Maps ---
-
-/**
- * Função central que só é executada quando AMBOS o PDF foi lido E a API do Google está pronta.
- */
 function attemptApiDependentTasks() {
-    // CORREÇÃO: Usa um setTimeout para garantir que os componentes do Google estejam prontos.
     if (isApiReady && hasPdfData) {
         setTimeout(() => {
-            // 1. É seguro preencher os campos de endereço do Google
             elements.oldAddressInput.value = pdfData.oldAddress;
             elements.newAddressInput.value = pdfData.newAddress;
-
-            // 2. É seguro tentar calcular a distância
             triggerDistanceCalculation();
-        }, 0); // O delay de 0ms adia a execução para o próximo ciclo de eventos.
+        }, 0);
     }
 }
 
 function triggerDistanceCalculation() {
     if (!isApiReady) return; 
 
-    let origin, destination;
-
-    if (oldPlaceDetails && oldPlaceDetails.geometry) {
-        origin = oldPlaceDetails.geometry.location;
-    } else {
-        const originAddress = elements.oldAddressInput.value;
-        if (!originAddress || originAddress.includes('não encontrado')) return;
-        origin = originAddress + ", Teresópolis, RJ";
-    }
-
-    if (newPlaceDetails && newPlaceDetails.geometry) {
-        destination = newPlaceDetails.geometry.location;
-    } else {
-        const destinationAddress = elements.newAddressInput.value;
-        if (!destinationAddress || destinationAddress.includes('não encontrado')) return;
-        destination = destinationAddress + ", Teresópolis, RJ";
-    }
+    let origin = oldPlaceDetails?.geometry?.location || (elements.oldAddressInput.value.includes('não encontrado') ? null : `${elements.oldAddressInput.value}, Teresópolis, RJ`);
+    let destination = newPlaceDetails?.geometry?.location || (elements.newAddressInput.value.includes('não encontrado') ? null : `${elements.newAddressInput.value}, Teresópolis, RJ`);
     
-    const directionsService = new google.maps.DirectionsService();
-    directionsService.route({ origin, destination, travelMode: 'DRIVING' }, handleRouteResponse);
-}
+    if (!origin || !destination) return;
 
-function handleRouteResponse(result, status) {
-    if (status === 'OK') {
-        const route = result.routes[0].legs[0];
-        elements.distanceResult.innerHTML = `Distância: <strong>${route.distance.text}</strong>`;
-        elements.distanceResult.style.display = 'block';
-    } else {
-        console.warn('Cálculo de rota automático falhou:', status);
-        elements.distanceResult.style.display = 'none';
-    }
+    const directionsService = new google.maps.DirectionsService();
+    directionsService.route({ origin, destination, travelMode: 'DRIVING' }, (result, status) => {
+        if (status === 'OK') {
+            const route = result.routes[0].legs[0];
+            elements.distanceResult.innerHTML = `Distância: <strong>${route.distance.text}</strong>`;
+            elements.distanceResult.style.display = 'block';
+        } else {
+            console.warn('Cálculo de rota automático falhou:', status);
+            elements.distanceResult.style.display = 'none';
+        }
+    });
 }
 
 function initAndHandleGoogleMaps() {
     if (typeof google === 'undefined' || typeof google.maps === 'undefined') {
-        console.error("API do Google Maps não está pronta.");
-        return;
+        return console.error("API do Google Maps não está pronta.");
     }
-    isApiReady = true; // A API está pronta!
+    isApiReady = true;
 
     elements.oldAddressInput.addEventListener('gmp-placechange', (event) => {
         oldPlaceDetails = event.detail.place;
-        if (oldPlaceDetails) {
-            elements.oldAddressInput.value = oldPlaceDetails.formattedAddress;
-        }
+        if (oldPlaceDetails) elements.oldAddressInput.value = oldPlaceDetails.formattedAddress;
     });
 
     elements.newAddressInput.addEventListener('gmp-placechange', (event) => {
         newPlaceDetails = event.detail.place;
-        if (newPlaceDetails) {
-            elements.newAddressInput.value = newPlaceDetails.formattedAddress;
-        }
+        if (newPlaceDetails) elements.newAddressInput.value = newPlaceDetails.formattedAddress;
     });
 
-    elements.calculateDistanceBtn.addEventListener('click', () => {
-        triggerDistanceCalculation();
-    });
-    
+    elements.calculateDistanceBtn.addEventListener('click', triggerDistanceCalculation);
     attemptApiDependentTasks();
 }
 
+async function processFile(file) {
+    if (!file || file.type !== 'application/pdf') {
+        return showPopup('Por favor, selecione um arquivo PDF válido.', 'error');
+    }
 
-// --- Funções Principais da UI do Conversor ---
-async function handlePdfLoad() {
-    const file = elements.pdfUpload.files[0];
-    if (!file) return showPopup('Por favor, selecione um arquivo PDF.');
-
+    elements.fileName.textContent = file.name;
+    
     try {
         const fileBuffer = await file.arrayBuffer();
         const pdf = await pdfjsLib.getDocument(fileBuffer).promise;
@@ -142,10 +108,8 @@ async function handlePdfLoad() {
         const addressRegex = /([\s\S]+? \/ RJ\.)/g;
         const oldAddresses = oldBlockText?.match(addressRegex);
         const newAddresses = newBlockText?.match(addressRegex);
-        const rawOld = oldAddresses ? oldAddresses[oldAddresses.length - 1] : null;
-        const rawNew = newAddresses ? newAddresses[newAddresses.length - 1] : null;
-        pdfData.oldAddress = formatAddress(rawOld?.trim().toUpperCase()) || 'Endereço antigo não encontrado';
-        pdfData.newAddress = formatAddress(rawNew?.trim().toUpperCase()) || 'Endereço novo não encontrado';
+        pdfData.oldAddress = formatAddress(oldAddresses?.[oldAddresses.length - 1]?.trim().toUpperCase()) || 'Endereço antigo não encontrado';
+        pdfData.newAddress = formatAddress(newAddresses?.[newAddresses.length - 1]?.trim().toUpperCase()) || 'Endereço novo não encontrado';
         
         elements.contratoSpan.textContent = pdfData.contrato;
         elements.contrato.textContent = pdfData.contrato;
@@ -156,20 +120,18 @@ async function handlePdfLoad() {
         
         oldPlaceDetails = null;
         newPlaceDetails = null;
-        hasPdfData = true; // Define que os dados do PDF foram lidos
+        hasPdfData = true;
         
         attemptApiDependentTasks();
-
     } catch (error) {
         console.error('Erro ao processar PDF:', error);
         showPopup('Erro ao ler o arquivo PDF.', 'error');
     }
 }
 
-
 function handleGenerateOS() {
     const technician = localStorage.getItem('atendenteAtual')?.toUpperCase();
-    if (!technician) return showPopup('Selecione um atendente para gerar a OS.');
+    if (!technician) return showPopup('Selecione um atendente para gerar a OS.', 'error');
     const { formatted, isValid } = formatPhone(elements.phone.value);
     if (!isValid) return showPopup('Telefone inválido. Ex: (21) 98765-4321', 'error');
     
@@ -208,11 +170,11 @@ function handleGenerateOS() {
     elements.copyButtons.style.display = 'flex';
 }
 
-// --- Função Principal de Inicialização do Módulo ---
 export function initializeConversor() {
     elements = {
         uploadSection: document.getElementById('uploadSection'),
         dataSection: document.getElementById('dataSection'),
+        dropZone: document.getElementById('dropZone'),
         withdrawalSection: document.getElementById('withdrawalSection'),
         copyButtons: document.getElementById('copyButtons'),
         contratoSpan: document.getElementById('contratoSpan'),
@@ -241,7 +203,6 @@ export function initializeConversor() {
         migration: document.getElementById('migration'),
         carrierSection: document.getElementById('carrierSection'),
         oldCarrier: document.getElementById('oldCarrier'),
-        loadPdfBtn: document.getElementById('loadPdfBtn'),
         generateOsBtn: document.getElementById('generateOsBtn'),
         backToUploadBtn: document.getElementById('backToUploadBtn'),
         copyWithdrawalBtn: document.getElementById('copyWithdrawalBtn'),
@@ -287,25 +248,42 @@ export function initializeConversor() {
         elements.distanceResult.style.display = 'none';
         oldPlaceDetails = null;
         newPlaceDetails = null;
-        hasPdfData = false; // Reseta a flag do PDF
-        pdfData = {}; // Limpa os dados do PDF
+        hasPdfData = false;
+        pdfData = {};
         updateTaxLogic();
     };
     
     window.addEventListener('google-maps-loaded', initAndHandleGoogleMaps);
     
     setMinDates();
-    elements.loadPdfBtn.addEventListener('click', handlePdfLoad);
     elements.generateOsBtn.addEventListener('click', handleGenerateOS);
     elements.backToUploadBtn.addEventListener('click', resetForm);
     elements.copyWithdrawalBtn.addEventListener('click', () => osTextData.withdrawal ? navigator.clipboard.writeText(osTextData.withdrawal).then(() => showPopup('Retirada copiada!')) : showPopup('Não há retirada para copiar.'));
     elements.copyInstallationBtn.addEventListener('click', () => navigator.clipboard.writeText(osTextData.installation).then(() => showPopup('Instalação copiada!')));
     elements.copyOsBtn.addEventListener('click', () => navigator.clipboard.writeText(replacePlaceholders(osTextData.os)).then(() => showPopup('O.S. copiada!')));
-    elements.pdfUpload.addEventListener('change', () => { elements.fileName.textContent = elements.pdfUpload.files[0]?.name || 'Nenhum arquivo'; });
+    
+    elements.pdfUpload.addEventListener('change', () => {
+        if (elements.pdfUpload.files.length > 0) processFile(elements.pdfUpload.files[0]);
+    });
+
+    elements.dropZone.addEventListener('dragover', e => {
+        e.preventDefault();
+        elements.dropZone.classList.add('drop-zone--over');
+    });
+
+    ['dragleave', 'dragend'].forEach(type => {
+        elements.dropZone.addEventListener(type, () => elements.dropZone.classList.remove('drop-zone--over'));
+    });
+
+    elements.dropZone.addEventListener('drop', e => {
+        e.preventDefault();
+        elements.dropZone.classList.remove('drop-zone--over');
+        if (e.dataTransfer.files.length > 0) processFile(e.dataTransfer.files[0]);
+    });
+
     elements.phone.addEventListener('blur', () => { const { formatted } = formatPhone(elements.phone.value); elements.phone.value = formatted; });
     elements.selfWithdrawal.addEventListener('change', () => { elements.withdrawalSection.style.display = elements.selfWithdrawal.checked ? 'none' : 'block'; updateInstallationMinDate(); });
     elements.withdrawalDate.addEventListener('change', updateInstallationMinDate);
     elements.renewal.addEventListener('change', (e) => { updateTaxLogic(); handleCheckboxExclusion(e); });
     elements.migration.addEventListener('change', (e) => { updateTaxLogic(); handleCheckboxExclusion(e); });
 }
-

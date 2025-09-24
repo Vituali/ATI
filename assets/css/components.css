@@ -713,29 +713,43 @@ input:checked + .slider:before {
     gap: 20px;
 }
 
-.os-list {
-    max-height: 400px;
-    overflow-y: auto;
+.os-list-container {
+    display: flex;
+    flex-direction: column;
 }
 
-.os-category-header {
-    font-weight: bold;
-    color: var(--heading-color);
-    margin-top: 15px;
-    margin-bottom: 8px;
-    padding-bottom: 5px;
-    border-bottom: 1px solid var(--border-color);
-    font-size: 1.1em;
+.os-filter-container {
+    margin-bottom: 15px;
 }
-.os-category-header:first-child {
-    margin-top: 0;
+
+.os-filter-container label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.os-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+    overflow-y: auto;
+    /* CORREÇÃO: Esconde a barra de rolagem horizontal */
+    overflow-x: hidden;
+    max-height: 400px;
 }
 
 .os-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding: 10px;
     cursor: pointer;
     border-radius: 4px;
     transition: background-color 0.2s;
+    /* CORREÇÃO: Remove a borda inferior para um visual mais limpo */
+    border-bottom: none;
 }
 
 .os-list-item:hover {
@@ -747,14 +761,112 @@ input:checked + .slider:before {
     color: var(--button-text);
     font-weight: bold;
 }
+
+.os-list-item span {
+    flex-grow: 1;
+    white-space: normal;
+    word-break: break-word;
+    padding-right: 10px;
+    /* CORREÇÃO: Garante que o texto possa quebrar a linha em um container flex */
+    min-width: 0;
+}
+
+.template-actions {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 5px;
+    transition: transform 0.2s, color 0.2s;
+}
+
+.action-btn:hover {
+    transform: scale(1.2);
+    color: var(--icon-color);
+}
+
+.os-list-item.active .action-btn {
+    color: var(--button-text);
+}
+
+/* --- Seletor com Busca --- */
+.searchable-select-container {
+    position: relative;
+}
+
+.searchable-options-list {
+    display: none;
+    position: absolute;
+    border: 1px solid var(--border-color);
+    border-top: none;
+    border-radius: 0 0 5px 5px;
+    z-index: 100;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: 200px;
+    overflow-y: auto;
+    background-color: var(--input-bg);
+}
+
+.searchable-option {
+    padding: 10px;
+    cursor: pointer;
+}
+
+.searchable-option:hover {
+    background-color: rgba(0,0,0,0.2);
+}
+
+/* --- Área de Arrastar e Soltar --- */
+.drop-zone {
+    width: 100%;
+    padding: 40px;
+    border: 2px dashed var(--border-color);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-family: var(--font-primary);
+    color: var(--text-primary);
+    transition: border-color 0.3s, background-color 0.3s;
+}
+
+.drop-zone--over {
+    border-color: var(--icon-color);
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.drop-zone .upload-content p {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+}
+
+.drop-zone .upload-content span {
+    display: block;
+    margin-bottom: 15px;
+    font-size: 1em;
+    opacity: 0.7;
+}
+
 /*=============================================================================*/
 /* == TEXTO COPIADOS = */
 @font-face {
     font-family: Orbitron;
     font-style: normal;
     font-weight: 400;
-    src: url(https://fonts.gstatic.com/s/orbitron/v31/yMJRMIlzdpvBhQQL_Qq7dy0.woff2) format('woff2')            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    src: url(https://fonts.gstatic.com/s/orbitron/v31/yMJRMIlzdpvBhQQL_Qq7dy0.woff2) format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
+
 .password-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -770,7 +882,7 @@ input:checked + .slider:before {
     padding: 2px 6px;
     border-radius: 4px;
     transition: background-color 0.2s;
-    display: inline-block; /* Garante que o fundo se aplique corretamente */
+    display: inline-block;
 }
 
 .copiable:hover {
@@ -778,5 +890,44 @@ input:checked + .slider:before {
 }
 
 .copiable:active {
-    transform: translateY(1px); /* Efeito de clique */
+    transform: translateY(1px);
+}
+
+/* ======================================== */
+/* == NOVAS REGRAS PARA O SELETOR DE CHAT e LISTAS == */
+/* ======================================== */
+
+.option-item {
+    white-space: normal;
+    word-break: break-word;
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+.select-items::-webkit-scrollbar,
+.os-list::-webkit-scrollbar,
+.searchable-options-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.select-items::-webkit-scrollbar-track,
+.os-list::-webkit-scrollbar-track,
+.searchable-options-list::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+.select-items::-webkit-scrollbar-thumb,
+.os-list::-webkit-scrollbar-thumb,
+.searchable-options-list::-webkit-scrollbar-thumb {
+    background-color: var(--icon-color);
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+
+.select-items::-webkit-scrollbar-thumb:hover,
+.os-list::-webkit-scrollbar-thumb:hover,
+.searchable-options-list::-webkit-scrollbar-thumb:hover {
+    background-color: var(--button-hover-bg);
 }

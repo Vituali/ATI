@@ -1,187 +1,270 @@
-// assets/js/os-editor.js - VERSÃO CORRIGIDA E FINAL
-
+import { getOsTemplates, saveAllOsTemplates, getSgpOccurrenceTypes } from './firebase-service.js';
 import { showPopup } from './ui.js';
-import { saveOsTemplatesForAttendant, db } from './firebase.js'; 
-import { ref, get } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+import { db } from './firebase-init.js';
+import { ref, push, child } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-let elements = {};
-let allUserTemplates = []; 
-let currentUsername = '';
+let elements;
+let templatesCache = {};
+let allOccurrenceTypes = []; // Cache para os tipos de ocorrência
+let currentUser = null;
 
-function renderList() {
-    // Como agora só temos modelos de O.S., não precisamos mais filtrar.
-    const osTemplates = allUserTemplates;
-    elements.list.innerHTML = '';
-    if (osTemplates.length === 0) {
-        elements.list.innerHTML = '<p>Nenhum modelo de O.S. encontrado.</p>';
-        return;
-    }
-
-    const groupedByCategory = osTemplates.reduce((acc, template) => {
-        const category = template.category || 'Geral';
-        if (!acc[category]) {
-            acc[category] = [];
-        }
-        acc[category].push(template);
-        return acc;
-    }, {});
-
-    for (const category in groupedByCategory) {
-        const categoryHeader = document.createElement('div');
-        categoryHeader.className = 'os-category-header';
-        categoryHeader.textContent = category;
-        elements.list.appendChild(categoryHeader);
-
-        groupedByCategory[category].forEach(template => {
-            const originalIndex = allUserTemplates.indexOf(template);
-            const item = document.createElement('div');
-            item.className = 'os-list-item';
-            item.textContent = template.title;
-            item.dataset.index = originalIndex;
-            
-            item.addEventListener('click', () => {
-                document.querySelectorAll('.os-list-item.active').forEach(i => i.classList.remove('active'));
-                item.classList.add('active');
-                fillFormForEdit(originalIndex);
-            });
-
-            elements.list.appendChild(item);
+/**
+ * Carrega e popula os menus de tipo de ocorrência.
+ */
+async function loadOccurrenceTypes() {
+    try {
+        const types = await getSgpOccurrenceTypes();
+        allOccurrenceTypes = types && Array.isArray(types) ? types.sort((a, b) => a.text.localeCompare(b.text)) : [];
+        
+        // Popula o menu de FILTRO
+        const filterSelect = elements.typeFilter;
+        filterSelect.innerHTML = '<option value="">-- Todos os Modelos --</option>';
+        allOccurrenceTypes.forEach(type => {
+            const option = document.createElement('option');
+            option.value = type.id;
+            option.textContent = type.text;
+            filterSelect.appendChild(option);
         });
+
+        // Popula as opções do seletor com BUSCA no formulário
+        const optionsContainer = elements.occurrenceTypeOptions;
+        optionsContainer.innerHTML = '';
+        allOccurrenceTypes.forEach(type => {
+            const optionDiv = document.createElement('div');
+            optionDiv.className = 'searchable-option';
+            optionDiv.dataset.value = type.id;
+            optionDiv.textContent = type.text;
+            optionsContainer.appendChild(optionDiv);
+        });
+
+    } catch (error) {
+        console.error("Falha ao carregar tipos de ocorrência:", error);
+        elements.typeFilter.innerHTML = '<option value="">-- Erro --</option>';
     }
 }
 
-function fillFormForEdit(index) {
-    const template = allUserTemplates[index];
-    if (!template) return;
+/**
+ * Filtra a lista de modelos com base no tipo de ocorrência selecionado.
+ */
+function filterAndRenderList() {
+    const filterId = elements.typeFilter.value;
+    let filteredTemplates = Object.values(templatesCache);
+    if (filterId) {
+        filteredTemplates = filteredTemplates.filter(t => t.occurrenceTypeId === filterId);
+    }
+    renderTemplateList(filteredTemplates);
+}
 
-    elements.formTitle.textContent = `Editando: ${template.title}`;
-    elements.editIndex.value = index;
+/**
+ * Renderiza a lista de templates na tela.
+ */
+function renderTemplateList(templatesToRender) {
+    elements.list.innerHTML = '';
+    if (templatesToRender.length === 0) {
+        elements.list.innerHTML = '<li>Nenhum modelo para este filtro.</li>';
+        return;
+    }
+    templatesToRender.sort((a, b) => a.title.localeCompare(b.title)).forEach(template => {
+        const li = document.createElement('li');
+        li.className = 'os-list-item';
+        li.dataset.id = template.id;
+        li.innerHTML = `
+            <span>${template.title}</span>
+            <div class="template-actions">
+                <button class="action-btn edit-btn" data-id="${template.id}" data-tooltip="Editar">✏️</button>
+                <button class="action-btn delete-btn" data-id="${template.id}" data-tooltip="Apagar">🗑️</button>
+            </div>
+        `;
+        elements.list.appendChild(li);
+    });
+}
+
+async function loadAndRenderTemplates() {
+    if (!currentUser) {
+        templatesCache = {};
+        filterAndRenderList();
+        return;
+    }
+    try {
+        const rawData = await getOsTemplates(currentUser);
+        templatesCache = {}; // Limpa o cache antes de preencher
+        if (Array.isArray(rawData)) { // Lida com o formato antigo de array
+            rawData.forEach((template, index) => {
+                if (template) {
+                    const tempId = `old_${index}`;
+                    template.id = tempId;
+                    templatesCache[tempId] = template;
+                }
+            });
+        } else if (rawData && typeof rawData === 'object') { // Lida com o formato novo de objeto
+            Object.entries(rawData).forEach(([id, template]) => {
+                template.id = id;
+                templatesCache[id] = template;
+            });
+        }
+        filterAndRenderList();
+    } catch (error) {
+        showPopup('Erro ao carregar modelos.', true);
+    }
+}
+
+function fillFormForEdit(templateId) {
+    const template = templatesCache[templateId];
+    if (!template) return;
+    elements.id.value = template.id;
     elements.title.value = template.title;
     elements.text.value = template.text;
-    elements.category.value = template.category;
-    elements.keywords.value = (template.keywords || []).join(', ');
-    elements.deleteBtn.style.display = 'inline-block';
+    elements.category.value = template.category || '';
+    elements.keywords.value = template.keywords ? template.keywords.join(', ') : '';
+    
+    // Preenche o seletor com busca
+    const type = allOccurrenceTypes.find(t => t.id === template.occurrenceTypeId);
+    elements.occurrenceTypeSearch.value = type ? type.text : '';
+    elements.occurrenceTypeId.value = template.occurrenceTypeId || '';
+    
+    elements.formTitle.textContent = 'Editar Modelo de O.S.';
+    
+    document.querySelectorAll('.os-list-item.active').forEach(item => item.classList.remove('active'));
+    const listItem = elements.list.querySelector(`[data-id="${templateId}"]`);
+    if (listItem) listItem.classList.add('active');
 }
 
 function resetForm() {
-    // --- CORREÇÃO FINAL: Reset manual e explícito dos campos ---
-    elements.title.value = '';
-    elements.text.value = '';
-    elements.keywords.value = '';
-    elements.category.selectedIndex = 0;
-
-    elements.formTitle.textContent = 'Crie um Novo Modelo';
-    elements.editIndex.value = '';
-    elements.deleteBtn.style.display = 'none';
-    document.querySelectorAll('.os-list-item.active').forEach(i => i.classList.remove('active'));
+    elements.form.reset();
+    elements.id.value = '';
+    elements.occurrenceTypeSearch.value = '';
+    elements.occurrenceTypeId.value = '';
+    elements.formTitle.textContent = 'Novo Modelo de O.S.';
+    document.querySelectorAll('.os-list-item.active').forEach(item => item.classList.remove('active'));
 }
 
-async function saveAllTemplates() {
-    if (!currentUsername) return;
-    // Chama a função dedicada para salvar os modelos de O.S.
-    await saveOsTemplatesForAttendant(currentUsername, allUserTemplates);
-    renderList();
-}
+async function handleFormSubmit(event) {
+    event.preventDefault();
+    if (!currentUser) return;
 
-async function handleFormSubmit(e) {
-    e.preventDefault();
-    const data = {
+    const templateData = {
         title: elements.title.value.trim(),
         text: elements.text.value.trim(),
-        category: elements.category.value,
+        category: elements.category.value.trim(),
         keywords: elements.keywords.value.split(',').map(k => k.trim()).filter(Boolean),
+        occurrenceTypeId: elements.occurrenceTypeId.value
     };
 
-    if (!data.title) {
-        showPopup('O título é obrigatório.', 'error');
-        return;
+    if (!templateData.title) return showPopup('O título é obrigatório.', 'error');
+
+    let id = elements.id.value;
+
+    if (id && id.startsWith('old_')) {
+        delete templatesCache[id];
+        id = null; 
     }
-
-    const editIndex = elements.editIndex.value;
-
+    
+    if (!id) {
+        id = push(child(ref(db), `modelos_os/${currentUser}`)).key;
+    }
+    
+    templateData.id = id;
+    templatesCache[id] = templateData;
+    
     try {
-        if (editIndex !== '') { // Editando
-            const template = allUserTemplates[parseInt(editIndex)];
-            Object.assign(template, data);
-        } else { // Criando um novo (com a correção de imutabilidade)
-            allUserTemplates = [...allUserTemplates, data];
-        }
-
-        await saveAllTemplates();
-        showPopup('Modelo salvo com sucesso!', 'success');
-
-    } catch (error) {
-        showPopup('Erro ao salvar o modelo.', 'error');
-        console.error("Falha em handleFormSubmit:", error);
-
-    } finally {
-        // O finally garante que o formulário sempre será limpo.
+        await saveAllOsTemplates(currentUser, templatesCache);
+        await loadAndRenderTemplates();
         resetForm();
+        showPopup('Modelo salvo com sucesso!');
+    } catch (error) {
+        showPopup('Erro ao salvar modelo.', true);
     }
 }
 
-async function handleDelete() {
-    const editIndex = elements.editIndex.value;
-    if (editIndex === '') return;
+async function handleListClick(event) {
+    const target = event.target;
+    const listItem = target.closest('.os-list-item');
+    const editButton = target.closest('.edit-btn');
+    const deleteButton = target.closest('.delete-btn');
 
-    if (confirm('Tem certeza que deseja apagar este modelo?')) {
-        allUserTemplates.splice(parseInt(editIndex), 1);
-        await saveAllTemplates();
-        showPopup('Modelo apagado.', 'info');
-        resetForm();
-    }
-}
-
-async function resetToDefaults() {
-    if (!confirm('Isso substituirá TODOS os seus modelos de O.S. pelos modelos padrão. Deseja continuar?')) {
-        return;
-    }
-
-    try {
-        const masterRef = ref(db, 'os_templates_master');
-        const snapshot = await get(masterRef);
-        if (snapshot.exists()) {
-            allUserTemplates = snapshot.val(); 
-            await saveAllTemplates();
-            showPopup('Modelos de O.S. resetados para o padrão!', 'success');
-        } else {
-            showPopup('Nenhum modelo padrão encontrado no banco de dados.', 'error');
+    if (editButton) {
+        fillFormForEdit(editButton.dataset.id);
+    } else if (deleteButton) {
+        const templateId = deleteButton.dataset.id;
+        if (confirm('Tem certeza que deseja excluir este modelo?')) {
+            delete templatesCache[templateId];
+            await saveAllOsTemplates(currentUser, templatesCache);
+            filterAndRenderList();
+            resetForm();
+            showPopup('Modelo excluído.');
         }
-    } catch (error) {
-        showPopup('Erro ao buscar modelos padrão.', 'error');
-        console.error("Erro ao resetar:", error);
+    } else if (listItem) {
+        fillFormForEdit(listItem.dataset.id);
     }
 }
 
 export function initializeOsEditor() {
-    // A CORREÇÃO PRINCIPAL: Preenchemos 'elements' aqui, depois que a página carregou.
+    const osSection = document.getElementById('osSection');
+    if (!osSection || osSection.dataset.initialized) return;
+
     elements = {
-        list: document.getElementById('os-list'),
-        form: document.getElementById('os-form'),
-        formTitle: document.getElementById('os-form-title'),
-        editIndex: document.getElementById('os-edit-index'),
-        title: document.getElementById('os-title'),
-        text: document.getElementById('os-text'),
-        category: document.getElementById('os-category'),
-        keywords: document.getElementById('os-keywords'),
-        saveBtn: document.getElementById('os-save-btn'),
-        newBtn: document.getElementById('os-new-btn'),
-        deleteBtn: document.getElementById('os-delete-btn'),
-        resetBtn: document.getElementById('os-reset-btn'),
+        form: osSection.querySelector('#os-form'),
+        formTitle: osSection.querySelector('#os-form-title'),
+        id: osSection.querySelector('#os-id'),
+        title: osSection.querySelector('#os-title'),
+        text: osSection.querySelector('#os-text'),
+        category: osSection.querySelector('#os-category'),
+        keywords: osSection.querySelector('#os-keywords'),
+        list: osSection.querySelector('#os-templates-list'),
+        cancelBtn: osSection.querySelector('#os-cancel-btn'),
+        typeFilter: osSection.querySelector('#os-type-filter'),
+        occurrenceTypeSearch: osSection.querySelector('#os-occurrence-type-search'),
+        occurrenceTypeId: osSection.querySelector('#os-occurrence-type-id'),
+        occurrenceTypeOptions: osSection.querySelector('#os-occurrence-type-options'),
     };
 
-    // E então adicionamos os eventos
+    if (!elements.form) return;
+
+    currentUser = localStorage.getItem('atendenteAtual');
+    loadAndRenderTemplates();
+    loadOccurrenceTypes();
+
+    // Event Listeners
     elements.form.addEventListener('submit', handleFormSubmit);
-    elements.newBtn.addEventListener('click', resetForm);
-    elements.deleteBtn.addEventListener('click', handleDelete);
-    elements.resetBtn.addEventListener('click', resetToDefaults);
+    elements.cancelBtn.addEventListener('click', resetForm);
+    elements.list.addEventListener('click', handleListClick);
+    elements.typeFilter.addEventListener('change', filterAndRenderList);
+
+    // Lógica do seletor com busca
+    const searchInput = elements.occurrenceTypeSearch;
+    const hiddenInput = elements.occurrenceTypeId;
+    const optionsContainer = elements.occurrenceTypeOptions;
+
+    searchInput.addEventListener('focus', () => { optionsContainer.style.display = 'block'; });
+    document.addEventListener('click', (e) => {
+        if (!searchInput.contains(e.target) && !optionsContainer.contains(e.target)) {
+             optionsContainer.style.display = 'none';
+        }
+    });
+
+    searchInput.addEventListener('input', () => {
+        const filter = searchInput.value.toUpperCase();
+        hiddenInput.value = '';
+        optionsContainer.querySelectorAll('.searchable-option').forEach(option => {
+            const txtValue = option.textContent || option.innerText;
+            option.style.display = txtValue.toUpperCase().indexOf(filter) > -1 ? "" : "none";
+        });
+    });
+
+    optionsContainer.addEventListener('click', (e) => {
+        if (e.target.classList.contains('searchable-option')) {
+            hiddenInput.value = e.target.dataset.value;
+            searchInput.value = e.target.innerText;
+            optionsContainer.style.display = 'none';
+        }
+    });
+
+    window.addEventListener('atendenteAtualChanged', (event) => {
+        currentUser = event.detail.newUser;
+        loadAndRenderTemplates();
+        resetForm();
+    });
+
+    osSection.dataset.initialized = 'true';
 }
 
-export const osEditorModule = {
-    setTemplates: (templates, username) => {
-        allUserTemplates = templates || []; // Garante que seja um array
-        currentUsername = username;
-        renderList();
-        resetForm();
-    }
-};

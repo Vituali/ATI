@@ -125,18 +125,33 @@
                 <div class="os-editor-layout">
                     <div class="os-list-container card">
                         <h3>Seus Modelos</h3>
-                        <div id="os-list" class="os-list"></div>
-                        <button id="os-reset-btn" class="button back" style="width: 100%; margin-top: 15px;">Resetar para Padrão</button>
+                        <div class="os-filter-container">
+                            <label for="os-type-filter">🔎 Filtrar por Tipo de Ocorrência:</label>
+                            <select id="os-type-filter">
+                                <option value="">-- Todos os Modelos --</option>
+                            </select>
+                        </div>
+                        <ul id="os-templates-list" class="os-list"></ul>
                     </div>
                     <div class="os-form-container card">
                         <form id="os-form">
-                            <input type="hidden" id="os-edit-index">
-                            <h3 id="os-form-title">Selecione ou crie um modelo</h3>
+                            <input type="hidden" id="os-id">
+                            <h3 id="os-form-title">Novo Modelo de O.S.</h3>
                             <div class="grupo"><label for="os-title">Título do Modelo:</label><input type="text" id="os-title" placeholder="Ex: Sem Conexão" required></div>
                             <div class="grupo"><label for="os-text">Texto da O.S.:</label><textarea id="os-text" rows="5" placeholder="Ex: CLIENTE SEM ACESSO..."></textarea></div>
-                            <div class="grupo"><label for="os-category">Categoria:</label><select id="os-category"><option value="Suporte">Suporte</option><option value="Financeiro">Financeiro</option><option value="Comercial">Comercial</option><option value="Geral">Geral</option></select></div>
+                            <div class="grupo"><label for="os-category">Categoria:</label><input type="text" id="os-category" placeholder="Ex: Suporte, Financeiro..."></div>
                             <div class="grupo"><label for="os-keywords">Palavras-chave (separadas por vírgula):</label><input type="text" id="os-keywords" placeholder="sem conexao, nao funciona, caiu"></div>
-                            <div class="controls"><button type="submit" id="os-save-btn" class="button">Salvar</button><button type="button" id="os-new-btn" class="button">Limpar</button><button type="button" id="os-delete-btn" class="button back" style="display: none;">Apagar</button></div>
+                            <div class="grupo">
+                                <label for="os-occurrence-type-search">Tipo de Ocorrência SGP (Automático):</label>
+                                <div class="searchable-select-container">
+                                    <input type="text" id="os-occurrence-type-search" class="searchable-input" placeholder="Pesquisar tipo (ex: sem acesso)..." autocomplete="off">
+                                    <input type="hidden" id="os-occurrence-type-id">
+                                    <div id="os-occurrence-type-options" class="searchable-options-list">
+                                        <!-- Opções preenchidas via JS -->
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="controls"><button type="submit" class="button">Salvar</button><button type="button" id="os-cancel-btn" class="button back">Limpar</button></div>
                         </form>
                     </div>
                 </div>
@@ -144,13 +159,20 @@
 
             <!-- Seção do Conversor de Aditivo -->
             <div id="conversorSection" style="display: none;">
-                <h1 id="saudacaoConversor"></h1>
-                <h2>Conversor de Aditivo</h2>
+                <h1>Conversor de Aditivo</h1>
+                <h2>Arraste e solte o PDF do aditivo para extrair os dados automaticamente.</h2>
                 <div id="uploadSection" class="upload-card">
-                    <div class="upload-content">
-                        <h3>Carregar Aditivo PDF</h3>
-                        <div class="file-upload-wrapper"><label for="pdfUpload" class="file-label">Escolher Arquivo</label><input type="file" id="pdfUpload" class="file-input" accept="application/pdf"><span id="fileName" class="file-name">Nenhum arquivo selecionado</span></div>
-                        <button class="button" id="loadPdfBtn">Carregar e Extrair Dados</button>
+                    <!-- ÁREA DE ARRASTAR E SOLTAR -->
+                    <div id="dropZone" class="drop-zone">
+                        <div class="upload-content">
+                            <p>Arraste e solte o arquivo PDF aqui</p>
+                            <span>ou</span>
+                            <div class="file-upload-wrapper">
+                                <label for="pdfUpload" class="file-label">Escolher Arquivo</label>
+                                <input type="file" id="pdfUpload" class="file-input" accept="application/pdf">
+                                <span id="fileName" class="file-name">Nenhum arquivo selecionado</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div id="dataSection" style="display: none;">
@@ -161,7 +183,6 @@
                             <h4>Dados Gerais</h4>
                             <div class="grupo">
                                 <p><strong>Contrato:</strong> <span id="contrato"></span></p><p><strong>Nome:</strong> <span id="nome"></span></p>
-                                <!-- CORREÇÃO: Utiliza inputs de texto padrão para robustez -->
                                 <div class="grupo">
                                     <label for="oldAddressInput">Endereço Antigo (Origem):</label>
                                     <input type="text" id="oldAddressInput" placeholder="Endereço extraído ou digite aqui">
@@ -267,10 +288,22 @@
 
             <div id="addResponseModal" class="modal-overlay" style="display: none;">
                 <div class="modal-content card">
-                    <h3>Adicionar Nova Resposta</h3>
-                    <div class="modal-form-group"><label for="newResponseTitle">Título:</label><input type="text" id="newResponseTitle" placeholder="Ex: Problema de conexão"></div>
-                    <div class="modal-form-group"><label for="newResponseCategory">Categoria:</label><input type="text" id="newResponseCategory" placeholder="Ex: suporte (ou deixe em branco)"></div>
-                    <div class="modal-buttons"><button id="modalSaveNewBtn" class="button">Salvar</button><button id="modalCancelNewBtn" class="button back">Cancelar</button></div>
+                    <h3>Adicionar Nova Resposta Rápida</h3>
+                    <div class="modal-form-group">
+                        <label for="newResponseTitle">Título:</label>
+                        <input type="text" id="newResponseTitle" placeholder="Ex: Problema de conexão">
+                    </div>
+                    <div class="modal-form-group">
+                        <label for="newResponseCategorySelect">Categoria:</label>
+                        <select id="newResponseCategorySelect">
+                            <!-- Opções preenchidas via JS -->
+                        </select>
+                        <input type="text" id="newResponseCategoryInput" placeholder="Digite o nome da nova categoria" style="display: none; margin-top: 10px;">
+                    </div>
+                    <div class="modal-buttons">
+                        <button id="modalSaveNewBtn" class="button">Salvar</button>
+                        <button id="modalCancelNewBtn" class="button back">Cancelar</button>
+                    </div>
                 </div>
             </div>
         </div>

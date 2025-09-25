@@ -40,13 +40,13 @@ function getLuminance(hex) {
  * @param {object} settings - O objeto com as configurações de tema.
  */
 function applyLocalTheme(settings) {
+    // ATUALIZADO: Controla a classe dark-mode diretamente no body
     if (settings.isDarkMode) {
         document.body.classList.add('dark-mode');
     } else {
         document.body.classList.remove('dark-mode');
     }
     
-    // CORREÇÃO: Define todas as variáveis de cor necessárias.
     const root = document.documentElement;
     const contrastColorForButtons = getLuminance(settings.borderColor) > 0.5 ? '#111111' : '#FFFFFF';
 
@@ -55,9 +55,7 @@ function applyLocalTheme(settings) {
     root.style.setProperty('--heading-color', settings.textColor);
     root.style.setProperty('--button-bg', settings.borderColor);
     root.style.setProperty('--button-text', contrastColorForButtons);
-    // CORREÇÃO: Define a cor da sombra para o efeito neon.
     root.style.setProperty('--shadow-color', `${settings.borderColor}80`);
-
 
     if (settings.neonBorders) {
         document.body.classList.remove('no-neon');
@@ -83,7 +81,6 @@ function loadCustomizationSettings() {
 
     const settings = { ...defaultSettings, ...savedSettings };
 
-    // Aplica as configurações aos inputs do popup
     themeToggle.checked = settings.isDarkMode;
     neonBordersToggle.checked = settings.neonBorders;
     iconColorPicker.value = settings.iconColor;
@@ -92,7 +89,6 @@ function loadCustomizationSettings() {
     alphaSlider.value = settings.chatPrimaryAlpha;
     alphaValueSpan.textContent = settings.chatPrimaryAlpha;
 
-    // Aplica o tema na própria página do painel
     applyLocalTheme(settings);
 }
 
@@ -113,18 +109,17 @@ function saveCustomizationSettings() {
     
     applyLocalTheme(settings);
 
-    window.postMessage({
-        type: 'ATI_THEME_UPDATE',
-        themeSettings: settings
-    }, "*");
-
-    // CORREÇÃO: Melhora o feedback visual do botão.
+    // Envia mensagem para a extensão para que ela aplique o tema no Chatmix
+    if (chrome && chrome.runtime) {
+        chrome.runtime.sendMessage({ action: "themeUpdated" });
+    }
+    
     const originalText = saveCustomizationBtn.textContent;
     saveCustomizationBtn.textContent = '✔️ Salvo!';
     saveCustomizationBtn.style.background = 'var(--success-color, #22C55E)';
     setTimeout(() => {
         saveCustomizationBtn.textContent = originalText;
-        saveCustomizationBtn.style.background = ''; // Volta ao estilo normal
+        saveCustomizationBtn.style.background = '';
         customizationPopup.style.display = 'none';
     }, 1200);
 }
@@ -147,4 +142,3 @@ export function initializeTheme() {
 
     loadCustomizationSettings();
 }
-

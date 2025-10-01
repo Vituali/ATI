@@ -22,8 +22,8 @@ function formatPhone(phone) {
     const isValid = /^[1-9]{2}(9?\d{8})$/.test(cleaned);
     let formatted = cleaned;
     if (isValid) {
-        if (cleaned.length === 10) formatted = `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 6)}-${cleaned.slice(6)}`;
-        else if (cleaned.length === 11) formatted = `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 7)}-${cleaned.slice(7)}`;
+        if (cleaned.length === 10) formatted = `${cleaned.slice(0, 2)} ${cleaned.slice(2, 6)}-${cleaned.slice(6)}`;
+        else if (cleaned.length === 11) formatted = `${cleaned.slice(0, 2)} ${cleaned.slice(2, 7)}-${cleaned.slice(7)}`;
     }
     return { formatted, isValid };
 }
@@ -133,7 +133,7 @@ function handleGenerateOS() {
     const technician = localStorage.getItem('atendenteAtual')?.toUpperCase();
     if (!technician) return showPopup('Selecione um atendente para gerar a OS.', 'error');
     const { formatted, isValid } = formatPhone(elements.phone.value);
-    if (!isValid) return showPopup('Telefone inválido. Ex: (21) 98765-4321', 'error');
+    if (!isValid) return showPopup('Telefone inválido. Ex: 21 98765-4321', 'error');
     
     const isSelfWithdrawal = elements.selfWithdrawal.checked;
     const withdrawalDay = formatDate(elements.withdrawalDate.value);
@@ -157,7 +157,7 @@ function handleGenerateOS() {
     osTextData.installation = `${installationDay} - ${pdfData.contrato} - ${pdfData.primeiroNome} - ${elements.newAddressInput.value} - MUD ENDEREÇO - ${installationPeriod} - ${technician}`;
     scheduleLines += osTextData.installation;
     
-    const withdrawalText = isSelfWithdrawal ? 'CLIENTE FAZ A RETIRADA' : `RETIRAR EM ${elements.oldAddressInput.value} DIA ${withdrawalDay} ${withdrawalPeriod}`;
+    const withdrawalText = isSelfWithdrawal ? 'CLIENTE FEZ A RETIRADA' : `RETIRAR EM ${elements.oldAddressInput.value} DIA ${withdrawalDay} ${withdrawalPeriod}`;
     const taxValue = elements.taxValue.value;
     const taxText = elements.renewal.checked ? 'ISENTO DA TAXA POR RENOVAÇÃO.' :
                     elements.migration.checked ? 'ISENTO DA TAXA POR MIGRAÇÃO.' :

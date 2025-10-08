@@ -29,18 +29,23 @@ async function loginWithUsername(username, password) {
 
 async function createUserAccount(details) {
      const { email, password, username, fullName } = details;
-    const sanitizedUsername = username.trim().toLowerCase().replace(/\s+/g, "_");
-    if (/[.$#[\]/]/.test(sanitizedUsername)) {
+     const sanitizedUsername = username.trim().toLowerCase().replace(/\s+/g, "_");
+     if (/[.$#[\]/]/.test(sanitizedUsername)) {
         throw new Error('Nome de usuário inválido.');
-    }
+     }
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
+
+    // ✅ ADICIONE ESTA LINHA AQUI ✅
+    await user.getIdToken(true); // Força a atualização do token de autenticação.
+
     await updateProfile(user, { displayName: fullName });
     const newAtendenteData = {
         nomeCompleto: fullName, role: "usuario", status: "ativo", uid: user.uid, email: email
     };
     await set(ref(db, `atendentes/${sanitizedUsername}`), newAtendenteData);
 }
+
 
 async function updateUserFullName(username, newFullName) {
      if (!auth.currentUser) throw new Error("Usuário não autenticado.");
@@ -135,10 +140,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     checkAuthState(async (user) => {
         if (user) {
             try {
-                const allAtendentes = await getAllAtendentes();
-                await startApp(user, allAtendentes);
+                // Primeira tentativa para carregar os dados
+                let allAtendentes = await getAllAtendentes();
+                let attendantKey = Object.keys(allAtendentes).find(key => allAtendentes[key].uid === user.uid);
+
+                // Se não encontrar, pode ser um novo registro com delay de replicação
+                if (!attendantKey) {
+                    console.log("Perfil não encontrado na primeira tentativa, aguardando 1s e tentando novamente...");
+                    // Espera 1 segundo para dar tempo para a replicação do banco de dados
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    // Tenta carregar os dados novamente
+                    allAtendentes = await getAllAtendentes();
+                    attendantKey = Object.keys(allAtendentes).find(key => allAtendentes[key].uid === user.uid);
+                }
+
+                // Agora, se a chave do atendente existir, inicia o app
+                if (attendantKey) {
+                    await startApp(user, allAtendentes);
+                } else {
+                    // Se ainda não encontrou, o perfil realmente não existe. Desloga o usuário.
+                    showPopup("Não foi possível carregar os dados do seu perfil.", 'error');
+                    await logoutUser();
+                }
             } catch (error) {
                 console.error("Erro ao carregar atendentes ou iniciar o app:", error);
+                await logoutUser(); // Força o logout em caso de erro
                 showLoginScreen();
             }
         } else {

@@ -15,5 +15,34 @@
   padding: 2.5rem;
   overflow-y: auto;
   background-color: var(--bg-dark);
+  transition: background-color 0.2s;
+}
+
+/* Background Customizado */
+.app-custom-bg {
+  position: fixed;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: -1;
+  opacity: 1;
+  pointer-events: none;
+}
+
+.app-custom-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.4) 100%), var(--bg-dark);
+  opacity: 0.85;
+}
+
+.has-custom-bg {
+  background-color: transparent !important;
+}
+
+.has-custom-bg .main-content {
+  background-color: transparent !important;
 }
 

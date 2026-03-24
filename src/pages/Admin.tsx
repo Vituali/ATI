@@ -19,6 +19,8 @@ import {
 } from "../services/permissions";
 import "./Admin.css";
 import LoadingOverlay from "../components/LoadingOverlay";
+import PainelAvisos from "../components/PainelAvisos";
+import { useUser } from "../hooks/useUser";
 
 // ---------------------------------------------------------------
 // TIPOS
@@ -71,6 +73,9 @@ export default function Admin() {
     msg: string;
     tipo: "ok" | "erro";
   } | null>(null);
+
+  const [abaAdmin, setAbaAdmin] = useState<"usuarios" | "avisos">("usuarios");
+  const { user } = useUser();
 
   // Carrega todos os atendentes do banco ao montar
   useEffect(() => {
@@ -254,230 +259,256 @@ export default function Admin() {
         </div>
       </div>
 
-      {/* Toast de feedback */}
-      {feedback && (
-        <div className={`admin-toast ${feedback.tipo}`}>
-          {feedback.tipo === "ok" ? "✅" : "❌"} {feedback.msg}
-        </div>
-      )}
-
-      {/* Card principal */}
-      <div className="admin-card">
-        {/* Barra de busca + contador */}
-        <div className="admin-toolbar">
-          <input
-            id="admin-busca"
-            name="admin-busca"
-            className="admin-busca"
-            type="text"
-            placeholder="Buscar por nome, usuário, setor..."
-            value={busca}
-            onChange={(e) => setBusca(e.target.value)}
-          />
-          <span className="admin-contador">
-            {listaFiltrada.length} / {atendentes.length} usuários
-          </span>
-        </div>
-
-        {/* Estados de loading e erro */}
-        {loading && <LoadingOverlay message="Carregando usuários..." />}
-
-        {erro && !loading && <div className="admin-estado erro">{erro}</div>}
-
-        {/* Tabela */}
-        {!loading && !erro && (
-          <div className="admin-tabela-wrapper">
-            <table className="admin-tabela">
-              <thead>
-                <tr>
-                  <th onClick={() => handleSort("username")}>
-                    Usuário {sortIcon("username")}
-                  </th>
-                  <th onClick={() => handleSort("sgpUsername")}>
-                    Usuário SGP {sortIcon("sgpUsername")}
-                  </th>
-                  <th onClick={() => handleSort("nomeCompleto")}>
-                    Nome {sortIcon("nomeCompleto")}
-                  </th>
-                  <th onClick={() => handleSort("setor")}>
-                    Setor {sortIcon("setor")}
-                  </th>
-                  <th onClick={() => handleSort("role")}>
-                    Role {sortIcon("role")}
-                  </th>
-                  <th onClick={() => handleSort("status")}>
-                    Status {sortIcon("status")}
-                  </th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {listaFiltrada.length === 0 && (
-                  <tr>
-                    <td colSpan={6} className="admin-vazio">
-                      Nenhum usuário encontrado
-                    </td>
-                  </tr>
-                )}
-                {listaFiltrada.map((atendente) => (
-                  <tr key={atendente.username}>
-                    {/* Username (somente leitura — é a chave do banco) */}
-                    <td>
-                      <span className="admin-username">
-                        {atendente.username}
-                      </span>
-                      <span className="admin-email">{atendente.email}</span>
-                    </td>
-                    <td>
-                      <input
-                        id={`sgpUsername-${atendente.username}`}
-                        name="sgpUsername"
-                        className="admin-input"
-                        type="text"
-                        placeholder="mesmo usuário"
-                        value={atendente.sgpUsername ?? ""}
-                        onChange={(e) =>
-                          handleChange(
-                            atendente.username,
-                            "sgpUsername",
-                            e.target.value,
-                          )
-                        }
-                      />
-                    </td>
-                    {/* Nome completo editável */}
-                    <td>
-                      <input
-                        id={`nome-${atendente.username}`}
-                        name="nomeCompleto"
-                        className="admin-input"
-                        type="text"
-                        value={atendente.nomeCompleto}
-                        onChange={(e) =>
-                          handleChange(
-                            atendente.username,
-                            "nomeCompleto",
-                            e.target.value,
-                          )
-                        }
-                      />
-                    </td>
-
-                    {/* Setor editável */}
-                    <td>
-                      <select
-                        id={`setor-${atendente.username}`}
-                        name="setor"
-                        className="admin-select"
-                        value={atendente.setor}
-                        onChange={(e) =>
-                          handleChange(
-                            atendente.username,
-                            "setor",
-                            e.target.value,
-                          )
-                        }
-                      >
-                        {SETORES.map((s) => (
-                          <option key={s} value={s}>
-                            {SETOR_LABEL[s]}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-
-                    {/* Role editável */}
-                    <td>
-                      <select
-                        id={`role-${atendente.username}`}
-                        name="role"
-                        className="admin-select"
-                        value={atendente.role}
-                        onChange={(e) =>
-                          handleChange(
-                            atendente.username,
-                            "role",
-                            e.target.value as Role,
-                          )
-                        }
-                      >
-                        {ROLES.map((r) => (
-                          <option key={r} value={r}>
-                            {ROLE_LABEL[r]}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-
-                    {/* Status editável */}
-                    <td>
-                      <select
-                        id={`status-${atendente.username}`}
-                        name="status"
-                        className={`admin-select status-${atendente.status}`}
-                        value={atendente.status}
-                        onChange={(e) =>
-                          handleChange(
-                            atendente.username,
-                            "status",
-                            e.target.value,
-                          )
-                        }
-                      >
-                        <option value="ativo">{STATUS_LABEL["ativo"]}</option>
-                        <option value="inativo">
-                          {STATUS_LABEL["inativo"]}
-                        </option>
-                      </select>
-                    </td>
-
-                    {/* Botão salvar */}
-                    <td>
-                      <button
-                        className="admin-btn-salvar"
-                        onClick={() => handleSalvar(atendente)}
-                        disabled={salvando === atendente.username}
-                      >
-                        {salvando === atendente.username ? "..." : "Salvar"}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+      {/* Abas de Navegação Admin */}
+      <div className="admin-abas">
+        <button
+          className={`admin-aba ${abaAdmin === "usuarios" ? "ativa" : ""}`}
+          onClick={() => setAbaAdmin("usuarios")}
+        >
+          👥 Usuários
+        </button>
+        <button
+          className={`admin-aba ${abaAdmin === "avisos" ? "ativa" : ""}`}
+          onClick={() => setAbaAdmin("avisos")}
+        >
+          📢 Avisos
+        </button>
       </div>
 
-      {/* Resumo de permissões por setor */}
-      <div className="admin-card">
-        <h2 className="admin-secao-titulo">
-          📋 Resumo de Permissões por Setor
-        </h2>
-        <div className="admin-permissoes-grid">
-          {(Object.keys(SETOR_LABEL) as Setor[]).map((setor) => (
-            <div key={setor} className="admin-permissao-card">
-              <h3 className="admin-permissao-setor">{SETOR_LABEL[setor]}</h3>
-              <ul className="admin-permissao-lista">
-                {(Object.keys(SECTION_LABEL) as Section[]).map((section) => {
-                  const tem = SETOR_PERMISSIONS[section].includes(setor);
-                  return (
-                    <li
-                      key={section}
-                      className={`admin-permissao-item ${tem ? "ok" : "nok"}`}
-                    >
-                      <span className="admin-permissao-dot">
-                        {tem ? "●" : "○"}
-                      </span>
-                      {SECTION_LABEL[section]}
-                    </li>
-                  );
-                })}
-              </ul>
+      {abaAdmin === "usuarios" ? (
+        <>
+          {/* Toast de feedback */}
+          {feedback && (
+            <div className={`admin-toast ${feedback.tipo}`}>
+              {feedback.tipo === "ok" ? "✅" : "❌"} {feedback.msg}
             </div>
-          ))}
-        </div>
-      </div>
+          )}
+
+          {/* Card principal */}
+          <div className="admin-card">
+            {/* Barra de busca + contador */}
+            <div className="admin-toolbar">
+              <input
+                id="admin-busca"
+                name="admin-busca"
+                className="admin-busca"
+                type="text"
+                placeholder="Buscar por nome, usuário, setor..."
+                value={busca}
+                onChange={(e) => setBusca(e.target.value)}
+              />
+              <span className="admin-contador">
+                {listaFiltrada.length} / {atendentes.length} usuários
+              </span>
+            </div>
+
+            {/* Estados de loading e erro */}
+            {loading && <LoadingOverlay message="Carregando usuários..." />}
+
+            {erro && !loading && <div className="admin-estado erro">{erro}</div>}
+
+            {/* Tabela */}
+            {!loading && !erro && (
+              <div className="admin-tabela-wrapper">
+                <table className="admin-tabela">
+                  <thead>
+                    <tr>
+                      <th onClick={() => handleSort("username")}>
+                        Usuário {sortIcon("username")}
+                      </th>
+                      <th onClick={() => handleSort("sgpUsername")}>
+                        Usuário SGP {sortIcon("sgpUsername")}
+                      </th>
+                      <th onClick={() => handleSort("nomeCompleto")}>
+                        Nome {sortIcon("nomeCompleto")}
+                      </th>
+                      <th onClick={() => handleSort("setor")}>
+                        Setor {sortIcon("setor")}
+                      </th>
+                      <th onClick={() => handleSort("role")}>
+                        Role {sortIcon("role")}
+                      </th>
+                      <th onClick={() => handleSort("status")}>
+                        Status {sortIcon("status")}
+                      </th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {listaFiltrada.length === 0 && (
+                      <tr>
+                        <td colSpan={6} className="admin-vazio">
+                          Nenhum usuário encontrado
+                        </td>
+                      </tr>
+                    )}
+                    {listaFiltrada.map((atendente) => (
+                      <tr key={atendente.username}>
+                        {/* Username (somente leitura — é a chave do banco) */}
+                        <td>
+                          <span className="admin-username">
+                            {atendente.username}
+                          </span>
+                          <span className="admin-email">{atendente.email}</span>
+                        </td>
+                        <td>
+                          <input
+                            id={`sgpUsername-${atendente.username}`}
+                            name="sgpUsername"
+                            className="admin-input"
+                            type="text"
+                            placeholder="mesmo usuário"
+                            value={atendente.sgpUsername ?? ""}
+                            onChange={(e) =>
+                              handleChange(
+                                atendente.username,
+                                "sgpUsername",
+                                e.target.value,
+                              )
+                            }
+                          />
+                        </td>
+                        {/* Nome completo editável */}
+                        <td>
+                          <input
+                            id={`nome-${atendente.username}`}
+                            name="nomeCompleto"
+                            className="admin-input"
+                            type="text"
+                            value={atendente.nomeCompleto}
+                            onChange={(e) =>
+                              handleChange(
+                                atendente.username,
+                                "nomeCompleto",
+                                e.target.value,
+                              )
+                            }
+                          />
+                        </td>
+
+                        {/* Setor editável */}
+                        <td>
+                          <select
+                            id={`setor-${atendente.username}`}
+                            name="setor"
+                            className="admin-select"
+                            value={atendente.setor}
+                            onChange={(e) =>
+                              handleChange(
+                                atendente.username,
+                                "setor",
+                                e.target.value,
+                              )
+                            }
+                          >
+                            {SETORES.map((s) => (
+                              <option key={s} value={s}>
+                                {SETOR_LABEL[s]}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+
+                        {/* Role editável */}
+                        <td>
+                          <select
+                            id={`role-${atendente.username}`}
+                            name="role"
+                            className="admin-select"
+                            value={atendente.role}
+                            onChange={(e) =>
+                              handleChange(
+                                atendente.username,
+                                "role",
+                                e.target.value as Role,
+                              )
+                            }
+                          >
+                            {ROLES.map((r) => (
+                              <option key={r} value={r}>
+                                {ROLE_LABEL[r]}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+
+                        {/* Status editável */}
+                        <td>
+                          <select
+                            id={`status-${atendente.username}`}
+                            name="status"
+                            className={`admin-select status-${atendente.status}`}
+                            value={atendente.status}
+                            onChange={(e) =>
+                              handleChange(
+                                atendente.username,
+                                "status",
+                                e.target.value,
+                              )
+                            }
+                          >
+                            <option value="ativo">
+                              {STATUS_LABEL["ativo"]}
+                            </option>
+                            <option value="inativo">
+                              {STATUS_LABEL["inativo"]}
+                            </option>
+                          </select>
+                        </td>
+
+                        {/* Botão salvar */}
+                        <td>
+                          <button
+                            className="admin-btn-salvar"
+                            onClick={() => handleSalvar(atendente)}
+                            disabled={salvando === atendente.username}
+                          >
+                            {salvando === atendente.username ? "..." : "Salvar"}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {/* Resumo de permissões por setor */}
+          <div className="admin-card">
+            <h2 className="admin-secao-titulo">
+              📋 Resumo de Permissões por Setor
+            </h2>
+            <div className="admin-permissoes-grid">
+              {(Object.keys(SETOR_LABEL) as Setor[]).map((setor) => (
+                <div key={setor} className="admin-permissao-card">
+                  <h3 className="admin-permissao-setor">{SETOR_LABEL[setor]}</h3>
+                  <ul className="admin-permissao-lista">
+                    {(Object.keys(SECTION_LABEL) as Section[]).map(
+                      (section) => {
+                        const tem = SETOR_PERMISSIONS[section].includes(setor);
+                        return (
+                          <li
+                            key={section}
+                            className={`admin-permissao-item ${tem ? "ok" : "nok"}`}
+                          >
+                            <span className="admin-permissao-dot">
+                              {tem ? "●" : "○"}
+                            </span>
+                            {SECTION_LABEL[section]}
+                          </li>
+                        );
+                      },
+                    )}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      ) : (
+        <PainelAvisos user={user!} />
+      )}
     </div>
   );
 }

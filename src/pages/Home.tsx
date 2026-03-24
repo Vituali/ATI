@@ -13,6 +13,7 @@ import {
   Section,
 } from "../services/permissions";
 import "./Home.css";
+import AvisosHome from "../components/AvisosHome";
 
 interface HomeProps {
   user: UserProfile;
@@ -35,6 +36,12 @@ const SECTION_META: Record<
     label: "Home",
     desc: "Página inicial",
     color: "#64b5f6",
+  },
+  chat_interno: {
+    icon: "💬",
+    label: "Chat Interno",
+    desc: "Chat interno",
+    color: "#4dd0e1",
   },
   chat: {
     icon: "🗨️",
@@ -86,24 +93,41 @@ export default function Home({ user, onSelectSection }: HomeProps) {
 
   return (
     <div className="home-page">
+      {/* ── Avisos ── */}
+      <AvisosHome user={user} />
 
       {/* ── Hero / Saudação ── */}
       <div className="home-hero">
         <div className="home-hero-glow" />
         <div className="home-avatar-wrap">
-          <div className="home-avatar">{inicial}</div>
+          <div className="home-avatar">
+            {user.avatarUrl ? (
+              <img
+                src={user.avatarUrl}
+                alt="Avatar"
+                className="home-avatar-img"
+              />
+            ) : (
+              inicial
+            )}
+          </div>
           <div className="home-avatar-ring" />
         </div>
         <div className="home-hero-text">
           <h1 className="home-titulo">
-            {getSaudacao()}, <span className="home-nome-accent">{primeiroNome}</span>! 👋
+            {getSaudacao()},{" "}
+            <span className="home-nome-accent">{primeiroNome}</span>! 👋
           </h1>
-          <p className="home-subtitulo">Bem-vindo ao ATI — Auxiliar de Atendimentos</p>
+          <p className="home-subtitulo">
+            Bem-vindo ao ATI — Auxiliar de Atendimentos
+          </p>
           <div className="home-hero-badges">
             <span className={`home-badge role-${user.role}`}>
               {ROLE_LABEL[user.role]}
             </span>
-            <span className={`home-badge setor ${pendente ? "pendente" : "ok"}`}>
+            <span
+              className={`home-badge setor ${pendente ? "pendente" : "ok"}`}
+            >
               {SETOR_LABEL[user.setor]}
             </span>
             <span className="home-badge ok">Ativo</span>
@@ -128,7 +152,6 @@ export default function Home({ user, onSelectSection }: HomeProps) {
 
       {/* ── Grade dupla: Perfil + SGP ── */}
       <div className="home-cards-row">
-
         {/* Card de Perfil */}
         <div className="home-card">
           <div className="home-card-header">
@@ -146,11 +169,15 @@ export default function Home({ user, onSelectSection }: HomeProps) {
             </div>
             <div className="home-info-item">
               <span className="home-info-label">E-mail</span>
-              <span className="home-info-valor" style={{ fontSize: "0.9rem" }}>{user.email}</span>
+              <span className="home-info-valor" style={{ fontSize: "0.9rem" }}>
+                {user.email}
+              </span>
             </div>
             <div className="home-info-item">
               <span className="home-info-label">Setor</span>
-              <span className={`home-badge setor ${pendente ? "pendente" : "ok"}`}>
+              <span
+                className={`home-badge setor ${pendente ? "pendente" : "ok"}`}
+              >
                 {SETOR_LABEL[user.setor]}
               </span>
             </div>
@@ -163,11 +190,16 @@ export default function Home({ user, onSelectSection }: HomeProps) {
             <span className="home-card-icon">🖥️</span>
             <h2 className="home-card-titulo">SGP</h2>
           </div>
-          <div className="home-info-grid" style={{ gridTemplateColumns: "1fr" }}>
+          <div
+            className="home-info-grid"
+            style={{ gridTemplateColumns: "1fr" }}
+          >
             <div className="home-info-item">
               <span className="home-info-label">Usuário SGP</span>
               {user.sgpUsername ? (
-                <span className="home-info-valor mono">@{user.sgpUsername}</span>
+                <span className="home-info-valor mono">
+                  @{user.sgpUsername}
+                </span>
               ) : (
                 <span className="home-info-sgp-vazio">
                   Não configurado —{" "}
@@ -211,7 +243,8 @@ export default function Home({ user, onSelectSection }: HomeProps) {
             <h2 className="home-card-titulo">Acesso rápido</h2>
           </div>
           <p className="home-card-desc">
-            Use a barra lateral ou clique nos atalhos abaixo para navegar pelo sistema.
+            Use a barra lateral ou clique nos atalhos abaixo para navegar pelo
+            sistema.
           </p>
           <div className="home-shortcuts-grid">
             {acessos.map((section) => {
@@ -221,7 +254,9 @@ export default function Home({ user, onSelectSection }: HomeProps) {
                   key={section}
                   className="home-shortcut"
                   onClick={() => onSelectSection(section)}
-                  style={{ "--shortcut-color": meta.color } as React.CSSProperties}
+                  style={
+                    { "--shortcut-color": meta.color } as React.CSSProperties
+                  }
                 >
                   <span className="home-shortcut-icon">{meta.icon}</span>
                   <div className="home-shortcut-info">
@@ -234,7 +269,6 @@ export default function Home({ user, onSelectSection }: HomeProps) {
           </div>
         </div>
       )}
-
     </div>
   );
 }

@@ -11,8 +11,12 @@ interface SidebarProps {
   activeSection: Section;
   onSelectSection: (section: Section) => void;
   onOpenUserModal: () => void;
+  onOpenExtensionModal: () => void;
   onOpenSettings: () => void;
   theme: "dark" | "light";
+  userName: string;
+  avatarUrl?: string;
+  hasUnreadChat: boolean;
 }
 
 interface NavItem {
@@ -22,7 +26,8 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { section: "chat", icon: "🗨️", label: "Chat" },
+  { section: "chat_interno", icon: "💬", label: "Chat Interno" },
+  { section: "chat", icon: "🗨️", label: "Respostas Rápidas" },
   { section: "os", icon: "📝", label: "Modelos O.S." },
   { section: "conversor", icon: "📄", label: "Conversor" },
   { section: "senhas", icon: "🔑", label: "Senhas" },
@@ -36,8 +41,12 @@ export default function Sidebar({
   activeSection,
   onSelectSection,
   onOpenUserModal,
+  onOpenExtensionModal,
   onOpenSettings,
   theme,
+  userName,
+  avatarUrl,
+  hasUnreadChat,
 }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -63,30 +72,47 @@ export default function Sidebar({
             className={`sidebar-button ${activeSection === item.section ? "active" : ""}`}
             onClick={() => onSelectSection(item.section)}
           >
-            <span className="icon">{item.icon}</span>
+            <span className="icon">
+              {item.icon}
+              {item.section === "chat_interno" && hasUnreadChat && (
+                <span className="notification-dot" />
+              )}
+            </span>
             <span className="text">{item.label}</span>
           </button>
         ))}
 
-        <a
-          href="https://chromewebstore.google.com/detail/ati-auxiliar-de-atendimen/mlgmmjacfbnkolflbankfiackpcnmckl"
-          className="sidebar-button"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <button className="sidebar-button" onClick={onOpenExtensionModal}>
           <span className="icon">🚀</span>
           <span className="text">Extensão</span>
-        </a>
+        </button>
       </div>
 
       <div className="sidebar-footer">
-        <button className="bottom-toggle" onClick={onOpenUserModal}>
-          <span className="icon">👤</span>
-          <span className="text">Perfil</span>
+        <button
+          className="bottom-toggle profile-toggle"
+          onClick={onOpenUserModal}
+        >
+          <div className="sidebar-avatar">
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt={userName}
+                className="sidebar-avatar-img"
+              />
+            ) : (
+              <span className="sidebar-avatar-init">
+                {userName.charAt(0).toUpperCase()}
+              </span>
+            )}
+          </div>
+          <span className="text">{userName}</span>
         </button>
         <button className="bottom-toggle theme-toggle" onClick={onOpenSettings}>
           <span className="icon">{theme === "dark" ? "☀️" : "🌙"}</span>
-          <span className="text">{theme === "dark" ? "Modo Claro" : "Modo Escuro"}</span>
+          <span className="text">
+            {theme === "dark" ? "Modo Claro" : "Modo Escuro"}
+          </span>
         </button>
       </div>
     </aside>

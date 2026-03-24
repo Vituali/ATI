@@ -25,9 +25,11 @@ interface UserPanelProps {
   aberto: boolean;
   onFechar: () => void;
   onLogout: () => void;
+  bgUrl: string;
+  onBgChange: (url: string) => void;
 }
 
-type Aba = "perfil" | "conta" | "senha";
+type Aba = "perfil" | "conta" | "senha" | "personalizar";
 type Feedback = { msg: string; tipo: "ok" | "erro" } | null;
 
 export default function UserPanel({
@@ -35,12 +37,16 @@ export default function UserPanel({
   aberto,
   onFechar,
   onLogout,
+  bgUrl,
+  onBgChange,
 }: UserPanelProps) {
   const [aba, setAba] = useState<Aba>("perfil");
+  const [tempBg, setTempBg] = useState(bgUrl);
 
   // --- ABA PERFIL: Nome + SGP Username ---
   const [nome, setNome] = useState(user.nomeCompleto);
   const [sgpUsername, setSgpUsername] = useState(user.sgpUsername ?? "");
+  const [avatarUrlForm, setAvatarUrlForm] = useState(user.avatarUrl ?? "");
   const [salvandoPerfil, setSalvandoPerfil] = useState(false);
   const [feedbackPerfil, setFeedbackPerfil] = useState<Feedback>(null);
 
@@ -87,6 +93,7 @@ export default function UserPanel({
       await update(ref(db, `atendentes/${user.username}`), {
         nomeCompleto: nomeTrimmed,
         sgpUsername: sgpTrimmed || null,
+        avatarUrl: avatarUrlForm.trim() || null,
       });
       showFeedback(setFeedbackPerfil, "Perfil atualizado com sucesso!", "ok");
     } catch (e: any) {
@@ -291,7 +298,8 @@ export default function UserPanel({
 
   const perfilAlterado =
     nome.trim() !== user.nomeCompleto ||
-    sgpUsername.trim() !== (user.sgpUsername ?? "");
+    sgpUsername.trim() !== (user.sgpUsername ?? "") ||
+    avatarUrlForm.trim() !== (user.avatarUrl ?? "");
 
   const contaAlterada =
     novoUsername.trim().toLowerCase() !== user.username ||
@@ -307,7 +315,11 @@ export default function UserPanel({
       {/* Cabeçalho com avatar e info base */}
       <div className="up-header">
         <div className="up-avatar">
-          {user.nomeCompleto.charAt(0).toUpperCase()}
+          {user.avatarUrl ? (
+            <img src={user.avatarUrl} alt="Avatar" className="up-avatar-img" />
+          ) : (
+            user.nomeCompleto.charAt(0).toUpperCase()
+          )}
         </div>
         <div className="up-header-info">
           <span className="up-nome">{user.nomeCompleto}</span>
@@ -338,6 +350,12 @@ export default function UserPanel({
           onClick={() => setAba("senha")}
         >
           🔒 Senha
+        </button>
+        <button
+          className={`up-tab ${aba === "personalizar" ? "ativo" : ""}`}
+          onClick={() => setAba("personalizar")}
+        >
+          🎨 Estilo
         </button>
       </div>
 
@@ -534,6 +552,69 @@ export default function UserPanel({
             disabled={salvandoSenha}
           >
             {salvandoSenha ? "Alterando..." : "🔒 Alterar Senha"}
+          </button>
+        </div>
+      )}
+
+      {/* ABA: PERSONALIZAR — Fundo customizado */}
+      {aba === "personalizar" && (
+        <div className="up-section">
+          <div className="up-aviso-custom">
+            ✨ Dê um toque pessoal à sua área de trabalho! Use links diretos de imagens ou GIFs (ex: Tenor, Imgur, Giphy).
+          </div>
+
+          <div className="up-grupo">
+            <label htmlFor="up-bg-input">URL do plano de fundo (Imagem ou GIF)</label>
+            <div className="up-bg-wrapper">
+              <input
+                id="up-bg-input"
+                type="text"
+                value={tempBg}
+                onChange={(e) => setTempBg(e.target.value)}
+                placeholder="https://exemplo.com/imagem.gif"
+              />
+              {tempBg && (
+                <button 
+                  className="up-bg-clear" 
+                  onClick={() => { setTempBg(""); onBgChange(""); }}
+                  title="Remover fundo"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="up-bg-preview-wrap">
+            <p className="up-label-dica">Preview</p>
+            <div 
+              className="up-bg-preview" 
+              style={{ backgroundImage: tempBg ? `url(${tempBg})` : 'none' }}
+            >
+              {!tempBg && <span>Sem fundo</span>}
+            </div>
+          </div>
+
+          <div className="up-grupo" style={{ marginTop: '1rem' }}>
+            <label htmlFor="up-avatar-input">URL da Foto de Perfil (Avatar)</label>
+            <input
+              id="up-avatar-input"
+              type="text"
+              value={avatarUrlForm}
+              onChange={(e) => setAvatarUrlForm(e.target.value)}
+              placeholder="https://exemplo.com/foto.jpg"
+            />
+          </div>
+
+          <button
+            className="up-btn-salvar"
+            onClick={async () => {
+              await handleSalvarPerfil();
+              onBgChange(tempBg.trim());
+            }}
+            disabled={(!perfilAlterado && tempBg.trim() === bgUrl) || salvandoPerfil}
+          >
+            {salvandoPerfil ? "Salvando Estilo..." : "💾 Salvar Estilo"}
           </button>
         </div>
       )}

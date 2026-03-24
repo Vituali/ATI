@@ -5,6 +5,7 @@ export type Setor = "geral" | "ti" | "financeiro" | "suporte" | "comercial";
 export type Section =
   | "home"
   | "chat"
+  | "chat_interno"
   | "os"
   | "conversor"
   | "senhas"
@@ -16,6 +17,7 @@ export type Section =
 // ---------------------------------------------------------------
 const ROLE_PERMISSIONS: Record<Section, Role[]> = {
   home: ["usuario", "supervisor", "moderador", "admin"],
+  chat_interno: ["usuario", "supervisor", "moderador", "admin"],
   chat: ["usuario", "supervisor", "moderador", "admin"],
   os: ["usuario", "supervisor", "moderador", "admin"],
   conversor: ["usuario", "supervisor", "moderador", "admin"],
@@ -31,6 +33,7 @@ const ROLE_PERMISSIONS: Record<Section, Role[]> = {
 // ---------------------------------------------------------------
 export const SETOR_PERMISSIONS: Record<Section, Setor[]> = {
   home: ["geral", "ti", "financeiro", "suporte", "comercial"],
+  chat_interno: ["ti", "financeiro", "suporte", "comercial"],
   chat: ["ti", "financeiro", "suporte", "comercial"],
   os: ["ti", "suporte", "comercial", "financeiro"],
   conversor: ["ti", "suporte", "comercial"],
@@ -92,6 +95,7 @@ export const ROLE_LABEL: Record<Role, string> = {
 export const SECTION_LABEL: Record<Section, string> = {
   home: "Home",
   chat: "Chat",
+  chat_interno: "Chat Interno",
   os: "Modelos O.S.",
   conversor: "Conversor",
   senhas: "Senhas",

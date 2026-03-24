@@ -15,10 +15,14 @@ import Conversor from "./pages/Conversor";
 import Senhas from "./pages/Senhas";
 import Admin from "./pages/Admin";
 import ErrorPage from "./pages/ErrorPage";
+import ChatInterno from "./pages/ChatInterno";
+import { ref, onValue, off } from "firebase/database";
+import { db } from "./services/firebase";
 import "./App.css";
 
 import LoadingOverlay from "./components/LoadingOverlay";
 import UserPanel from "./components/UserPanel";
+import ExtensionModal from "./components/ExtensionModal";
 
 type AuthScreen = "login" | "register";
 
@@ -26,13 +30,24 @@ export default function App() {
   const { user, loading, error } = useUser();
   const [authScreen, setAuthScreen] = useState<AuthScreen>("login");
   const [currentSection, setCurrentSection] = useState<Section>("home");
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [theme, setTheme] = useState<"dark" | "light">(() => {
+    return (localStorage.getItem("ati-theme") as "dark" | "light") || "dark";
+  });
   const [userPanelAberto, setUserPanelAberto] = useState(false);
+  const [extensaoModalAberto, setExtensaoModalAberto] = useState(false);
+  const [bgUrl, setBgUrl] = useState(() => {
+    return localStorage.getItem("ati-custom-bg") || "";
+  });
+
+  // Notificações de Chat
+  const [hasUnreadChat, setHasUnreadChat] = useState(false);
 
   function renderSection(section: Section, user: UserProfile) {
     switch (section) {
       case "home":
         return <Home user={user} onSelectSection={setCurrentSection} />;
+      case "chat_interno":
+        return <ChatInterno />;
       case "chat":
         return <Chat />;
       case "os":
@@ -48,13 +63,82 @@ export default function App() {
     }
   }
 
-  // Altera a classe no body para refletir o tema
+  // Notificações em real-time (Observando todas as salas)
+  useEffect(() => {
+    if (!user) return;
+
+    const q = ref(db, "chat/salas");
+    const unsubscribe = onValue(q, (snap) => {
+      if (!snap.exists()) return;
+
+      let overallLatestMsg: any = null;
+
+      // Encontra a mensagem mais recente entre todas as salas
+      snap.forEach((roomSnap) => {
+        const roomMsgs = roomSnap.child("mensagens");
+        roomMsgs.forEach((msgSnap) => {
+          const msg = msgSnap.val();
+          if (!overallLatestMsg || msg.timestamp > overallLatestMsg.timestamp) {
+            overallLatestMsg = msg;
+          }
+        });
+      });
+
+      if (overallLatestMsg && overallLatestMsg.autor !== user.username) {
+        const lastSeen = Number(localStorage.getItem("lastSeenChat") || 0);
+        if (overallLatestMsg.timestamp > lastSeen) {
+          setHasUnreadChat(true);
+
+          // Som de notificação
+          if (currentSection !== "chat_interno") {
+            const audio = new Audio(
+              "https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3",
+            );
+            audio.volume = 0.4;
+            audio.play().catch(() => {});
+          }
+        }
+      }
+    });
+
+    return () => off(q, "value", unsubscribe as any);
+  }, [user, currentSection]);
+
+  // Limpa notificação ao entrar no chat
+  useEffect(() => {
+    if (currentSection === "chat_interno") {
+      setHasUnreadChat(false);
+      localStorage.setItem("lastSeenChat", Date.now().toString());
+    }
+  }, [currentSection]);
+
+  // Document Title com badge
+  useEffect(() => {
+    const baseTitle = "ATI V2 — Auxiliar de Atendimento";
+    if (hasUnreadChat) {
+      document.title = `(1) 💬 Mensagem nova! | ${baseTitle}`;
+    } else {
+      document.title = baseTitle;
+    }
+  }, [hasUnreadChat]);
+
+  // Altera a classe no body e salva no localStorage para persistir
   useEffect(() => {
     document.body.classList.toggle("light-theme", theme === "light");
+    localStorage.setItem("ati-theme", theme);
   }, [theme]);
 
   const toggleTheme = () => {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  };
+
+  const handleBgChange = (url: string) => {
+    setBgUrl(url);
+    if (url) {
+      localStorage.setItem("ati-custom-bg", url);
+    } else {
+      localStorage.removeItem("ati-custom-bg");
+    }
   };
 
   // Carregando sessão
@@ -90,29 +174,54 @@ export default function App() {
     ? currentSection
     : "home";
 
-
   return (
-    <div className="app-layout fade-in">
-      <Sidebar
-        role={user.role}
-        setor={user.setor}
-        activeSection={safeSection}
-        onSelectSection={setCurrentSection}
-        onOpenUserModal={() => setUserPanelAberto(true)}
-        onOpenSettings={toggleTheme}
-        theme={theme}
-      />
-      <div className="main-wrapper">
-        <main className="main-content">{renderSection(safeSection, user)}</main>
-        <Footer />
+    <>
+      {/* Plano de fundo customizado */}
+      {bgUrl && (
+        <div
+          className="app-custom-bg"
+          style={{ backgroundImage: `url(${bgUrl})` }}
+        />
+      )}
+
+      <div className={`app-layout fade-in ${bgUrl ? "has-custom-bg" : ""}`}>
+        <Sidebar
+          role={user.role}
+          setor={user.setor}
+          activeSection={safeSection}
+          onSelectSection={setCurrentSection}
+          onOpenUserModal={() => setUserPanelAberto(true)}
+          onOpenExtensionModal={() => setExtensaoModalAberto(true)}
+          onOpenSettings={toggleTheme}
+          theme={theme}
+          userName={user.nomeCompleto.split(" ")[0]}
+          avatarUrl={user.avatarUrl}
+          hasUnreadChat={hasUnreadChat}
+        />
+        <div className="main-wrapper">
+          <main className="main-content">
+            {renderSection(safeSection, user)}
+          </main>
+          <Footer />
+        </div>
       </div>
 
       <UserPanel
         user={user}
         aberto={userPanelAberto}
         onFechar={() => setUserPanelAberto(false)}
-        onLogout={async () => { setUserPanelAberto(false); await logout(); }}
+        onLogout={async () => {
+          setUserPanelAberto(false);
+          await logout();
+        }}
+        bgUrl={bgUrl}
+        onBgChange={handleBgChange}
       />
-    </div>
+
+      <ExtensionModal
+        aberto={extensaoModalAberto}
+        onFechar={() => setExtensaoModalAberto(false)}
+      />
+    </>
   );
 }

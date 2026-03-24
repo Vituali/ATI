@@ -14,6 +14,7 @@ export interface UserProfile {
   setor: Setor;
   status: "ativo" | "inativo";
   sgpUsername?: string;
+  avatarUrl?: string;
 }
 
 interface UseUserReturn {
@@ -45,6 +46,7 @@ async function fetchProfileWithRetry(
             setor: (data.setor ?? "geral") as Setor, // fallback geral
             status: data.status ?? "ativo",
             sgpUsername: data.sgpUsername ?? undefined,
+            avatarUrl: data.avatarUrl ?? undefined,
           };
         }
       });

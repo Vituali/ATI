@@ -1,0 +1,213 @@
+/* ============================================================
+   HOME.CSS — Minimalist Dark Design System
+   ============================================================ */
+
+.home-page {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 1rem;
+  animation: fadeInHome 0.5s ease-out;
+  font-family: var(--font-main);
+}
+
+@keyframes fadeInHome {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- Header Section --- */
+.home-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.home-titulo {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--text-white);
+  margin: 0;
+  letter-spacing: -1px;
+}
+
+.home-subtitulo {
+  font-size: 1rem;
+  color: var(--text-grey);
+  margin: 0;
+  font-weight: 400;
+}
+
+/* --- Warning Banner (Amber Yellow) --- */
+.home-aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: rgba(255, 193, 7, 0.08);
+  border: 1px solid rgba(255, 193, 7, 0.2);
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  color: #ffca28;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.home-aviso-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* --- Main Card --- */
+.home-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-subtle);
+  position: relative;
+  overflow: hidden;
+}
+
+.home-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--accent-blue),
+    transparent
+  );
+  opacity: 0.4;
+}
+
+.home-card-titulo {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-white);
+  margin: 0 0 0.75rem 0;
+  letter-spacing: -0.3px;
+}
+
+.home-card-desc {
+  font-size: 0.95rem;
+  color: var(--text-grey);
+  margin: 0 0 2rem 0;
+  max-width: 600px;
+  line-height: 1.6;
+}
+
+/* --- Info Grid & Items --- */
+.home-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.home-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.home-info-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+}
+
+.home-info-valor {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-white);
+}
+
+.home-info-valor.mono {
+  font-family: var(--font-mono);
+  letter-spacing: -0.5px;
+  font-weight: 400;
+  color: var(--text-grey);
+}
+
+/* --- Badges & Roles --- */
+.home-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid transparent;
+}
+
+/* Status Variants */
+.home-badge.ok {
+  background: rgba(0, 230, 118, 0.1);
+  color: #00e676;
+  border-color: rgba(0, 230, 118, 0.15);
+}
+
+.home-badge.pendente {
+  background: rgba(255, 193, 7, 0.1);
+  color: #ffca28;
+  border-color: rgba(255, 193, 7, 0.15);
+}
+
+/* Role Variants */
+.home-badge.role-admin {
+  background: rgba(0, 100, 255, 0.15);
+  color: #448aff;
+  border-color: rgba(0, 100, 255, 0.2);
+}
+
+.home-badge.role-supervisor {
+  background: rgba(156, 39, 176, 0.15);
+  color: #e1bee7;
+  border-color: rgba(156, 39, 176, 0.2);
+}
+
+.home-badge.role-moderador {
+  background: rgba(255, 152, 0, 0.15);
+  color: #ffcc80;
+  border-color: rgba(255, 152, 0, 0.2);
+}
+
+.home-badge.role-usuario {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-grey);
+  border-color: var(--border-subtle);
+}
+
+/* Responsive Grid */
+@media (max-width: 600px) {
+  .home-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .home-titulo {
+    font-size: 1.8rem;
+  }
+}

@@ -1,0 +1,420 @@
+/* ============================================================
+   ADMIN.CSS — Estilo Extensão V2 (Painel Administrativo)
+   ============================================================ */
+
+.admin-page {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- Cabeçalho --- */
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.admin-titulo {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-white);
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.admin-subtitulo {
+  font-size: 14px;
+  color: var(--text-grey);
+  margin: 0.2rem 0 0;
+}
+
+.admin-btn-refresh {
+  background: var(--bg-card);
+  color: var(--text-white);
+  border: 1px solid var(--border-subtle);
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font-main);
+}
+
+.admin-btn-refresh:hover {
+  background: var(--bg-panel);
+  border-color: var(--text-muted);
+}
+
+.admin-header-acoes {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+
+.admin-btn-salvar-todos {
+  background: var(--accent-blue);
+  color: white;
+  border: 1px solid var(--accent-blue);
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font-main);
+}
+
+.admin-btn-salvar-todos:hover:not(:disabled) {
+  background: var(--accent-blue);
+  box-shadow: 0 0 15px rgba(0, 102, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+.admin-btn-salvar-todos:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* --- Feedback (Toast) --- */
+.admin-toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  padding: 12px 20px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 1000;
+  box-shadow: var(--shadow-subtle);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: slideLeft 0.3s ease-out;
+}
+
+@keyframes slideLeft {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.admin-toast.ok {
+  background: #00c853;
+  color: #ffffff;
+}
+
+.admin-toast.erro {
+  background: #ff5252;
+  color: #ffffff;
+}
+
+/* --- Cards --- */
+.admin-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-subtle);
+}
+
+/* --- Barra de Ferramentas --- */
+.admin-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.admin-busca {
+  flex: 1;
+  max-width: 400px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 10px 16px;
+  color: var(--text-white);
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.admin-busca:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+  background: var(--bg-input);
+  box-shadow: 0 0 0 2px var(--accent-blue-hover);
+}
+
+.admin-contador {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+}
+
+/* --- Estados (Loading/Erro) --- */
+.admin-estado {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  gap: 1rem;
+  color: var(--text-grey);
+}
+
+.admin-estado.erro {
+  color: #ff646e;
+}
+
+.admin-loader {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border-subtle);
+  border-top-color: var(--accent-blue);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* --- Tabela --- */
+.admin-tabela-wrapper {
+  overflow-x: auto;
+}
+
+.admin-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.admin-tabela th {
+  padding: 12px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: var(--font-mono);
+  border-bottom: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.admin-tabela th:hover {
+  color: var(--text-white);
+}
+
+.admin-tabela td {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  vertical-align: middle;
+}
+
+.admin-tabela tr:hover td {
+  background: var(--bg-card);
+}
+
+.admin-username {
+  display: block;
+  font-weight: 600;
+  color: var(--text-white);
+  font-size: 14px;
+}
+
+.admin-email {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+/* --- Inputs e Selects na Tabela --- */
+.admin-input,
+.admin-select {
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 6px 10px;
+  color: var(--text-white);
+  font-size: 13px;
+  width: 100%;
+  transition: all 0.2s;
+  font-family: var(--font-main);
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  color-scheme: dark;
+}
+
+.admin-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='rgba(255,255,255,0.5)' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
+  cursor: pointer;
+}
+
+.admin-input:focus,
+.admin-select:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+  background-color: var(--bg-input);
+  box-shadow: 0 0 0 2px var(--accent-blue-hover);
+}
+
+.admin-select option {
+  background-color: var(--bg-panel);
+  color: var(--text-white);
+}
+
+.admin-select.status-ativo {
+  color: #00e676;
+}
+
+.admin-select.status-inativo {
+  color: #ff5252;
+}
+
+/* --- Botão Salvar --- */
+.admin-btn-salvar {
+  background: var(--accent-blue-hover);
+  color: var(--accent-blue);
+  border: 1px solid var(--accent-blue-border);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 60px;
+}
+
+.admin-btn-salvar:hover:not(:disabled) {
+  background: var(--accent-blue);
+  color: #ffffff;
+}
+
+.admin-btn-salvar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.admin-vazio {
+  padding: 3rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.admin-sort-icon {
+  margin-left: 6px;
+  opacity: 0.3;
+}
+
+.admin-sort-icon.active {
+  opacity: 1;
+  color: var(--accent-blue);
+}
+
+/* --- Resumo de Permissões --- */
+.admin-secao-titulo {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-white);
+  margin: 0 0 1.5rem;
+  letter-spacing: -0.3px;
+}
+
+.admin-permissoes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.admin-permissao-card {
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.2rem;
+}
+
+.admin-permissao-setor {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent-blue);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0 0 1rem;
+  font-family: var(--font-mono);
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 0.5rem;
+}
+
+.admin-permissao-lista {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-permissao-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  transition: color 0.2s;
+}
+
+.admin-permissao-item.ok {
+  color: var(--text-white);
+}
+
+.admin-permissao-item.nok {
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+.admin-permissao-dot {
+  font-size: 10px;
+}
+
+.admin-permissao-item.ok .admin-permissao-dot {
+  color: var(--accent-blue);
+}
+
+.admin-permissao-item.nok .admin-permissao-dot {
+  color: var(--text-muted);
+}

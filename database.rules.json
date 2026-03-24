@@ -1,0 +1,59 @@
+{
+  "rules": {
+    "atendentes": {
+      ".read": true,
+      "$username": {
+        ".write": "auth != null && ((!data.exists() && newData.child('uid').val() === auth.uid) || (data.exists() && (root.child('admins').child(auth.uid).exists() || data.child('uid').val() === auth.uid)))",
+        ".validate": "newData.hasChildren(['uid', 'nomeCompleto', 'role', 'status', 'email', 'setor'])",
+        "role": {
+          ".write": "auth != null && root.child('admins').child(auth.uid).exists()",
+          ".validate": "newData.val() === 'usuario' || newData.val() === 'supervisor' || newData.val() === 'moderador' || newData.val() === 'admin'"
+        },
+        "setor": {
+          ".write": "auth != null && root.child('admins').child(auth.uid).exists()",
+          ".validate": "newData.val() === 'geral' || newData.val() === 'ti' || newData.val() === 'financeiro' || newData.val() === 'suporte' || newData.val() === 'comercial'"
+        },
+        "status": {
+          ".write": "auth != null && root.child('admins').child(auth.uid).exists()",
+          ".validate": "newData.val() === 'ativo' || newData.val() === 'inativo'"
+        }
+      }
+    },
+    "admins": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && root.child('admins').child(auth.uid).exists()"
+      }
+    },
+    "respostas": {
+      ".read": "auth != null",
+      "$username": {
+        ".write": "auth != null && root.child('atendentes').child($username).child('uid').val() === auth.uid"
+      }
+    },
+    "categorias_ordem": {
+      ".read": "auth != null",
+      "$username": {
+        ".write": "auth != null && root.child('atendentes').child($username).child('uid').val() === auth.uid"
+      }
+    },
+    "modelos_os": {
+      ".read": "auth != null",
+      "$username": {
+        ".write": "auth != null && root.child('atendentes').child($username).child('uid').val() === auth.uid"
+      }
+    },
+    "os_templates_master": {
+      ".read": "auth != null",
+      ".write": "auth != null && root.child('admins').child(auth.uid).exists()"
+    },
+    "sgp_cache": {
+      ".read": true,
+      ".write": "auth != null"
+    },
+    "$other": {
+      ".read": false,
+      ".write": false
+    }
+  }
+}

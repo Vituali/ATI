@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600&display=swap");
 
 :root {
   /* DARK THEME (Default) */
@@ -19,8 +19,8 @@
   --border-subtle: rgba(255, 255, 255, 0.08);
   --radius-md: 8px;
   --radius-lg: 10px;
-  --font-main: 'DM Sans', sans-serif;
-  --font-mono: 'Space Mono', monospace;
+  --font-main: "DM Sans", sans-serif;
+  --font-mono: "Space Mono", monospace;
   --shadow-subtle: 0 10px 30px rgba(0, 0, 0, 0.4);
   --text-on-accent: #ffffff;
 }
@@ -46,7 +46,6 @@
   --text-on-accent: #ffffff;
 }
 
-
 * {
   box-sizing: border-box;
   margin: 0;
@@ -59,7 +58,9 @@ body {
   color: var(--text-main);
   font-family: var(--font-main);
   -webkit-font-smoothing: antialiased;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 #root {
@@ -68,3 +69,89 @@ body {
   flex-direction: column;
 }
 
+/* --- REUSABLE LOADING COMPONENT --- */
+.loading-overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 2rem;
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
+}
+
+.loading-overlay.full-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-dark);
+  z-index: 9999;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid var(--border-subtle);
+  border-top: 4px solid var(--accent-blue);
+  border-radius: 50%;
+  animation: spin 1s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  box-shadow: 0 0 20px rgba(0, 100, 255, 0.15);
+}
+
+.loading-spinner.small {
+  width: 30px;
+  height: 30px;
+  border-width: 3px;
+}
+
+.loading-text {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  animation: pulse-text 2s ease-in-out infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse-text {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fade-in 0.5s ease-out forwards;
+}
+
+/* Initial loader (index.html) logic - keep minimal */
+.initial-loader {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #111;
+  color: #fff;
+  z-index: 9999;
+}
+.initial-loader .spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top: 3px solid #0064ff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}

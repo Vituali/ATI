@@ -113,7 +113,6 @@
   letter-spacing: 0.5px;
 }
 
-.os-loading,
 .os-vazio {
   text-align: center;
   color: var(--text-muted);

@@ -39,11 +39,7 @@
   100% { opacity: 1; }
 }
 
-.chat-loading {
-  text-align: center;
-  color: var(--text-muted);
-  padding: 2rem;
-}
+/* .chat-loading removido em favor do LoadingOverlay */
 
 .chat-card {
   background: var(--bg-card);

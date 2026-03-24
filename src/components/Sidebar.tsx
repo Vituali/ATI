@@ -8,6 +8,7 @@ export type { Section };
 interface SidebarProps {
   role: Role;
   setor: Setor;
+  activeSection: Section;
   onSelectSection: (section: Section) => void;
   onOpenUserModal: () => void;
   onOpenSettings: () => void;
@@ -32,18 +33,13 @@ const NAV_ITEMS: NavItem[] = [
 export default function Sidebar({
   role,
   setor,
+  activeSection,
   onSelectSection,
   onOpenUserModal,
   onOpenSettings,
   theme,
 }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState<Section>("home");
-
-  function handleSelectSection(section: Section) {
-    setActiveSection(section);
-    onSelectSection(section);
-  }
 
   // Filtra os itens com base no cruzamento de role + setor
   const visibleItems = NAV_ITEMS.filter((item) =>
@@ -65,7 +61,7 @@ export default function Sidebar({
           <button
             key={item.section}
             className={`sidebar-button ${activeSection === item.section ? "active" : ""}`}
-            onClick={() => handleSelectSection(item.section)}
+            onClick={() => onSelectSection(item.section)}
           >
             <span className="icon">{item.icon}</span>
             <span className="text">{item.label}</span>

@@ -8,6 +8,7 @@
 import { useState, useRef, useCallback } from "react";
 import { useUser } from "../hooks/useUser";
 import "./Conversor.css";
+import LoadingOverlay from "../components/LoadingOverlay";
 
 // ---------------------------------------------------------------
 // INSTALA: npm install pdfjs-dist
@@ -373,12 +374,14 @@ export default function Conversor() {
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
         >
-          <span className="conv-drop-icon">{processando ? "⏳" : "📂"}</span>
-          <p className="conv-drop-texto">
-            {processando
-              ? "Lendo o PDF..."
-              : "Arraste e solte o arquivo PDF aqui"}
-          </p>
+          {processando ? (
+            <LoadingOverlay small message="Lendo o PDF..." />
+          ) : (
+            <>
+              <span className="conv-drop-icon">📂</span>
+              <p className="conv-drop-texto">Arraste e solte o arquivo PDF aqui</p>
+            </>
+          )}
           {!processando && <span className="conv-drop-ou">ou</span>}
           {!processando && (
             <button

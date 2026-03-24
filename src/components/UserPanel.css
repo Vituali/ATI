@@ -1,0 +1,330 @@
+/* ============================================================
+   USERPANEL.CSS — Painel de Perfil do Usuário
+   ============================================================ */
+
+/* --- Cabeçalho com Avatar --- */
+.up-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 0 0 1.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 0.5rem;
+}
+
+.up-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-blue), rgba(0, 100, 255, 0.5));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 0 20px rgba(0, 100, 255, 0.3);
+  font-family: var(--font-mono);
+}
+
+.up-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.up-nome {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.up-username {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.up-badges {
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.up-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  border-radius: 99px;
+}
+
+.up-badge.role {
+  background: rgba(0, 100, 255, 0.15);
+  color: var(--accent-blue);
+  border: 1px solid var(--accent-blue-border);
+}
+
+.up-badge.setor {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-grey);
+  border: 1px solid var(--border-subtle);
+}
+
+/* --- Abas --- */
+.up-tabs {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  margin-bottom: 1.2rem;
+  background: var(--bg-black);
+  border-radius: var(--radius-md);
+  padding: 4px;
+}
+
+.up-tab {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 9px 12px;
+  border-radius: calc(var(--radius-md) - 2px);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-main);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.up-tab:hover {
+  color: var(--text-grey);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.up-tab.ativo {
+  background: var(--bg-panel);
+  color: var(--text-white);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* --- Seção de conteúdo --- */
+.up-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  animation: fade-in 0.2s ease-out;
+}
+
+/* --- Info rows (somente leitura) --- */
+.up-info-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  gap: 12px;
+}
+
+.up-info-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.up-info-valor {
+  font-size: 13px;
+  color: var(--text-grey);
+  text-align: right;
+  word-break: break-all;
+}
+
+/* --- Grupos de formulário --- */
+.up-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.up-grupo label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.up-grupo input {
+  width: 100%;
+  background: var(--bg-input);
+  color: var(--text-main);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 11px 14px;
+  font-size: 14px;
+  font-family: var(--font-main);
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.up-grupo input:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 2px var(--accent-blue-hover);
+}
+
+/* --- Wrapper com botão olho --- */
+.up-senha-wrapper {
+  position: relative;
+}
+
+.up-senha-wrapper input {
+  padding-right: 42px;
+}
+
+.up-olho {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  line-height: 1;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.up-olho:hover {
+  opacity: 1;
+}
+
+/* --- Feedback inline --- */
+.up-feedback {
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  animation: fade-in 0.2s ease-out;
+}
+
+.up-feedback.ok {
+  background: rgba(0, 200, 83, 0.1);
+  border: 1px solid rgba(0, 200, 83, 0.25);
+  color: #00c853;
+}
+
+.up-feedback.erro {
+  background: rgba(255, 82, 82, 0.1);
+  border: 1px solid rgba(255, 82, 82, 0.25);
+  color: #ff5252;
+}
+
+/* --- Labels extras --- */
+.up-label-dica {
+  font-size: 10px;
+  font-weight: 400;
+  text-transform: none;
+  color: var(--text-muted);
+  font-family: var(--font-main);
+  margin-left: 4px;
+}
+
+.up-label-obrig {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: none;
+  color: #f87171;
+  font-family: var(--font-main);
+  margin-left: 4px;
+}
+
+/* --- Aviso de operação sensível --- */
+.up-aviso-conta {
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  font-size: 12.5px;
+  color: #fbbf24;
+  line-height: 1.5;
+}
+
+.up-btn-salvar {
+  background: var(--accent-blue);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-main);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.up-btn-salvar:hover:not(:disabled) {
+  box-shadow: 0 4px 15px rgba(0, 100, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+.up-btn-salvar:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* --- Rodapé com Logout --- */
+.up-footer {
+  margin-top: 1.5rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.up-btn-logout {
+  width: 100%;
+  background: rgba(255, 82, 82, 0.08);
+  color: #ff5252;
+  border: 1px solid rgba(255, 82, 82, 0.2);
+  border-radius: var(--radius-md);
+  padding: 11px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-main);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.up-btn-logout:hover {
+  background: rgba(255, 82, 82, 0.15);
+  border-color: rgba(255, 82, 82, 0.4);
+}
+
+/* --- Adaptações Light theme --- */
+.light-theme .up-tab.ativo {
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.light-theme .up-avatar {
+  box-shadow: 0 4px 12px rgba(0, 97, 224, 0.25);
+}

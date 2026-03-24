@@ -18,6 +18,7 @@ import {
   SECTION_LABEL,
 } from "../services/permissions";
 import "./Admin.css";
+import LoadingOverlay from "../components/LoadingOverlay";
 
 // ---------------------------------------------------------------
 // TIPOS
@@ -279,12 +280,7 @@ export default function Admin() {
         </div>
 
         {/* Estados de loading e erro */}
-        {loading && (
-          <div className="admin-estado">
-            <span className="admin-loader" />
-            Carregando usuários...
-          </div>
-        )}
+        {loading && <LoadingOverlay message="Carregando usuários..." />}
 
         {erro && !loading && <div className="admin-estado erro">{erro}</div>}
 

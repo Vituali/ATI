@@ -4,6 +4,7 @@ import { ref, get, set } from "firebase/database";
 import { db } from "../services/firebase";
 import { useUser } from "../hooks/useUser";
 import "./Chat.css";
+import LoadingOverlay from "../components/LoadingOverlay";
 import Modal from "../components/Modal";
 
 // ---------------------------------------------------------------
@@ -270,7 +271,11 @@ export default function Chat() {
   // ---------------------------------------------------------------
 
   if (loading) {
-    return <div className="chat-page"><div className="chat-loading">Carregando respostas...</div></div>;
+    return (
+      <div className="chat-page">
+        <LoadingOverlay message="Carregando respostas..." />
+      </div>
+    );
   }
 
   return (

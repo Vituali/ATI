@@ -5,6 +5,7 @@ import { db } from "../services/firebase";
 import { useUser } from "../hooks/useUser";
 import "./OS.css";
 import Modal from "../components/Modal";
+import LoadingOverlay from "../components/LoadingOverlay";
 
 // ---------------------------------------------------------------
 // TIPOS
@@ -259,7 +260,11 @@ export default function OS() {
   // ---------------------------------------------------------------
 
   if (loading) {
-    return <div className="os-page"><div className="os-loading">Carregando modelos...</div></div>;
+    return (
+      <div className="os-page">
+        <LoadingOverlay message="Carregando modelos..." />
+      </div>
+    );
   }
 
   return (

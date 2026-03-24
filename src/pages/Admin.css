@@ -178,27 +178,14 @@
 }
 
 /* --- Estados (Loading/Erro) --- */
-.admin-estado {
+.admin-estado.erro {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 4rem;
   gap: 1rem;
-  color: var(--text-grey);
-}
-
-.admin-estado.erro {
   color: #ff646e;
-}
-
-.admin-loader {
-  width: 24px;
-  height: 24px;
-  border: 2px solid var(--border-subtle);
-  border-top-color: var(--accent-blue);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {

@@ -1,5 +1,5 @@
 /* ============================================================
-   HOME.CSS — Minimalist Dark Design System
+   HOME.CSS — Design Premium com Hero, Cards e Atalhos
    ============================================================ */
 
 .home-page {
@@ -15,41 +15,115 @@
 }
 
 @keyframes fadeInHome {
-  from {
-    opacity: 0;
-    transform: translateY(15px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-/* --- Header Section --- */
-.home-header {
+/* ── Hero ── */
+.home-hero {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 2rem 2.5rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-subtle);
+}
+
+/* Barra de cor no topo */
+.home-hero::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-blue) 40%, rgba(100, 200, 255, 0.6) 70%, transparent);
+}
+
+/* Glow de fundo */
+.home-hero-glow {
+  position: absolute;
+  top: -60px; left: -60px;
+  width: 250px; height: 250px;
+  background: radial-gradient(circle, rgba(0, 100, 255, 0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* Avatar */
+.home-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.home-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-blue), rgba(0, 150, 255, 0.5));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #fff;
+  font-family: var(--font-mono);
+  z-index: 1;
+  position: relative;
+}
+
+.home-avatar-ring {
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 100, 255, 0.3);
+  animation: pulse-ring 3s ease-in-out infinite;
+}
+
+@keyframes pulse-ring {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50%       { transform: scale(1.08); opacity: 0.2; }
+}
+
+/* Texto do hero */
+.home-hero-text {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid var(--border-subtle);
+  gap: 0.4rem;
 }
 
 .home-titulo {
-  font-size: 2.2rem;
+  font-size: 2rem;
   font-weight: 800;
   color: var(--text-white);
   margin: 0;
-  letter-spacing: -1px;
+  letter-spacing: -0.5px;
+}
+
+.home-nome-accent {
+  background: linear-gradient(90deg, var(--accent-blue), #64b5f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .home-subtitulo {
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: var(--text-grey);
   margin: 0;
-  font-weight: 400;
 }
 
-/* --- Warning Banner (Amber Yellow) --- */
+.home-hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+/* ── Aviso de setor pendente ── */
 .home-aviso {
   display: flex;
   align-items: flex-start;
@@ -63,74 +137,87 @@
   line-height: 1.5;
 }
 
-.home-aviso-icon {
-  font-size: 1.1rem;
-  flex-shrink: 0;
-  margin-top: 2px;
+.home-aviso-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 2px; }
+
+/* ── Layout de linha dupla de cards ── */
+.home-cards-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
 }
 
-/* --- Main Card --- */
+/* ── Cards genéricos ── */
 .home-card {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  padding: 2rem;
+  padding: 1.75rem 2rem;
   backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   box-shadow: var(--shadow-subtle);
   position: relative;
   overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+.home-card:hover {
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .home-card::before {
   content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: 0; left: 0; right: 0;
   height: 2px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--accent-blue),
-    transparent
-  );
-  opacity: 0.4;
+  background: linear-gradient(90deg, transparent, var(--accent-blue), transparent);
+  opacity: 0.35;
+}
+
+.home-card-sgp::before {
+  background: linear-gradient(90deg, transparent, #4dd0e1, transparent);
+}
+
+.home-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1.25rem;
+}
+
+.home-card-icon {
+  font-size: 1.2rem;
 }
 
 .home-card-titulo {
-  font-size: 1.4rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--text-white);
-  margin: 0 0 0.75rem 0;
-  letter-spacing: -0.3px;
+  margin: 0;
+  letter-spacing: -0.2px;
 }
 
 .home-card-desc {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   color: var(--text-grey);
-  margin: 0 0 2rem 0;
-  max-width: 600px;
+  margin: 0 0 1.5rem;
   line-height: 1.6;
 }
 
-/* --- Info Grid & Items --- */
+/* ── Info Grid ── */
 .home-info-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
-  margin-top: 1rem;
+  gap: 1.25rem;
 }
 
 .home-info-item {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
 
 .home-info-label {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -138,76 +225,185 @@
 }
 
 .home-info-valor {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--text-white);
+  word-break: break-all;
 }
 
 .home-info-valor.mono {
   font-family: var(--font-mono);
-  letter-spacing: -0.5px;
   font-weight: 400;
   color: var(--text-grey);
+  letter-spacing: -0.3px;
 }
 
-/* --- Badges & Roles --- */
+/* SGP vazio */
+.home-info-sgp-vazio {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.home-info-sgp-dica {
+  color: var(--accent-blue);
+  font-style: normal;
+  cursor: default;
+}
+
+/* SGP link */
+.home-sgp-link {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: #4dd0e1;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.home-sgp-link:hover {
+  color: #80deea;
+  text-decoration: underline;
+}
+
+/* ── Badges ── */
 .home-badge {
   display: inline-flex;
   align-items: center;
   padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 12px;
+  border-radius: 99px;
+  font-family: var(--font-mono);
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   border: 1px solid transparent;
 }
 
-/* Status Variants */
 .home-badge.ok {
   background: rgba(0, 230, 118, 0.1);
   color: #00e676;
-  border-color: rgba(0, 230, 118, 0.15);
+  border-color: rgba(0, 230, 118, 0.2);
 }
 
 .home-badge.pendente {
   background: rgba(255, 193, 7, 0.1);
   color: #ffca28;
-  border-color: rgba(255, 193, 7, 0.15);
+  border-color: rgba(255, 193, 7, 0.2);
 }
 
-/* Role Variants */
 .home-badge.role-admin {
   background: rgba(0, 100, 255, 0.15);
   color: #448aff;
-  border-color: rgba(0, 100, 255, 0.2);
+  border-color: rgba(0, 100, 255, 0.25);
 }
 
 .home-badge.role-supervisor {
   background: rgba(156, 39, 176, 0.15);
-  color: #e1bee7;
-  border-color: rgba(156, 39, 176, 0.2);
+  color: #ce93d8;
+  border-color: rgba(156, 39, 176, 0.25);
 }
 
 .home-badge.role-moderador {
   background: rgba(255, 152, 0, 0.15);
-  color: #ffcc80;
-  border-color: rgba(255, 152, 0, 0.2);
+  color: #ffb74d;
+  border-color: rgba(255, 152, 0, 0.25);
 }
 
 .home-badge.role-usuario {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.07);
   color: var(--text-grey);
   border-color: var(--border-subtle);
 }
 
-/* Responsive Grid */
-@media (max-width: 600px) {
+/* ── Grid de Atalhos ── */
+.home-shortcuts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.home-shortcut {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.02);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.home-shortcut:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: color-mix(in srgb, var(--shortcut-color) 40%, transparent);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.home-shortcut-icon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.home-shortcut-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.home-shortcut-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--shortcut-color, var(--text-white));
+  line-height: 1;
+}
+
+.home-shortcut-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* ── Responsivo ── */
+@media (max-width: 700px) {
+  .home-hero {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.5rem;
+  }
+
+  .home-hero-badges {
+    justify-content: center;
+  }
+
+  .home-cards-row {
+    grid-template-columns: 1fr;
+  }
+
   .home-info-grid {
     grid-template-columns: 1fr;
   }
 
   .home-titulo {
-    font-size: 1.8rem;
+    font-size: 1.6rem;
   }
+
+  .home-shortcuts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Light theme ── */
+.light-theme .home-hero-glow {
+  background: radial-gradient(circle, rgba(0, 97, 224, 0.08) 0%, transparent 70%);
+}
+
+.light-theme .home-avatar {
+  box-shadow: 0 4px 16px rgba(0, 97, 224, 0.25);
+}
+
+.light-theme .home-shortcut:hover {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
 }

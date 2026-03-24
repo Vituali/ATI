@@ -17,32 +17,36 @@ import Admin from "./pages/Admin";
 import ErrorPage from "./pages/ErrorPage";
 import "./App.css";
 
-type AuthScreen = "login" | "register";
+import LoadingOverlay from "./components/LoadingOverlay";
+import UserPanel from "./components/UserPanel";
 
-function renderSection(section: Section, user: UserProfile) {
-  switch (section) {
-    case "home":
-      return <Home user={user} />;
-    case "chat":
-      return <Chat />;
-    case "os":
-      return <OS />;
-    case "conversor":
-      return <Conversor />;
-    case "senhas":
-      return <Senhas />;
-    case "relatorios":
-      return <div>Relatórios — em breve</div>;
-    case "admin":
-      return <Admin />;
-  }
-}
+type AuthScreen = "login" | "register";
 
 export default function App() {
   const { user, loading, error } = useUser();
   const [authScreen, setAuthScreen] = useState<AuthScreen>("login");
   const [currentSection, setCurrentSection] = useState<Section>("home");
   const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [userPanelAberto, setUserPanelAberto] = useState(false);
+
+  function renderSection(section: Section, user: UserProfile) {
+    switch (section) {
+      case "home":
+        return <Home user={user} onSelectSection={setCurrentSection} />;
+      case "chat":
+        return <Chat />;
+      case "os":
+        return <OS />;
+      case "conversor":
+        return <Conversor />;
+      case "senhas":
+        return <Senhas />;
+      case "relatorios":
+        return <div>Relatórios — em breve</div>;
+      case "admin":
+        return <Admin />;
+    }
+  }
 
   // Altera a classe no body para refletir o tema
   useEffect(() => {
@@ -55,12 +59,7 @@ export default function App() {
 
   // Carregando sessão
   if (loading) {
-    return (
-      <div className="app-loading">
-        <span className="app-loading-spinner" />
-        <span>Carregando...</span>
-      </div>
-    );
+    return <LoadingOverlay fullScreen message="Carregando Sistema" />;
   }
 
   // Erro de perfil → página de erro amigável
@@ -91,13 +90,15 @@ export default function App() {
     ? currentSection
     : "home";
 
+
   return (
-    <div className="app-layout">
+    <div className="app-layout fade-in">
       <Sidebar
         role={user.role}
         setor={user.setor}
+        activeSection={safeSection}
         onSelectSection={setCurrentSection}
-        onOpenUserModal={() => logout()}
+        onOpenUserModal={() => setUserPanelAberto(true)}
         onOpenSettings={toggleTheme}
         theme={theme}
       />
@@ -105,6 +106,13 @@ export default function App() {
         <main className="main-content">{renderSection(safeSection, user)}</main>
         <Footer />
       </div>
+
+      <UserPanel
+        user={user}
+        aberto={userPanelAberto}
+        onFechar={() => setUserPanelAberto(false)}
+        onLogout={async () => { setUserPanelAberto(false); await logout(); }}
+      />
     </div>
   );
 }

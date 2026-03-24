@@ -12,10 +12,10 @@ import Modal from "../components/Modal";
 // ---------------------------------------------------------------
 
 export interface Resposta {
-  category:    string;
+  category: string;
   subCategory: string;
-  title:       string;
-  text:        string;
+  title: string;
+  text: string;
 }
 
 // ---------------------------------------------------------------
@@ -24,23 +24,47 @@ export interface Resposta {
 
 function aplicarMarcadores(texto: string): string {
   const h = new Date().getHours();
-  const saudacao  = h >= 5 && h < 12 ? "Bom dia"  : h >= 12 && h < 18 ? "Boa tarde"  : "Boa noite";
-  const despedida = h >= 5 && h < 12 ? "Tenha um ótimo dia" : h >= 12 && h < 18 ? "Tenha uma ótima tarde" : "Tenha uma ótima noite";
-  return texto.replace(/\[saudacao\]/gi, saudacao).replace(/\[despedida\]/gi, despedida);
+  const saudacao =
+    h >= 5 && h < 12
+      ? "Bom dia"
+      : h >= 12 && h < 18
+        ? "Boa tarde"
+        : "Boa noite";
+  const despedida =
+    h >= 5 && h < 12
+      ? "Tenha um ótimo dia"
+      : h >= 12 && h < 18
+        ? "Tenha uma ótima tarde"
+        : "Tenha uma ótima noite";
+  return texto
+    .replace(/\[saudacao\]/gi, saudacao)
+    .replace(/\[despedida\]/gi, despedida);
 }
 
 function parseArrayFirebase(val: any): Resposta[] {
   if (!val) return [];
   if (Array.isArray(val)) return val.filter(Boolean) as Resposta[];
-  return Object.keys(val).sort((a, b) => Number(a) - Number(b)).map((k) => val[k]).filter(Boolean) as Resposta[];
+  return Object.keys(val)
+    .sort((a, b) => Number(a) - Number(b))
+    .map((k) => val[k])
+    .filter(Boolean) as Resposta[];
 }
 
 async function copiar(texto: string): Promise<boolean> {
-  try { await navigator.clipboard.writeText(texto); return true; }
-  catch { return false; }
+  try {
+    await navigator.clipboard.writeText(texto);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
-const MODAL_VAZIO: Resposta = { category: "quick_reply", subCategory: "", title: "", text: "" };
+const MODAL_VAZIO: Resposta = {
+  category: "quick_reply",
+  subCategory: "",
+  title: "",
+  text: "",
+};
 
 // ---------------------------------------------------------------
 // COMPONENTE
@@ -49,17 +73,17 @@ const MODAL_VAZIO: Resposta = { category: "quick_reply", subCategory: "", title:
 export default function Chat() {
   const { user } = useUser();
 
-  const [respostas, setRespostas]         = useState<Resposta[]>([]);
-  const [ordemCats, setOrdemCats]         = useState<string[]>([]);
-  const [loading, setLoading]             = useState(true);
-  const [salvando, setSalvando]           = useState(false);
+  const [respostas, setRespostas] = useState<Resposta[]>([]);
+  const [ordemCats, setOrdemCats] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [salvando, setSalvando] = useState(false);
 
   // Seleção
-  const [subCatSel, setSubCatSel]         = useState("");
-  const [respostaSel, setRespostaSel]     = useState<number | "">("");
-  const [textoFinal, setTextoFinal]       = useState("");
-  const [tituloFinal, setTituloFinal]     = useState("");
-  const [copiado, setCopiado]             = useState(false);
+  const [subCatSel, setSubCatSel] = useState("");
+  const [respostaSel, setRespostaSel] = useState<number | "">("");
+  const [textoFinal, setTextoFinal] = useState("");
+  const [tituloFinal, setTituloFinal] = useState("");
+  const [copiado, setCopiado] = useState(false);
 
   // Modo reordenar categorias
   const [reordenandoCats, setReordenandoCats] = useState(false);
@@ -69,11 +93,11 @@ export default function Chat() {
   const dragRespostaIdx = useRef<number | null>(null);
 
   // Modal
-  const [modalAberto, setModalAberto]     = useState(false);
-  const [modalModo, setModalModo]         = useState<"novo" | "editar">("novo");
-  const [modalIdx, setModalIdx]           = useState<number | null>(null);
-  const [modalForm, setModalForm]         = useState<Resposta>(MODAL_VAZIO);
-  const [modalNovaCat, setModalNovaCat]   = useState(false);
+  const [modalAberto, setModalAberto] = useState(false);
+  const [modalModo, setModalModo] = useState<"novo" | "editar">("novo");
+  const [modalIdx, setModalIdx] = useState<number | null>(null);
+  const [modalForm, setModalForm] = useState<Resposta>(MODAL_VAZIO);
+  const [modalNovaCat, setModalNovaCat] = useState(false);
 
   // ---------------------------------------------------------------
   // CARREGAR FIREBASE
@@ -116,15 +140,22 @@ export default function Chat() {
   async function salvarRespostas(lista: Resposta[]) {
     if (!user) return;
     setSalvando(true);
-    try { await set(ref(db, `respostas/${user.username}`), lista); }
-    catch (e) { console.error(e); }
-    finally { setSalvando(false); }
+    try {
+      await set(ref(db, `respostas/${user.username}`), lista);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSalvando(false);
+    }
   }
 
   async function salvarOrdemCats(ordem: string[]) {
     if (!user) return;
-    try { await set(ref(db, `categorias_ordem/${user.username}`), ordem); }
-    catch (e) { console.error(e); }
+    try {
+      await set(ref(db, `categorias_ordem/${user.username}`), ordem);
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   // ---------------------------------------------------------------
@@ -136,8 +167,8 @@ export default function Chat() {
   const todasCats = [...new Set(respostas.map((r) => r.subCategory))];
 
   const catsOrdenadas = [
-    ...ordemCats.filter((c) => todasCats.includes(c)),     // salvas + existentes
-    ...todasCats.filter((c) => !ordemCats.includes(c)),    // novas ainda não salvas
+    ...ordemCats.filter((c) => todasCats.includes(c)), // salvas + existentes
+    ...todasCats.filter((c) => !ordemCats.includes(c)), // novas ainda não salvas
   ];
 
   // ---------------------------------------------------------------
@@ -185,27 +216,42 @@ export default function Chat() {
     const idx = Number(idxStr);
     setRespostaSel(idx);
     const r = respostas[idx];
-    if (r) { setTituloFinal(r.title); setTextoFinal(aplicarMarcadores(r.text)); }
+    if (r) {
+      setTituloFinal(r.title);
+      setTextoFinal(aplicarMarcadores(r.text));
+    }
   }
 
   async function handleCopiar() {
     const ok = await copiar(textoFinal);
-    if (ok) { setCopiado(true); setTimeout(() => setCopiado(false), 2000); }
+    if (ok) {
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 2000);
+    }
   }
 
   function handleLimpar() {
-    setSubCatSel(""); setRespostaSel(""); setTextoFinal(""); setTituloFinal("");
+    setSubCatSel("");
+    setRespostaSel("");
+    setTextoFinal("");
+    setTituloFinal("");
   }
 
   // ---------------------------------------------------------------
   // DRAG AND DROP — RESPOSTAS
   // ---------------------------------------------------------------
 
-  function handleRespostaDragStart(globalIdx: number) { dragRespostaIdx.current = globalIdx; }
+  function handleRespostaDragStart(globalIdx: number) {
+    dragRespostaIdx.current = globalIdx;
+  }
 
   function handleRespostaDragOver(e: React.DragEvent, globalIdx: number) {
     e.preventDefault();
-    if (dragRespostaIdx.current === null || dragRespostaIdx.current === globalIdx) return;
+    if (
+      dragRespostaIdx.current === null ||
+      dragRespostaIdx.current === globalIdx
+    )
+      return;
     const nova = [...respostas];
     const [item] = nova.splice(dragRespostaIdx.current, 1);
     nova.splice(globalIdx, 0, item);
@@ -224,17 +270,28 @@ export default function Chat() {
 
   function abrirModalNovo() {
     setModalForm({ ...MODAL_VAZIO, subCategory: subCatSel });
-    setModalModo("novo"); setModalIdx(null); setModalNovaCat(false); setModalAberto(true);
+    setModalModo("novo");
+    setModalIdx(null);
+    setModalNovaCat(false);
+    setModalAberto(true);
   }
 
   function abrirModalEditar() {
     if (respostaSel === "") return;
     setModalForm({ ...respostas[respostaSel as number] });
-    setModalModo("editar"); setModalIdx(respostaSel as number); setModalNovaCat(false); setModalAberto(true);
+    setModalModo("editar");
+    setModalIdx(respostaSel as number);
+    setModalNovaCat(false);
+    setModalAberto(true);
   }
 
   async function handleModalSalvar() {
-    if (!modalForm.title.trim() || !modalForm.text.trim() || !modalForm.subCategory.trim()) return;
+    if (
+      !modalForm.title.trim() ||
+      !modalForm.text.trim() ||
+      !modalForm.subCategory.trim()
+    )
+      return;
     const novaLista = [...respostas];
 
     if (modalModo === "novo") {
@@ -262,7 +319,9 @@ export default function Chat() {
     if (respostaSel === "") return;
     const novaLista = respostas.filter((_, i) => i !== respostaSel);
     setRespostas(novaLista);
-    setRespostaSel(""); setTextoFinal(""); setTituloFinal("");
+    setRespostaSel("");
+    setTextoFinal("");
+    setTituloFinal("");
     await salvarRespostas(novaLista);
   }
 
@@ -280,14 +339,12 @@ export default function Chat() {
 
   return (
     <div className="chat-page">
-
       <div className="chat-header">
-        <h1 className="chat-titulo">🗨️ Chat Automatizado</h1>
+        <h1 className="chat-titulo">🗨️ Respostas Rápidas</h1>
         {salvando && <span className="chat-salvando">💾 Salvando...</span>}
       </div>
 
       <div className="chat-card">
-
         {/* SELECT DE CATEGORIA — normal ou modo reordenação */}
         <div className="chat-grupo">
           <div className="chat-label-row">
@@ -311,7 +368,9 @@ export default function Chat() {
             >
               <option value="">Selecione uma categoria</option>
               {catsOrdenadas.map((sc) => (
-                <option key={sc} value={sc}>{sc}</option>
+                <option key={sc} value={sc}>
+                  {sc}
+                </option>
               ))}
             </select>
           ) : (
@@ -329,7 +388,8 @@ export default function Chat() {
                   <span className="chat-reorder-handle">⠿</span>
                   <span className="chat-cats-drag-nome">{sc}</span>
                   <span className="chat-cats-drag-count">
-                    {respostas.filter((r) => r.subCategory === sc).length} respostas
+                    {respostas.filter((r) => r.subCategory === sc).length}{" "}
+                    respostas
                   </span>
                 </li>
               ))}
@@ -349,7 +409,9 @@ export default function Chat() {
             >
               <option value="">Selecione uma resposta</option>
               {respostasDaCat.map((r) => (
-                <option key={r._idx} value={r._idx}>{r.title}</option>
+                <option key={r._idx} value={r._idx}>
+                  {r.title}
+                </option>
               ))}
             </select>
           </div>
@@ -379,12 +441,22 @@ export default function Chat() {
               />
             </div>
             <div className="chat-acoes">
-              <button className="btn-copiar" onClick={handleCopiar} disabled={copiado}>
+              <button
+                className="btn-copiar"
+                onClick={handleCopiar}
+                disabled={copiado}
+              >
                 {copiado ? "✅ Copiado!" : "📋 Copiar"}
               </button>
-              <button className="btn-editar"  onClick={abrirModalEditar}>✏️ Editar</button>
-              <button className="btn-apagar"  onClick={handleApagar}>🗑️ Apagar</button>
-              <button className="btn-limpar"  onClick={handleLimpar}>✕ Limpar</button>
+              <button className="btn-editar" onClick={abrirModalEditar}>
+                ✏️ Editar
+              </button>
+              <button className="btn-apagar" onClick={handleApagar}>
+                🗑️ Apagar
+              </button>
+              <button className="btn-limpar" onClick={handleLimpar}>
+                ✕ Limpar
+              </button>
             </div>
           </div>
         )}
@@ -392,16 +464,19 @@ export default function Chat() {
         {/* BOTÃO ADICIONAR */}
         {!reordenandoCats && (
           <div className="chat-add-wrapper">
-            <button className="btn-adicionar" onClick={abrirModalNovo}>➕ Nova resposta</button>
+            <button className="btn-adicionar" onClick={abrirModalNovo}>
+              ➕ Nova resposta
+            </button>
           </div>
         )}
-
       </div>
 
       {/* REORDENAR RESPOSTAS DA CATEGORIA */}
       {subCatSel && !reordenandoCats && respostasDaCat.length > 1 && (
         <div className="chat-card">
-          <h2 className="chat-reorder-titulo">↕ Reordenar — <span>{subCatSel}</span></h2>
+          <h2 className="chat-reorder-titulo">
+            ↕ Reordenar — <span>{subCatSel}</span>
+          </h2>
           <p className="chat-reorder-dica">Arraste para reordenar</p>
           <ul className="chat-reorder-lista">
             {respostasDaCat.map((r) => (
@@ -426,7 +501,9 @@ export default function Chat() {
       <Modal
         aberto={modalAberto}
         onFechar={() => setModalAberto(false)}
-        titulo={modalModo === "novo" ? "➕ Nova Resposta" : "✏️ Editar Resposta"}
+        titulo={
+          modalModo === "novo" ? "➕ Nova Resposta" : "✏️ Editar Resposta"
+        }
         largura="520px"
       >
         <div className="chat-grupo">
@@ -436,14 +513,23 @@ export default function Chat() {
               <select
                 id="chat-modal-subcat"
                 value={modalForm.subCategory}
-                onChange={(e) => setModalForm({ ...modalForm, subCategory: e.target.value })}
+                onChange={(e) =>
+                  setModalForm({ ...modalForm, subCategory: e.target.value })
+                }
               >
                 <option value="">Selecione</option>
                 {catsOrdenadas.map((sc) => (
-                  <option key={sc} value={sc}>{sc}</option>
+                  <option key={sc} value={sc}>
+                    {sc}
+                  </option>
                 ))}
               </select>
-              <button className="btn-nova-cat" onClick={() => setModalNovaCat(true)}>+ Nova</button>
+              <button
+                className="btn-nova-cat"
+                onClick={() => setModalNovaCat(true)}
+              >
+                + Nova
+              </button>
             </div>
           ) : (
             <div className="modal-row">
@@ -453,10 +539,17 @@ export default function Chat() {
                 type="text"
                 placeholder="Nome da nova categoria"
                 value={modalForm.subCategory}
-                onChange={(e) => setModalForm({ ...modalForm, subCategory: e.target.value })}
+                onChange={(e) =>
+                  setModalForm({ ...modalForm, subCategory: e.target.value })
+                }
                 autoFocus
               />
-              <button className="btn-nova-cat" onClick={() => setModalNovaCat(false)}>← Voltar</button>
+              <button
+                className="btn-nova-cat"
+                onClick={() => setModalNovaCat(false)}
+              >
+                ← Voltar
+              </button>
             </div>
           )}
         </div>
@@ -469,7 +562,9 @@ export default function Chat() {
             type="text"
             placeholder="Ex: Saudação padrão"
             value={modalForm.title}
-            onChange={(e) => setModalForm({ ...modalForm, title: e.target.value })}
+            onChange={(e) =>
+              setModalForm({ ...modalForm, title: e.target.value })
+            }
           />
         </div>
 
@@ -480,11 +575,14 @@ export default function Chat() {
             name="text"
             placeholder="Use [SAUDACAO] e [DESPEDIDA] para marcadores dinâmicos"
             value={modalForm.text}
-            onChange={(e) => setModalForm({ ...modalForm, text: e.target.value })}
+            onChange={(e) =>
+              setModalForm({ ...modalForm, text: e.target.value })
+            }
             rows={6}
           />
           <span className="modal-dica">
-            Marcadores: [SAUDACAO] e [DESPEDIDA] se ajustam ao horário automaticamente
+            Marcadores: [SAUDACAO] e [DESPEDIDA] se ajustam ao horário
+            automaticamente
           </span>
         </div>
 
@@ -492,14 +590,17 @@ export default function Chat() {
           <button
             className="btn-copiar"
             onClick={handleModalSalvar}
-            disabled={!modalForm.title || !modalForm.text || !modalForm.subCategory}
+            disabled={
+              !modalForm.title || !modalForm.text || !modalForm.subCategory
+            }
           >
             💾 Salvar
           </button>
-          <button className="btn-limpar" onClick={() => setModalAberto(false)}>Cancelar</button>
+          <button className="btn-limpar" onClick={() => setModalAberto(false)}>
+            Cancelar
+          </button>
         </div>
       </Modal>
-
     </div>
   );
 }

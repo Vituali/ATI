@@ -100,7 +100,7 @@ export default function App() {
     });
 
     return () => off(q, "value", unsubscribe as any);
-  }, [user, currentSection, unreadRooms]);
+  }, [user, currentSection]);
 
   // Limpa notificação ao entrar no chat
   useEffect(() => {

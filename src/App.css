@@ -25,23 +25,32 @@
 }
 
 /* Background Customizado */
-.app-custom-bg {
+.app-custom-bg-container {
   position: fixed;
   inset: 0;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
   z-index: -1;
-  opacity: 1;
   pointer-events: none;
 }
 
-.app-custom-bg::after {
+.app-custom-bg-container::after {
   content: "";
   position: absolute;
   inset: 0;
   background: radial-gradient(circle at center, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.4) 100%), var(--bg-dark);
   opacity: 0.85;
+  z-index: 10;
+}
+
+.app-custom-bg-content {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 5;
 }
 
 .has-custom-bg {

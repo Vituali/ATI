@@ -58,21 +58,21 @@
     // RESPOSTAS E MODELOS
     // ---------------------------------------------------------------
     "respostas": {
-      ".read": true,
+      ".read": "auth != null",
       "$username": {
         ".write": "auth != null && root.child('atendentes').child($username).child('uid').val() === auth.uid"
       }
     },
       
     "categorias_ordem": {
-      ".read": true,
+      ".read": "auth != null",
       "$username": {
         ".write": "auth != null && root.child('atendentes').child($username).child('uid').val() === auth.uid"
       }
     },
 
     "modelos_os": {
-      ".read": true,
+      ".read": "auth != null",
       "$username": {
         ".write": "auth != null && root.child('atendentes').child($username).child('uid').val() === auth.uid"
       }
@@ -90,7 +90,7 @@
     // SGP CACHE
     // ---------------------------------------------------------------
     "sgp_cache": {
-      ".read": true,
+      ".read": "auth != null",
       ".write": "auth != null"
     },
 
@@ -113,10 +113,10 @@
         }
       },
       "meta": {
+        // Permite ler o nó meta completo para trigger de notificações no Sidebar
+        ".read": "auth != null",
         "$room": {
           "ultimaMensagem": {
-            // Qualquer usuário logado pode ler para monitorar novas mensagens
-            ".read": "auth != null",
             // Qualquer usuário logado pode atualizar o meta ao enviar uma mensagem nova
             ".write": "auth != null",
             // Garante campos mínimos para o listener do App.tsx

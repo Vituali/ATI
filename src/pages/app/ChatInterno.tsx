@@ -57,16 +57,28 @@ function formatarHorario(ts: number): string {
     .padStart(2, "0")} ${horas}:${min}`;
 }
 
-export default function ChatInterno() {
+interface ChatProps {
+  unreadRooms?: Setor[];
+}
+
+export default function ChatInterno({ unreadRooms = [] }: ChatProps) {
   const { user } = useUser();
   const { notify } = useNotification();
   const [mensagens, setMensagens] = useState<Mensagem[]>([]);
   const [profiles, setProfiles] = useState<Record<string, any>>({});
   const [texto, setTexto] = useState("");
   const [enviando, setEnviando] = useState(false);
-  const [activeRoom, setActiveRoom] = useState<Setor>("geral");
+  const [lastSent, setLastSent] = useState(0);
+  const [activeRoom, setActiveRoom] = useState<Setor>(() => {
+    return (localStorage.getItem("lastChatRoom") as Setor) || "geral";
+  });
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Persiste a sala ativa
+  useEffect(() => {
+    localStorage.setItem("lastChatRoom", activeRoom);
+  }, [activeRoom]);
 
   // Gerencia a conexão com o Firebase (Sempre escutando a sala correta)
   useEffect(() => {
@@ -115,6 +127,21 @@ export default function ChatInterno() {
 
   async function enviar() {
     if (!user || !texto.trim() || enviando) return;
+
+    const charLimit = 500;
+    const cooldown = 2000; // 2 segundos
+
+    if (texto.length > charLimit) {
+      notify(`A mensagem excede o limite de ${charLimit} caracteres.`, "warning");
+      return;
+    }
+
+    const agora = Date.now();
+    if (agora - lastSent < cooldown) {
+      notify("Aguarde um momento antes de enviar outra mensagem.", "warning");
+      return;
+    }
+
     setEnviando(true);
 
     try {
@@ -136,6 +163,7 @@ export default function ChatInterno() {
       });
 
       setTexto("");
+      setLastSent(agora);
       inputRef.current?.focus();
     } catch (e) {
       notify("Erro ao enviar mensagem. Verifique sua conexão.", "error");
@@ -235,7 +263,9 @@ export default function ChatInterno() {
               className={`ci-filtro-btn ${activeRoom === s ? "active" : ""}`}
               onClick={() => setActiveRoom(s)}
             >
-              {ROOM_ICONS[s]} {SETOR_LABEL[s]}
+              <span className="ci-filtro-icon">{ROOM_ICONS[s]}</span>
+              <span className="ci-filtro-label">{SETOR_LABEL[s]}</span>
+              {unreadRooms.includes(s) && <span className="ci-unread-dot" />}
             </button>
           ))}
         </div>
@@ -298,16 +328,23 @@ export default function ChatInterno() {
 
       {/* Input de envio */}
       <div className="ci-input-area">
-        <textarea
-          ref={inputRef}
-          className="ci-input"
-          placeholder={`Falar em ${SETOR_LABEL[activeRoom]}…`}
-          value={texto}
-          onChange={(e) => setTexto(e.target.value)}
-          onKeyDown={handleKeyDown}
-          rows={1}
-          disabled={enviando}
-        />
+        <div className="ci-input-wrapper">
+          <textarea
+            ref={inputRef}
+            className="ci-input"
+            placeholder={`Falar em ${SETOR_LABEL[activeRoom]}…`}
+            value={texto}
+            onChange={(e) => setTexto(e.target.value)}
+            onKeyDown={handleKeyDown}
+            rows={1}
+            maxLength={500}
+          />
+          <div
+            className={`ci-char-counter ${texto.length >= 500 ? "limit" : ""}`}
+          >
+            {texto.length}/500
+          </div>
+        </div>
         <button
           className="ci-btn-enviar"
           onClick={enviar}

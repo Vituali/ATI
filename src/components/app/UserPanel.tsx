@@ -561,7 +561,23 @@ export default function UserPanel({
         <div className="up-section">
           <div className="up-aviso-custom">
             ✨ Dê um toque pessoal à sua área de trabalho! Use links diretos de
-            imagens ou GIFs (ex: Tenor, Imgur, Giphy).
+            imagens, GIFs ou vídeos.
+            <div className="up-bg-links">
+              <a href="https://tenor.com" target="_blank" rel="noreferrer">
+                🎬 Tenor
+              </a>
+              <a href="https://giphy.com" target="_blank" rel="noreferrer">
+                👾 Giphy
+              </a>
+              <a
+                href="https://motionbgs.com"
+                target="_blank"
+                rel="noreferrer"
+                className="up-link-destaque"
+              >
+                🌈 MotionBGs
+              </a>
+            </div>
           </div>
 
           <div className="up-grupo">
@@ -593,11 +609,34 @@ export default function UserPanel({
 
           <div className="up-bg-preview-wrap">
             <p className="up-label-dica">Preview</p>
-            <div
-              className="up-bg-preview"
-              style={{ backgroundImage: tempBg ? `url(${tempBg})` : "none" }}
-            >
-              {!tempBg && <span>Sem fundo</span>}
+            <div className="up-bg-preview">
+              {tempBg ? (
+                (() => {
+                  const cleanUrl = tempBg.split("?")[0].toLowerCase();
+                  const isVideo =
+                    cleanUrl.endsWith(".mp4") ||
+                    cleanUrl.endsWith(".webm") ||
+                    cleanUrl.endsWith(".ogg");
+
+                  return isVideo ? (
+                    <video
+                      src={tempBg}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="up-bg-video-preview"
+                    />
+                  ) : (
+                    <div
+                      className="up-bg-image-preview"
+                      style={{ backgroundImage: `url(${tempBg})` }}
+                    />
+                  );
+                })()
+              ) : (
+                <span>Sem fundo</span>
+              )}
             </div>
           </div>
 

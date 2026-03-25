@@ -145,34 +145,48 @@
 }
 
 .ci-filtro-btn {
-  flex-shrink: 0;
-  padding: 0.4rem 0.9rem;
-  border-radius: 99px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  font-family: var(--font-main);
-  cursor: pointer;
+  background: var(--bg-card);
   border: 1px solid var(--border-subtle);
-  background: var(--bg-input);
-  color: var(--text-muted);
-  transition: all 0.2s ease;
-  white-space: nowrap;
+  color: var(--text-main);
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  font-weight: 500;
+  white-space: nowrap;
+  position: relative;
 }
 
 .ci-filtro-btn:hover {
-  color: var(--text-white);
-  border-color: var(--accent-blue);
-  background: var(--bg-panel);
+  border-color: var(--accent-blue-border);
+  background: var(--bg-input);
 }
 
 .ci-filtro-btn.active {
   background: var(--accent-blue);
-  border-color: var(--accent-blue);
   color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 100, 255, 0.3);
+  border-color: var(--accent-blue);
+}
+
+.ci-unread-dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 8px;
+  height: 8px;
+  background: #ff4d4d;
+  border-radius: 50%;
+  border: 2px solid var(--bg-panel);
+  box-shadow: 0 0 5px rgba(255, 77, 77, 0.5);
+  animation: pulse-dot 1s infinite alternate;
+}
+
+@keyframes pulse-dot {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0.7; transform: scale(1.1); }
 }
 
 .ci-room-tag {
@@ -206,9 +220,6 @@
   content: "";
   position: absolute;
   inset: 0;
-  background-image: url("/chat_bg.png");
-  background-repeat: repeat;
-  background-size: 380px;
   opacity: 0.06;
   pointer-events: none;
   z-index: 0;
@@ -396,6 +407,30 @@
   border-top: none;
   border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   flex-shrink: 0;
+}
+
+.ci-input-wrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.ci-char-counter {
+  position: absolute;
+  bottom: -16px;
+  right: 0;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  transition: color 0.2s;
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.ci-char-counter.limit {
+  color: #ff5252;
+  font-weight: 700;
 }
 
 .ci-input {

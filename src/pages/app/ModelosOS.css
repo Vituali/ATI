@@ -1,8 +1,7 @@
 /* ============================================================
    OS.CSS — Design System Dark/Minimalista (Modelos de O.S.)
    ============================================================ */
-
-.os-page {
+.modelos-os-page {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -11,7 +10,7 @@
   width: 100%;
 }
 
-.os-header {
+.modelos-os-header {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -20,7 +19,7 @@
   gap: 1rem;
 }
 
-.os-titulo {
+.modelos-os-titulo {
   font-size: 1.8rem;
   font-weight: 700;
   color: var(--text-white);
@@ -28,26 +27,26 @@
   letter-spacing: -0.5px;
 }
 
-.os-subtitulo {
+.modelos-os-subtitulo {
   color: var(--text-grey);
   font-size: 14px;
   margin-top: 0.2rem;
 }
 
-.os-header-acoes {
+.modelos-os-header-acoes {
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 12px;
 }
 
-.os-salvando {
+.modelos-os-salvando {
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--text-muted);
 }
 
-.os-btn-novo {
+.modelos-os-btn-novo {
   background: var(--accent-blue);
   color: white;
   border: none;
@@ -59,13 +58,13 @@
   transition: all 0.2s ease;
 }
 
-.os-btn-novo:hover {
+.modelos-os-btn-novo:hover {
   background: rgb(0, 110, 255);
   box-shadow: 0 4px 15px rgba(0, 100, 255, 0.4);
   transform: translateY(-1px);
 }
 
-.os-toolbar {
+.modelos-os-toolbar {
   display: flex;
   flex-direction: row;
   gap: 10px;
@@ -73,8 +72,8 @@
   align-items: center;
 }
 
-.os-busca,
-.os-filtro-cat {
+.modelos-os-busca,
+.modelos-os-filtro-cat {
   flex: 1;
   min-width: 200px;
   background: var(--bg-input);
@@ -87,24 +86,24 @@
   transition: all 0.2s ease;
 }
 
-.os-busca option,
-.os-filtro-cat option {
+.modelos-os-busca option,
+.modelos-os-filtro-cat option {
   background: var(--bg-panel);
   color: var(--text-main);
 }
 
-.os-filtro-cat {
+.modelos-os-filtro-cat {
   max-width: 200px;
 }
 
-.os-busca:focus,
-.os-filtro-cat:focus {
+.modelos-os-busca:focus,
+.modelos-os-filtro-cat:focus {
   outline: none;
   border-color: var(--accent-blue);
   box-shadow: 0 0 0 2px var(--accent-blue-hover);
 }
 
-.os-contador {
+.modelos-os-contador {
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--text-muted);
@@ -113,7 +112,7 @@
   letter-spacing: 0.5px;
 }
 
-.os-vazio {
+.modelos-os-vazio {
   text-align: center;
   color: var(--text-muted);
   padding: 3rem;
@@ -121,13 +120,13 @@
   font-style: italic;
 }
 
-.os-grupo {
+.modelos-os-grupo {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.os-grupo-titulo {
+.modelos-os-grupo-titulo {
   font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 700;
@@ -140,7 +139,7 @@
   gap: 8px;
 }
 
-.os-grupo-titulo span {
+.modelos-os-grupo-titulo span {
   background: var(--bg-card);
   color: var(--text-grey);
   border-radius: 99px;
@@ -148,13 +147,13 @@
   font-size: 11px;
 }
 
-.os-lista {
+.modelos-os-lista {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.os-card {
+.modelos-os-card {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
@@ -165,13 +164,13 @@
   transition: all 0.2s ease;
 }
 
-.os-card:hover {
+.modelos-os-card:hover {
   border-color: rgba(255, 255, 255, 0.15);
   transform: translateY(-2px);
   background: var(--bg-panel);
 }
 
-.os-card-header {
+.modelos-os-card-header {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -179,7 +178,7 @@
   gap: 12px;
 }
 
-.os-card-titulo {
+.modelos-os-card-titulo {
   font-size: 15px;
   font-weight: 600;
   color: var(--text-white);
@@ -187,15 +186,15 @@
   margin: 0;
 }
 
-.os-card-acoes {
+.modelos-os-card-acoes {
   display: flex;
   flex-direction: row;
   gap: 6px;
   flex-shrink: 0;
 }
 
-.os-btn-editar,
-.os-btn-apagar {
+.modelos-os-btn-editar,
+.modelos-os-btn-apagar {
   background: transparent;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
@@ -206,19 +205,19 @@
   transition: all 0.2s ease;
 }
 
-.os-btn-editar:hover {
+.modelos-os-btn-editar:hover {
   border-color: var(--text-grey);
   color: var(--text-white);
   background: var(--bg-card);
 }
 
-.os-btn-apagar:hover {
+.modelos-os-btn-apagar:hover {
   background: rgba(248, 113, 113, 0.1);
   border-color: rgba(248, 113, 113, 0.3);
   color: #f87171;
 }
 
-.os-card-texto {
+.modelos-os-card-texto {
   font-size: 13px;
   color: var(--text-grey);
   line-height: 1.6;
@@ -227,14 +226,14 @@
   margin: 0;
 }
 
-.os-card-meta {
+.modelos-os-card-meta {
   display: flex;
   flex-direction: column;
   gap: 8px;
   margin-top: 4px;
 }
 
-.os-badge.tipo {
+.modelos-os-badge.tipo {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -247,14 +246,14 @@
   width: fit-content;
 }
 
-.os-keywords {
+.modelos-os-keywords {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   gap: 6px;
 }
 
-.os-keyword {
+.modelos-os-keyword {
   font-family: var(--font-mono);
   font-size: 11px;
   background: rgba(0, 100, 255, 0.1);
@@ -264,14 +263,13 @@
   padding: 3px 10px;
 }
 
-
-.os-grupo-form {
+.modelos-os-grupo-form {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.os-grupo-form label {
+.modelos-os-grupo-form label {
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 700;
@@ -283,7 +281,7 @@
   align-items: center;
 }
 
-.os-label-dica {
+.modelos-os-label-dica {
   color: var(--text-muted);
   font-size: 10px;
   text-transform: none;
@@ -291,9 +289,9 @@
   font-weight: 400;
 }
 
-.os-grupo-form input,
-.os-grupo-form select,
-.os-grupo-form textarea {
+.modelos-os-grupo-form input,
+.modelos-os-grupo-form select,
+.modelos-os-grupo-form textarea {
   width: 100%;
   background: var(--bg-input);
   color: var(--text-main);
@@ -305,22 +303,20 @@
   transition: all 0.2s ease;
 }
 
-.os-grupo-form select option {
+.modelos-os-grupo-form select option {
   background: var(--bg-panel);
   color: var(--text-main);
 }
 
-.os-grupo-form input:focus,
-.os-grupo-form select:focus,
-.os-grupo-form textarea:focus {
+.modelos-os-grupo-form input:focus,
+.modelos-os-grupo-form select:focus,
+.modelos-os-grupo-form textarea:focus {
   outline: none;
   border-color: var(--accent-blue);
   box-shadow: 0 0 0 2px var(--accent-blue-hover);
 }
 
-
-
-.os-btn-nova-cat {
+.modelos-os-btn-nova-cat {
   flex-shrink: 0;
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -333,21 +329,21 @@
   font-weight: 600;
 }
 
-.os-btn-nova-cat:hover {
+.modelos-os-btn-nova-cat:hover {
   background: rgba(255, 255, 255, 0.12);
   color: var(--text-white);
 }
 
 /* Occurrence Select Custom styles */
-.os-occ-wrapper {
+.modelos-os-occ-wrapper {
   position: relative;
 }
 
-.os-occ-selected {
+.modelos-os-occ-selected {
   border-color: var(--accent-blue) !important;
 }
 
-.os-occ-clear {
+.modelos-os-occ-clear {
   position: absolute;
   right: 10px;
   top: 50%;
@@ -360,11 +356,11 @@
   transition: color 0.2s;
 }
 
-.os-occ-clear:hover {
+.modelos-os-occ-clear:hover {
   color: var(--text-white);
 }
 
-.os-occ-dropdown {
+.modelos-os-occ-dropdown {
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
@@ -381,8 +377,7 @@
   box-shadow: var(--shadow-subtle);
 }
 
-
-.os-occ-item {
+.modelos-os-occ-item {
   padding: 10px 14px;
   font-size: 13px;
   cursor: pointer;
@@ -395,18 +390,17 @@
   transition: all 0.2s ease;
 }
 
-.os-occ-item:hover {
+.modelos-os-occ-item:hover {
   background: var(--bg-input);
   color: var(--text-white);
 }
 
-
-.os-occ-item.ativo {
+.modelos-os-occ-item.ativo {
   background: rgba(0, 100, 255, 0.1);
   color: var(--accent-blue);
 }
 
-.os-occ-id {
+.modelos-os-occ-id {
   font-family: var(--font-mono);
   font-size: 10px;
   color: var(--text-muted);
@@ -415,14 +409,14 @@
 }
 
 /* Keywords Edit Row */
-.os-keyword-input-row {
+.modelos-os-keyword-input-row {
   display: flex;
   flex-direction: row;
   gap: 8px;
 }
 
-.os-btn-add-kw {
-  /* Shares styles with btn-nova-cat */
+.modelos-os-btn-add-kw {
+  /* Shares styles with modelos-os-btn-nova-cat */
   flex-shrink: 0;
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -435,7 +429,7 @@
   font-weight: 600;
 }
 
-.os-keywords-edit {
+.modelos-os-keywords-edit {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
@@ -443,7 +437,7 @@
   margin-top: 4px;
 }
 
-.os-keyword-edit {
+.modelos-os-keyword-edit {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -457,7 +451,7 @@
   padding: 3px 10px;
 }
 
-.os-keyword-edit button {
+.modelos-os-keyword-edit button {
   background: transparent;
   border: none;
   color: var(--accent-blue);
@@ -467,13 +461,11 @@
   padding: 0;
 }
 
-.os-keyword-edit button:hover {
+.modelos-os-keyword-edit button:hover {
   color: #f87171;
 }
 
-
-
-.os-btn-salvar {
+.modelos-os-btn-salvar {
   background: var(--accent-blue);
   color: white;
   flex: 1;
@@ -486,16 +478,16 @@
   transition: all 0.2s ease;
 }
 
-.os-btn-salvar:disabled {
+.modelos-os-btn-salvar:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.os-btn-salvar:hover:not(:disabled) {
+.modelos-os-btn-salvar:hover:not(:disabled) {
   background: rgb(0, 110, 255);
 }
 
-.os-btn-cancelar {
+.modelos-os-btn-cancelar {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   color: var(--text-muted);
@@ -506,13 +498,13 @@
   transition: all 0.2s ease;
 }
 
-.os-btn-cancelar:hover {
+.modelos-os-btn-cancelar:hover {
   background: rgba(255, 255, 255, 0.1);
   color: var(--text-white);
 }
 
 /* Adaptations for Light Theme */
-.light-theme .os-card:hover {
+.light-theme .modelos-os-card:hover {
   background: var(--bg-card);
   border-color: var(--accent-blue);
 }

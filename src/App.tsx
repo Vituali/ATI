@@ -1,28 +1,30 @@
 // App.tsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useUser, UserProfile } from "./hooks/useUser";
 import { canAccess, Section } from "./services/permissions";
 import { logout } from "./services/auth";
 
-import Sidebar from "./components/Sidebar";
-import Footer from "./components/Footer";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Home from "./pages/Home";
-import Chat from "./pages/Chat";
-import OS from "./pages/OS";
-import Conversor from "./pages/Conversor";
-import Senhas from "./pages/Senhas";
-import Admin from "./pages/Admin";
-import ErrorPage from "./pages/ErrorPage";
-import ChatInterno from "./pages/ChatInterno";
+import Sidebar from "./components/layout/Sidebar";
+import Footer from "./components/layout/Footer";
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import Home from "./pages/app/Home";
+import RespostasRapidas from "./pages/app/RespostasRapidas";
+import ModelosOS from "./pages/app/ModelosOS";
+import Conversor from "./pages/app/Conversor";
+import Senhas from "./pages/app/Senhas";
+import Admin from "./pages/app/Admin";
+import ErrorPage from "./pages/errors/ErrorPage";
+import ChatInterno from "./pages/app/ChatInterno";
+import Anotacoes from "./pages/app/Anotacoes";
 import { ref, onValue, off } from "firebase/database";
 import { db } from "./services/firebase";
 import "./App.css";
 
-import LoadingOverlay from "./components/LoadingOverlay";
-import UserPanel from "./components/UserPanel";
-import ExtensionModal from "./components/ExtensionModal";
+import LoadingOverlay from "./components/ui/LoadingOverlay";
+import UserPanel from "./components/app/UserPanel";
+import ExtensionModal from "./pages/app/Extension";
+import ToastContainer from "./components/ui/Toast";
 
 type AuthScreen = "login" | "register";
 
@@ -39,19 +41,23 @@ export default function App() {
     return localStorage.getItem("ati-custom-bg") || "";
   });
 
+  const lastSeenRef = useRef(Number(localStorage.getItem("lastSeenChat") || 0));
+
   // Notificações de Chat
   const [hasUnreadChat, setHasUnreadChat] = useState(false);
 
-  function renderSection(section: Section, user: UserProfile) {
+  const renderSection = useCallback((section: Section, user: UserProfile) => {
     switch (section) {
       case "home":
         return <Home user={user} onSelectSection={setCurrentSection} />;
       case "chat_interno":
         return <ChatInterno />;
-      case "chat":
-        return <Chat />;
-      case "os":
-        return <OS />;
+      case "anotacoes":
+        return <Anotacoes />;
+      case "respostas_rapidas":
+        return <RespostasRapidas />;
+      case "modelos_os":
+        return <ModelosOS />;
       case "conversor":
         return <Conversor />;
       case "senhas":
@@ -61,42 +67,36 @@ export default function App() {
       case "admin":
         return <Admin />;
     }
-  }
+  }, [setCurrentSection]);
 
-  // Notificações em real-time (Observando todas as salas)
+  // Notificações em real-time (Escutando apenas o nó meta leve)
   useEffect(() => {
-    if (!user) return;
+    if (!user || currentSection === "chat_interno") return;
 
-    const q = ref(db, "chat/salas");
+    const q = ref(db, "chat/meta");
     const unsubscribe = onValue(q, (snap) => {
       if (!snap.exists()) return;
 
       let overallLatestMsg: any = null;
 
-      // Encontra a mensagem mais recente entre todas as salas
-      snap.forEach((roomSnap) => {
-        const roomMsgs = roomSnap.child("mensagens");
-        roomMsgs.forEach((msgSnap) => {
-          const msg = msgSnap.val();
-          if (!overallLatestMsg || msg.timestamp > overallLatestMsg.timestamp) {
-            overallLatestMsg = msg;
-          }
-        });
+      // Encontra a mensagem mais recente entre todas as salas através do meta
+      snap.forEach((roomMetaSnap) => {
+        const meta = roomMetaSnap.child("ultimaMensagem").val();
+        if (meta && (!overallLatestMsg || meta.timestamp > overallLatestMsg.timestamp)) {
+          overallLatestMsg = meta;
+        }
       });
 
       if (overallLatestMsg && overallLatestMsg.autor !== user.username) {
-        const lastSeen = Number(localStorage.getItem("lastSeenChat") || 0);
-        if (overallLatestMsg.timestamp > lastSeen) {
+        if (overallLatestMsg.timestamp > lastSeenRef.current) {
           setHasUnreadChat(true);
 
           // Som de notificação
-          if (currentSection !== "chat_interno") {
-            const audio = new Audio(
-              "https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3",
-            );
-            audio.volume = 0.4;
-            audio.play().catch(() => {});
-          }
+          const audio = new Audio(
+            "https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3",
+          );
+          audio.volume = 0.4;
+          audio.play().catch(() => {});
         }
       }
     });
@@ -108,7 +108,8 @@ export default function App() {
   useEffect(() => {
     if (currentSection === "chat_interno") {
       setHasUnreadChat(false);
-      localStorage.setItem("lastSeenChat", Date.now().toString());
+      lastSeenRef.current = Date.now();
+      localStorage.setItem("lastSeenChat", lastSeenRef.current.toString());
     }
   }, [currentSection]);
 
@@ -199,10 +200,10 @@ export default function App() {
           hasUnreadChat={hasUnreadChat}
         />
         <div className="main-wrapper">
-          <main className="main-content">
+          <main className={`main-content ${safeSection === "chat_interno" ? "compact-padding" : ""}`}>
             {renderSection(safeSection, user)}
           </main>
-          <Footer />
+          {safeSection !== "chat_interno" && <Footer />}
         </div>
       </div>
 
@@ -222,6 +223,8 @@ export default function App() {
         aberto={extensaoModalAberto}
         onFechar={() => setExtensaoModalAberto(false)}
       />
+
+      <ToastContainer />
     </>
   );
 }

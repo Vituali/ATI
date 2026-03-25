@@ -3,7 +3,7 @@
 .ci-page {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 5rem);
+  height: 100%; /* Preenche o container garantindo o footer visível */
   max-width: 860px;
   margin: 0 auto;
   width: 100%;
@@ -12,8 +12,14 @@
 }
 
 @keyframes fadeInChat {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ── Header ── */
@@ -100,8 +106,15 @@
 }
 
 @keyframes pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.8); }
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.8);
+  }
 }
 
 /* ── Salas por setor ── */
@@ -182,10 +195,29 @@
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  background: var(--bg-panel);
-  border-left: 1px solid var(--border-subtle);
-  border-right: 1px solid var(--border-subtle);
+  background: transparent;
+  border-left: 2px solid var(--border-subtle);
+  border-right: 2px solid var(--border-subtle);
   scroll-behavior: smooth;
+  position: relative; /* Para o pseudo-elemento do background */
+}
+
+.ci-mensagens::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("/chat_bg.png");
+  background-repeat: repeat;
+  background-size: 380px;
+  opacity: 0.06;
+  pointer-events: none;
+  z-index: 0;
+  filter: contrast(1.2); /* Deixa os stickers um pouco mais nítidos */
+}
+
+.light-theme .ci-mensagens::before {
+  opacity: 0.12; /* No tema claro pode ser um pouco mais visível */
+  filter: grayscale(1) brightness(0.8);
 }
 
 .ci-mensagens::-webkit-scrollbar {
@@ -211,16 +243,22 @@
   font-size: 0.9rem;
   padding: 3rem;
   text-align: center;
+  position: relative;
+  z-index: 1;
 }
 
-.ci-vazio span { font-size: 2.5rem; }
+.ci-vazio span {
+  font-size: 2.5rem;
+}
 
-/* ── Balões ── */
+/* Garante que os balões fiquem acima do background */
 .ci-balao-wrap {
   display: flex;
   flex-direction: column;
   max-width: 72%;
   gap: 2px;
+  position: relative;
+  z-index: 1;
 }
 
 .ci-balao-wrap.right {
@@ -286,7 +324,7 @@
   flex-shrink: 0;
   overflow: hidden;
   margin-bottom: 2px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   user-select: none;
 }
 
@@ -310,7 +348,7 @@
   flex-direction: column;
   gap: 4px;
   word-break: break-word;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .ci-balao.other {

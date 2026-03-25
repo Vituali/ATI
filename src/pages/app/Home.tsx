@@ -4,16 +4,16 @@
 // Mostra boas-vindas, perfil completo (incluindo SGP) e atalhos rápidos.
 // ---------------------------------------------------------------
 
-import { UserProfile } from "../hooks/useUser";
+import { UserProfile } from "../../hooks/useUser";
 import {
   isPendente,
   SETOR_LABEL,
   ROLE_LABEL,
   getAllowedSections,
   Section,
-} from "../services/permissions";
+} from "../../services/permissions";
 import "./Home.css";
-import AvisosHome from "../components/AvisosHome";
+import AvisosHome from "../../components/app/AvisosHome";
 
 interface HomeProps {
   user: UserProfile;
@@ -43,13 +43,19 @@ const SECTION_META: Record<
     desc: "Chat interno",
     color: "#4dd0e1",
   },
-  chat: {
+  anotacoes: {
+    icon: "📓",
+    label: "Minhas Anotações",
+    desc: "Notas pessoais, rascunhos e lembretes rápidos",
+    color: "#ff8a65",
+  },
+  respostas_rapidas: {
     icon: "🗨️",
-    label: "Chat Automatizado",
+    label: "Respostas Rápidas",
     desc: "Respostas rápidas e categorizadas para atendimentos",
     color: "#4dd0e1",
   },
-  os: {
+  modelos_os: {
     icon: "📝",
     label: "Modelos de O.S.",
     desc: "Templates de ordens de serviço para o SGP",

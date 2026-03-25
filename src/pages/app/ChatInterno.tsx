@@ -15,9 +15,10 @@ import {
   off,
   set,
 } from "firebase/database";
-import { db } from "../services/firebase";
-import { useUser } from "../hooks/useUser";
-import { SETOR_LABEL, type Setor } from "../services/permissions";
+import { db } from "../../services/firebase";
+import { useUser } from "../../hooks/useUser";
+import { SETOR_LABEL, type Setor } from "../../services/permissions";
+import { useNotification } from "../../hooks/useNotification";
 import "./ChatInterno.css";
 
 interface Mensagem {
@@ -58,6 +59,7 @@ function formatarHorario(ts: number): string {
 
 export default function ChatInterno() {
   const { user } = useUser();
+  const { notify } = useNotification();
   const [mensagens, setMensagens] = useState<Mensagem[]>([]);
   const [profiles, setProfiles] = useState<Record<string, any>>({});
   const [texto, setTexto] = useState("");
@@ -69,17 +71,16 @@ export default function ChatInterno() {
   // Gerencia a conexão com o Firebase (Sempre escutando a sala correta)
   useEffect(() => {
     const path = `chat/salas/${activeRoom}/mensagens`;
-    
-    const q = query(
-      ref(db, path),
-      orderByChild("timestamp"),
-      limitToLast(100)
-    );
+
+    const q = query(ref(db, path), orderByChild("timestamp"), limitToLast(100));
 
     const unsubscribe = onValue(q, (snap) => {
       const lista: Mensagem[] = [];
       snap.forEach((child) => {
-        lista.push({ id: child.key!, ...(child.val() as Omit<Mensagem, "id">) });
+        lista.push({
+          id: child.key!,
+          ...(child.val() as Omit<Mensagem, "id">),
+        });
       });
       setMensagens(lista);
     });
@@ -88,17 +89,20 @@ export default function ChatInterno() {
   }, [activeRoom]);
 
   // Auto-scroll robusto
-  const [isFirstLoad, setIsFirstLoad] = useState(true);
+  const isFirstLoad = useRef(true);
   useEffect(() => {
     if (mensagens.length > 0) {
       const scroll = () => {
-        endRef.current?.scrollIntoView({ behavior: isFirstLoad ? "auto" : "smooth", block: "end" });
-        if (isFirstLoad) setIsFirstLoad(false);
+        endRef.current?.scrollIntoView({
+          behavior: isFirstLoad.current ? "auto" : "smooth",
+          block: "end",
+        });
+        if (isFirstLoad.current) isFirstLoad.current = false;
       };
       const timer = setTimeout(scroll, 100);
       return () => clearTimeout(timer);
     }
-  }, [mensagens, isFirstLoad, profiles, activeRoom]);
+  }, [mensagens, profiles, activeRoom]);
 
   // Sincroniza perfis
   useEffect(() => {
@@ -112,20 +116,29 @@ export default function ChatInterno() {
   async function enviar() {
     if (!user || !texto.trim() || enviando) return;
     setEnviando(true);
-    
+
     try {
+      const now = Date.now();
       await push(ref(db, `chat/salas/${activeRoom}/mensagens`), {
         autor: user.username,
         nomeCompleto: user.nomeCompleto,
         setor: user.setor,
         room: activeRoom,
         texto: texto.trim(),
-        timestamp: Date.now(),
+        timestamp: now,
         avatarUrl: user.avatarUrl ?? null,
       });
+
+      // Correção 6: Gravar meta da última mensagem
+      await set(ref(db, `chat/meta/${activeRoom}/ultimaMensagem`), {
+        autor: user.username,
+        timestamp: now,
+      });
+
       setTexto("");
       inputRef.current?.focus();
     } catch (e) {
+      notify("Erro ao enviar mensagem. Verifique sua conexão.", "error");
       console.error("Erro ao enviar mensagem:", e);
     } finally {
       setEnviando(false);
@@ -134,18 +147,19 @@ export default function ChatInterno() {
 
   async function limparSala() {
     if (!user) return;
-    
+
     const confirmacao = window.confirm(
-      `Deseja realmente apagar TODO o histórico da sala ${SETOR_LABEL[activeRoom] || activeRoom}?` 
+      `Deseja realmente apagar TODO o histórico da sala ${SETOR_LABEL[activeRoom] || activeRoom}?`,
     );
-    
+
     if (!confirmacao) return;
 
     try {
       await set(ref(db, `chat/salas/${activeRoom}/mensagens`), null);
+      notify(`Histórico da sala ${activeRoom} limpo com sucesso!`, "info");
     } catch (e) {
       console.error("Erro ao limpar sala:", e);
-      alert("Erro ao limpar mensagens.");
+      notify("Erro ao limpar mensagens.", "error");
     }
   }
 
@@ -169,15 +183,16 @@ export default function ChatInterno() {
   });
 
   // Agrupar mensagens para balões compactos
-  const grupos: { msg: Mensagem; isOwn: boolean; showHeader: boolean }[] = mensagens.map(
-    (msg, i) => {
+  const grupos: { msg: Mensagem; isOwn: boolean; showHeader: boolean }[] =
+    mensagens.map((msg, i) => {
       const prev = mensagens[i - 1];
       const isOwn = msg.autor === user.username;
       const showHeader =
-        !prev || prev.autor !== msg.autor || msg.timestamp - prev.timestamp > 60_000;
+        !prev ||
+        prev.autor !== msg.autor ||
+        msg.timestamp - prev.timestamp > 60_000;
       return { msg, isOwn, showHeader };
-    }
-  );
+    });
 
   return (
     <div className="ci-page">
@@ -196,9 +211,9 @@ export default function ChatInterno() {
         </div>
         <div className="ci-header-acoes">
           {isPrivileged && mensagens.length > 0 && (
-            <button 
-              className="ci-btn-limpar" 
-              onClick={limparSala} 
+            <button
+              className="ci-btn-limpar"
+              onClick={limparSala}
               title="Limpar mensagens dessa sala"
             >
               🗑️ Limpar
@@ -239,7 +254,7 @@ export default function ChatInterno() {
 
         {grupos.map(({ msg, isOwn, showHeader }) => {
           const avatarUrl = profiles[msg.autor]?.avatarUrl;
-          
+
           return (
             <div
               key={msg.id}
@@ -249,11 +264,12 @@ export default function ChatInterno() {
                 <div className="ci-autor-info">
                   <span className="ci-autor-nome">{msg.nomeCompleto}</span>
                   <span className="ci-autor-setor">
-                    {SETOR_LABEL[msg.setor as keyof typeof SETOR_LABEL] ?? msg.setor}
+                    {SETOR_LABEL[msg.setor as keyof typeof SETOR_LABEL] ??
+                      msg.setor}
                   </span>
                 </div>
               )}
-              
+
               <div className="ci-balao-conteudo">
                 {showHeader && (
                   <div className="ci-avatar">
@@ -265,10 +281,12 @@ export default function ChatInterno() {
                   </div>
                 )}
                 {!showHeader && <div className="ci-avatar-spacer" />}
-                
+
                 <div className={`ci-balao ${isOwn ? "own" : "other"}`}>
                   <span className="ci-texto">{msg.texto}</span>
-                  <span className="ci-hora">{formatarHorario(msg.timestamp)}</span>
+                  <span className="ci-hora">
+                    {formatarHorario(msg.timestamp)}
+                  </span>
                 </div>
               </div>
             </div>

@@ -6,8 +6,8 @@
 
 import { useEffect, useState } from "react";
 import { ref, onValue, update, off } from "firebase/database";
-import { db } from "../services/firebase";
-import { UserProfile } from "../hooks/useUser";
+import { db } from "../../services/firebase";
+import { UserProfile } from "../../hooks/useUser";
 import "./AvisosHome.css";
 
 interface Aviso {

@@ -95,8 +95,9 @@
     },
 
     // ---------------------------------------------------------------
-    // CHAT (REESTRUTURADO POR SALAS)
-    // chat/salas/$room/mensagens
+    // CHAT 
+    // chat/salas/$room/mensagens -> Histórico completo de mensagens
+    // chat/meta/$room/ultimaMensagem -> Resumo leve para trigger de notificações
     // ---------------------------------------------------------------
     "chat": {
       "salas": {
@@ -108,6 +109,18 @@
             "$msgId": {
               ".validate": "newData.hasChildren(['autor', 'nomeCompleto', 'setor', 'texto', 'timestamp', 'room'])"
             }
+          }
+        }
+      },
+      "meta": {
+        "$room": {
+          "ultimaMensagem": {
+            // Qualquer usuário logado pode ler para monitorar novas mensagens
+            ".read": "auth != null",
+            // Qualquer usuário logado pode atualizar o meta ao enviar uma mensagem nova
+            ".write": "auth != null",
+            // Garante campos mínimos para o listener do App.tsx
+            ".validate": "newData.hasChildren(['autor', 'timestamp'])"
           }
         }
       }
@@ -122,6 +135,20 @@
       ".indexOn": ["timestamp"],
       "$avisoId": {
         ".validate": "newData.hasChildren(['titulo', 'corpo', 'tipo', 'criadoPor', 'timestamp', 'ativo'])"
+      }
+    },
+
+    // ---------------------------------------------------------------
+    // ANOTAÇÕES DO ATENDENTE
+    // Cada atendente tem seu próprio nó privado.
+    // ---------------------------------------------------------------
+    "anotacoes": {
+      "$username": {
+        ".read": "auth != null && root.child('atendentes').child($username).child('uid').val() === auth.uid",
+        ".write": "auth != null && root.child('atendentes').child($username).child('uid').val() === auth.uid",
+        "$notaId": {
+          ".validate": "newData.hasChildren(['titulo', 'timestamp'])"
+        }
       }
     },
 

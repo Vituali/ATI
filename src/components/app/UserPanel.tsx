@@ -14,10 +14,10 @@ import {
   reauthenticateWithCredential,
 } from "firebase/auth";
 import { ref, update, get, set, remove } from "firebase/database";
-import { auth, db } from "../services/firebase";
-import Modal from "./Modal";
-import { UserProfile } from "../hooks/useUser";
-import { ROLE_LABEL, SETOR_LABEL } from "../services/permissions";
+import { auth, db } from "../../services/firebase";
+import Modal from "../ui/Modal";
+import { UserProfile } from "../../hooks/useUser";
+import { ROLE_LABEL, SETOR_LABEL } from "../../services/permissions";
 import "./UserPanel.css";
 
 interface UserPanelProps {
@@ -560,11 +560,14 @@ export default function UserPanel({
       {aba === "personalizar" && (
         <div className="up-section">
           <div className="up-aviso-custom">
-            ✨ Dê um toque pessoal à sua área de trabalho! Use links diretos de imagens ou GIFs (ex: Tenor, Imgur, Giphy).
+            ✨ Dê um toque pessoal à sua área de trabalho! Use links diretos de
+            imagens ou GIFs (ex: Tenor, Imgur, Giphy).
           </div>
 
           <div className="up-grupo">
-            <label htmlFor="up-bg-input">URL do plano de fundo (Imagem ou GIF)</label>
+            <label htmlFor="up-bg-input">
+              URL do plano de fundo (Imagem ou GIF)
+            </label>
             <div className="up-bg-wrapper">
               <input
                 id="up-bg-input"
@@ -574,9 +577,12 @@ export default function UserPanel({
                 placeholder="https://exemplo.com/imagem.gif"
               />
               {tempBg && (
-                <button 
-                  className="up-bg-clear" 
-                  onClick={() => { setTempBg(""); onBgChange(""); }}
+                <button
+                  className="up-bg-clear"
+                  onClick={() => {
+                    setTempBg("");
+                    onBgChange("");
+                  }}
                   title="Remover fundo"
                 >
                   ✕
@@ -587,16 +593,18 @@ export default function UserPanel({
 
           <div className="up-bg-preview-wrap">
             <p className="up-label-dica">Preview</p>
-            <div 
-              className="up-bg-preview" 
-              style={{ backgroundImage: tempBg ? `url(${tempBg})` : 'none' }}
+            <div
+              className="up-bg-preview"
+              style={{ backgroundImage: tempBg ? `url(${tempBg})` : "none" }}
             >
               {!tempBg && <span>Sem fundo</span>}
             </div>
           </div>
 
-          <div className="up-grupo" style={{ marginTop: '1rem' }}>
-            <label htmlFor="up-avatar-input">URL da Foto de Perfil (Avatar)</label>
+          <div className="up-grupo" style={{ marginTop: "1rem" }}>
+            <label htmlFor="up-avatar-input">
+              URL da Foto de Perfil (Avatar)
+            </label>
             <input
               id="up-avatar-input"
               type="text"
@@ -612,7 +620,9 @@ export default function UserPanel({
               await handleSalvarPerfil();
               onBgChange(tempBg.trim());
             }}
-            disabled={(!perfilAlterado && tempBg.trim() === bgUrl) || salvandoPerfil}
+            disabled={
+              (!perfilAlterado && tempBg.trim() === bgUrl) || salvandoPerfil
+            }
           >
             {salvandoPerfil ? "Salvando Estilo..." : "💾 Salvar Estilo"}
           </button>

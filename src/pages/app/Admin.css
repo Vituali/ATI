@@ -143,45 +143,8 @@
   cursor: not-allowed;
 }
 
-/* --- Feedback (Toast) --- */
-.admin-toast {
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  padding: 12px 20px;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-weight: 600;
-  z-index: 1000;
-  box-shadow: var(--shadow-subtle);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  animation: slideLeft 0.3s ease-out;
-}
-
-@keyframes slideLeft {
-  from {
-    opacity: 0;
-    transform: translateX(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.admin-toast.ok {
-  background: #00c853;
-  color: #ffffff;
-}
-
-.admin-toast.erro {
-  background: #ff5252;
-  color: #ffffff;
-}
-
 /* --- Cards --- */
+
 .admin-card {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);

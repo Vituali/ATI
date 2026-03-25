@@ -4,9 +4,10 @@ export type Role = "usuario" | "supervisor" | "moderador" | "admin";
 export type Setor = "geral" | "ti" | "financeiro" | "suporte" | "comercial";
 export type Section =
   | "home"
-  | "chat"
+  | "respostas_rapidas"
   | "chat_interno"
-  | "os"
+  | "anotacoes"
+  | "modelos_os"
   | "conversor"
   | "senhas"
   | "relatorios"
@@ -18,8 +19,9 @@ export type Section =
 const ROLE_PERMISSIONS: Record<Section, Role[]> = {
   home: ["usuario", "supervisor", "moderador", "admin"],
   chat_interno: ["usuario", "supervisor", "moderador", "admin"],
-  chat: ["usuario", "supervisor", "moderador", "admin"],
-  os: ["usuario", "supervisor", "moderador", "admin"],
+  anotacoes: ["usuario", "supervisor", "moderador", "admin"],
+  respostas_rapidas: ["usuario", "supervisor", "moderador", "admin"],
+  modelos_os: ["usuario", "supervisor", "moderador", "admin"],
   conversor: ["usuario", "supervisor", "moderador", "admin"],
   senhas: ["usuario", "supervisor", "moderador", "admin"],
   relatorios: ["supervisor", "moderador", "admin"],
@@ -34,8 +36,9 @@ const ROLE_PERMISSIONS: Record<Section, Role[]> = {
 export const SETOR_PERMISSIONS: Record<Section, Setor[]> = {
   home: ["geral", "ti", "financeiro", "suporte", "comercial"],
   chat_interno: ["ti", "financeiro", "suporte", "comercial"],
-  chat: ["ti", "financeiro", "suporte", "comercial"],
-  os: ["ti", "suporte", "comercial", "financeiro"],
+  anotacoes: ["ti", "financeiro", "suporte", "comercial"],
+  respostas_rapidas: ["ti", "financeiro", "suporte", "comercial"],
+  modelos_os: ["ti", "suporte", "comercial", "financeiro"],
   conversor: ["ti", "suporte", "comercial"],
   senhas: ["ti", "suporte"],
   relatorios: ["ti", "financeiro", "suporte", "comercial"],
@@ -94,9 +97,10 @@ export const ROLE_LABEL: Record<Role, string> = {
 // Label legível de cada seção
 export const SECTION_LABEL: Record<Section, string> = {
   home: "Home",
-  chat: "Chat",
+  respostas_rapidas: "Respostas Rápidas",
   chat_interno: "Chat Interno",
-  os: "Modelos O.S.",
+  anotacoes: "Minhas Anotações",
+  modelos_os: "Modelos O.S.",
   conversor: "Conversor",
   senhas: "Senhas",
   relatorios: "Relatórios",

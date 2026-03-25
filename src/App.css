@@ -1,13 +1,15 @@
 .app-layout {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
   background-color: var(--bg-dark);
+  overflow: hidden;
 }
 
 .main-wrapper {
   display: flex;
   flex-direction: column;
   flex: 1;
+  height: 100%;
 }
 
 .main-content {
@@ -16,6 +18,10 @@
   overflow-y: auto;
   background-color: var(--bg-dark);
   transition: background-color 0.2s;
+}
+
+.main-content.compact-padding {
+  padding: 1.25rem 2.5rem 0.5rem;
 }
 
 /* Background Customizado */

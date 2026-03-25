@@ -101,7 +101,6 @@
   width: 20px;
 }
 
-
 .sidebar-button,
 .bottom-toggle {
   display: flex;
@@ -137,7 +136,8 @@
 }
 
 .sidebar-button .icon,
-.bottom-toggle .icon {
+.bottom-toggle .icon,
+.sidebar-group-label .icon {
   font-size: 20px;
   flex-shrink: 0;
 }
@@ -148,7 +148,9 @@
   opacity: 0;
   width: 0;
   overflow: hidden;
-  transition: opacity 0.2s, width 0.3s;
+  transition:
+    opacity 0.2s,
+    width 0.3s;
 }
 
 .sidebar-nav {
@@ -245,9 +247,108 @@
 }
 
 @keyframes pulse-notification {
-  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.4); }
-  70% { transform: scale(1.1); box-shadow: 0 0 0 5px rgba(255, 82, 82, 0); }
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.4);
+  }
+  70% {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 5px rgba(255, 82, 82, 0);
+  }
   100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 82, 82, 0); }
 }
 
+/* Grupos de Navegação */
+.sidebar-group {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
 
+.sidebar-group-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text-grey);
+  padding: 12px;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  transition: all 0.2s;
+  font-family: inherit;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+}
+
+.group-label-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  justify-content: center;
+}
+
+.sidebar.expanded .group-label-content {
+  justify-content: flex-start;
+}
+
+.chevron-icon {
+  font-size: 8px; /* Menor quando recolhido */
+  opacity: 0.3;
+  width: auto;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar.expanded .chevron-icon {
+  font-size: 14px;
+  opacity: 0.5;
+}
+
+.sidebar-group-label:hover {
+  background: var(--bg-card);
+  color: var(--text-white);
+}
+
+.sidebar-group-label .group-text {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.sidebar.expanded .sidebar-group-label {
+  justify-content: flex-start;
+  padding-left: 16px;
+  padding-right: 12px;
+}
+
+.sidebar.expanded .sidebar-group-label .group-text {
+  opacity: 0.6;
+  width: auto;
+}
+
+.sidebar-group-items {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+
+.sidebar-group.open .sidebar-group-items {
+  max-height: 500px; /* Suficiente para os itens */
+  margin-bottom: 8px;
+}
+
+/* Destaque (Chat) - Segue o padrão dos outros botões, mas com ícone destacado */
+.sidebar-button.chat-highlight .icon {
+  color: var(--accent-blue);
+}

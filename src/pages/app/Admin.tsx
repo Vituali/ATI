@@ -7,7 +7,7 @@
 
 import { useState, useEffect } from "react";
 import { ref, get, set } from "firebase/database";
-import { db } from "../services/firebase";
+import { db } from "../../services/firebase";
 import {
   Role,
   Setor,
@@ -16,11 +16,12 @@ import {
   SETOR_LABEL,
   SETOR_PERMISSIONS,
   SECTION_LABEL,
-} from "../services/permissions";
+} from "../../services/permissions";
 import "./Admin.css";
-import LoadingOverlay from "../components/LoadingOverlay";
-import PainelAvisos from "../components/PainelAvisos";
-import { useUser } from "../hooks/useUser";
+import LoadingOverlay from "../../components/ui/LoadingOverlay";
+import PainelAvisos from "../../components/app/PainelAvisos";
+import { useUser } from "../../hooks/useUser";
+import { useNotification } from "../../hooks/useNotification";
 
 // ---------------------------------------------------------------
 // TIPOS
@@ -64,15 +65,12 @@ const STATUS_LABEL: Record<string, string> = {
 export default function Admin() {
   const [atendentes, setAtendentes] = useState<Atendente[]>([]);
   const [loading, setLoading] = useState(true);
-  const [erro, setErro] = useState<string | null>(null);
+
   const [salvando, setSalvando] = useState<string | null>(null); // username em edição
   const [busca, setBusca] = useState("");
   const [sortField, setSortField] = useState<SortField>("username");
   const [sortAsc, setSortAsc] = useState(true);
-  const [feedback, setFeedback] = useState<{
-    msg: string;
-    tipo: "ok" | "erro";
-  } | null>(null);
+  const { notify, confirm } = useNotification();
 
   const [abaAdmin, setAbaAdmin] = useState<"usuarios" | "avisos">("usuarios");
   const { user } = useUser();
@@ -84,7 +82,6 @@ export default function Admin() {
 
   async function carregarAtendentes() {
     setLoading(true);
-    setErro(null);
     try {
       const snap = await get(ref(db, "atendentes"));
       if (!snap.exists()) {
@@ -109,11 +106,12 @@ export default function Admin() {
 
       setAtendentes(lista);
     } catch (e: any) {
-      setErro("Erro ao carregar usuários: " + e.message);
+      notify("Erro ao carregar usuários: " + e.message, "error");
     } finally {
       setLoading(false);
     }
   }
+
 
   // Atualiza um campo de um atendente localmente (antes de salvar)
   function handleChange(
@@ -139,9 +137,9 @@ export default function Admin() {
         status: atendente.status,
         sgpUsername: atendente.sgpUsername || null,
       });
-      mostrarFeedback("Usuário atualizado com sucesso!", "ok");
+      notify("Usuário atualizado com sucesso!", "success");
     } catch (e: any) {
-      mostrarFeedback("Erro ao salvar: " + e.message, "erro");
+      notify("Erro ao salvar: " + e.message, "error");
     } finally {
       setSalvando(null);
     }
@@ -151,7 +149,11 @@ export default function Admin() {
 
   // Função que salva todos os atendentes de uma vez
   async function handleSalvarTodos() {
+    const confirmacao = await confirm(`Deseja salvar as alterações de todos os ${listaFiltrada.length} usuários de uma vez?`);
+    if (!confirmacao) return;
+
     setSalvandoTodos(true);
+
     let erros = 0;
 
     for (const atendente of listaFiltrada) {
@@ -173,20 +175,10 @@ export default function Admin() {
     setSalvandoTodos(false);
 
     if (erros === 0) {
-      mostrarFeedback(
-        `${listaFiltrada.length} usuários salvos com sucesso!`,
-        "ok",
-      );
+      notify(`${listaFiltrada.length} usuários salvos com sucesso!`, "success");
     } else {
-      mostrarFeedback(
-        `${erros} erro(s) ao salvar. Verifique e tente novamente.`,
-        "erro",
-      );
+      notify(`${erros} erro(s) ao salvar. Verifique e tente novamente.`, "error");
     }
-  }
-  function mostrarFeedback(msg: string, tipo: "ok" | "erro") {
-    setFeedback({ msg, tipo });
-    setTimeout(() => setFeedback(null), 3000);
   }
 
   // Ordenação ao clicar no cabeçalho da coluna
@@ -277,12 +269,6 @@ export default function Admin() {
 
       {abaAdmin === "usuarios" ? (
         <>
-          {/* Toast de feedback */}
-          {feedback && (
-            <div className={`admin-toast ${feedback.tipo}`}>
-              {feedback.tipo === "ok" ? "✅" : "❌"} {feedback.msg}
-            </div>
-          )}
 
           {/* Card principal */}
           <div className="admin-card">
@@ -305,11 +291,12 @@ export default function Admin() {
             {/* Estados de loading e erro */}
             {loading && <LoadingOverlay message="Carregando usuários..." />}
 
-            {erro && !loading && <div className="admin-estado erro">{erro}</div>}
+
 
             {/* Tabela */}
-            {!loading && !erro && (
+            {!loading && (
               <div className="admin-tabela-wrapper">
+
                 <table className="admin-tabela">
                   <thead>
                     <tr>
@@ -482,7 +469,9 @@ export default function Admin() {
             <div className="admin-permissoes-grid">
               {(Object.keys(SETOR_LABEL) as Setor[]).map((setor) => (
                 <div key={setor} className="admin-permissao-card">
-                  <h3 className="admin-permissao-setor">{SETOR_LABEL[setor]}</h3>
+                  <h3 className="admin-permissao-setor">
+                    {SETOR_LABEL[setor]}
+                  </h3>
                   <ul className="admin-permissao-lista">
                     {(Object.keys(SECTION_LABEL) as Section[]).map(
                       (section) => {

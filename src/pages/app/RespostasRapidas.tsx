@@ -1,11 +1,11 @@
-// pages/Chat.tsx
+// pages/RespostasRapidas.tsx
 import { useState, useEffect, useRef } from "react";
 import { ref, get, set } from "firebase/database";
-import { db } from "../services/firebase";
-import { useUser } from "../hooks/useUser";
-import "./Chat.css";
-import LoadingOverlay from "../components/LoadingOverlay";
-import Modal from "../components/Modal";
+import { db } from "../../services/firebase";
+import { useUser } from "../../hooks/useUser";
+import "./RespostasRapidas.css";
+import LoadingOverlay from "../../components/ui/LoadingOverlay";
+import Modal from "../../components/ui/Modal";
 
 // ---------------------------------------------------------------
 // TIPOS
@@ -70,7 +70,7 @@ const MODAL_VAZIO: Resposta = {
 // COMPONENTE
 // ---------------------------------------------------------------
 
-export default function Chat() {
+export default function RespostasRapidas() {
   const { user } = useUser();
 
   const [respostas, setRespostas] = useState<Resposta[]>([]);
@@ -331,24 +331,26 @@ export default function Chat() {
 
   if (loading) {
     return (
-      <div className="chat-page">
+      <div className="respostas-rapidas-page">
         <LoadingOverlay message="Carregando respostas..." />
       </div>
     );
   }
 
   return (
-    <div className="chat-page">
-      <div className="chat-header">
-        <h1 className="chat-titulo">🗨️ Respostas Rápidas</h1>
-        {salvando && <span className="chat-salvando">💾 Salvando...</span>}
+    <div className="respostas-rapidas-page">
+      <div className="respostas-rapidas-header">
+        <h1 className="respostas-rapidas-titulo">🗨️ Respostas Rápidas</h1>
+        {salvando && (
+          <span className="respostas-rapidas-salvando">💾 Salvando...</span>
+        )}
       </div>
 
-      <div className="chat-card">
+      <div className="respostas-rapidas-card">
         {/* SELECT DE CATEGORIA — normal ou modo reordenação */}
-        <div className="chat-grupo">
-          <div className="chat-label-row">
-            <label htmlFor="chat-subcat-sel">Categoria</label>
+        <div className="respostas-rapidas-grupo">
+          <div className="respostas-rapidas-label-row">
+            <label htmlFor="respostas-rapidas-subcat-sel">Categoria</label>
             <button
               className={`btn-reordenar-cats ${reordenandoCats ? "ativo" : ""}`}
               onClick={() => setReordenandoCats((v) => !v)}
@@ -361,7 +363,7 @@ export default function Chat() {
           {/* Modo normal: select comum */}
           {!reordenandoCats ? (
             <select
-              id="chat-subcat-sel"
+              id="respostas-rapidas-subcat-sel"
               name="subCategory"
               value={subCatSel}
               onChange={(e) => handleSubCatChange(e.target.value)}
@@ -375,19 +377,19 @@ export default function Chat() {
             </select>
           ) : (
             /* Modo reordenação: lista arrastável inline */
-            <ul className="chat-cats-drag-lista">
+            <ul className="respostas-rapidas-cats-drag-lista">
               {catsOrdenadas.map((sc, i) => (
                 <li
                   key={sc}
-                  className="chat-cats-drag-item"
+                  className="respostas-rapidas-cats-drag-item"
                   draggable
                   onDragStart={() => handleCatDragStart(i)}
                   onDragOver={(e) => handleCatDragOver(e, i)}
                   onDragEnd={handleCatDragEnd}
                 >
-                  <span className="chat-reorder-handle">⠿</span>
-                  <span className="chat-cats-drag-nome">{sc}</span>
-                  <span className="chat-cats-drag-count">
+                  <span className="respostas-rapidas-reorder-handle">⠿</span>
+                  <span className="respostas-rapidas-cats-drag-nome">{sc}</span>
+                  <span className="respostas-rapidas-cats-drag-count">
                     {respostas.filter((r) => r.subCategory === sc).length}{" "}
                     respostas
                   </span>
@@ -399,10 +401,10 @@ export default function Chat() {
 
         {/* SELECT DE RESPOSTA */}
         {subCatSel && !reordenandoCats && (
-          <div className="chat-grupo">
-            <label htmlFor="chat-resposta-sel">Resposta</label>
+          <div className="respostas-rapidas-grupo">
+            <label htmlFor="respostas-rapidas-resposta-sel">Resposta</label>
             <select
-              id="chat-resposta-sel"
+              id="respostas-rapidas-resposta-sel"
               name="resposta"
               value={respostaSel}
               onChange={(e) => handleRespostaChange(e.target.value)}
@@ -419,28 +421,30 @@ export default function Chat() {
 
         {/* RESULTADO */}
         {textoFinal && !reordenandoCats && (
-          <div className="chat-resultado">
-            <div className="chat-grupo">
-              <label htmlFor="chat-titulo-final">Título</label>
+          <div className="respostas-rapidas-resultado">
+            <div className="respostas-rapidas-grupo">
+              <label htmlFor="respostas-rapidas-titulo-final">Título</label>
               <input
-                id="chat-titulo-final"
+                id="respostas-rapidas-titulo-final"
                 name="title"
                 type="text"
                 value={tituloFinal}
                 onChange={(e) => setTituloFinal(e.target.value)}
               />
             </div>
-            <div className="chat-grupo">
-              <label htmlFor="chat-texto-final">Resposta final</label>
+            <div className="respostas-rapidas-grupo">
+              <label htmlFor="respostas-rapidas-texto-final">
+                Resposta final
+              </label>
               <textarea
-                id="chat-texto-final"
+                id="respostas-rapidas-texto-final"
                 name="text"
                 value={textoFinal}
                 onChange={(e) => setTextoFinal(e.target.value)}
                 rows={6}
               />
             </div>
-            <div className="chat-acoes">
+            <div className="respostas-rapidas-acoes">
               <button
                 className="btn-copiar"
                 onClick={handleCopiar}
@@ -463,7 +467,7 @@ export default function Chat() {
 
         {/* BOTÃO ADICIONAR */}
         {!reordenandoCats && (
-          <div className="chat-add-wrapper">
+          <div className="respostas-rapidas-add-wrapper">
             <button className="btn-adicionar" onClick={abrirModalNovo}>
               ➕ Nova resposta
             </button>
@@ -473,24 +477,30 @@ export default function Chat() {
 
       {/* REORDENAR RESPOSTAS DA CATEGORIA */}
       {subCatSel && !reordenandoCats && respostasDaCat.length > 1 && (
-        <div className="chat-card">
-          <h2 className="chat-reorder-titulo">
+        <div className="respostas-rapidas-card">
+          <h2 className="respostas-rapidas-reorder-titulo">
             ↕ Reordenar — <span>{subCatSel}</span>
           </h2>
-          <p className="chat-reorder-dica">Arraste para reordenar</p>
-          <ul className="chat-reorder-lista">
+          <p className="respostas-rapidas-reorder-dica">
+            Arraste para reordenar
+          </p>
+          <ul className="respostas-rapidas-reorder-lista">
             {respostasDaCat.map((r) => (
               <li
                 key={r._idx}
-                className="chat-reorder-item"
+                className="respostas-rapidas-reorder-item"
                 draggable
                 onDragStart={() => handleRespostaDragStart(r._idx)}
                 onDragOver={(e) => handleRespostaDragOver(e, r._idx)}
                 onDragEnd={handleRespostaDragEnd}
               >
-                <span className="chat-reorder-handle">⠿</span>
-                <span className="chat-reorder-nome">{r.title}</span>
-                <span className="chat-reorder-cat">{r.subCategory}</span>
+                <span className="respostas-rapidas-reorder-handle">⠿</span>
+                <span className="respostas-rapidas-reorder-nome">
+                  {r.title}
+                </span>
+                <span className="respostas-rapidas-reorder-cat">
+                  {r.subCategory}
+                </span>
               </li>
             ))}
           </ul>
@@ -506,12 +516,12 @@ export default function Chat() {
         }
         largura="520px"
       >
-        <div className="chat-grupo">
-          <label htmlFor="chat-modal-subcat">Categoria</label>
+        <div className="respostas-rapidas-grupo">
+          <label htmlFor="respostas-rapidas-modal-subcat">Categoria</label>
           {!modalNovaCat ? (
             <div className="modal-row">
               <select
-                id="chat-modal-subcat"
+                id="respostas-rapidas-modal-subcat"
                 value={modalForm.subCategory}
                 onChange={(e) =>
                   setModalForm({ ...modalForm, subCategory: e.target.value })
@@ -534,7 +544,7 @@ export default function Chat() {
           ) : (
             <div className="modal-row">
               <input
-                id="chat-modal-new-cat"
+                id="respostas-rapidas-modal-new-cat"
                 name="subCategory"
                 type="text"
                 placeholder="Nome da nova categoria"
@@ -554,10 +564,10 @@ export default function Chat() {
           )}
         </div>
 
-        <div className="chat-grupo">
-          <label htmlFor="chat-modal-title">Título</label>
+        <div className="respostas-rapidas-grupo">
+          <label htmlFor="respostas-rapidas-modal-title">Título</label>
           <input
-            id="chat-modal-title"
+            id="respostas-rapidas-modal-title"
             name="title"
             type="text"
             placeholder="Ex: Saudação padrão"
@@ -568,10 +578,10 @@ export default function Chat() {
           />
         </div>
 
-        <div className="chat-grupo">
-          <label htmlFor="chat-modal-text">Texto</label>
+        <div className="respostas-rapidas-grupo">
+          <label htmlFor="respostas-rapidas-modal-text">Texto</label>
           <textarea
-            id="chat-modal-text"
+            id="respostas-rapidas-modal-text"
             name="text"
             placeholder="Use [SAUDACAO] e [DESPEDIDA] para marcadores dinâmicos"
             value={modalForm.text}

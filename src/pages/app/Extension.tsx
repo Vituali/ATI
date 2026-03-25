@@ -1,6 +1,6 @@
 // components/ExtensionModal.tsx
-import Modal from "./Modal";
-import "./ExtensionModal.css";
+import Modal from "../../components/ui/Modal";
+import "./Extension.css";
 
 interface ExtensionModalProps {
   aberto: boolean;

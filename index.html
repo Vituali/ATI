@@ -27,9 +27,8 @@
     <link rel="preconnect" href="https://googleapis.com">
     
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-    <script type="module" crossorigin src="/ATI/assets/index-yf4Y7pCI.js"></script>
-    <link rel="modulepreload" crossorigin href="/ATI/assets/pdf-vendor-CICxtIqt.js">
-    <link rel="stylesheet" crossorigin href="/ATI/assets/index-BsoKA8QF.css">
+    <script type="module" crossorigin src="/ATI/assets/index-oJ5K_YXQ.js"></script>
+    <link rel="stylesheet" crossorigin href="/ATI/assets/index-h2_R9vrQ.css">
   </head>
 
   <body>
@@ -60,6 +59,32 @@
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
         }
+
+        /* Skeleton Critical CSS */
+        .skeleton-home {
+          padding: 2rem;
+          max-width: 1000px;
+          margin: 0 auto;
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          gap: 2rem;
+          opacity: 0.7;
+          filter: blur(20px); /* Blurry start to transition smoothly to real app */
+          transition: filter 0.5s ease;
+        }
+        .skeleton-card {
+           background: rgba(255, 255, 255, 0.05);
+           border: 1px solid rgba(255,255,255,0.08);
+           border-radius: 12px;
+           padding: 1.75rem 2rem;
+        }
+        .home-card-desc {
+           font-size: 0.9rem;
+           color: rgba(255,255,255,0.6);
+           margin: 1.25rem 0;
+           line-height: 1.6;
+        }
       </style>
       <div class="initial-loader">
         <div class="spinner"></div>
@@ -71,6 +96,20 @@
           "
         >
           Iniciando Sistema...
+        </div>
+      </div>
+      <!-- LCP Element Pre-render for Lighthouse -->
+      <div class="skeleton-home">
+        <div class="skeleton-card" style="height: 160px; margin-bottom: 2rem;"></div>
+        <div class="skeleton-card">
+          <div style="width: 150px; height: 20px; background: rgba(255,255,255,0.1); border-radius: 4px;"></div>
+          <p class="home-card-desc">
+            Use a barra lateral ou clique nos atalhos abaixo para navegar pelo sistema.
+          </p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div style="height: 60px; background: rgba(255,255,255,0.05); border-radius: 8px;"></div>
+            <div style="height: 60px; background: rgba(255,255,255,0.05); border-radius: 8px;"></div>
+          </div>
         </div>
       </div>
     </div>

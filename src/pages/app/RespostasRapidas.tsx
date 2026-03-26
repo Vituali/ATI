@@ -1,21 +1,21 @@
-// pages/Chat.tsx
+// pages/RespostasRapidas.tsx
 import { useState, useEffect, useRef } from "react";
 import { ref, get, set } from "firebase/database";
-import { db } from "../services/firebase";
-import { useUser } from "../hooks/useUser";
-import "./Chat.css";
-import LoadingOverlay from "../components/LoadingOverlay";
-import Modal from "../components/Modal";
+import { db } from "../../services/firebase";
+import { useUser } from "../../hooks/useUser";
+import "./RespostasRapidas.css";
+import LoadingOverlay from "../../components/ui/LoadingOverlay";
+import Modal from "../../components/ui/Modal";
 
 // ---------------------------------------------------------------
 // TIPOS
 // ---------------------------------------------------------------
 
 export interface Resposta {
-  category:    string;
+  category: string;
   subCategory: string;
-  title:       string;
-  text:        string;
+  title: string;
+  text: string;
 }
 
 // ---------------------------------------------------------------
@@ -24,42 +24,66 @@ export interface Resposta {
 
 function aplicarMarcadores(texto: string): string {
   const h = new Date().getHours();
-  const saudacao  = h >= 5 && h < 12 ? "Bom dia"  : h >= 12 && h < 18 ? "Boa tarde"  : "Boa noite";
-  const despedida = h >= 5 && h < 12 ? "Tenha um ótimo dia" : h >= 12 && h < 18 ? "Tenha uma ótima tarde" : "Tenha uma ótima noite";
-  return texto.replace(/\[saudacao\]/gi, saudacao).replace(/\[despedida\]/gi, despedida);
+  const saudacao =
+    h >= 5 && h < 12
+      ? "Bom dia"
+      : h >= 12 && h < 18
+        ? "Boa tarde"
+        : "Boa noite";
+  const despedida =
+    h >= 5 && h < 12
+      ? "Tenha um ótimo dia"
+      : h >= 12 && h < 18
+        ? "Tenha uma ótima tarde"
+        : "Tenha uma ótima noite";
+  return texto
+    .replace(/\[saudacao\]/gi, saudacao)
+    .replace(/\[despedida\]/gi, despedida);
 }
 
 function parseArrayFirebase(val: any): Resposta[] {
   if (!val) return [];
   if (Array.isArray(val)) return val.filter(Boolean) as Resposta[];
-  return Object.keys(val).sort((a, b) => Number(a) - Number(b)).map((k) => val[k]).filter(Boolean) as Resposta[];
+  return Object.keys(val)
+    .sort((a, b) => Number(a) - Number(b))
+    .map((k) => val[k])
+    .filter(Boolean) as Resposta[];
 }
 
 async function copiar(texto: string): Promise<boolean> {
-  try { await navigator.clipboard.writeText(texto); return true; }
-  catch { return false; }
+  try {
+    await navigator.clipboard.writeText(texto);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
-const MODAL_VAZIO: Resposta = { category: "quick_reply", subCategory: "", title: "", text: "" };
+const MODAL_VAZIO: Resposta = {
+  category: "quick_reply",
+  subCategory: "",
+  title: "",
+  text: "",
+};
 
 // ---------------------------------------------------------------
 // COMPONENTE
 // ---------------------------------------------------------------
 
-export default function Chat() {
+export default function RespostasRapidas() {
   const { user } = useUser();
 
-  const [respostas, setRespostas]         = useState<Resposta[]>([]);
-  const [ordemCats, setOrdemCats]         = useState<string[]>([]);
-  const [loading, setLoading]             = useState(true);
-  const [salvando, setSalvando]           = useState(false);
+  const [respostas, setRespostas] = useState<Resposta[]>([]);
+  const [ordemCats, setOrdemCats] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [salvando, setSalvando] = useState(false);
 
   // Seleção
-  const [subCatSel, setSubCatSel]         = useState("");
-  const [respostaSel, setRespostaSel]     = useState<number | "">("");
-  const [textoFinal, setTextoFinal]       = useState("");
-  const [tituloFinal, setTituloFinal]     = useState("");
-  const [copiado, setCopiado]             = useState(false);
+  const [subCatSel, setSubCatSel] = useState("");
+  const [respostaSel, setRespostaSel] = useState<number | "">("");
+  const [textoFinal, setTextoFinal] = useState("");
+  const [tituloFinal, setTituloFinal] = useState("");
+  const [copiado, setCopiado] = useState(false);
 
   // Modo reordenar categorias
   const [reordenandoCats, setReordenandoCats] = useState(false);
@@ -69,11 +93,11 @@ export default function Chat() {
   const dragRespostaIdx = useRef<number | null>(null);
 
   // Modal
-  const [modalAberto, setModalAberto]     = useState(false);
-  const [modalModo, setModalModo]         = useState<"novo" | "editar">("novo");
-  const [modalIdx, setModalIdx]           = useState<number | null>(null);
-  const [modalForm, setModalForm]         = useState<Resposta>(MODAL_VAZIO);
-  const [modalNovaCat, setModalNovaCat]   = useState(false);
+  const [modalAberto, setModalAberto] = useState(false);
+  const [modalModo, setModalModo] = useState<"novo" | "editar">("novo");
+  const [modalIdx, setModalIdx] = useState<number | null>(null);
+  const [modalForm, setModalForm] = useState<Resposta>(MODAL_VAZIO);
+  const [modalNovaCat, setModalNovaCat] = useState(false);
 
   // ---------------------------------------------------------------
   // CARREGAR FIREBASE
@@ -116,15 +140,22 @@ export default function Chat() {
   async function salvarRespostas(lista: Resposta[]) {
     if (!user) return;
     setSalvando(true);
-    try { await set(ref(db, `respostas/${user.username}`), lista); }
-    catch (e) { console.error(e); }
-    finally { setSalvando(false); }
+    try {
+      await set(ref(db, `respostas/${user.username}`), lista);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSalvando(false);
+    }
   }
 
   async function salvarOrdemCats(ordem: string[]) {
     if (!user) return;
-    try { await set(ref(db, `categorias_ordem/${user.username}`), ordem); }
-    catch (e) { console.error(e); }
+    try {
+      await set(ref(db, `categorias_ordem/${user.username}`), ordem);
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   // ---------------------------------------------------------------
@@ -136,8 +167,8 @@ export default function Chat() {
   const todasCats = [...new Set(respostas.map((r) => r.subCategory))];
 
   const catsOrdenadas = [
-    ...ordemCats.filter((c) => todasCats.includes(c)),     // salvas + existentes
-    ...todasCats.filter((c) => !ordemCats.includes(c)),    // novas ainda não salvas
+    ...ordemCats.filter((c) => todasCats.includes(c)), // salvas + existentes
+    ...todasCats.filter((c) => !ordemCats.includes(c)), // novas ainda não salvas
   ];
 
   // ---------------------------------------------------------------
@@ -185,27 +216,42 @@ export default function Chat() {
     const idx = Number(idxStr);
     setRespostaSel(idx);
     const r = respostas[idx];
-    if (r) { setTituloFinal(r.title); setTextoFinal(aplicarMarcadores(r.text)); }
+    if (r) {
+      setTituloFinal(r.title);
+      setTextoFinal(aplicarMarcadores(r.text));
+    }
   }
 
   async function handleCopiar() {
     const ok = await copiar(textoFinal);
-    if (ok) { setCopiado(true); setTimeout(() => setCopiado(false), 2000); }
+    if (ok) {
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 2000);
+    }
   }
 
   function handleLimpar() {
-    setSubCatSel(""); setRespostaSel(""); setTextoFinal(""); setTituloFinal("");
+    setSubCatSel("");
+    setRespostaSel("");
+    setTextoFinal("");
+    setTituloFinal("");
   }
 
   // ---------------------------------------------------------------
   // DRAG AND DROP — RESPOSTAS
   // ---------------------------------------------------------------
 
-  function handleRespostaDragStart(globalIdx: number) { dragRespostaIdx.current = globalIdx; }
+  function handleRespostaDragStart(globalIdx: number) {
+    dragRespostaIdx.current = globalIdx;
+  }
 
   function handleRespostaDragOver(e: React.DragEvent, globalIdx: number) {
     e.preventDefault();
-    if (dragRespostaIdx.current === null || dragRespostaIdx.current === globalIdx) return;
+    if (
+      dragRespostaIdx.current === null ||
+      dragRespostaIdx.current === globalIdx
+    )
+      return;
     const nova = [...respostas];
     const [item] = nova.splice(dragRespostaIdx.current, 1);
     nova.splice(globalIdx, 0, item);
@@ -224,17 +270,28 @@ export default function Chat() {
 
   function abrirModalNovo() {
     setModalForm({ ...MODAL_VAZIO, subCategory: subCatSel });
-    setModalModo("novo"); setModalIdx(null); setModalNovaCat(false); setModalAberto(true);
+    setModalModo("novo");
+    setModalIdx(null);
+    setModalNovaCat(false);
+    setModalAberto(true);
   }
 
   function abrirModalEditar() {
     if (respostaSel === "") return;
     setModalForm({ ...respostas[respostaSel as number] });
-    setModalModo("editar"); setModalIdx(respostaSel as number); setModalNovaCat(false); setModalAberto(true);
+    setModalModo("editar");
+    setModalIdx(respostaSel as number);
+    setModalNovaCat(false);
+    setModalAberto(true);
   }
 
   async function handleModalSalvar() {
-    if (!modalForm.title.trim() || !modalForm.text.trim() || !modalForm.subCategory.trim()) return;
+    if (
+      !modalForm.title.trim() ||
+      !modalForm.text.trim() ||
+      !modalForm.subCategory.trim()
+    )
+      return;
     const novaLista = [...respostas];
 
     if (modalModo === "novo") {
@@ -262,7 +319,9 @@ export default function Chat() {
     if (respostaSel === "") return;
     const novaLista = respostas.filter((_, i) => i !== respostaSel);
     setRespostas(novaLista);
-    setRespostaSel(""); setTextoFinal(""); setTituloFinal("");
+    setRespostaSel("");
+    setTextoFinal("");
+    setTituloFinal("");
     await salvarRespostas(novaLista);
   }
 
@@ -272,26 +331,26 @@ export default function Chat() {
 
   if (loading) {
     return (
-      <div className="chat-page">
+      <div className="respostas-rapidas-page">
         <LoadingOverlay message="Carregando respostas..." />
       </div>
     );
   }
 
   return (
-    <div className="chat-page">
-
-      <div className="chat-header">
-        <h1 className="chat-titulo">🗨️ Chat Automatizado</h1>
-        {salvando && <span className="chat-salvando">💾 Salvando...</span>}
+    <div className="respostas-rapidas-page">
+      <div className="respostas-rapidas-header">
+        <h1 className="respostas-rapidas-titulo">🗨️ Respostas Rápidas</h1>
+        {salvando && (
+          <span className="respostas-rapidas-salvando">💾 Salvando...</span>
+        )}
       </div>
 
-      <div className="chat-card">
-
+      <div className="respostas-rapidas-card">
         {/* SELECT DE CATEGORIA — normal ou modo reordenação */}
-        <div className="chat-grupo">
-          <div className="chat-label-row">
-            <label htmlFor="chat-subcat-sel">Categoria</label>
+        <div className="respostas-rapidas-grupo">
+          <div className="respostas-rapidas-label-row">
+            <label htmlFor="respostas-rapidas-subcat-sel">Categoria</label>
             <button
               className={`btn-reordenar-cats ${reordenandoCats ? "ativo" : ""}`}
               onClick={() => setReordenandoCats((v) => !v)}
@@ -304,32 +363,35 @@ export default function Chat() {
           {/* Modo normal: select comum */}
           {!reordenandoCats ? (
             <select
-              id="chat-subcat-sel"
+              id="respostas-rapidas-subcat-sel"
               name="subCategory"
               value={subCatSel}
               onChange={(e) => handleSubCatChange(e.target.value)}
             >
               <option value="">Selecione uma categoria</option>
               {catsOrdenadas.map((sc) => (
-                <option key={sc} value={sc}>{sc}</option>
+                <option key={sc} value={sc}>
+                  {sc}
+                </option>
               ))}
             </select>
           ) : (
             /* Modo reordenação: lista arrastável inline */
-            <ul className="chat-cats-drag-lista">
+            <ul className="respostas-rapidas-cats-drag-lista">
               {catsOrdenadas.map((sc, i) => (
                 <li
                   key={sc}
-                  className="chat-cats-drag-item"
+                  className="respostas-rapidas-cats-drag-item"
                   draggable
                   onDragStart={() => handleCatDragStart(i)}
                   onDragOver={(e) => handleCatDragOver(e, i)}
                   onDragEnd={handleCatDragEnd}
                 >
-                  <span className="chat-reorder-handle">⠿</span>
-                  <span className="chat-cats-drag-nome">{sc}</span>
-                  <span className="chat-cats-drag-count">
-                    {respostas.filter((r) => r.subCategory === sc).length} respostas
+                  <span className="respostas-rapidas-reorder-handle">⠿</span>
+                  <span className="respostas-rapidas-cats-drag-nome">{sc}</span>
+                  <span className="respostas-rapidas-cats-drag-count">
+                    {respostas.filter((r) => r.subCategory === sc).length}{" "}
+                    respostas
                   </span>
                 </li>
               ))}
@@ -339,17 +401,19 @@ export default function Chat() {
 
         {/* SELECT DE RESPOSTA */}
         {subCatSel && !reordenandoCats && (
-          <div className="chat-grupo">
-            <label htmlFor="chat-resposta-sel">Resposta</label>
+          <div className="respostas-rapidas-grupo">
+            <label htmlFor="respostas-rapidas-resposta-sel">Resposta</label>
             <select
-              id="chat-resposta-sel"
+              id="respostas-rapidas-resposta-sel"
               name="resposta"
               value={respostaSel}
               onChange={(e) => handleRespostaChange(e.target.value)}
             >
               <option value="">Selecione uma resposta</option>
               {respostasDaCat.map((r) => (
-                <option key={r._idx} value={r._idx}>{r.title}</option>
+                <option key={r._idx} value={r._idx}>
+                  {r.title}
+                </option>
               ))}
             </select>
           </div>
@@ -357,65 +421,86 @@ export default function Chat() {
 
         {/* RESULTADO */}
         {textoFinal && !reordenandoCats && (
-          <div className="chat-resultado">
-            <div className="chat-grupo">
-              <label htmlFor="chat-titulo-final">Título</label>
+          <div className="respostas-rapidas-resultado">
+            <div className="respostas-rapidas-grupo">
+              <label htmlFor="respostas-rapidas-titulo-final">Título</label>
               <input
-                id="chat-titulo-final"
+                id="respostas-rapidas-titulo-final"
                 name="title"
                 type="text"
                 value={tituloFinal}
                 onChange={(e) => setTituloFinal(e.target.value)}
               />
             </div>
-            <div className="chat-grupo">
-              <label htmlFor="chat-texto-final">Resposta final</label>
+            <div className="respostas-rapidas-grupo">
+              <label htmlFor="respostas-rapidas-texto-final">
+                Resposta final
+              </label>
               <textarea
-                id="chat-texto-final"
+                id="respostas-rapidas-texto-final"
                 name="text"
                 value={textoFinal}
                 onChange={(e) => setTextoFinal(e.target.value)}
                 rows={6}
               />
             </div>
-            <div className="chat-acoes">
-              <button className="btn-copiar" onClick={handleCopiar} disabled={copiado}>
+            <div className="respostas-rapidas-acoes">
+              <button
+                className="btn-copiar"
+                onClick={handleCopiar}
+                disabled={copiado}
+              >
                 {copiado ? "✅ Copiado!" : "📋 Copiar"}
               </button>
-              <button className="btn-editar"  onClick={abrirModalEditar}>✏️ Editar</button>
-              <button className="btn-apagar"  onClick={handleApagar}>🗑️ Apagar</button>
-              <button className="btn-limpar"  onClick={handleLimpar}>✕ Limpar</button>
+              <button className="btn-editar" onClick={abrirModalEditar}>
+                ✏️ Editar
+              </button>
+              <button className="btn-apagar" onClick={handleApagar}>
+                🗑️ Apagar
+              </button>
+              <button className="btn-limpar" onClick={handleLimpar}>
+                ✕ Limpar
+              </button>
             </div>
           </div>
         )}
 
         {/* BOTÃO ADICIONAR */}
         {!reordenandoCats && (
-          <div className="chat-add-wrapper">
-            <button className="btn-adicionar" onClick={abrirModalNovo}>➕ Nova resposta</button>
+          <div className="respostas-rapidas-add-wrapper">
+            <button className="btn-adicionar" onClick={abrirModalNovo}>
+              ➕ Nova resposta
+            </button>
           </div>
         )}
-
       </div>
 
       {/* REORDENAR RESPOSTAS DA CATEGORIA */}
       {subCatSel && !reordenandoCats && respostasDaCat.length > 1 && (
-        <div className="chat-card">
-          <h2 className="chat-reorder-titulo">↕ Reordenar — <span>{subCatSel}</span></h2>
-          <p className="chat-reorder-dica">Arraste para reordenar</p>
-          <ul className="chat-reorder-lista">
+        <div className="respostas-rapidas-card">
+          <h2 className="respostas-rapidas-reorder-titulo">
+            ↕ Reordenar — <span>{subCatSel}</span>
+          </h2>
+          <p className="respostas-rapidas-reorder-dica">
+            Arraste para reordenar
+          </p>
+          <ul className="respostas-rapidas-reorder-lista">
             {respostasDaCat.map((r) => (
               <li
                 key={r._idx}
-                className="chat-reorder-item"
+                className="respostas-rapidas-reorder-item"
                 draggable
                 onDragStart={() => handleRespostaDragStart(r._idx)}
                 onDragOver={(e) => handleRespostaDragOver(e, r._idx)}
                 onDragEnd={handleRespostaDragEnd}
               >
-                <span className="chat-reorder-handle">⠿</span>
-                <span className="chat-reorder-nome">{r.title}</span>
-                <span className="chat-reorder-cat">{r.subCategory}</span>
+                <span className="respostas-rapidas-reorder-handle">⠿</span>
+                <span className="respostas-rapidas-reorder-nome">
+                  {r.title}
+                </span>
+                <span className="respostas-rapidas-reorder-cat">
+                  {r.subCategory}
+                </span>
               </li>
             ))}
           </ul>
@@ -426,65 +511,88 @@ export default function Chat() {
       <Modal
         aberto={modalAberto}
         onFechar={() => setModalAberto(false)}
-        titulo={modalModo === "novo" ? "➕ Nova Resposta" : "✏️ Editar Resposta"}
+        titulo={
+          modalModo === "novo" ? "➕ Nova Resposta" : "✏️ Editar Resposta"
+        }
         largura="520px"
       >
-        <div className="chat-grupo">
-          <label htmlFor="chat-modal-subcat">Categoria</label>
+        <div className="respostas-rapidas-grupo">
+          <label htmlFor="respostas-rapidas-modal-subcat">Categoria</label>
           {!modalNovaCat ? (
             <div className="modal-row">
               <select
-                id="chat-modal-subcat"
+                id="respostas-rapidas-modal-subcat"
                 value={modalForm.subCategory}
-                onChange={(e) => setModalForm({ ...modalForm, subCategory: e.target.value })}
+                onChange={(e) =>
+                  setModalForm({ ...modalForm, subCategory: e.target.value })
+                }
               >
                 <option value="">Selecione</option>
                 {catsOrdenadas.map((sc) => (
-                  <option key={sc} value={sc}>{sc}</option>
+                  <option key={sc} value={sc}>
+                    {sc}
+                  </option>
                 ))}
               </select>
-              <button className="btn-nova-cat" onClick={() => setModalNovaCat(true)}>+ Nova</button>
+              <button
+                className="btn-nova-cat"
+                onClick={() => setModalNovaCat(true)}
+              >
+                + Nova
+              </button>
             </div>
           ) : (
             <div className="modal-row">
               <input
-                id="chat-modal-new-cat"
+                id="respostas-rapidas-modal-new-cat"
                 name="subCategory"
                 type="text"
                 placeholder="Nome da nova categoria"
                 value={modalForm.subCategory}
-                onChange={(e) => setModalForm({ ...modalForm, subCategory: e.target.value })}
+                onChange={(e) =>
+                  setModalForm({ ...modalForm, subCategory: e.target.value })
+                }
                 autoFocus
               />
-              <button className="btn-nova-cat" onClick={() => setModalNovaCat(false)}>← Voltar</button>
+              <button
+                className="btn-nova-cat"
+                onClick={() => setModalNovaCat(false)}
+              >
+                ← Voltar
+              </button>
             </div>
           )}
         </div>
 
-        <div className="chat-grupo">
-          <label htmlFor="chat-modal-title">Título</label>
+        <div className="respostas-rapidas-grupo">
+          <label htmlFor="respostas-rapidas-modal-title">Título</label>
           <input
-            id="chat-modal-title"
+            id="respostas-rapidas-modal-title"
             name="title"
             type="text"
             placeholder="Ex: Saudação padrão"
             value={modalForm.title}
-            onChange={(e) => setModalForm({ ...modalForm, title: e.target.value })}
+            onChange={(e) =>
+              setModalForm({ ...modalForm, title: e.target.value })
+            }
           />
         </div>
 
-        <div className="chat-grupo">
-          <label htmlFor="chat-modal-text">Texto</label>
+        <div className="respostas-rapidas-grupo">
+          <label htmlFor="respostas-rapidas-modal-text">Texto</label>
           <textarea
-            id="chat-modal-text"
+            id="respostas-rapidas-modal-text"
             name="text"
             placeholder="Use [SAUDACAO] e [DESPEDIDA] para marcadores dinâmicos"
             value={modalForm.text}
-            onChange={(e) => setModalForm({ ...modalForm, text: e.target.value })}
+            onChange={(e) =>
+              setModalForm({ ...modalForm, text: e.target.value })
+            }
             rows={6}
           />
           <span className="modal-dica">
-            Marcadores: [SAUDACAO] e [DESPEDIDA] se ajustam ao horário automaticamente
+            Marcadores: [SAUDACAO] e [DESPEDIDA] se ajustam ao horário
+            automaticamente
           </span>
         </div>
 
@@ -492,14 +600,17 @@ export default function Chat() {
           <button
             className="btn-copiar"
             onClick={handleModalSalvar}
-            disabled={!modalForm.title || !modalForm.text || !modalForm.subCategory}
+            disabled={
+              !modalForm.title || !modalForm.text || !modalForm.subCategory
+            }
           >
             💾 Salvar
           </button>
-          <button className="btn-limpar" onClick={() => setModalAberto(false)}>Cancelar</button>
+          <button className="btn-limpar" onClick={() => setModalAberto(false)}>
+            Cancelar
+          </button>
         </div>
       </Modal>
-
     </div>
   );
 }

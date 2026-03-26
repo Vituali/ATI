@@ -1,7 +1,7 @@
 // hooks/useUser.ts
 import { useState, useEffect } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { ref, get } from "firebase/database";
+import { ref, get, update } from "firebase/database";
 import { auth, db } from "../services/firebase";
 import { Role, Setor } from "../services/permissions";
 
@@ -14,6 +14,7 @@ export interface UserProfile {
   setor: Setor;
   status: "ativo" | "inativo";
   sgpUsername?: string;
+  avatarUrl?: string;
 }
 
 interface UseUserReturn {
@@ -45,6 +46,7 @@ async function fetchProfileWithRetry(
             setor: (data.setor ?? "geral") as Setor, // fallback geral
             status: data.status ?? "ativo",
             sgpUsername: data.sgpUsername ?? undefined,
+            avatarUrl: data.avatarUrl ?? undefined,
           };
         }
       });
@@ -81,6 +83,14 @@ export function useUser(): UseUserReturn {
           if (profile.status === "inativo") {
             await auth.signOut();
             throw new Error("Sua conta está inativa. Contate o administrador.");
+          }
+
+          // Sincronização automática de email (após verificação por link)
+          if (firebaseUser.email && profile.email !== firebaseUser.email) {
+            await update(ref(db, `atendentes/${profile.username}`), {
+              email: firebaseUser.email,
+            });
+            profile.email = firebaseUser.email;
           }
 
           setUser(profile);

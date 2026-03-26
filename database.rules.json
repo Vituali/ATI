@@ -1,10 +1,32 @@
 {
   "rules": {
+
+    // ---------------------------------------------------------------
+    // ATENDENTES
+    // Cada atendente é salvo em /atendentes/$username
+    // ---------------------------------------------------------------
     "atendentes": {
+      // Leitura pública — necessária para o login por username,
+      // que precisa buscar o email correspondente antes de autenticar.
       ".read": true,
+
       "$username": {
-        ".write": "auth != null && ((!data.exists() && newData.child('uid').val() === auth.uid) || (data.exists() && (root.child('admins').child(auth.uid).exists() || data.child('uid').val() === auth.uid)))",
+        // CRIAR conta nova ou EDITAR:
+        ".write": "
+          auth != null && (
+            (!data.exists() && newData.child('uid').val() === auth.uid)
+            ||
+            (data.exists() && (
+              root.child('admins').child(auth.uid).exists()
+              ||
+              data.child('uid').val() === auth.uid
+            ))
+          )
+        ",
+
+        // Valida campos obrigatórios
         ".validate": "newData.hasChildren(['uid', 'nomeCompleto', 'role', 'status', 'email', 'setor'])",
+
         "role": {
           ".write": "auth != null && root.child('admins').child(auth.uid).exists()",
           ".validate": "newData.val() === 'usuario' || newData.val() === 'supervisor' || newData.val() === 'moderador' || newData.val() === 'admin'"
@@ -19,38 +41,120 @@
         }
       }
     },
+
+    // ---------------------------------------------------------------
+    // ADMINS
+    // Nó separado para verificação rápida de admin nas rules acima.
+    // Adicione manualmente no console: admins > SEU_UID > true
+    // ---------------------------------------------------------------
     "admins": {
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
         ".write": "auth != null && root.child('admins').child(auth.uid).exists()"
       }
     },
+
+    // ---------------------------------------------------------------
+    // RESPOSTAS E MODELOS
+    // ---------------------------------------------------------------
     "respostas": {
       ".read": "auth != null",
       "$username": {
         ".write": "auth != null && root.child('atendentes').child($username).child('uid').val() === auth.uid"
       }
     },
+      
     "categorias_ordem": {
       ".read": "auth != null",
       "$username": {
         ".write": "auth != null && root.child('atendentes').child($username).child('uid').val() === auth.uid"
       }
     },
+
     "modelos_os": {
       ".read": "auth != null",
       "$username": {
         ".write": "auth != null && root.child('atendentes').child($username).child('uid').val() === auth.uid"
       }
     },
+
+    // ---------------------------------------------------------------
+    // OS TEMPLATES MASTER
+    // ---------------------------------------------------------------
     "os_templates_master": {
       ".read": "auth != null",
       ".write": "auth != null && root.child('admins').child(auth.uid).exists()"
     },
+
+    // ---------------------------------------------------------------
+    // SGP CACHE
+    // ---------------------------------------------------------------
     "sgp_cache": {
-      ".read": true,
+      ".read": "auth != null",
       ".write": "auth != null"
     },
+
+    // ---------------------------------------------------------------
+    // CHAT 
+    // chat/salas/$room/mensagens -> Histórico completo de mensagens
+    // chat/meta/$room/ultimaMensagem -> Resumo leve para trigger de notificações
+    // ---------------------------------------------------------------
+    "chat": {
+      "salas": {
+        "$room": {
+          "mensagens": {
+            ".read": "auth != null",
+            ".write": "auth != null",
+            ".indexOn": ["timestamp"],
+            "$msgId": {
+              ".validate": "newData.hasChildren(['autor', 'nomeCompleto', 'setor', 'texto', 'timestamp', 'room'])"
+            }
+          }
+        }
+      },
+      "meta": {
+        // Permite ler o nó meta completo para trigger de notificações no Sidebar
+        ".read": "auth != null",
+        "$room": {
+          "ultimaMensagem": {
+            // Qualquer usuário logado pode atualizar o meta ao enviar uma mensagem nova
+            ".write": "auth != null",
+            // Garante campos mínimos para o listener do App.tsx
+            ".validate": "newData.hasChildren(['autor', 'timestamp'])"
+          }
+        }
+      }
+    },
+
+    // ---------------------------------------------------------------
+    // PAINEL DE AVISOS
+    // ---------------------------------------------------------------
+    "avisos": {
+      ".read": "auth != null",
+      ".write": "auth != null && root.child('admins').child(auth.uid).exists()",
+      ".indexOn": ["timestamp"],
+      "$avisoId": {
+        ".validate": "newData.hasChildren(['titulo', 'corpo', 'tipo', 'criadoPor', 'timestamp', 'ativo'])"
+      }
+    },
+
+    // ---------------------------------------------------------------
+    // ANOTAÇÕES DO ATENDENTE
+    // Cada atendente tem seu próprio nó privado.
+    // ---------------------------------------------------------------
+    "anotacoes": {
+      "$username": {
+        ".read": "auth != null && root.child('atendentes').child($username).child('uid').val() === auth.uid",
+        ".write": "auth != null && root.child('atendentes').child($username).child('uid').val() === auth.uid",
+        "$notaId": {
+          ".validate": "newData.hasChildren(['titulo', 'timestamp'])"
+        }
+      }
+    },
+
+    // ---------------------------------------------------------------
+    // TUDO O MAIS — bloqueado por padrão
+    // ---------------------------------------------------------------
     "$other": {
       ".read": false,
       ".write": false

@@ -1,0 +1,101 @@
+/* components/AvisosHome.css */
+
+.avisos-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  animation: fadeInChat 0.4s ease-out;
+}
+
+.aviso-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-md);
+  border-left: 4px solid;
+  position: relative;
+  animation: slideInAviso 0.3s ease-out;
+}
+
+@keyframes slideInAviso {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Variantes de tipo ── */
+.aviso-info {
+  background: rgba(0, 100, 255, 0.07);
+  border-color: var(--accent-blue);
+}
+
+.aviso-warning {
+  background: rgba(251, 191, 36, 0.08);
+  border-color: #fbbf24;
+}
+
+.aviso-danger {
+  background: rgba(255, 82, 82, 0.08);
+  border-color: #ff5252;
+}
+
+/* ── Ícone ── */
+.aviso-icone {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ── Conteúdo ── */
+.aviso-conteudo {
+  flex: 1;
+  min-width: 0;
+}
+
+.aviso-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.35rem;
+}
+
+.aviso-titulo {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-white);
+}
+
+.aviso-meta {
+  font-size: 0.72rem;
+  color: var(--text-grey);
+  font-family: var(--font-mono);
+}
+
+.aviso-corpo {
+  font-size: 0.875rem;
+  color: var(--text-grey);
+  margin: 0;
+  line-height: 1.55;
+}
+
+/* ── Botão fechar (admin) ── */
+.aviso-btn-fechar {
+  background: transparent;
+  border: none;
+  color: var(--text-grey);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+  transition: all 0.2s;
+  line-height: 1;
+  opacity: 0.6;
+}
+
+.aviso-btn-fechar:hover {
+  background: rgba(255, 82, 82, 0.15);
+  color: #ff5252;
+  opacity: 1;
+}

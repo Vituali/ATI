@@ -1,20 +1,20 @@
 // pages/Register.tsx
 import { useState } from "react";
-import { register } from "../services/auth";
-import "./Auth.css";
+import { register } from "../../services/auth";
+import "./Auth_shared.css";
 
 interface RegisterProps {
-  onLogin:     () => void;
+  onLogin: () => void;
   onGoToLogin: () => void;
 }
 
 export default function Register({ onLogin, onGoToLogin }: RegisterProps) {
   const [username, setUsername] = useState("");
   const [fullName, setFullName] = useState("");
-  const [email, setEmail]       = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError]       = useState("");
-  const [loading, setLoading]   = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -31,10 +31,12 @@ export default function Register({ onLogin, onGoToLogin }: RegisterProps) {
       await register({ username, fullName, email, password });
       onLogin();
     } catch (err: any) {
-      if      (err.code === "auth/email-already-in-use") setError("Este e-mail já está cadastrado.");
-      else if (err.code === "auth/invalid-email")        setError("E-mail inválido.");
-      else if (err.code === "auth/weak-password")        setError("Senha fraca. Use ao menos 8 caracteres.");
-      else                                               setError(err.message || "Erro ao criar conta.");
+      if (err.code === "auth/email-already-in-use")
+        setError("Este e-mail já está cadastrado.");
+      else if (err.code === "auth/invalid-email") setError("E-mail inválido.");
+      else if (err.code === "auth/weak-password")
+        setError("Senha fraca. Use ao menos 8 caracteres.");
+      else setError(err.message || "Erro ao criar conta.");
     } finally {
       setLoading(false);
     }
@@ -47,24 +49,33 @@ export default function Register({ onLogin, onGoToLogin }: RegisterProps) {
         <p className="auth-subtitulo">Criar nova conta</p>
 
         <form onSubmit={handleSubmit} className="auth-form">
-
           <div className="auth-grupo">
             <label htmlFor="username">Nome de usuário</label>
             <input
-              id="username" name="username" type="text" placeholder="ex: joao.silva"
-              value={username} onChange={(e) => setUsername(e.target.value)}
-              required autoFocus
+              id="username"
+              name="username"
+              type="text"
+              placeholder="ex: joao.silva"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              autoFocus
             />
             <span className="auth-dica">
-              Sem espaços ou caracteres especiais (#, $, [ ]). Use letras, números e underline.
+              Sem espaços ou caracteres especiais (#, $, [ ]). Use letras,
+              números e underline.
             </span>
           </div>
 
           <div className="auth-grupo">
             <label htmlFor="fullName">Nome completo</label>
             <input
-              id="fullName" name="fullName" type="text" placeholder="João Silva"
-              value={fullName} onChange={(e) => setFullName(e.target.value)}
+              id="fullName"
+              name="fullName"
+              type="text"
+              placeholder="João Silva"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
               required
             />
           </div>
@@ -72,8 +83,12 @@ export default function Register({ onLogin, onGoToLogin }: RegisterProps) {
           <div className="auth-grupo">
             <label htmlFor="email">E-mail</label>
             <input
-              id="email" name="email" type="email" placeholder="joao@exemplo.com"
-              value={email} onChange={(e) => setEmail(e.target.value)}
+              id="email"
+              name="email"
+              type="email"
+              placeholder="joao@exemplo.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
@@ -81,9 +96,14 @@ export default function Register({ onLogin, onGoToLogin }: RegisterProps) {
           <div className="auth-grupo">
             <label htmlFor="password">Senha</label>
             <input
-              id="password" name="password" type="password" placeholder="mínimo 8 caracteres"
-              value={password} onChange={(e) => setPassword(e.target.value)}
-              required autoComplete="new-password"
+              id="password"
+              name="password"
+              type="password"
+              placeholder="mínimo 8 caracteres"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="new-password"
             />
           </div>
 
@@ -92,12 +112,13 @@ export default function Register({ onLogin, onGoToLogin }: RegisterProps) {
           <button type="submit" className="auth-btn" disabled={loading}>
             {loading ? "Criando conta..." : "Criar conta"}
           </button>
-
         </form>
 
         <p className="auth-link">
           Já tem conta?{" "}
-          <button onClick={onGoToLogin} className="auth-link-btn">Entrar</button>
+          <button onClick={onGoToLogin} className="auth-link-btn">
+            Entrar
+          </button>
         </p>
       </div>
     </div>

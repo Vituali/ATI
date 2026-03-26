@@ -6,9 +6,9 @@
 // ---------------------------------------------------------------
 
 import { useState, useRef, useCallback } from "react";
-import { useUser } from "../hooks/useUser";
+import { useUser } from "../../hooks/useUser";
 import "./Conversor.css";
-import LoadingOverlay from "../components/LoadingOverlay";
+import LoadingOverlay from "../../components/ui/LoadingOverlay";
 
 // ---------------------------------------------------------------
 // INSTALA: npm install pdfjs-dist
@@ -379,7 +379,9 @@ export default function Conversor() {
           ) : (
             <>
               <span className="conv-drop-icon">📂</span>
-              <p className="conv-drop-texto">Arraste e solte o arquivo PDF aqui</p>
+              <p className="conv-drop-texto">
+                Arraste e solte o arquivo PDF aqui
+              </p>
             </>
           )}
           {!processando && <span className="conv-drop-ou">ou</span>}

@@ -28,4 +28,7 @@
   
   <!-- Subtle accent line -->
   <rect x="180" y="380" width="152" height="24" rx="12" fill="rgba(255,255,255,0.4)" />
+
+  <!-- RED NOTIFICATION DOT -->
+  <circle cx="440" cy="72" r="80" fill="#ff4d4d" stroke="white" stroke-width="20" />
 </svg>

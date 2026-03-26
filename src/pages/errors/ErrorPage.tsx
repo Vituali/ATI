@@ -4,7 +4,7 @@
 // Recebe o erro como string e mapeia para um conteúdo rico.
 // ---------------------------------------------------------------
 
-import { logout } from "../services/auth";
+import { logout } from "../../services/auth";
 import "./ErrorPage.css";
 
 interface ErrorPageProps {
@@ -13,11 +13,11 @@ interface ErrorPageProps {
 
 // Tipos de erro conhecidos com conteúdo personalizado
 interface ErrorContent {
-  icon:     string;
-  titulo:   string;
+  icon: string;
+  titulo: string;
   descricao: string;
-  dica:     string;
-  acao:     "logout" | "reload";
+  dica: string;
+  acao: "logout" | "reload";
   acaoLabel: string;
 }
 
@@ -27,55 +27,60 @@ function resolveErrorContent(message: string): ErrorContent {
 
   if (msg.includes("inativa")) {
     return {
-      icon:      "🔒",
-      titulo:    "Conta inativa",
+      icon: "🔒",
+      titulo: "Conta inativa",
       descricao: "Sua conta foi desativada pelo administrador do sistema.",
-      dica:      "Entre em contato com o administrador para reativar seu acesso.",
-      acao:      "logout",
+      dica: "Entre em contato com o administrador para reativar seu acesso.",
+      acao: "logout",
       acaoLabel: "Voltar ao login",
     };
   }
 
   if (msg.includes("perfil não encontrado") || msg.includes("banco de dados")) {
     return {
-      icon:      "👤",
-      titulo:    "Perfil não encontrado",
-      descricao: "Sua conta foi autenticada, mas os dados de perfil não estão no banco.",
-      dica:      "Isso pode acontecer após um cadastro incompleto. Contate o administrador informando seu e-mail.",
-      acao:      "logout",
+      icon: "👤",
+      titulo: "Perfil não encontrado",
+      descricao:
+        "Sua conta foi autenticada, mas os dados de perfil não estão no banco.",
+      dica: "Isso pode acontecer após um cadastro incompleto. Contate o administrador informando seu e-mail.",
+      acao: "logout",
       acaoLabel: "Tentar novamente",
     };
   }
 
   if (msg.includes("permiss") || msg.includes("403")) {
     return {
-      icon:      "⛔",
-      titulo:    "Sem permissão",
+      icon: "⛔",
+      titulo: "Sem permissão",
       descricao: "Você não tem autorização para acessar este recurso.",
-      dica:      "Solicite ao administrador que verifique sua role e setor.",
-      acao:      "logout",
+      dica: "Solicite ao administrador que verifique sua role e setor.",
+      acao: "logout",
       acaoLabel: "Voltar ao login",
     };
   }
 
-  if (msg.includes("rede") || msg.includes("network") || msg.includes("fetch")) {
+  if (
+    msg.includes("rede") ||
+    msg.includes("network") ||
+    msg.includes("fetch")
+  ) {
     return {
-      icon:      "📡",
-      titulo:    "Erro de conexão",
+      icon: "📡",
+      titulo: "Erro de conexão",
       descricao: "Não foi possível conectar ao servidor.",
-      dica:      "Verifique sua conexão com a internet e tente novamente.",
-      acao:      "reload",
+      dica: "Verifique sua conexão com a internet e tente novamente.",
+      acao: "reload",
       acaoLabel: "Tentar novamente",
     };
   }
 
   // Erro genérico
   return {
-    icon:      "⚠️",
-    titulo:    "Algo deu errado",
+    icon: "⚠️",
+    titulo: "Algo deu errado",
     descricao: message || "Ocorreu um erro inesperado no sistema.",
-    dica:      "Se o problema persistir, contate o administrador do sistema.",
-    acao:      "logout",
+    dica: "Se o problema persistir, contate o administrador do sistema.",
+    acao: "logout",
     acaoLabel: "Voltar ao login",
   };
 }
@@ -94,7 +99,6 @@ export default function ErrorPage({ message }: ErrorPageProps) {
   return (
     <div className="error-page">
       <div className="error-card">
-
         <span className="error-icon">{content.icon}</span>
 
         <div className="error-body">
@@ -116,7 +120,6 @@ export default function ErrorPage({ message }: ErrorPageProps) {
         <button className="error-btn" onClick={handleAcao}>
           {content.acaoLabel}
         </button>
-
       </div>
     </div>
   );

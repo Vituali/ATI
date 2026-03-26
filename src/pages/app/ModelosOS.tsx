@@ -1,28 +1,28 @@
-// pages/OS.tsx
+// pages/ModelosOS.tsx
 import { useState, useEffect, useRef } from "react";
 import { ref, get, set, remove } from "firebase/database";
-import { db } from "../services/firebase";
-import { useUser } from "../hooks/useUser";
-import "./OS.css";
-import Modal from "../components/Modal";
-import LoadingOverlay from "../components/LoadingOverlay";
+import { db } from "../../services/firebase";
+import { useUser } from "../../hooks/useUser";
+import "./ModelosOS.css";
+import Modal from "../../components/ui/Modal";
+import LoadingOverlay from "../../components/ui/LoadingOverlay";
 
 // ---------------------------------------------------------------
 // TIPOS
 // ---------------------------------------------------------------
 
 interface OccurrenceType {
-  id:   string;
+  id: string;
   text: string;
 }
 
 interface ModeloOS {
-  id:               string;
-  title:            string;
-  text:             string;
-  category:         string;
+  id: string;
+  title: string;
+  text: string;
+  category: string;
   occurrenceTypeId: string;
-  keywords?:        string[];
+  keywords?: string[];
 }
 
 // ---------------------------------------------------------------
@@ -30,7 +30,9 @@ interface ModeloOS {
 // ---------------------------------------------------------------
 
 function gerarId(): string {
-  return "os_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  return (
+    "os_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
+  );
 }
 
 function parseModelosFirebase(val: any): ModeloOS[] {
@@ -43,41 +45,41 @@ function parseModelosFirebase(val: any): ModeloOS[] {
 // ---------------------------------------------------------------
 
 const FORM_VAZIO: Omit<ModeloOS, "id"> = {
-  title:            "",
-  text:             "",
-  category:         "",
+  title: "",
+  text: "",
+  category: "",
   occurrenceTypeId: "",
-  keywords:         [],
+  keywords: [],
 };
 
 // ---------------------------------------------------------------
 // COMPONENTE
 // ---------------------------------------------------------------
 
-export default function OS() {
+export default function ModelosOS() {
   const { user } = useUser();
 
-  const [modelos, setModelos]               = useState<ModeloOS[]>([]);
+  const [modelos, setModelos] = useState<ModeloOS[]>([]);
   const [occurrenceTypes, setOccurrenceTypes] = useState<OccurrenceType[]>([]);
-  const [loading, setLoading]               = useState(true);
-  const [salvando, setSalvando]             = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [salvando, setSalvando] = useState(false);
 
   // Filtros da listagem
-  const [busca, setBusca]                   = useState("");
-  const [catFiltro, setCatFiltro]           = useState("");
+  const [busca, setBusca] = useState("");
+  const [catFiltro, setCatFiltro] = useState("");
 
   // Modal
-  const [modalAberto, setModalAberto]       = useState(false);
-  const [modalModo, setModalModo]           = useState<"novo" | "editar">("novo");
-  const [editandoId, setEditandoId]         = useState<string | null>(null);
-  const [form, setForm]                     = useState({ ...FORM_VAZIO });
-  const [keywordInput, setKeywordInput]     = useState("");
-  const [novaCat, setNovaCat]               = useState(false);
+  const [modalAberto, setModalAberto] = useState(false);
+  const [modalModo, setModalModo] = useState<"novo" | "editar">("novo");
+  const [editandoId, setEditandoId] = useState<string | null>(null);
+  const [form, setForm] = useState({ ...FORM_VAZIO });
+  const [keywordInput, setKeywordInput] = useState("");
+  const [novaCat, setNovaCat] = useState(false);
 
   // Busca de tipo de ocorrência no modal
-  const [occBusca, setOccBusca]             = useState("");
-  const [occAberto, setOccAberto]           = useState(false);
-  const occRef                              = useRef<HTMLDivElement>(null);
+  const [occBusca, setOccBusca] = useState("");
+  const [occAberto, setOccAberto] = useState(false);
+  const occRef = useRef<HTMLDivElement>(null);
 
   // ---------------------------------------------------------------
   // CARREGAR
@@ -166,11 +168,11 @@ export default function OS() {
 
   function abrirEditar(modelo: ModeloOS) {
     setForm({
-      title:            modelo.title,
-      text:             modelo.text,
-      category:         modelo.category,
+      title: modelo.title,
+      text: modelo.text,
+      category: modelo.category,
       occurrenceTypeId: modelo.occurrenceTypeId,
-      keywords:         modelo.keywords ?? [],
+      keywords: modelo.keywords ?? [],
     });
     // Preenche o campo de busca com o nome do tipo atual
     const tipo = occurrenceTypes.find((o) => o.id === modelo.occurrenceTypeId);
@@ -183,15 +185,16 @@ export default function OS() {
   }
 
   async function handleSalvar() {
-    if (!form.title.trim() || !form.text.trim() || !form.category.trim()) return;
+    if (!form.title.trim() || !form.text.trim() || !form.category.trim())
+      return;
 
     const modelo: ModeloOS = {
-      id:               modalModo === "editar" && editandoId ? editandoId : gerarId(),
-      title:            form.title.trim(),
-      text:             form.text.trim(),
-      category:         form.category.trim(),
+      id: modalModo === "editar" && editandoId ? editandoId : gerarId(),
+      title: form.title.trim(),
+      text: form.text.trim(),
+      category: form.category.trim(),
       occurrenceTypeId: form.occurrenceTypeId,
-      keywords:         form.keywords?.filter(Boolean) ?? [],
+      keywords: form.keywords?.filter(Boolean) ?? [],
     };
 
     await salvarModelo(modelo);
@@ -235,7 +238,7 @@ export default function OS() {
     const matchBusca =
       !busca ||
       m.title.toLowerCase().includes(q) ||
-      m.text.toLowerCase().includes(q)  ||
+      m.text.toLowerCase().includes(q) ||
       m.keywords?.some((k) => k.includes(q));
     const matchCat = !catFiltro || m.category === catFiltro;
     return matchBusca && matchCat;
@@ -252,7 +255,7 @@ export default function OS() {
 
   // Occurrence types filtrados pela busca no modal
   const occFiltrados = occurrenceTypes.filter((o) =>
-    o.text.toLowerCase().includes(occBusca.toLowerCase())
+    o.text.toLowerCase().includes(occBusca.toLowerCase()),
   );
 
   // ---------------------------------------------------------------
@@ -261,87 +264,117 @@ export default function OS() {
 
   if (loading) {
     return (
-      <div className="os-page">
+      <div className="modelos-os-page">
         <LoadingOverlay message="Carregando modelos..." />
       </div>
     );
   }
 
   return (
-    <div className="os-page">
-
+    <div className="modelos-os-page">
       {/* Cabeçalho */}
-      <div className="os-header">
+      <div className="modelos-os-header">
         <div>
-          <h1 className="os-titulo">📝 Modelos de O.S.</h1>
-          <p className="os-subtitulo">Gerencie seus templates de ordens de serviço</p>
+          <h1 className="modelos-os-titulo">📝 Modelos de O.S.</h1>
+          <p className="modelos-os-subtitulo">
+            Gerencie seus templates de ordens de serviço
+          </p>
         </div>
-        <div className="os-header-acoes">
-          {salvando && <span className="os-salvando">💾 Salvando...</span>}
-          <button className="os-btn-novo" onClick={abrirNovo}>➕ Novo modelo</button>
+        <div className="modelos-os-header-acoes">
+          {salvando && (
+            <span className="modelos-os-salvando">💾 Salvando...</span>
+          )}
+          <button className="modelos-os-btn-novo" onClick={abrirNovo}>
+            ➕ Novo modelo
+          </button>
         </div>
       </div>
 
       {/* Toolbar de filtros */}
-      <div className="os-toolbar">
+      <div className="modelos-os-toolbar">
         <input
-          id="os-busca"
-          name="os-busca"
-          className="os-busca"
+          id="modelos-os-busca"
+          name="modelos-os-busca"
+          className="modelos-os-busca"
           type="text"
           placeholder="Buscar por título, texto ou keyword..."
           value={busca}
           onChange={(e) => setBusca(e.target.value)}
         />
         <select
-          id="os-filtro-cat"
-          name="os-filtro-cat"
-          className="os-filtro-cat"
+          id="modelos-os-filtro-cat"
+          name="modelos-os-filtro-cat"
+          className="modelos-os-filtro-cat"
           value={catFiltro}
           onChange={(e) => setCatFiltro(e.target.value)}
         >
           <option value="">Todas as categorias</option>
           {categorias.map((c) => (
-            <option key={c} value={c}>{c}</option>
+            <option key={c} value={c}>
+              {c}
+            </option>
           ))}
         </select>
-        <span className="os-contador">{modelosFiltrados.length} modelo(s)</span>
+        <span className="modelos-os-contador">
+          {modelosFiltrados.length} modelo(s)
+        </span>
       </div>
 
       {/* Listagem agrupada por categoria */}
       {agrupados.length === 0 ? (
-        <div className="os-vazio">
-          {busca || catFiltro ? "Nenhum modelo encontrado para esse filtro." : "Nenhum modelo ainda. Crie o primeiro!"}
+        <div className="modelos-os-vazio">
+          {busca || catFiltro
+            ? "Nenhum modelo encontrado para esse filtro."
+            : "Nenhum modelo ainda. Crie o primeiro!"}
         </div>
       ) : (
         agrupados.map(({ cat, itens }) => (
-          <div key={cat} className="os-grupo">
-            <h2 className="os-grupo-titulo">{cat} <span>{itens.length}</span></h2>
-            <div className="os-lista">
+          <div key={cat} className="modelos-os-grupo">
+            <h2 className="modelos-os-grupo-titulo">
+              {cat} <span>{itens.length}</span>
+            </h2>
+            <div className="modelos-os-lista">
               {itens.map((modelo) => {
-                const tipo = occurrenceTypes.find((o) => o.id === modelo.occurrenceTypeId);
+                const tipo = occurrenceTypes.find(
+                  (o) => o.id === modelo.occurrenceTypeId,
+                );
                 return (
-                  <div key={modelo.id} className="os-card">
-                    <div className="os-card-header">
-                      <h3 className="os-card-titulo">{modelo.title}</h3>
-                      <div className="os-card-acoes">
-                        <button className="os-btn-editar" onClick={() => abrirEditar(modelo)}>✏️</button>
-                        <button className="os-btn-apagar" onClick={() => apagarModelo(modelo.id)}>🗑️</button>
+                  <div key={modelo.id} className="modelos-os-card">
+                    <div className="modelos-os-card-header">
+                      <h3 className="modelos-os-card-titulo">{modelo.title}</h3>
+                      <div className="modelos-os-card-acoes">
+                        <button
+                          className="modelos-os-btn-editar"
+                          onClick={() => abrirEditar(modelo)}
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          className="modelos-os-btn-apagar"
+                          onClick={() => apagarModelo(modelo.id)}
+                        >
+                          🗑️
+                        </button>
                       </div>
                     </div>
 
-                    <p className="os-card-texto">{modelo.text}</p>
+                    <p className="modelos-os-card-texto">{modelo.text}</p>
 
-                    <div className="os-card-meta">
+                    <div className="modelos-os-card-meta">
                       {tipo && (
-                        <span className="os-badge tipo" title="Tipo de ocorrência SGP">
+                        <span
+                          className="modelos-os-badge tipo"
+                          title="Tipo de ocorrência SGP"
+                        >
                           🏷️ {tipo.text}
                         </span>
                       )}
                       {modelo.keywords && modelo.keywords.length > 0 && (
-                        <div className="os-keywords">
+                        <div className="modelos-os-keywords">
                           {modelo.keywords.map((k) => (
-                            <span key={k} className="os-keyword">{k}</span>
+                            <span key={k} className="modelos-os-keyword">
+                              {k}
+                            </span>
                           ))}
                         </div>
                       )}
@@ -355,17 +388,17 @@ export default function OS() {
       )}
 
       {/* MODAL */}
-            <Modal
+      <Modal
         aberto={modalAberto}
         onFechar={() => setModalAberto(false)}
         titulo={modalModo === "novo" ? "➕ Novo Modelo" : "✏️ Editar Modelo"}
         largura="560px"
       >
         {/* Título */}
-        <div className="os-grupo-form">
-          <label htmlFor="os-modal-title">Título</label>
+        <div className="modelos-os-grupo-form">
+          <label htmlFor="modelos-os-modal-title">Título</label>
           <input
-            id="os-modal-title"
+            id="modelos-os-modal-title"
             name="title"
             type="text"
             placeholder="Ex: Sem Conexão"
@@ -376,29 +409,37 @@ export default function OS() {
         </div>
 
         {/* Categoria */}
-        <div className="os-grupo-form">
-          <label htmlFor="os-modal-category">Categoria</label>
+        <div className="modelos-os-grupo-form">
+          <label htmlFor="modelos-os-modal-category">Categoria</label>
           {!novaCat ? (
             <div className="modal-row">
               <select
-                id="os-modal-category"
+                id="modelos-os-modal-category"
                 name="category"
                 value={form.category}
                 onChange={(e) => setForm({ ...form, category: e.target.value })}
               >
                 <option value="">Selecione</option>
                 {categorias.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
                 ))}
               </select>
-              <button className="os-btn-nova-cat" onClick={() => { setNovaCat(true); setForm({ ...form, category: "" }); }}>
+              <button
+                className="modelos-os-btn-nova-cat"
+                onClick={() => {
+                  setNovaCat(true);
+                  setForm({ ...form, category: "" });
+                }}
+              >
                 + Nova
               </button>
             </div>
           ) : (
             <div className="modal-row">
               <input
-                id="os-modal-new-category"
+                id="modelos-os-modal-new-category"
                 name="category"
                 type="text"
                 placeholder="Nome da nova categoria"
@@ -406,47 +447,60 @@ export default function OS() {
                 onChange={(e) => setForm({ ...form, category: e.target.value })}
                 autoFocus
               />
-              <button className="os-btn-nova-cat" onClick={() => setNovaCat(false)}>← Voltar</button>
+              <button
+                className="modelos-os-btn-nova-cat"
+                onClick={() => setNovaCat(false)}
+              >
+                ← Voltar
+              </button>
             </div>
           )}
         </div>
 
         {/* Tipo de ocorrência SGP — select com busca */}
-        <div className="os-grupo-form">
-          <label htmlFor="os-modal-occ-busca">Tipo de Ocorrência SGP</label>
-          <div className="os-occ-wrapper" ref={occRef}>
+        <div className="modelos-os-grupo-form">
+          <label htmlFor="modelos-os-modal-occ-busca">
+            Tipo de Ocorrência SGP
+          </label>
+          <div className="modelos-os-occ-wrapper" ref={occRef}>
             <input
-              id="os-modal-occ-busca"
+              id="modelos-os-modal-occ-busca"
               name="occ-busca"
               type="text"
               placeholder="Buscar tipo... (ex: sem acesso)"
               value={occBusca}
-              onChange={(e) => { setOccBusca(e.target.value); setOccAberto(true); }}
+              onChange={(e) => {
+                setOccBusca(e.target.value);
+                setOccAberto(true);
+              }}
               onFocus={() => setOccAberto(true)}
-              className={form.occurrenceTypeId ? "os-occ-selected" : ""}
+              className={form.occurrenceTypeId ? "modelos-os-occ-selected" : ""}
             />
             {form.occurrenceTypeId && (
               <button
-                className="os-occ-clear"
-                onClick={() => { setForm({ ...form, occurrenceTypeId: "" }); setOccBusca(""); }}
+                className="modelos-os-occ-clear"
+                onClick={() => {
+                  setForm({ ...form, occurrenceTypeId: "" });
+                  setOccBusca("");
+                }}
                 title="Limpar"
               >
                 ✕
               </button>
             )}
             {occAberto && occFiltrados.length > 0 && (
-              <ul className="os-occ-dropdown">
+              <ul className="modelos-os-occ-dropdown">
                 {occFiltrados.map((o) => (
                   <li
                     key={o.id}
-                    className={`os-occ-item ${form.occurrenceTypeId === o.id ? "ativo" : ""}`}
+                    className={`modelos-os-occ-item ${form.occurrenceTypeId === o.id ? "ativo" : ""}`}
                     onClick={() => {
                       setForm({ ...form, occurrenceTypeId: o.id });
                       setOccBusca(o.text);
                       setOccAberto(false);
                     }}
                   >
-                    <span className="os-occ-id">#{o.id}</span>
+                    <span className="modelos-os-occ-id">#{o.id}</span>
                     {o.text}
                   </li>
                 ))}
@@ -456,10 +510,10 @@ export default function OS() {
         </div>
 
         {/* Texto */}
-        <div className="os-grupo-form">
-          <label htmlFor="os-modal-text">Texto da O.S.</label>
+        <div className="modelos-os-grupo-form">
+          <label htmlFor="modelos-os-modal-text">Texto da O.S.</label>
           <textarea
-            id="os-modal-text"
+            id="modelos-os-modal-text"
             name="text"
             placeholder="Ex: CLIENTE SEM ACESSO. REALIZADO OS PROCEDIMENTOS E RETORNOU."
             value={form.text}
@@ -469,24 +523,36 @@ export default function OS() {
         </div>
 
         {/* Keywords */}
-        <div className="os-grupo-form">
-          <label htmlFor="os-modal-keyword">Keywords <span className="os-label-dica">(gatilhos para a extensão)</span></label>
-          <div className="os-keyword-input-row">
+        <div className="modelos-os-grupo-form">
+          <label htmlFor="modelos-os-modal-keyword">
+            Keywords{" "}
+            <span className="modelos-os-label-dica">
+              (gatilhos para a extensão)
+            </span>
+          </label>
+          <div className="modelos-os-keyword-input-row">
             <input
-              id="os-modal-keyword"
+              id="modelos-os-modal-keyword"
               name="keyword"
               type="text"
               placeholder="Ex: sem internet"
               value={keywordInput}
               onChange={(e) => setKeywordInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), adicionarKeyword())}
+              onKeyDown={(e) =>
+                e.key === "Enter" && (e.preventDefault(), adicionarKeyword())
+              }
             />
-            <button className="os-btn-add-kw" onClick={adicionarKeyword}>+ Adicionar</button>
+            <button
+              className="modelos-os-btn-add-kw"
+              onClick={adicionarKeyword}
+            >
+              + Adicionar
+            </button>
           </div>
           {(form.keywords ?? []).length > 0 && (
-            <div className="os-keywords-edit">
+            <div className="modelos-os-keywords-edit">
               {form.keywords!.map((k) => (
-                <span key={k} className="os-keyword-edit">
+                <span key={k} className="modelos-os-keyword-edit">
                   {k}
                   <button onClick={() => removerKeyword(k)}>✕</button>
                 </span>
@@ -498,18 +564,20 @@ export default function OS() {
         {/* Ações */}
         <div className="modal-acoes">
           <button
-            className="os-btn-salvar"
+            className="modelos-os-btn-salvar"
             onClick={handleSalvar}
             disabled={!form.title || !form.text || !form.category}
           >
             💾 Salvar
           </button>
-          <button className="os-btn-cancelar" onClick={() => setModalAberto(false)}>
+          <button
+            className="modelos-os-btn-cancelar"
+            onClick={() => setModalAberto(false)}
+          >
             Cancelar
           </button>
         </div>
       </Modal>
-
     </div>
   );
 }

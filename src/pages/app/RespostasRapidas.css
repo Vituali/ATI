@@ -2,7 +2,7 @@
    CHAT.CSS — Design System Dark/Minimalista
    ============================================================ */
 
-.chat-page {
+.respostas-rapidas-page {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -11,14 +11,14 @@
   width: 100%;
 }
 
-.chat-header {
+.respostas-rapidas-header {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
 }
 
-.chat-titulo {
+.respostas-rapidas-titulo {
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--text-white);
@@ -26,7 +26,7 @@
   letter-spacing: -0.5px;
 }
 
-.chat-salvando {
+.respostas-rapidas-salvando {
   font-size: 12px;
   color: var(--text-muted);
   font-family: var(--font-mono);
@@ -39,9 +39,9 @@
   100% { opacity: 1; }
 }
 
-/* .chat-loading removido em favor do LoadingOverlay */
+/* .respostas-rapidas-loading removido em favor do LoadingOverlay */
 
-.chat-card {
+.respostas-rapidas-card {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   backdrop-filter: blur(10px);
@@ -54,13 +54,13 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
-.chat-grupo {
+.respostas-rapidas-grupo {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.chat-grupo label {
+.respostas-rapidas-grupo label {
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 700;
@@ -69,7 +69,7 @@
   letter-spacing: 1px;
 }
 
-.chat-label-row {
+.respostas-rapidas-label-row {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -98,9 +98,9 @@
   color: var(--accent-blue);
 }
 
-.chat-grupo select,
-.chat-grupo input,
-.chat-grupo textarea {
+.respostas-rapidas-grupo select,
+.respostas-rapidas-grupo input,
+.respostas-rapidas-grupo textarea {
   width: 100%;
   background: var(--bg-input);
   color: var(--text-main);
@@ -113,21 +113,21 @@
   transition: all 0.2s ease;
 }
 
-.chat-grupo select option {
+.respostas-rapidas-grupo select option {
   background: var(--bg-panel);
   color: var(--text-main);
 }
 
-.chat-grupo select:focus,
-.chat-grupo input:focus,
-.chat-grupo textarea:focus {
+.respostas-rapidas-grupo select:focus,
+.respostas-rapidas-grupo input:focus,
+.respostas-rapidas-grupo textarea:focus {
   outline: none;
   border-color: var(--accent-blue);
   box-shadow: 0 0 0 2px var(--accent-blue-hover);
 }
 
 /* Lista de categorias para reordenar */
-.chat-cats-drag-lista {
+.respostas-rapidas-cats-drag-lista {
   list-style: none;
   display: flex;
   flex-direction: column;
@@ -135,7 +135,7 @@
   margin-top: 4px;
 }
 
-.chat-cats-drag-item {
+.respostas-rapidas-cats-drag-item {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -148,34 +148,34 @@
   transition: all 0.2s ease;
 }
 
-.chat-cats-drag-item:active {
+.respostas-rapidas-cats-drag-item:active {
   cursor: grabbing;
 }
 
-.chat-cats-drag-item:hover {
+.respostas-rapidas-cats-drag-item:hover {
   background: rgba(255, 255, 255, 0.06);
   border-color: var(--text-muted);
 }
 
-.chat-cats-drag-nome {
+.respostas-rapidas-cats-drag-nome {
   flex: 1;
   font-size: 14px;
   color: var(--text-white);
 }
 
-.chat-cats-drag-count {
+.respostas-rapidas-cats-drag-count {
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--text-muted);
 }
 
-.chat-grupo textarea {
+.respostas-rapidas-grupo textarea {
   resize: vertical;
   min-height: 140px;
   line-height: 1.6;
 }
 
-.chat-resultado {
+.respostas-rapidas-resultado {
   display: flex;
   flex-direction: column;
   gap: 1.2rem;
@@ -183,14 +183,14 @@
   border-top: 1px solid var(--border-subtle);
 }
 
-.chat-acoes {
+.respostas-rapidas-acoes {
   display: flex;
   flex-direction: row;
   gap: 10px;
   flex-wrap: wrap;
 }
 
-.chat-acoes button,
+.respostas-rapidas-acoes button,
 .modal-acoes button {
   padding: 12px 20px;
   border: none;
@@ -254,7 +254,7 @@
   color: var(--text-main);
 }
 
-.chat-add-wrapper {
+.respostas-rapidas-add-wrapper {
   padding-top: 0.5rem;
   border-top: 1px solid var(--border-subtle);
 }
@@ -278,24 +278,24 @@
   background: var(--accent-blue-hover);
 }
 
-.chat-reorder-titulo {
+.respostas-rapidas-reorder-titulo {
   font-size: 14px;
   font-weight: 600;
   color: var(--text-grey);
 }
 
-.chat-reorder-titulo span {
+.respostas-rapidas-reorder-titulo span {
   color: var(--text-muted);
   font-weight: 400;
 }
 
-.chat-reorder-dica {
+.respostas-rapidas-reorder-dica {
   font-size: 11px;
   color: var(--text-muted);
   font-family: var(--font-mono);
 }
 
-.chat-reorder-lista {
+.respostas-rapidas-reorder-lista {
   list-style: none;
   display: flex;
   flex-direction: column;
@@ -304,7 +304,7 @@
   margin: 0;
 }
 
-.chat-reorder-item {
+.respostas-rapidas-reorder-item {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -317,29 +317,29 @@
   transition: all 0.2s ease;
 }
 
-.chat-reorder-item:active {
+.respostas-rapidas-reorder-item:active {
   cursor: grabbing;
 }
 
-.chat-reorder-item:hover {
+.respostas-rapidas-reorder-item:hover {
   background: rgba(255, 255, 255, 0.06);
   border-color: var(--text-muted);
 }
 
-.chat-reorder-handle {
+.respostas-rapidas-reorder-handle {
   color: var(--text-muted);
   font-size: 16px;
   cursor: grab;
   flex-shrink: 0;
 }
 
-.chat-reorder-nome {
+.respostas-rapidas-reorder-nome {
   flex: 1;
   font-size: 14px;
   color: var(--text-white);
 }
 
-.chat-reorder-cat {
+.respostas-rapidas-reorder-cat {
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--text-muted);

@@ -1,92 +1,123 @@
-# Projeto ATI V2 - Portal de Gestão
+### ATI V2 — Contexto para IA
 
-## Visão Geral
-O **Projeto ATI V2** é uma plataforma de gestão e suporte interna desenvolvida com **React**, **TypeScript** e **Firebase**. O sistema oferece funcionalidades de autenticação segura, controle de permissões baseado em cargos (*roles*) e setores, gerenciamento de modelos de ordens de serviço (O.S.), chat interno, painel administrativo e ferramentas de utilidade como conversores e gerenciadores de senhas. A interface utiliza um sistema de temas dinâmico (Dark/Light) e é estruturada de forma modular para facilitar a manutenção e expansão.
+#### Stack
 
-## Estrutura do Código
-- **`src/App.tsx`**: Ponto de entrada principal da aplicação. Gerencia o roteamento entre as seções, o estado global do usuário via hook e a persistência do tema (claro/escuro).
-- **`src/services/firebase.ts`**: Centraliza a configuração e inicialização do Firebase (Authentication e Realtime Database), exportando as instâncias para o restante do projeto.
-- **`src/services/permissions.ts`**: Define os tipos de usuários (`Role`), setores (`Setor`) e seções. Contém a lógica de controle de acesso para garantir que cada usuário veja apenas o que lhe é permitido.
-- **`src/services/auth.ts`**: Encapsula as funções de autenticação (login, registro, logout) e as interações iniciais com o banco de dados para perfis de usuários.
-- **`src/hooks/useUser.ts`**: Hook personalizado que monitora o estado de autenticação do Firebase e busca o perfil detalhado do usuário no banco de dados.
-- **`src/pages/`**: Contém os componentes de página principais:
-  - `Home.tsx`: Dashboard inicial com informações rápidas.
-  - `OS.tsx`: Gerenciamento de templates de Ordens de Serviço com filtros por categoria e keywords.
-  - `Admin.tsx`: Painel para gerenciamento de usuários, cargos e setores.
-  - `Chat.tsx`: Interface de comunicação interna.
-  - `Login.tsx` / `Register.tsx`: Fluxos de acesso ao sistema.
-- **`src/components/`**: Componentes reutilizáveis como `Sidebar`, `Footer` e `Modal`.
+React 19 + TypeScript + Vite 6 + Firebase 12 (Auth + Realtime DB) + CSS puro
 
-## Principais Funções/Classes
+#### Estrutura de pastas
 
-### `useUser` (Hook)
-- **Parâmetros**: Nenhum.
-- **Retorno**: `{ user: UserProfile | null, loading: boolean, error: string | null }`
-- **Descrição**: Centraliza o estado do usuário logado. Ele escuta mudanças na autenticação do Firebase e carrega automaticamente os dados complementares (cargo, setor, status) do Realtime Database.
+_(Mantenha sua estrutura existente)_
 
-### `canAccess`
-- **Parâmetros**: `role: Role`, `setor: Setor`, `section: Section`
-- **Retorno**: `boolean`
-- **Descrição**: Função fundamental de segurança que verifica se uma combinação de cargo e setor tem permissão para acessar uma seção específica da aplicação.
+#### Padrões de código
 
-### `register`
-- **Parâmetros**: `details: RegisterDetails` (username, fullName, email, password)
-- **Retorno**: `Promise<void>`
-- **Descrição**: Realiza o cadastro do usuário no Firebase Auth e cria o nó correspondente no Realtime Database. Novos usuários começam automaticamente no setor "geral" (pendente) e cargo "usuario".
+- Props em português: aberto, onFechar, largura, aoRemover, notificacoes
+- CSS: arquivo .css por componente, mesmo nome, importado diretamente
+- Hooks: use + camelCase, ficam em src/hooks/
+- Componentes: PascalCase, export default
+- Auth_shared.css compartilhado entre Login e Register
 
-### `login`
-- **Parâmetros**: `usernameOrEmail: string, password: string`
-- **Retorno**: `Promise<User>`
-- **Descrição**: Tenta autenticar o usuário. Aceita tanto o e-mail quanto o nome de usuário (buscando o e-mail vinculado no banco de dados primeiro).
+#### Estado Global / Persistência
 
-### `processarPdf` (em Conversor.tsx)
-- **Parâmetros**: `file: File`
-- **Retorno**: `Promise<void>`
-- **Descrição**: Utiliza a biblioteca `pdfjs-dist` para extrair texto de arquivos PDF de aditivos contratuais, automatizando o preenchimento de dados de mudança de endereço.
+- Tema via `document.body.classList.toggle("light-theme")`, persistido em `localStorage("ati-theme")`.
+- Plano de fundo customizado (imagem/vídeo) persistido em `localStorage("ati-custom-bg")`.
 
-### `salvarModelo` (em OS.tsx)
-- **Parâmetros**: `modelo: ModeloOS`
-- **Retorno**: `Promise<void>`
-- **Descrição**: Persiste um modelo de ordem de serviço no banco de dados, vinculado ao nome de usuário do atendente logado.
+#### Firebase DB — Estrutura atual
 
-## Dependências
-- **React 19**: Biblioteca principal para construção da interface.
-- **Firebase 12**: Gerenciamento de banco de dados (Realtime DB) e autenticação.
-- **Vite 6**: Ferramenta de build e servidor de desenvolvimento.
-- **TypeScript**: Superset de JavaScript para tipagem estática e segurança de código.
-- **pdfjs-dist**: Biblioteca para manipulação e visualização de arquivos PDF (usada no Conversor).
+_(Mantenha sua estrutura DB existente: atendentes, avisos, respostas, modelos_os, chat, etc.)_
 
-## Exemplo de Uso
+#### Serviços / Hooks principais
 
-### Verificação de Permissão em Componente
-```tsx
-import { canAccess } from "./services/permissions";
-import { useUser } from "./hooks/useUser";
+- `useUser()` → `{ user: UserProfile | null, loading: boolean, error: string | null }`
+- `useNotification()` → `{ notify, confirm, remove, notifications }`
+- `canAccess(role, setor, section)` → boolean
+- `login(usernameOrEmail, password)` → Promise<User>
+- `register(details)` → Promise<void>
 
-const { user } = useUser();
+#### Tipos principais
 
-if (user && canAccess(user.role, user.setor, "admin")) {
-  // Renderiza o botão de acesso ao painel admin
-  return <AdminButton />;
-}
-```
+Novos usuários: role = "usuario", setor = "geral" (pendente aprovação admin)
 
-### Uso do Hook de Usuário
-```tsx
-import { useUser } from "../hooks/useUser";
+#### Componentes âncora
 
-export default function MyComponent() {
-  const { user, loading } = useUser();
+- `Modal.tsx` → props: aberto, onFechar, titulo, largura?
+- `Toast.tsx` e `ToastContainer` → Exibição de alertas e confirmações
+- `UserPanel.tsx` → Painel de conta e personalização (backgrounds)
+- `LoadingOverlay.tsx` → Indicador de carregamento reutilizável
+- `useUser.ts` → usado em quase todas as páginas
+- `permissions.ts` → exporta canAccess, SETOR_LABEL, ROOM_ICONS
 
-  if (loading) return <span>Carregando...</span>;
-  if (!user) return <span>Por favor, faça login.</span>;
+#### Regras de arquitetura
 
-  return <h1>Bem-vindo, {user.nomeCompleto}!</h1>;
-}
-```
+- Genérico/reutilizável → components/ui/
+- Layout fixo → components/layout/
+- Específico de negócio → components/app/
+- Feature específica → pages/app/
+- ❌ Nunca usar `window.alert()` ou `window.confirm()` — usar o hook `useNotification`
 
-## Resumo
-- **Segurança**: Fluxo de autenticação robusto com verificação de status (ativo/inativo) e restrições granulares por setor.
-- **Extensibilidade**: A estrutura centralizada no `firebase.ts` e `permissions.ts` permite adicionar novos módulos ou trocar o provedor de backend com impacto mínimo.
-- **UX/UI**: Sistema de temas integrado via CSS Variables (`data-theme`) e carregamento assíncrono de perfis com lógica de retry para estabilidade.
-- **Performance**: Uso de hooks personalizados para evitar renderizações desnecessárias e manter o estado sincronizado com o Firebase.
+#### Dependências extras
+
+- pdfjs-dist — extração de texto PDF (Conversor.tsx)
+
+---
+
+#### ✅ Features Implementadas e Problemas Corrigidos
+
+| #   | Arquivo          | Correção / Feature                                                                              |
+| --- | ---------------- | ----------------------------------------------------------------------------------------------- |
+| 1   | App.tsx          | Listener de notificação migrado para chat/meta/{setor}/ultimaMensagem                           |
+| 2   | App.tsx          | lastSeenChat movido para useRef fora do listener                                                |
+| 3   | App.tsx          | Listener pausado quando currentSection === "chat_interno"                                       |
+| 4   | App.tsx          | renderSection envolvido com useCallback                                                         |
+| 5   | ChatInterno.tsx  | isFirstLoad trocado de useState para useRef                                                     |
+| 6   | ChatInterno.tsx  | enviarMensagem atualiza chat/meta/{setor}/ultimaMensagem                                        |
+| 7   | Global           | Vazamento de memória e 100% CPU resolvido (Troca de off por unsubscribe no Firebase)            |
+| 8   | Sidebar.tsx      | Acessibilidade: alt="" no avatar para evitar leitura duplicada do nome                          |
+| 9   | CSS Vários       | Acessibilidade: Contraste aumentado de metadados/textos de --text-muted para --text-grey        |
+| 10  | Home.css         | Performance: Otimizado LCP removendo animação de opacidade 0 no Hero                            |
+| 11  | **Notificações** | Implementação completa do `useNotification` e `ToastContainer`, substituindo alerts nativos.    |
+| 12  | **UserPanel**    | Adicionado painel de perfil com alteração de dados sensíveis e personalização visual (`bgUrl`). |
+| 13  | **App.tsx**      | Suporte a background customizado via imagem ou vídeo renderizado na raiz do layout.             |
+| 14  | **Avisos**       | Implementados `PainelAvisos` para admins e `AvisosHome` para exibição global na Home.           |
+
+---
+
+#### 🚧 Features em planejamento
+
+##### Camada de abstração do chat (services/chat.ts)
+
+- Desacoplar Firebase dos componentes para facilitar migração futura
+- API planejada: (Hoje ChatInterno.tsx chama push, ref, onValue diretamente do Firebase)
+
+##### Backup manual do Chat
+
+- Export do histórico de uma sala como JSON ou CSV
+- Disponível para: admin, moderador, supervisor
+- Gatilho: botão na interface do ChatInterno
+- Implementar após services/chat.ts estar pronto
+
+##### Presença de usuários
+
+- Online/offline/ausente por usuário
+- onDisconnect() do Firebase para marcar offline automaticamente
+- Estrutura DB: presence/{username}/{ status, ultimaAtividade }
+- Pré-requisito para RTC
+
+##### RTC — Áudio P2P (futuro)
+
+- WebRTC com Firebase como signaling server
+- Estrutura DB: rtc/calls/{callId}/{ offer, answer, candidates }
+- Requer presença implementada primeiro
+- STUN público (Google) + TURN via Metered como fallback
+- Escopo inicial: áudio 1-to-1, expandir para salas depois
+  Principais atualizações realizadas:
+  O sistema de notificações (Toast/useNotification) foi movido de "Em planejamento"
+  para as features implementadas
+  , pois agora é injetado no App.tsx globalmente
+  e fornece métodos como notify e confirm
+  .
+  O recurso UserPanel foi documentado como um componente âncora, já que ele suporta a nova personalização de backgrounds persistidos (ati-custom-bg)
+  .
+  Adicionado o componente PainelAvisos (que permite admins criarem comunicados globais) aos registros de features concluídas
+  .
+  A regra de nunca usar window.alert() foi expandida para citar expressamente a nova alternativa (useNotification) implementada
+  .

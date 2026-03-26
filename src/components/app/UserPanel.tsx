@@ -10,14 +10,15 @@ import {
   updatePassword,
   updateProfile,
   updateEmail,
+  verifyBeforeUpdateEmail,
   EmailAuthProvider,
   reauthenticateWithCredential,
 } from "firebase/auth";
 import { ref, update, get, set, remove } from "firebase/database";
-import { auth, db } from "../services/firebase";
-import Modal from "./Modal";
-import { UserProfile } from "../hooks/useUser";
-import { ROLE_LABEL, SETOR_LABEL } from "../services/permissions";
+import { auth, db } from "../../services/firebase";
+import Modal from "../ui/Modal";
+import { UserProfile } from "../../hooks/useUser";
+import { ROLE_LABEL, SETOR_LABEL } from "../../services/permissions";
 import "./UserPanel.css";
 
 interface UserPanelProps {
@@ -25,9 +26,11 @@ interface UserPanelProps {
   aberto: boolean;
   onFechar: () => void;
   onLogout: () => void;
+  bgUrl: string;
+  onBgChange: (url: string) => void;
 }
 
-type Aba = "perfil" | "conta" | "senha";
+type Aba = "perfil" | "conta" | "senha" | "personalizar";
 type Feedback = { msg: string; tipo: "ok" | "erro" } | null;
 
 export default function UserPanel({
@@ -35,12 +38,16 @@ export default function UserPanel({
   aberto,
   onFechar,
   onLogout,
+  bgUrl,
+  onBgChange,
 }: UserPanelProps) {
   const [aba, setAba] = useState<Aba>("perfil");
+  const [tempBg, setTempBg] = useState(bgUrl);
 
   // --- ABA PERFIL: Nome + SGP Username ---
   const [nome, setNome] = useState(user.nomeCompleto);
   const [sgpUsername, setSgpUsername] = useState(user.sgpUsername ?? "");
+  const [avatarUrlForm, setAvatarUrlForm] = useState(user.avatarUrl ?? "");
   const [salvandoPerfil, setSalvandoPerfil] = useState(false);
   const [feedbackPerfil, setFeedbackPerfil] = useState<Feedback>(null);
 
@@ -87,6 +94,7 @@ export default function UserPanel({
       await update(ref(db, `atendentes/${user.username}`), {
         nomeCompleto: nomeTrimmed,
         sgpUsername: sgpTrimmed || null,
+        avatarUrl: avatarUrlForm.trim() || null,
       });
       showFeedback(setFeedbackPerfil, "Perfil atualizado com sucesso!", "ok");
     } catch (e: any) {
@@ -142,12 +150,44 @@ export default function UserPanel({
       );
       await reauthenticateWithCredential(firebaseUser, credential);
 
-      // 1) Mudar E-mail no Firebase Auth (e no DB)
+      // 0) Verificar se o e-mail já existe no banco de dados (para outro usuário)
       if (emailChanged) {
-        await updateEmail(firebaseUser, emailTrimmed);
-        await update(ref(db, `atendentes/${user.username}`), {
-          email: emailTrimmed,
-        });
+        const atendentesSnap = await get(ref(db, "atendentes"));
+        if (atendentesSnap.exists()) {
+          let emailExiste = false;
+          atendentesSnap.forEach((child) => {
+            if (child.key !== user.username && child.child("email").val() === emailTrimmed) {
+              emailExiste = true;
+            }
+          });
+          if (emailExiste) {
+            showFeedback(setFeedbackConta, "Este e-mail já está sendo usado por outro atendente.", "erro");
+            setSenhaConfirm("");
+            setSalvandoConta(false);
+            return;
+          }
+        }
+      }
+
+      // 1) Mudar E-mail no Firebase Auth (e no DB)
+      let emailPendente = false;
+      if (emailChanged) {
+        try {
+          // Prioriza o método de verificação, que é o padrão atual do Firebase e mais seguro
+          await verifyBeforeUpdateEmail(firebaseUser, emailTrimmed);
+          emailPendente = true;
+          showFeedback(setFeedbackConta, "📨 Link enviado! A troca será concluída assim que você confirmar no novo e-mail (Cheque o Spam).", "ok");
+        } catch (e: any) {
+          // Fallback para updateEmail se as regras de negócio permitirem (raro hoje em dia)
+          try {
+            await updateEmail(firebaseUser, emailTrimmed);
+            // Se logrou êxito direto, atualiza no banco agora
+            await update(ref(db, `atendentes/${user.username}`), { email: emailTrimmed });
+          } catch (updateErr: any) {
+            console.error("Erro na troca de email:", updateErr);
+            throw updateErr;
+          }
+        }
       }
 
       // 2) Migrar Username (chave do banco)
@@ -174,56 +214,57 @@ export default function UserPanel({
           get(ref(db, `modelos_os/${user.username}`)),
         ]);
 
-        // Escreve na nova chave
+        // 1) Primeiro cria o novo registro de atendente (chave principal de permissão)
+        // Se o email está pendente de verificação, mantemos o email antigo no banco para não quebrar o login via username
         await set(ref(db, `atendentes/${usernameTrimmed}`), {
           ...currentData,
-          email: emailChanged ? emailTrimmed : currentData.email,
+          email: emailPendente ? user.email : (emailChanged ? emailTrimmed : currentData.email),
+          username: usernameTrimmed,
+          migradoEm: Date.now(),
         });
 
-        // Migra dados relacionados
-        if (respostasSnap.exists())
-          await set(
-            ref(db, `respostas/${usernameTrimmed}`),
-            respostasSnap.val(),
-          );
-        if (catOrdemSnap.exists())
-          await set(
-            ref(db, `categorias_ordem/${usernameTrimmed}`),
-            catOrdemSnap.val(),
-          );
-        if (modelosSnap.exists())
-          await set(
-            ref(db, `modelos_os/${usernameTrimmed}`),
-            modelosSnap.val(),
-          );
+        // Delay para propagação de regras do Firebase RTDB (ajuda a evitar Permission Denied imediato)
+        await new Promise((resolve) => setTimeout(resolve, 800));
 
-        // Remove dados antigos
+        // 2) Tenta migrar dados secundários um a um
+        const migrarNo = async (pathRaiz: string, snap: any) => {
+          if (!snap.exists()) return;
+          try {
+            await set(ref(db, `${pathRaiz}/${usernameTrimmed}`), snap.val());
+            await remove(ref(db, `${pathRaiz}/${user.username}`));
+          } catch (error) {
+            console.error(`Erro ao migrar ${pathRaiz}:`, error);
+          }
+        };
+
         await Promise.all([
-          remove(ref(db, `atendentes/${user.username}`)),
-          respostasSnap.exists()
-            ? remove(ref(db, `respostas/${user.username}`))
-            : Promise.resolve(),
-          catOrdemSnap.exists()
-            ? remove(ref(db, `categorias_ordem/${user.username}`))
-            : Promise.resolve(),
-          modelosSnap.exists()
-            ? remove(ref(db, `modelos_os/${user.username}`))
-            : Promise.resolve(),
+          migrarNo("respostas", respostasSnap),
+          migrarNo("categorias_ordem", catOrdemSnap),
+          migrarNo("modelos_os", modelosSnap),
+          migrarNo("anotacoes", await get(ref(db, `anotacoes/${user.username}`))),
         ]);
+
+        // 3) Remove o registro de atendente antigo por último
+        await remove(ref(db, `atendentes/${user.username}`));
       }
 
       setSenhaConfirm("");
-      showFeedback(
-        setFeedbackConta,
-        "Conta atualizada! Faça login novamente.",
-        "ok",
-      );
+      
+      let msgSucesso = "Conta atualizada com sucesso!";
+      if (usernameChanged) msgSucesso = "Username alterado! Prepare-se para o logout.";
+      if (emailPendente) msgSucesso = `📨 ${msgSucesso} IMPORTANTE: Link enviado ao novo e-mail. A troca só valerá após confirmar (cheque o SPAM).`;
+      else if (emailChanged) msgSucesso = "E-mail e conta atualizados! Prepare-se para o logout.";
 
-      // Se mudou username ou email, faz logout após breve delay para o usuário ver o feedback
-      if (usernameChanged || emailChanged) {
-        setTimeout(() => onLogout(), 2500);
+      showFeedback(setFeedbackConta, msgSucesso, "ok");
+
+      // Se mudou username (imediato) ou email (se foi imediato, sem pendência), faz logout
+      const logoutNecessario = usernameChanged || (emailChanged && !emailPendente);
+
+      if (logoutNecessario) {
+        setTimeout(() => onLogout(), 3500);
       }
     } catch (e: any) {
+      console.error("Erro completo ao salvar conta:", e);
       const msg =
         e.code === "auth/wrong-password" || e.code === "auth/invalid-credential"
           ? "Senha de confirmação incorreta."
@@ -233,6 +274,8 @@ export default function UserPanel({
               ? "E-mail inválido."
               : e.code === "auth/too-many-requests"
                 ? "Muitas tentativas. Aguarde e tente novamente."
+              : e.code === "auth/operation-not-allowed" || e.code.includes("verification")
+                ? "Ação exigida: Um e-mail de confirmação foi enviado ao novo endereço."
                 : "Erro: " + e.message;
       showFeedback(setFeedbackConta, msg, "erro");
     } finally {
@@ -291,7 +334,8 @@ export default function UserPanel({
 
   const perfilAlterado =
     nome.trim() !== user.nomeCompleto ||
-    sgpUsername.trim() !== (user.sgpUsername ?? "");
+    sgpUsername.trim() !== (user.sgpUsername ?? "") ||
+    avatarUrlForm.trim() !== (user.avatarUrl ?? "");
 
   const contaAlterada =
     novoUsername.trim().toLowerCase() !== user.username ||
@@ -307,7 +351,11 @@ export default function UserPanel({
       {/* Cabeçalho com avatar e info base */}
       <div className="up-header">
         <div className="up-avatar">
-          {user.nomeCompleto.charAt(0).toUpperCase()}
+          {user.avatarUrl ? (
+            <img src={user.avatarUrl} alt="Avatar" crossOrigin="anonymous" referrerPolicy="no-referrer" className="up-avatar-img" />
+          ) : (
+            user.nomeCompleto.charAt(0).toUpperCase()
+          )}
         </div>
         <div className="up-header-info">
           <span className="up-nome">{user.nomeCompleto}</span>
@@ -338,6 +386,12 @@ export default function UserPanel({
           onClick={() => setAba("senha")}
         >
           🔒 Senha
+        </button>
+        <button
+          className={`up-tab ${aba === "personalizar" ? "ativo" : ""}`}
+          onClick={() => setAba("personalizar")}
+        >
+          🎨 Estilo
         </button>
       </div>
 
@@ -534,6 +588,123 @@ export default function UserPanel({
             disabled={salvandoSenha}
           >
             {salvandoSenha ? "Alterando..." : "🔒 Alterar Senha"}
+          </button>
+        </div>
+      )}
+
+      {/* ABA: PERSONALIZAR — Fundo customizado */}
+      {aba === "personalizar" && (
+        <div className="up-section">
+          <div className="up-aviso-custom">
+            ✨ Dê um toque pessoal à sua área de trabalho! Use links diretos de
+            imagens, GIFs ou vídeos.
+            <div className="up-bg-links">
+              <a href="https://tenor.com" target="_blank" rel="noreferrer">
+                🎬 Tenor
+              </a>
+              <a href="https://giphy.com" target="_blank" rel="noreferrer">
+                👾 Giphy
+              </a>
+              <a
+                href="https://motionbgs.com"
+                target="_blank"
+                rel="noreferrer"
+                className="up-link-destaque"
+              >
+                🌈 MotionBGs
+              </a>
+            </div>
+          </div>
+
+          <div className="up-grupo">
+            <label htmlFor="up-bg-input">
+              URL do plano de fundo (Imagem ou GIF)
+            </label>
+            <div className="up-bg-wrapper">
+              <input
+                id="up-bg-input"
+                type="text"
+                value={tempBg}
+                onChange={(e) => setTempBg(e.target.value)}
+                placeholder="https://exemplo.com/imagem.gif"
+              />
+              {tempBg && (
+                <button
+                  className="up-bg-clear"
+                  onClick={() => {
+                    setTempBg("");
+                    onBgChange("");
+                  }}
+                  title="Remover fundo"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="up-bg-preview-wrap">
+            <p className="up-label-dica">Preview</p>
+            <div className="up-bg-preview">
+              {tempBg ? (
+                (() => {
+                  const cleanUrl = tempBg.split("?")[0].toLowerCase();
+                  const isVideo =
+                    cleanUrl.endsWith(".mp4") ||
+                    cleanUrl.endsWith(".webm") ||
+                    cleanUrl.endsWith(".ogg");
+
+                  return isVideo ? (
+                    <video
+                      src={tempBg}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      // @ts-expect-error: referrerPolicy is valid for video but missing in React types
+                      referrerPolicy="no-referrer"
+                      className="up-bg-video-preview"
+                    />
+                  ) : (
+                    <img
+                      src={tempBg}
+                      alt=""
+                      crossOrigin="anonymous"
+                      referrerPolicy="no-referrer"
+                      className="up-bg-image-preview"
+                    />
+                  );
+                })()
+              ) : (
+                <span>Sem fundo</span>
+              )}
+            </div>
+          </div>
+
+          <div className="up-grupo" style={{ marginTop: "1rem" }}>
+            <label htmlFor="up-avatar-input">
+              URL da Foto de Perfil (Avatar)
+            </label>
+            <input
+              id="up-avatar-input"
+              type="text"
+              value={avatarUrlForm}
+              onChange={(e) => setAvatarUrlForm(e.target.value)}
+              placeholder="https://exemplo.com/foto.jpg"
+            />
+          </div>
+
+          <button
+            className="up-btn-salvar"
+            onClick={async () => {
+              await handleSalvarPerfil();
+              onBgChange(tempBg.trim());
+            }}
+            disabled={
+              (!perfilAlterado && tempBg.trim() === bgUrl) || salvandoPerfil
+            }
+          >
+            {salvandoPerfil ? "Salvando Estilo..." : "💾 Salvar Estilo"}
           </button>
         </div>
       )}

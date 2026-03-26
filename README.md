@@ -1,73 +1,117 @@
-# ATI V2 — Auxiliar de Atendimentos
+# ATI V2 — Auxiliar de Atendimentos 🚀
 
-O ATI (Auxiliar de Atendimentos) é um sistema web desenvolvido para otimizar a rotina diária de atendentes (suporte/telecom). Ele atua como uma central de ferramentas, oferecendo comunicação interna ágil, textos padronizados e automações operacionais [1].
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Firebase](https://img.shields.io/badge/Firebase-12-FFCA28?logo=firebase&logoColor=white)](https://firebase.google.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## 🚀 Funcionalidades
+O **ATI (Auxiliar de Atendimentos)** é um ecossistema web moderno desenvolvido para elevar a produtividade de equipes de suporte e telecomunicações. Ele centraliza ferramentas essenciais, automatiza processos repetitivos e facilita a comunicação interna em uma interface intuitiva e performática.
 
-- **Chat Interno:** Comunicação em tempo real dividida por setores (Geral, TI, Financeiro, Suporte, Comercial) utilizando Firebase Realtime Database. Conta com detecção de usuários online e salas com mensagens não lidas [2-4].
-- **Respostas Rápidas:** Textos categorizados com reordenação via arrastar-e-soltar e variáveis dinâmicas (ex: saudações automáticas com base no horário local) [5-7].
-- **Modelos de O.S.:** Templates padronizados para preenchimento ágil de Ordens de Serviço (SGP) [8, 9].
-- **Conversor de Aditivo (PDF):** Extração de dados de contratos em PDF utilizando `pdfjs-dist` nativamente no navegador, gerando textos de instalação/retirada automaticamente [10, 11].
-- **Anotações Pessoais:** Bloco de notas com suporte a checklists de tarefas e status visual ("pendente", "em andamento", "concluído") [12-14].
-- **Senhas e Acessos:** Central de consulta rápida a IPs de equipamentos, sistemas e credenciais [15, 16].
-- **Painel Admin:** Gerenciamento de acessos (cargos e setores) de usuários e publicação de avisos/alertas globais exibidos na Home [17-19].
-- **Personalização de Perfil:** Alternância nativa entre temas Claro/Escuro e suporte a vídeos (`.mp4`, `.webm`) ou imagens personalizadas como plano de fundo [20-22].
-- **Sistema de Notificações:** Sistema customizado de Toasts e Confirmações integrado globalmente [23-25].
+[Acesse a demonstração](https://vituali.github.io/ATI/)
 
-## 🛠️ Tecnologias Utilizadas
+---
 
-- **Frontend:** React 19 [26]
-- **Build Tool:** Vite 6 [26]
-- **Linguagem:** TypeScript [26]
-- **Backend / Banco de Dados / Auth:** Firebase 12 (Authentication + Realtime Database) [26, 27]
-- **Estilização:** CSS Puro utilizando CSS Variables para os temas [28]
-- **Processamento de PDFs:** `pdfjs-dist` (processamento local via Web Workers) [11, 26]
+## 🇧🇷 Português
 
-## 💻 Como rodar localmente
+### 🌟 Funcionalidades Principais
 
-1. **Clone o repositório:**
-   ```bash
-   git clone <url-do-repositorio>
-   cd ati-v2
-   Instale as dependências:
-   Configure as Variáveis de Ambiente: Crie um arquivo .env na raiz do projeto com as credenciais do seu projeto Firebase
-   :
-   Inicie o servidor de desenvolvimento:
-   ```
+-   **💬 Chat Setorial em Tempo Real:** Comunicação ágil dividida por departamentos (Geral, TI, Financeiro, Suporte, Comercial) via Firebase.
+-   **⚡ Respostas Rápidas Inteligentes:** Biblioteca de textos padronizados com suporte a variáveis dinâmicas (saudações automáticas) e organização via Drag & Drop.
+-   **📋 Modelos de O.S. (SGP):** Templates prontos para agilizar o preenchimento de Ordens de Serviço.
+-   **📄 Conversor de Aditivos (PDF):** Extração inteligente de dados de contratos PDF diretamente no navegador, gerando textos de instalação/retirada.
+-   **📝 Notas & Tarefas:** Bloco de notas pessoal com sistema de checklists e controle de status (Pendente, Em Andamento, Concluído).
+-   **🔐 Central de Acessos:** Consulta rápida a IPs, credenciais e sistemas críticos.
+-   **🛡️ Painel Administrativo:** Gestão granular de usuários, permissões e comunicados globais.
+-   **🎨 Personalização Total:** Temas Claro/Escuro e planos de fundo dinâmicos (suporta vídeos `.mp4` e imagens).
 
-# ATI V2 — Attendance Assistant
+### 🏗️ Arquitetura e Padrões
 
-ATI (Auxiliar de Atendimentos) is a specialized web system built to optimize the daily routines of telecom and support attendants. It acts as a central hub providing internal communication, quick text tools, and workflow automations [1].
+O projeto segue uma estrutura organizada para escalabilidade e manutenção:
 
-## 🚀 Features
+-   **UI Reutilizável:** Componentes genéricos em `src/components/ui/`.
+-   **Layout Base:** Estrutura fixa do sistema em `src/components/layout/`.
+-   **Lógica de Negócio:** Hooks customizados em `src/hooks/` (ex: `useUser`, `useNotification`).
+-   **Estilização:** CSS modular (arquivo por componente) utilizando variáveis globais para espelhamento de temas.
+-   **Segurança:** Sistema de permissões RBAC (Role-Based Access Control) por Setor e Cargo.
 
-- **Internal Chat:** Real-time communication divided by company sectors (General, IT, Financial, Support, Commercial) using Firebase Realtime Database. Includes online presence and unread message notifications [2-4].
-- **Quick Replies:** Categorized, drag-and-drop sortable text snippets with dynamic variables (e.g., auto-greetings based on the time of day) [5-7].
-- **O.S. Templates:** Standardized templates for service orders (SGP) [8, 9].
-- **PDF Converter:** Parses "Additive" contract PDFs entirely client-side via `pdfjs-dist` to generate ready-to-use installation/withdrawal texts automatically [10, 11].
-- **Notes & Tasks:** Personal to-do lists and notes with checklist support and status indicators ("pendente", "em andamento", "concluído") [12-14].
-- **Passwords & Quick Access:** Fast access to common equipment IPs, logins, and system links [15, 16].
-- **Admin Dashboard:** Manage user roles (user, supervisor, moderator, admin) and sectors. Publish and manage global system alerts (`AvisosHome`) [17-19].
-- **Profile Customization:** Full dark/light mode support and custom dynamic video (`.mp4`, `.webm`) or image backgrounds per user [20-22].
-- **Notification System:** Custom built-in Toast notifications for alerts and confirmations [23-25].
+### ⚡ Performance & Calidade (Lighthouse)
 
-## 🛠️ Tech Stack
+Comprometimento total com a experiência do usuário e otimização:
 
-- **Frontend Framework:** React 19 [26]
-- **Build Tool:** Vite 6 [26]
-- **Language:** TypeScript [26]
-- **Backend / Database / Auth:** Firebase 12 (Authentication + Realtime Database) [26, 27]
-- **Styling:** Pure CSS with extensive use of CSS Variables for theming [28]
-- **PDF Processing:** `pdfjs-dist` (running via Web Workers) [11, 26]
+![Lighthouse Report](public/lighthouse.png)
 
-## 💻 Running Locally
+-   **Performance:** 96 (Extremamente rápido mesmo processando PDFs locais)
+-   **Acessibilidade:** 100 (Totalmente inclusivo)
+-   **Melhores Práticas:** 100 (Código seguindo padrões modernos)
+-   **SEO:** 100 (Otimizado para mecanismos de busca)
 
-1. **Clone the repository:**
-   ```bash
-   git clone <repository-url>
-   cd ati-v2
-   Install dependencies:
-   Configure Environment Variables: Create a .env file at the root based on your Firebase configuration
-   :
-   Start the development server:
-   ```
+### 🚀 Como Executar Localmente
+
+1.  **Clone o projeto:**
+    ```bash
+    git clone https://github.com/Vituali/ATI.git
+    cd ATI
+    ```
+
+2.  **Instale as dependências:**
+    ```bash
+    npm install
+    ```
+
+3.  **Configuração do Firebase:**
+    Crie um arquivo `.env` na raiz do projeto com suas chaves do Firebase Console.
+
+4.  **Inicie o desenvolvimento:**
+    ```bash
+    npm run dev
+    ```
+
+---
+
+## 🇺🇸 English
+
+### 🌟 Key Features
+
+-   **💬 Real-Time Sector Chat:** Instant messaging separated by company departments using Firebase Realtime Database.
+-   **⚡ Smart Quick Replies:** Library of standardized snippets with dynamic variables and drag-and-drop sorting.
+-   **📋 SGP Templates:** Standardized templates for fast Service Order completion.
+-   **📄 PDF Additive Converter:** Client-side parsing of contract PDFs to automate installation and withdrawal logs.
+-   **📝 Personal Workspace:** Notes and task management with checklist support and status tracking.
+-   **🔐 Access Hub:** Quick reference for internal IPs, credentials, and system links.
+-   **🛡️ Admin Suite:** User role management, permissions, and global system announcements.
+-   **🎨 Dynamic UI:** Native Light/Dark mode and customizable backgrounds (Images/Videos).
+
+### 🏗️ Architecture & Standards
+
+-   **Modular Design:** Components separated by responsibility (UI, Layout, App).
+-   **Custom Hooks:** Business logic decoupled from view (Auth, Notifications, Permissions).
+-   **Performance:** Local storage persistence for themes and backgrounds, optimized Firebase listeners.
+-   **RBAC:** Role-Based Access Control implemented for granular security.
+
+### ⚡ Performance & Quality (Lighthouse)
+
+Full commitment to speed and high-quality standards:
+
+![Lighthouse English](public/lighthouse.png)
+
+-   **Performance:** 96
+-   **Accessibility:** 100
+-   **Best Practices:** 100
+-   **SEO:** 100
+
+### 🚀 Getting Started
+
+1.  **Clone Repo:** `git clone https://github.com/Vituali/ATI.git`
+2.  **Install:** `npm install`
+3.  **Env Setup:** Create `.env` based on your Firebase configuration.
+4.  **Launch:** `npm run dev`
+
+---
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+---
+Desenvolvido com ❤️ por [Vituali](https://github.com/Vituali)

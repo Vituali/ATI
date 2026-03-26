@@ -168,7 +168,7 @@ export default function Sidebar({
             {avatarUrl ? (
               <img
                 src={avatarUrl}
-                alt={userName}
+                alt=""
                 className="sidebar-avatar-img"
               />
             ) : (

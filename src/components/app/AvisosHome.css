@@ -68,7 +68,7 @@
 
 .aviso-meta {
   font-size: 0.72rem;
-  color: var(--text-muted);
+  color: var(--text-grey);
   font-family: var(--font-mono);
 }
 
@@ -83,7 +83,7 @@
 .aviso-btn-fechar {
   background: transparent;
   border: none;
-  color: var(--text-muted);
+  color: var(--text-grey);
   font-size: 0.8rem;
   cursor: pointer;
   padding: 4px 8px;

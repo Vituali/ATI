@@ -10,13 +10,13 @@
   margin: 0 auto;
   width: 100%;
   padding: 1rem;
-  animation: fadeInHome 0.5s ease-out;
+  animation: slideUpHome 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   font-family: var(--font-main);
 }
 
-@keyframes fadeInHome {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
+@keyframes slideUpHome {
+  from { transform: translateY(8px); }
+  to   { transform: translateY(0); }
 }
 
 /* ── Hero ── */
@@ -226,7 +226,7 @@
   font-family: var(--font-mono);
   font-size: 10px;
   font-weight: 700;
-  color: var(--text-muted);
+  color: var(--text-grey);
   text-transform: uppercase;
   letter-spacing: 1.2px;
 }
@@ -248,7 +248,7 @@
 /* SGP vazio */
 .home-info-sgp-vazio {
   font-size: 0.85rem;
-  color: var(--text-muted);
+  color: var(--text-grey);
   font-style: italic;
 }
 
@@ -369,7 +369,7 @@
 
 .home-shortcut-desc {
   font-size: 0.78rem;
-  color: var(--text-muted);
+  color: var(--text-grey);
   line-height: 1.4;
 }
 

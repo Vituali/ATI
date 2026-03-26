@@ -1,7 +1,7 @@
 // pages/app/Anotacoes.tsx
 import { useState, useEffect } from "react";
 import { db } from "../../services/firebase";
-import { ref, onValue, off, push, remove, update } from "firebase/database";
+import { ref, onValue, push, remove, update } from "firebase/database";
 import { useUser } from "../../hooks/useUser";
 import { useNotification } from "../../hooks/useNotification";
 import Modal from "../../components/ui/Modal";
@@ -50,7 +50,7 @@ export default function Anotacoes() {
       setLoading(false);
     });
 
-    return () => off(q, "value", unsubscribe as any);
+    return () => unsubscribe();
   }, [user]);
 
   const abrirModal = (nota?: Nota) => {

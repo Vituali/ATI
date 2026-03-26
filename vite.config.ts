@@ -5,6 +5,7 @@ export default defineConfig({
   plugins: [react()],
   base: "/ATI/",
   build: {
+    sourcemap: true,
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {

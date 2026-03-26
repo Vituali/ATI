@@ -5,7 +5,7 @@
 // ---------------------------------------------------------------
 
 import { useEffect, useState } from "react";
-import { ref, onValue, update, off } from "firebase/database";
+import { ref, onValue, update } from "firebase/database";
 import { db } from "../../services/firebase";
 import { UserProfile } from "../../hooks/useUser";
 import "./AvisosHome.css";
@@ -60,7 +60,7 @@ export default function AvisosHome({ user }: AvisosHomeProps) {
       setAvisos(lista);
     });
 
-    return () => off(r, "value", unsub as any);
+    return () => unsub();
   }, []);
 
   async function desativar(id: string) {

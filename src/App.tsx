@@ -8,16 +8,18 @@ import Sidebar from "./components/layout/Sidebar";
 import Footer from "./components/layout/Footer";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
-import Home from "./pages/app/Home";
-import RespostasRapidas from "./pages/app/RespostasRapidas";
-import ModelosOS from "./pages/app/ModelosOS";
-import Conversor from "./pages/app/Conversor";
-import Senhas from "./pages/app/Senhas";
-import Admin from "./pages/app/Admin";
+import { lazy, Suspense } from "react";
+import Home from "./pages/app/Home"; // Mantenha Home estática se for a LCP
+
+const RespostasRapidas = lazy(() => import("./pages/app/RespostasRapidas"));
+const ModelosOS = lazy(() => import("./pages/app/ModelosOS"));
+const Conversor = lazy(() => import("./pages/app/Conversor"));
+const Senhas = lazy(() => import("./pages/app/Senhas"));
+const Admin = lazy(() => import("./pages/app/Admin"));
+const ChatInterno = lazy(() => import("./pages/app/ChatInterno"));
+const Anotacoes = lazy(() => import("./pages/app/Anotacoes"));
 import ErrorPage from "./pages/errors/ErrorPage";
-import ChatInterno from "./pages/app/ChatInterno";
-import Anotacoes from "./pages/app/Anotacoes";
-import { ref, onValue, off } from "firebase/database";
+import { ref, onValue } from "firebase/database";
 import { db } from "./services/firebase";
 import "./App.css";
 
@@ -99,7 +101,7 @@ export default function App() {
       setUnreadRooms(salasComNovasMsgs);
     });
 
-    return () => off(q, "value", unsubscribe as any);
+    return () => unsubscribe();
   }, [user, currentSection]);
 
   // Limpa notificação ao entrar no chat
@@ -203,12 +205,17 @@ export default function App() {
               loop
               muted
               playsInline
+              // @ts-expect-error: referrerPolicy is valid for video but missing in React types
+              referrerPolicy="no-referrer"
               className="app-custom-bg-content"
             />
           ) : (
-            <div
+            <img
+              src={bgUrl}
+              alt=""
+              crossOrigin="anonymous"
+              referrerPolicy="no-referrer"
               className="app-custom-bg-content image"
-              style={{ backgroundImage: `url(${bgUrl})` }}
             />
           )}
         </div>
@@ -232,7 +239,9 @@ export default function App() {
           <main
             className={`main-content ${safeSection === "chat_interno" ? "compact-padding" : ""}`}
           >
-            {renderSection(safeSection, user)}
+            <Suspense fallback={<LoadingOverlay message="Carregando seção..." />}>
+              {renderSection(safeSection, user)}
+            </Suspense>
           </main>
           {safeSection !== "chat_interno" && <Footer />}
         </div>

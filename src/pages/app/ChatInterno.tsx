@@ -12,7 +12,6 @@ import {
   query,
   orderByChild,
   limitToLast,
-  off,
   set,
 } from "firebase/database";
 import { db } from "../../services/firebase";
@@ -97,7 +96,7 @@ export default function ChatInterno({ unreadRooms = [] }: ChatProps) {
       setMensagens(lista);
     });
 
-    return () => off(q, "value", unsubscribe as any);
+    return () => unsubscribe();
   }, [activeRoom]);
 
   // Auto-scroll robusto
@@ -122,7 +121,7 @@ export default function ChatInterno({ unreadRooms = [] }: ChatProps) {
     const unsubscribe = onValue(aRef, (snap) => {
       if (snap.exists()) setProfiles(snap.val());
     });
-    return () => off(aRef, "value", unsubscribe as any);
+    return () => unsubscribe();
   }, []);
 
   async function enviar() {

@@ -352,7 +352,7 @@ export default function UserPanel({
       <div className="up-header">
         <div className="up-avatar">
           {user.avatarUrl ? (
-            <img src={user.avatarUrl} alt="Avatar" className="up-avatar-img" />
+            <img src={user.avatarUrl} alt="Avatar" crossOrigin="anonymous" referrerPolicy="no-referrer" className="up-avatar-img" />
           ) : (
             user.nomeCompleto.charAt(0).toUpperCase()
           )}
@@ -661,12 +661,17 @@ export default function UserPanel({
                       loop
                       muted
                       playsInline
+                      // @ts-expect-error: referrerPolicy is valid for video but missing in React types
+                      referrerPolicy="no-referrer"
                       className="up-bg-video-preview"
                     />
                   ) : (
-                    <div
+                    <img
+                      src={tempBg}
+                      alt=""
+                      crossOrigin="anonymous"
+                      referrerPolicy="no-referrer"
                       className="up-bg-image-preview"
-                      style={{ backgroundImage: `url(${tempBg})` }}
                     />
                   );
                 })()

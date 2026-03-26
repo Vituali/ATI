@@ -46,6 +46,9 @@ Comprometimento total com a experiência do usuário e otimização:
 - **Melhores Práticas:** 100 (Código seguindo padrões modernos)
 - **SEO:** 100 (Otimizado para mecanismos de busca)
 
+> [!NOTE]
+> Os resultados de *Melhores Práticas* podem variar entre 78 e 100 em ambientes de produção devido à injeção de cookies e scripts de mídias externas (como Imgur e vídeos customizados), enquanto o core do sistema e o Firebase mantêm 100% de pontuação.
+
 ### 🚀 Como Executar Localmente
 
 1.  **Clone o projeto:**
@@ -101,6 +104,9 @@ Full commitment to speed and high-quality standards:
 - **Accessibility:** 100
 - **Best Practices:** 100
 - **SEO:** 100
+
+> [!NOTE]
+> *Best Practices* scores may fluctuate between 78 and 100 due to third-party media cookies (e.g., Imgur and custom videos), while the core system and Firebase maintain a constant 100% score.
 
 ### 🚀 Getting Started
 

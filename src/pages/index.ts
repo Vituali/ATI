@@ -1,0 +1,12 @@
+export { default as Login } from "./auth/Login";
+export { default as Register } from "./auth/Register";
+export { default as Home } from "./app/Home";
+export { default as RespostasRapidas } from "./app/RespostasRapidas";
+export { default as ModelosOS } from "./app/ModelosOS";
+export { default as Conversor } from "./app/Conversor";
+export { default as Senhas } from "./app/Senhas";
+export { default as Admin } from "./app/Admin";
+export { default as ChatInterno } from "./app/ChatInterno";
+export { default as Anotacoes } from "./app/Anotacoes";
+export { default as ErrorPage } from "./errors/ErrorPage";
+export { default as ExtensionModal } from "./app/Extension";

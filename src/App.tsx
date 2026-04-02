@@ -1,32 +1,12 @@
 // App.tsx
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useUser, UserProfile } from "./hooks/useUser";
-import { canAccess, Section, Setor, SETOR_LABEL } from "./services/permissions";
-import { logout } from "./services/auth";
-
-import Sidebar from "./components/layout/Sidebar";
-import Footer from "./components/layout/Footer";
-import Login from "./pages/auth/Login";
-import Register from "./pages/auth/Register";
-import { lazy, Suspense } from "react";
-import Home from "./pages/app/Home"; // Mantenha Home estática se for a LCP
-
-const RespostasRapidas = lazy(() => import("./pages/app/RespostasRapidas"));
-const ModelosOS = lazy(() => import("./pages/app/ModelosOS"));
-const Conversor = lazy(() => import("./pages/app/Conversor"));
-const Senhas = lazy(() => import("./pages/app/Senhas"));
-const Admin = lazy(() => import("./pages/app/Admin"));
-const ChatInterno = lazy(() => import("./pages/app/ChatInterno"));
-const Anotacoes = lazy(() => import("./pages/app/Anotacoes"));
-import ErrorPage from "./pages/errors/ErrorPage";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
+import { RespostasRapidas, ModelosOS, Conversor, Senhas, Admin, ChatInterno, Anotacoes } from "./pages/lazy";
+import { Login, Register, Home, ErrorPage, ExtensionModal } from "./pages";
+import { useUser, UserProfile } from "./hooks";
+import { canAccess, Section, Setor, SETOR_LABEL, logout, db } from "./services";
+import { Sidebar, Footer, LoadingOverlay, ToastContainer, UserPanel } from "./components";
 import { ref, onValue } from "firebase/database";
-import { db } from "./services/firebase";
 import "./App.css";
-
-import LoadingOverlay from "./components/ui/LoadingOverlay";
-import UserPanel from "./components/app/UserPanel";
-import ExtensionModal from "./pages/app/Extension";
-import ToastContainer from "./components/ui/Toast";
 
 type AuthScreen = "login" | "register";
 
@@ -89,11 +69,7 @@ export default function App() {
         const room = roomMetaSnap.key as Setor;
 
         // Se a mensagem existir, não for minha, e for posterior ao meu último visto
-        if (
-          meta &&
-          meta.autor !== user.username &&
-          meta.timestamp > lastSeenRef.current
-        ) {
+        if (meta && meta.autor !== user.username && meta.timestamp > lastSeenRef.current) {
           salasComNovasMsgs.push(room);
         }
       });
@@ -120,9 +96,7 @@ export default function App() {
 
     if (unreadRooms.length > 0) {
       // Exemplo: (1) 💬 FINANCEIRO! | ATI
-      const nomesSalas = unreadRooms
-        .map((s) => (SETOR_LABEL[s] || s).toUpperCase())
-        .join(", ");
+      const nomesSalas = unreadRooms.map((s) => (SETOR_LABEL[s] || s).toUpperCase()).join(", ");
       document.title = `(${unreadRooms.length}) 💬 ${nomesSalas} | ${baseTitle}`;
       if (favicon) favicon.href = "./favicon-unread.svg";
     } else {
@@ -163,34 +137,18 @@ export default function App() {
   // Não logado
   if (!user) {
     if (authScreen === "register") {
-      return (
-        <Register
-          onLogin={() => {}}
-          onGoToLogin={() => setAuthScreen("login")}
-        />
-      );
+      return <Register onLogin={() => {}} onGoToLogin={() => setAuthScreen("login")} />;
     }
-    return (
-      <Login
-        onLogin={() => {}}
-        onGoToRegister={() => setAuthScreen("register")}
-      />
-    );
+    return <Login onLogin={() => {}} onGoToRegister={() => setAuthScreen("register")} />;
   }
 
   // Se a seção não é permitida para role+setor, volta pra home
-  const safeSection: Section = canAccess(user.role, user.setor, currentSection)
-    ? currentSection
-    : "home";
+  const safeSection: Section = canAccess(user.role, user.setor, currentSection) ? currentSection : "home";
 
   const isVideoUrl = (url: string) => {
     if (!url) return false;
     const cleanUrl = url.split("?")[0].toLowerCase();
-    return (
-      cleanUrl.endsWith(".mp4") ||
-      cleanUrl.endsWith(".webm") ||
-      cleanUrl.endsWith(".ogg")
-    );
+    return cleanUrl.endsWith(".mp4") || cleanUrl.endsWith(".webm") || cleanUrl.endsWith(".ogg");
   };
 
   return (
@@ -210,38 +168,16 @@ export default function App() {
               className="app-custom-bg-content"
             />
           ) : (
-            <img
-              src={bgUrl}
-              alt=""
-              crossOrigin="anonymous"
-              referrerPolicy="no-referrer"
-              className="app-custom-bg-content image"
-            />
+            <img src={bgUrl} alt="" crossOrigin="anonymous" referrerPolicy="no-referrer" className="app-custom-bg-content image" />
           )}
         </div>
       )}
 
       <div className={`app-layout fade-in ${bgUrl ? "has-custom-bg" : ""}`}>
-        <Sidebar
-          role={user.role}
-          setor={user.setor}
-          activeSection={safeSection}
-          onSelectSection={setCurrentSection}
-          onOpenUserModal={() => setUserPanelAberto(true)}
-          onOpenExtensionModal={() => setExtensaoModalAberto(true)}
-          onOpenSettings={toggleTheme}
-          theme={theme}
-          userName={user.nomeCompleto.split(" ")[0]}
-          avatarUrl={user.avatarUrl}
-          hasUnreadChat={unreadRooms.length > 0}
-        />
+        <Sidebar role={user.role} setor={user.setor} activeSection={safeSection} onSelectSection={setCurrentSection} onOpenUserModal={() => setUserPanelAberto(true)} onOpenExtensionModal={() => setExtensaoModalAberto(true)} onOpenSettings={toggleTheme} theme={theme} userName={user.nomeCompleto.split(" ")[0]} avatarUrl={user.avatarUrl} hasUnreadChat={unreadRooms.length > 0} />
         <div className="main-wrapper">
-          <main
-            className={`main-content ${safeSection === "chat_interno" ? "compact-padding" : ""}`}
-          >
-            <Suspense fallback={<LoadingOverlay message="Carregando seção..." />}>
-              {renderSection(safeSection, user)}
-            </Suspense>
+          <main className={`main-content ${safeSection === "chat_interno" ? "compact-padding" : ""}`}>
+            <Suspense fallback={<LoadingOverlay message="Carregando seção..." />}>{renderSection(safeSection, user)}</Suspense>
           </main>
           {safeSection !== "chat_interno" && <Footer />}
         </div>
@@ -259,10 +195,7 @@ export default function App() {
         onBgChange={handleBgChange}
       />
 
-      <ExtensionModal
-        aberto={extensaoModalAberto}
-        onFechar={() => setExtensaoModalAberto(false)}
-      />
+      <ExtensionModal aberto={extensaoModalAberto} onFechar={() => setExtensaoModalAberto(false)} />
 
       <ToastContainer />
     </>

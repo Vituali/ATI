@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "ATI - Teste Iframe Cookies",
+  "version": "1.0",
+  "description": "Extensão de teste isolada para resolver o bloqueio de SameSite Cookies no iframe do SGP.",
+  "permissions": [
+    "declarativeNetRequest",
+    "cookies",
+    "webRequest"
+  ],
+  "host_permissions": [
+    "http://201.158.20.53:8000/*",
+    "http://201.158.20.35:8000/*",
+    "https://sgp.atiinternet.com.br/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {}
+}

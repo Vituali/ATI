@@ -1,0 +1,143 @@
+/* ============================================================
+   ERRORPAGE.CSS — Minimalist Dark Error State
+   ============================================================ */
+
+.error-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-dark);
+  padding: 1.5rem;
+  box-sizing: border-box;
+  font-family: var(--font-main);
+}
+
+.error-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  box-sizing: border-box;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+  animation: errorIn 0.4s ease-out;
+}
+
+@keyframes errorIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.error-icon {
+  font-size: 3.5rem;
+  text-align: center;
+  margin: 0;
+  display: block;
+}
+
+.error-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  text-align: center;
+}
+
+.error-titulo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-white);
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.error-descricao {
+  font-size: 14px;
+  color: var(--text-grey);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Warning/Tip Section (Amber) */
+.error-dica {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.15);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #fbbf24;
+  line-height: 1.5;
+}
+
+.error-dica-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Technical Details Section */
+.error-detalhe {
+  margin-top: 8px;
+}
+
+.error-detalhe summary {
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 600;
+  margin-bottom: 8px;
+  transition: color 0.2s;
+}
+
+.error-detalhe summary:hover {
+  color: var(--text-grey);
+}
+
+.error-detalhe code {
+  display: block;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 10px;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: #ff6e6e;
+  word-break: break-all;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Primary Button (Blue) */
+.error-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--accent-blue);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-main);
+  transition: all 0.2s ease;
+  margin-top: 0.5rem;
+}
+
+.error-btn:hover {
+  background: rgb(0, 110, 255);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(0, 100, 255, 0.3);
+}
+
+.error-btn:active {
+  transform: translateY(0);
+}

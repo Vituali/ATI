@@ -1,0 +1,19 @@
+# Cursor Ignore File - Root
+.git/
+node_modules/
+**/node_modules/
+build/
+**/build/
+dist/
+**/dist/
+dist-ssr/
+**/dist-ssr/
+package/
+**/package/
+package-lock.json
+**/package-lock.json
+*.log
+.env*
+**/.env*
+*.mjs
+*.cjs

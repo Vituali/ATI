@@ -1,0 +1,19 @@
+{
+  "name": "ati-monorepo",
+  "private": true,
+  "version": "2.2.0",
+  "description": "Monorepo orquestrador do ecossistema ATI (Extensão do Chrome e Painel Web)",
+  "scripts": {
+    "dev:extension": "npm run dev --prefix \"Extensão\"",
+    "dev:extension:prod": "npm run dev:prod --prefix \"Extensão\"",
+    "dev:site": "npm run dev --prefix \"Site\"",
+    "build:extension": "npm run build --prefix \"Extensão\"",
+    "build:site": "npm run build --prefix \"Site\"",
+    "zip:extension": "npm run zip --prefix \"Extensão\"",
+    "release:extension": "npm run release --prefix \"Extensão\"",
+    "lint:site": "npm run lint --prefix \"Site\"",
+    "install:all": "npm install --prefix \"Extensão\" && npm install --prefix \"Site\""
+  },
+  "author": "Vituali",
+  "license": "MIT"
+}

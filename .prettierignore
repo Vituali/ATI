@@ -1,0 +1,17 @@
+# Ignore artifacts and vendors
+node_modules
+**/node_modules
+dist
+**/dist
+dist-ssr
+**/dist-ssr
+build
+**/build
+package
+**/package
+*.zip
+coverage
+pnpm-lock.yaml
+pnpm-workspace.yaml
+package-lock.json
+**/package-lock.json

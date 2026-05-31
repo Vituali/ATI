@@ -1,0 +1,98 @@
+/* BugReportModal interno */
+
+.bug-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.bug-modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bug-modal-field label {
+  font-size: 0.9rem;
+  color: var(--text-muted, #ccc);
+}
+
+.bug-modal-field input,
+.bug-modal-field textarea {
+  background-color: var(--bg-dark, #121316);
+  border: 1px solid var(--border-color, #333);
+  color: var(--text-white, #fff);
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.bug-modal-field input:focus,
+.bug-modal-field textarea:focus {
+  border-color: var(--primary-color, #ff4757);
+}
+
+.bug-modal-acoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.bug-btn-cancelar {
+  background: transparent;
+  border: 1px solid var(--border-color, #333);
+  color: var(--text-muted, #ccc);
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.bug-btn-cancelar:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+.bug-btn-enviar {
+  background: var(--primary-color, #ff4757);
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: opacity 0.2s;
+}
+
+.bug-btn-enviar:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.bug-btn-enviar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bug-modal-sucesso {
+  text-align: center;
+  padding: 30px 10px;
+  color: var(--success-text, #4ade80);
+  background: rgba(74, 222, 128, 0.1);
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+.bug-modal-erro {
+  color: var(--primary-color, #ff4757);
+  background: rgba(255, 71, 87, 0.1);
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  margin: 0;
+}

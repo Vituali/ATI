@@ -1,0 +1,61 @@
+.initial-loader {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #111;
+  color: #fff;
+  z-index: 9999;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+.initial-loader .spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top: 3px solid #0064ff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Skeleton Critical CSS */
+.skeleton-home {
+  padding: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  opacity: 0.7;
+  filter: blur(20px);
+  transition: filter 0.5s ease;
+}
+.skeleton-card {
+   background: rgba(255, 255, 255, 0.05);
+   border: 1px solid rgba(255,255,255,0.08);
+   border-radius: 12px;
+   padding: 1.75rem 2rem;
+}
+.home-card-desc {
+   font-size: 0.9rem;
+   color: rgba(255,255,255,0.6);
+   margin: 1.25rem 0;
+   line-height: 1.6;
+}
+
+/* Embed Mode Styling */
+.layout-embed {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: transparent;
+}

@@ -1,0 +1,61 @@
+# Ecossistema ATI V2 — Regras e Diretrizes do Monorepo (AI Instructions)
+
+Olá! Você está trabalhando no repositório **ATI V2**, um ecossistema unificado (Monorepo) composto por uma Extensão do Google Chrome e um Painel Web Administrativo/Auxiliar para otimizar atendimentos de suporte integrados ao ChatMix e SGP.
+
+Siga rigorosamente as diretrizes abaixo em todas as alterações e interações neste repositório:
+
+---
+
+## 🏛️ Estrutura e Escopo do Repositório
+
+O projeto está estruturado nos seguintes subdiretórios principais a partir da raiz:
+
+1. **`Extensão/`**: Extensão Google Chrome (Manifest V3) em React 18 + Vite + TypeScript.
+   * Intercepta cookies e tráfego de rede do SGP.
+   * Realiza automações de login e preenchimento de O.S.
+   * **Restrição Crítica (Service Worker):** O Service Worker do background script não roda em contexto de DOM/window. **Nunca importe o SDK padrão do Firebase (`@firebase/app`, etc.)** aqui, pois causará loops e falhas de inicialização. Use exclusivamente requisições REST puras (`fetch`) com a API do Firebase.
+2. **`Site/`**: Painel Web administrativo completo em React 19 + Vite 6 + TypeScript.
+   * Contém chat em tempo real por setores, gerenciador de respostas rápidas, editor de modelos de O.S., conversor de aditivos em PDF, checklists, controle de acessos e painel administrativo.
+   * **Integração:** Usa o Firebase SDK completo para autenticação e banco em tempo real (Realtime Database).
+3. **`teste iframe/`**: Ambiente de testes isolado para validar bypass de SameSite no carregamento do SGP.
+
+---
+
+## 🤝 Comunicação Site ↔️ Extensão (SSO e Ponte de Mensagens)
+
+O site e a extensão mantêm sincronia de sessões automatizada usando uma ponte de mensagens HTML5 (`window.postMessage` / `window.addEventListener("message")`):
+
+1. **Início da Conexão:** A extensão injeta uma ponte no site e envia a ação `BRIDGE_READY`.
+2. **Sincronização do Site para Extensão:** Quando a ponte avisa que está pronta, se o site já tiver uma sessão de usuário ativa (`auth.currentUser`), ele transmite esses dados de login à extensão usando a função `syncWithExtension()`.
+3. **SSO / Auto-Login da Extensão para o Site:** Se o site estiver deslogado e receber da extensão um payload `SSO_SESSION_DATA` com a sessão ativa (`session`), ele chama `performSSOLogin(session)` para logar o usuário automaticamente no site via credenciais de Token.
+4. **Contexto de Incorporação (Embed):** Quando o site é carregado dentro do iframe da extensão (`mode=embed` na URL Query), o layout ativa um estado compacto (`layout-embed`), mostrando apenas a tela de chat interno e ocultando o Sidebar e o rodapé.
+
+---
+
+## 🛡️ Diretrizes Críticas de Segurança e Performance
+
+### 1. Prevenção de Poluição de Protótipo (Prototype Pollution)
+* **Regra:** Nunca faça buscas dinâmicas em objetos usando bracket notation com variáveis que possam ter fluxo de dados do usuário (ex: `OBJETO[usuarioInput]`). Isso gera alertas de vulnerabilidade grave.
+* **Solução:** Use funções com blocos `switch` ou normalizações seguras que impeçam acessos a propriedades como `__proto__`, `constructor`, ou `prototype`. Use os helpers em `permissions.ts` (ex: `getSetorLabel`, `getRoleLabel`, `getSectionLabel`, `getSetorPermissions`).
+
+### 2. Prevenção de Path Traversal em Scripts Locais
+* **Regra:** Em utilitários que gerenciam arquivos locais (como os scripts `switch-env.js` e `switch-env.cjs`), nunca monte caminhos dinamicamente baseados em argumentos de linha de comando (`process.argv`) de forma direta.
+* **Solução:** Defina os caminhos como constantes absolutas estáticas (`devFile`, `prodFile`) resolvidas via `path.resolve` e utilize lógicas booleanas simples (`isProd ? prodFile : devFile`) para selecionar qual arquivo acessar.
+
+### 3. Banco de Dados Híbrido (Realtime Database + Cloud Firestore)
+* **Realtime Database (RTDB):** Usado apenas para presença em tempo real dos atendentes (usando `.info/connected` e `onDisconnect`) e caches voláteis simples.
+* **Cloud Firestore:** Usado para dados estruturados pesados e escaláveis:
+  * Coleção `/clientes`: Banco de 22k+ clientes. Sempre consulte utilizando buscas cirúrgicas por ID ou por CPF sanitizado via POST `:runQuery` (evitando baixar a lista completa para poupar banda).
+
+### 4. Evitar Alertas de Internacionalização (i18n) no JSX do Site
+* Para silenciar alertas do linter sobre textos literais crus em JSX:
+  * **Regra:** Envolva strings literais em expressões JSX, por exemplo: `<div>{"Todas as categorias"}</div>` ou `<label>{"Categoria"}</label>`.
+
+### 5. Estilização no Painel Web
+* **Estilo:** CSS Nativo Vanilla de altíssima qualidade (com variáveis globais em `index.css` e arquivos CSS escopados por componente/página). Evitar TailwindCSS a menos que explicitamente solicitado.
+
+---
+
+## ✍️ Tom e Idioma de Comunicação
+* **Idioma:** Responda sempre em **Português do Brasil (pt-BR)**.
+* **Estilo:** Seja extremamente técnico, preciso, humilde e direto. Apresente soluções robustas com TypeScript estrito, bem tipado e performante.

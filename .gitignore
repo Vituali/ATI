@@ -1,0 +1,44 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Production / Build artifacts
+dist/
+**/dist/
+dist-ssr/
+**/dist-ssr/
+build/
+**/build/
+package/
+**/package/
+*.zip
+
+# Local Env Files
+.env
+.env.production
+.env.development
+.env.local
+.env.dev_prod
+.env.*.local
+**/.env
+**/.env.*
+
+# IDEs and Editors
+.idea/
+.vscode/
+!.vscode/extensions.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store

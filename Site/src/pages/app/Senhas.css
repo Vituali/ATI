@@ -1,0 +1,159 @@
+/* ============================================================
+   SENHAS.CSS — Design System Dark/Minimalista
+   ============================================================ */
+
+.senhas-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.senhas-header {
+  padding-bottom: 0.5rem;
+}
+
+.senhas-titulo {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-white);
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.senhas-subtitulo {
+  font-size: 14px;
+  color: var(--text-grey);
+  margin: 0.2rem 0 0;
+}
+
+.senhas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.senhas-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.senhas-card:hover {
+  border-color: var(--accent-blue-border);
+  background: var(--bg-panel);
+}
+
+.senhas-card-titulo {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-grey);
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 12px;
+  margin: 0;
+}
+
+.senhas-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.senha-item {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.senha-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.senha-valor-wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  justify-content: flex-end;
+  min-width: 0; /* Permite truncamento se necessário */
+}
+
+.senha-valor {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-white);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.senha-valor.copiavel {
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.senha-valor.copiavel:hover {
+  color: var(--accent-blue);
+}
+
+.senha-valor.copiado {
+  color: #4ade80 !important;
+}
+
+.senha-copiar-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  opacity: 0.4;
+  transition: opacity 0.2s, transform 0.1s;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.senha-copiar-btn:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.senha-valor.link, 
+.senha-site-link {
+  color: var(--accent-blue);
+  font-size: 14px;
+  font-family: var(--font-main);
+  text-decoration: none;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.senha-valor.link:hover, 
+.senha-site-link:hover {
+  text-decoration: underline;
+  filter: brightness(1.2);
+}

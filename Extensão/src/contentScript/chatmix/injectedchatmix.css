@@ -1,0 +1,643 @@
+/* =================================================================== */
+/* == TEMA DARK ATI FINAL - COM BORDAS COLORIDAS INTELIGENTES      == */
+/* =================================================================== */
+
+/* ---- Variáveis CSS ---- */
+html.dark:not(.ati-theme-legacy) {
+  --chatPrimary: rgba(0, 110, 255, 0.377);
+  --chatPrimaryHover: rgba(0, 120, 215, 0.5);
+  --chatActive: rgba(0, 110, 255, 0.6);
+  --bgDark: rgb(15, 15, 18);
+  --bgDarker: rgb(20, 20, 25);
+  --bgCard: rgb(30, 30, 38);
+  --borderColor: rgba(255, 255, 255, 0.08);
+  --borderColorHover: rgba(255, 255, 255, 0.12);
+  --textPrimary: rgb(235, 235, 245);
+  --textSecondary: rgba(235, 235, 245, 0.7);
+  --accentBlue: rgb(59, 130, 246);
+  --accentBlueDark: rgb(37, 99, 235);
+}
+
+/* ---- Fundos principais ---- */
+
+html.dark:not(.ati-theme-legacy) header.dark\:bg-neutral-700 {
+  background: linear-gradient(135deg, rgb(35, 35, 40) 0%, rgb(30, 30, 38) 100%) !important;
+  backdrop-filter: blur(10px) !important;
+  border-right: 1px solid var(--borderColor) !important;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+html.dark:not(.ati-theme-legacy) .chat_sidebar {
+  background: linear-gradient(180deg, rgb(22, 22, 28) 0%, rgb(18, 18, 25) 100%) !important;
+  border-right: 1px solid var(--borderColor) !important;
+}
+
+html.dark:not(.ati-theme-legacy) .chat_sidebar header {
+  background: transparent !important;
+  border-bottom: 1px solid var(--borderColor) !important;
+  backdrop-filter: blur(4px) !important;
+}
+
+html.dark:not(.ati-theme-legacy) .chat_sidebar .dark\:bg-neutral-700,
+html.dark:not(.ati-theme-legacy) .chat_sidebar [class*='neutral-700'] {
+  background: rgba(35, 35, 45, 0.5) !important;
+  backdrop-filter: blur(4px) !important;
+}
+
+html.dark:not(.ati-theme-legacy) .chat_sidebar header .dark\:bg-neutral-700,
+html.dark:not(.ati-theme-legacy) .chat_sidebar header .dark\:bg-neutral-600,
+.bg-amber-100,
+.bg-slate-100 {
+  background-color: transparent !important;
+}
+
+html.dark:not(.ati-theme-legacy) .dark\:bg-neutral-500 {
+  background: rgba(45, 45, 55, 0.5) !important;
+}
+
+html.dark:not(.ati-theme-legacy) .chat_sidebar input.dark\:border-gray-600,
+html.dark:not(.ati-theme-legacy) input[placeholder*='Buscar'] {
+  border-color: var(--borderColor) !important;
+  background-color: rgba(40, 40, 50, 0.6) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  color: var(--textPrimary) !important;
+}
+
+html.dark:not(.ati-theme-legacy) .chat_sidebar input.dark\:border-gray-600:focus,
+html.dark:not(.ati-theme-legacy) input[placeholder*='Buscar']:focus {
+  border-color: var(--accentBlue) !important;
+  background-color: rgba(40, 40, 50, 0.8) !important;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.2) !important;
+  outline: none !important;
+}
+
+html.dark:not(.ati-theme-legacy) .bg-white {
+  background-color: rgb(40, 40, 50) !important;
+}
+
+/* ---- Cores do tema ---- */
+
+html.dark:not(.ati-theme-legacy) body {
+  --chatPrimary: rgba(0, 110, 255, 0.377) !important;
+}
+
+html.dark:not(.ati-theme-legacy) .bg-chat-primary {
+  background: linear-gradient(135deg, var(--chatPrimary) 0%, rgba(0, 85, 200, 0.3) 100%) !important;
+}
+
+html.dark:not(.ati-theme-legacy) .message_received:is(.dark *) {
+  background: linear-gradient(135deg, rgba(50, 50, 60, 0.6) 0%, rgba(40, 40, 50, 0.4) 100%) !important;
+  border-left: 3px solid var(--accentBlue) !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+}
+
+html.dark:not(.ati-theme-legacy) .message_received:is(.dark *):hover {
+  background: linear-gradient(135deg, rgba(60, 60, 70, 0.7) 0%, rgba(50, 50, 60, 0.5) 100%) !important;
+  transform: translateX(2px) !important;
+}
+
+html.dark:not(.ati-theme-legacy) .bg-neutral-400 {
+  background-color: rgba(179, 179, 189, 0.3) !important;
+}
+
+/* ========== BORDAS COLORIDAS POR STATUS ========== */
+
+/* Estrutura base dos attendance items */
+html.dark:not(.ati-theme-legacy) .chat_sidebar section {
+  background: transparent !important;
+}
+
+html.dark:not(.ati-theme-legacy) .attendance_item {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border-radius: 8px !important;
+  margin: 6px 8px !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+/* ---- VERDE (Status: Respondido/Finalizado) ---- */
+/* border-left-color: rgb(0, 141, 43) */
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(0, 141, 43)'],
+html.dark:not(.ati-theme-legacy) .attendance_item.newMessage {
+  background: linear-gradient(135deg, rgba(0, 141, 43, 0.15) 0%, rgba(0, 100, 30, 0.05) 100%) !important;
+  border: 1px solid rgba(0, 141, 43, 0.3) !important;
+}
+
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(0, 141, 43)']:hover,
+html.dark:not(.ati-theme-legacy) .attendance_item.newMessage:hover {
+  background: linear-gradient(135deg, rgba(0, 141, 43, 0.25) 0%, rgba(0, 100, 30, 0.1) 100%) !important;
+  border: 1px solid rgba(0, 141, 43, 0.5) !important;
+  box-shadow: 0 4px 16px rgba(0, 141, 43, 0.2) !important;
+  transform: translateX(4px) !important;
+}
+
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(0, 141, 43)']::before,
+html.dark:not(.ati-theme-legacy) .attendance_item.newMessage::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  background: linear-gradient(180deg, rgb(0, 141, 43) 0%, rgba(0, 141, 43, 0.6) 100%) !important;
+  border-radius: 0 4px 4px 0;
+}
+
+/* Animação de pulso para novos */
+html.dark:not(.ati-theme-legacy) .attendance_item.newMessage {
+  animation: pulseGreen 2s ease-in-out infinite !important;
+}
+
+@keyframes pulseGreen {
+  0%,
+  100% {
+    box-shadow: 0 2px 8px rgba(0, 141, 43, 0.15) !important;
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba(0, 141, 43, 0.3) !important;
+  }
+}
+
+/* ---- AZUL (Status: Em Atendimento) ---- */
+/* border-left-color: rgb(3, 54, 156) */
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(3, 54, 156)'] {
+  background: linear-gradient(135deg, rgba(3, 54, 156, 0.15) 0%, rgba(0, 40, 120, 0.05) 100%) !important;
+  border: 1px solid rgba(3, 54, 156, 0.3) !important;
+}
+
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(3, 54, 156)']:hover {
+  background: linear-gradient(135deg, rgba(3, 54, 156, 0.25) 0%, rgba(0, 40, 120, 0.1) 100%) !important;
+  border: 1px solid rgba(3, 54, 156, 0.5) !important;
+  box-shadow: 0 4px 16px rgba(3, 54, 156, 0.2) !important;
+  transform: translateX(4px) !important;
+}
+
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(3, 54, 156)']::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  background: linear-gradient(180deg, rgb(3, 54, 156) 0%, rgba(3, 54, 156, 0.6) 100%) !important;
+  border-radius: 0 4px 4px 0;
+}
+
+/* ---- AMARELO (Status: Pendente) ---- */
+/* border-left-color: rgb(217, 119, 6) ou similar */
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(217, 119, 6)'],
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(202, 138, 4)'],
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(180, 83, 9)'],
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(255, 167, 0)'] {
+  background: linear-gradient(135deg, rgba(217, 119, 6, 0.15) 0%, rgba(180, 83, 9, 0.05) 100%) !important;
+  border: 1px solid rgba(217, 119, 6, 0.3) !important;
+}
+
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(217, 119, 6)']:hover,
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(202, 138, 4)']:hover,
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(180, 83, 9)']:hover,
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(255, 167, 0)']:hover {
+  background: linear-gradient(135deg, rgba(217, 119, 6, 0.25) 0%, rgba(180, 83, 9, 0.1) 100%) !important;
+  border: 1px solid rgba(217, 119, 6, 0.5) !important;
+  box-shadow: 0 4px 16px rgba(217, 119, 6, 0.2) !important;
+  transform: translateX(4px) !important;
+}
+
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(217, 119, 6)']::before,
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(202, 138, 4)']::before,
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(180, 83, 9)']::before,
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(255, 167, 0)']::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  background: linear-gradient(180deg, rgb(217, 119, 6) 0%, rgba(217, 119, 6, 0.6) 100%) !important;
+  border-radius: 0 4px 4px 0;
+}
+
+/* Animação de pulsação para pendentes */
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(217, 119, 6)'],
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(202, 138, 4)'],
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(180, 83, 9)'],
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(255, 167, 0)'] {
+  animation: pulseWarning 2.5s ease-in-out infinite !important;
+}
+
+@keyframes pulseWarning {
+  0%,
+  100% {
+    box-shadow: 0 2px 8px rgba(217, 119, 6, 0.1) !important;
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba(217, 119, 6, 0.25) !important;
+  }
+}
+
+/* ---- VERMELHO (Status: Urgente/Atrasado) ---- */
+/* border-left-color: rgb(220, 38, 38) ou similar */
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(220, 38, 38)'],
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(239, 68, 68)'],
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(185, 28, 28)'],
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(138, 10, 10)'] {
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.15) 0%, rgba(185, 28, 28, 0.05) 100%) !important;
+  border: 1px solid rgba(220, 38, 38, 0.3) !important;
+}
+
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(220, 38, 38)']:hover,
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(239, 68, 68)']:hover,
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(185, 28, 28)']:hover,
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(138, 10, 10)']:hover {
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.25) 0%, rgba(185, 28, 28, 0.1) 100%) !important;
+  border: 1px solid rgba(220, 38, 38, 0.5) !important;
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.2) !important;
+  transform: translateX(4px) !important;
+}
+
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(220, 38, 38)']::before,
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(239, 68, 68)']::before,
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(185, 28, 28)']::before,
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(138, 10, 10)']::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  background: linear-gradient(180deg, rgb(220, 38, 38) 0%, rgba(220, 38, 38, 0.6) 100%) !important;
+  border-radius: 0 4px 4px 0;
+}
+
+/* Animação urgente */
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(220, 38, 38)'],
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(239, 68, 68)'],
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(185, 28, 28)'],
+html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(138, 10, 10)'] {
+  animation: pulseRed 1.5s ease-in-out infinite !important;
+}
+
+@keyframes pulseRed {
+  0%,
+  100% {
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.15) !important;
+  }
+  50% {
+    box-shadow: 0 4px 24px rgba(220, 38, 38, 0.35) !important;
+  }
+}
+
+/* ---- CINZA (Status: Padrão/Neutro) ---- */
+html.dark:not(.ati-theme-legacy) .attendance_item:not([style*='rgb']) {
+  background: linear-gradient(135deg, rgba(60, 60, 70, 0.4) 0%, rgba(50, 50, 60, 0.2) 100%) !important;
+  border: 1px solid var(--borderColor) !important;
+}
+
+html.dark:not(.ati-theme-legacy) .attendance_item:not([style*='rgb']):hover {
+  background: linear-gradient(135deg, rgba(0, 120, 215, 0.3) 0%, rgba(0, 100, 200, 0.15) 100%) !important;
+  border-color: var(--borderColorHover) !important;
+  transform: translateX(4px) !important;
+  box-shadow: 0 4px 16px rgba(0, 120, 215, 0.15) !important;
+}
+
+/* ---- ITEM ATIVO ---- */
+html.dark:not(.ati-theme-legacy) .attendance_item.active {
+  background: linear-gradient(135deg, rgba(0, 110, 255, 0.5) 0%, rgba(0, 85, 200, 0.35) 100%) !important;
+  border: 1px solid rgba(0, 110, 255, 0.4) !important;
+  box-shadow: 0 4px 20px rgba(0, 110, 255, 0.25) !important;
+  font-weight: 500 !important;
+}
+
+html.dark:not(.ati-theme-legacy) .attendance_item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  background: linear-gradient(180deg, var(--accentBlue) 0%, rgba(59, 130, 246, 0.6) 100%) !important;
+  border-radius: 0 4px 4px 0;
+}
+
+/* ---- Texto dos items ---- */
+
+html.dark:not(.ati-theme-legacy) .attendance_item .attendance_text {
+  color: var(--textPrimary) !important;
+  transition: all 0.2s ease !important;
+}
+
+html.dark:not(.ati-theme-legacy) .attendance_item:hover .attendance_text {
+  color: var(--textPrimary) !important;
+}
+
+html.dark:not(.ati-theme-legacy) .attendance_item .text-chat-gray {
+  color: var(--textSecondary) !important;
+}
+
+/* ---- Indicador de não lido ---- */
+
+html.dark:not(.ati-theme-legacy) .attendance_item .unread {
+  background: linear-gradient(135deg, rgb(220, 38, 38) 0%, rgb(185, 28, 28) 100%) !important;
+  color: white !important;
+  min-width: 20px !important;
+  height: 20px !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 11px !important;
+  font-weight: bold !important;
+  position: absolute !important;
+  top: -5px !important;
+  right: 5px !important;
+  animation: bounceUnread 0.6s ease-in-out infinite !important;
+}
+
+@keyframes bounceUnread {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+/* ---- Divisórias e bordas ---- */
+
+html.dark:not(.ati-theme-legacy) header.dark\:bg-neutral-700,
+html.dark:not(.ati-theme-legacy) .chat_sidebar {
+  border-right: 1px solid var(--borderColor) !important;
+}
+
+html.dark:not(.ati-theme-legacy) .dark\:bg-neutral-800\/50 {
+  border-top: 1px solid var(--borderColor) !important;
+}
+
+html.dark:not(.ati-theme-legacy) .chat_content .dark\:bg-neutral-500 {
+  border-bottom: 1px solid var(--borderColor) !important;
+}
+
+/* ---- Background da área de chat ---- */
+
+html.dark:not(.ati-theme-legacy) section[overlap='false'] {
+  background: linear-gradient(135deg, rgb(20, 20, 28) 0%, rgb(15, 15, 25) 100%) !important;
+  background-image: linear-gradient(135deg, rgb(20, 20, 28) 0%, rgb(15, 15, 25) 100%), url('https://app.chatmix.com.br/v2/assets/chat-dark-e6db542a.svg') !important;
+  background-size: cover, contain !important;
+  background-position: center, center !important;
+  background-repeat: no-repeat, no-repeat !important;
+}
+
+html.dark:not(.ati-theme-legacy) [style*='background-image'] {
+  background-color: rgb(15, 15, 20) !important;
+}
+
+/* ---- Scrollbars ---- */
+
+html.dark:not(.ati-theme-legacy) .chat_sidebar section,
+html.dark:not(.ati-theme-legacy) .chat_content,
+html.dark:not(.ati-theme-legacy) #attendanceMessages,
+html.dark:not(.ati-theme-legacy) .h-full,
+html.dark:not(.ati-theme-legacy) textarea,
+html.dark:not(.ati-theme-legacy) ul.overflow-scroll,
+html.dark:not(.ati-theme-legacy) .vue-recycle-scroller {
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(59, 130, 246, 0.4) transparent !important;
+}
+
+html.dark:not(.ati-theme-legacy) #attendanceMessages::-webkit-scrollbar,
+html.dark:not(.ati-theme-legacy) .chat_sidebar section::-webkit-scrollbar,
+html.dark:not(.ati-theme-legacy) .chat_content::-webkit-scrollbar,
+html.dark:not(.ati-theme-legacy) .h-full::-webkit-scrollbar,
+html.dark:not(.ati-theme-legacy) textarea::-webkit-scrollbar,
+html.dark:not(.ati-theme-legacy) ul.overflow-scroll::-webkit-scrollbar,
+html.dark:not(.ati-theme-legacy) .vue-recycle-scroller::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+}
+
+html.dark:not(.ati-theme-legacy) #attendanceMessages::-webkit-scrollbar-track,
+html.dark:not(.ati-theme-legacy) .chat_sidebar section::-webkit-scrollbar-track,
+html.dark:not(.ati-theme-legacy) .chat_content::-webkit-scrollbar-track,
+html.dark:not(.ati-theme-legacy) .h-full::-webkit-scrollbar-track,
+html.dark:not(.ati-theme-legacy) textarea::-webkit-scrollbar-track,
+html.dark:not(.ati-theme-legacy) ul.overflow-scroll::-webkit-scrollbar-track,
+html.dark:not(.ati-theme-legacy) .vue-recycle-scroller::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+html.dark:not(.ati-theme-legacy) #attendanceMessages::-webkit-scrollbar-thumb,
+html.dark:not(.ati-theme-legacy) .chat_sidebar section::-webkit-scrollbar-thumb,
+html.dark:not(.ati-theme-legacy) .chat_content::-webkit-scrollbar-thumb,
+html.dark:not(.ati-theme-legacy) .h-full::-webkit-scrollbar-thumb,
+html.dark:not(.ati-theme-legacy) textarea::-webkit-scrollbar-thumb,
+html.dark:not(.ati-theme-legacy) ul.overflow-scroll::-webkit-scrollbar-thumb,
+html.dark:not(.ati-theme-legacy) .vue-recycle-scroller::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.4) 0%, rgba(59, 130, 246, 0.2) 100%) !important;
+  border-radius: 10px !important;
+  border: 2px solid transparent !important;
+}
+
+html.dark:not(.ati-theme-legacy) #attendanceMessages::-webkit-scrollbar-thumb:hover,
+html.dark:not(.ati-theme-legacy) .chat_sidebar section::-webkit-scrollbar-thumb:hover,
+html.dark:not(.ati-theme-legacy) .chat_content::-webkit-scrollbar-thumb:hover,
+html.dark:not(.ati-theme-legacy) .h-full::-webkit-scrollbar-thumb:hover,
+html.dark:not(.ati-theme-legacy) textarea::-webkit-scrollbar-thumb:hover,
+html.dark:not(.ati-theme-legacy) ul.overflow-scroll::-webkit-scrollbar-thumb:hover,
+html.dark:not(.ati-theme-legacy) .vue-recycle-scroller::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.6) 0%, rgba(59, 130, 246, 0.4) 100%) !important;
+}
+
+html,
+body {
+  overflow-x: hidden !important;
+  background-color: var(--bgDark) !important;
+}
+
+/* ---- Painel lateral direito ---- */
+
+html.dark:not(.ati-theme-legacy) .chat_content {
+  background: linear-gradient(135deg, rgb(20, 20, 25) 0%, rgb(15, 15, 20) 100%) !important;
+}
+
+html.dark:not(.ati-theme-legacy) .chat_content {
+  position: relative;
+  z-index: 0;
+}
+
+html.dark:not(.ati-theme-legacy) .chat_content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgb(15, 15, 20) 0%, rgb(20, 20, 30) 100%);
+  z-index: -1;
+}
+
+html.dark:not(.ati-theme-legacy) .chat_sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+html.dark:not(.ati-theme-legacy) .chat_sidebar > section {
+  flex-grow: 1;
+  min-height: 0;
+}
+
+html.dark:not(.ati-theme-legacy) .chat_content .dark\:bg-neutral-500 .border-l-2 {
+  border-left-color: transparent !important;
+}
+
+/* ---- Botões e elementos interativos ---- */
+
+html.dark:not(.ati-theme-legacy) button,
+html.dark:not(.ati-theme-legacy) [role='button'],
+html.dark:not(.ati-theme-legacy) .p-button {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+html.dark:not(.ati-theme-legacy) button:hover,
+html.dark:not(.ati-theme-legacy) [role='button']:hover,
+html.dark:not(.ati-theme-legacy) .p-button:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+html.dark:not(.ati-theme-legacy) button:focus,
+html.dark:not(.ati-theme-legacy) [role='button']:focus,
+html.dark:not(.ati-theme-legacy) .p-button:focus {
+  outline: none !important;
+}
+
+/* Evita que menus dropdown (Headless UI) quebrem o clique ao mover os itens */
+html.dark:not(.ati-theme-legacy) [role='menuitem'],
+html.dark:not(.ati-theme-legacy) [role='menuitem']:hover,
+html.dark:not(.ati-theme-legacy) [id^='headlessui-menu-item'],
+html.dark:not(.ati-theme-legacy) [id^='headlessui-menu-item']:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ---- Inputs ---- */
+
+html.dark:not(.ati-theme-legacy) input[type='text'],
+html.dark:not(.ati-theme-legacy) input[type='email'],
+html.dark:not(.ati-theme-legacy) input[type='password'],
+html.dark:not(.ati-theme-legacy) input[type='search'],
+html.dark:not(.ati-theme-legacy) textarea {
+  background-color: rgba(40, 40, 50, 0.6) !important;
+  border: 1px solid var(--borderColor) !important;
+  color: var(--textPrimary) !important;
+  border-radius: 6px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+html.dark:not(.ati-theme-legacy) input[type='text']:focus,
+html.dark:not(.ati-theme-legacy) input[type='email']:focus,
+html.dark:not(.ati-theme-legacy) input[type='password']:focus,
+html.dark:not(.ati-theme-legacy) input[type='search']:focus,
+html.dark:not(.ati-theme-legacy) textarea:focus {
+  background-color: rgba(40, 40, 50, 0.8) !important;
+  border-color: var(--accentBlue) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+}
+
+/* ---- Tipografia ---- */
+
+html.dark:not(.ati-theme-legacy) {
+  color: var(--textPrimary) !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.3px !important;
+}
+
+html.dark:not(.ati-theme-legacy) h1,
+html.dark:not(.ati-theme-legacy) h2,
+html.dark:not(.ati-theme-legacy) h3,
+html.dark:not(.ati-theme-legacy) h4,
+html.dark:not(.ati-theme-legacy) h5,
+html.dark:not(.ati-theme-legacy) h6 {
+  color: var(--textPrimary) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+}
+
+html.dark:not(.ati-theme-legacy) a:not([role='menuitem']) {
+  color: var(--accentBlue) !important;
+  text-decoration: none !important;
+  transition: all 0.2s ease !important;
+}
+
+html.dark:not(.ati-theme-legacy) a:not([role='menuitem']):hover {
+  color: rgb(147, 197, 253) !important;
+  text-shadow: 0 0 8px rgba(59, 130, 246, 0.3) !important;
+}
+html.dark .text_dark {
+  color: var(--accentBlue) !important;
+}
+/* ---- Animações ---- */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+html.dark:not(.ati-theme-legacy) .attendance_item {
+  animation: fadeIn 0.3s ease-out !important;
+}
+
+/* ---- Responsividade ---- */
+
+@media (max-width: 768px) {
+  html.dark:not(.ati-theme-legacy) .chat_sidebar {
+    position: absolute;
+    width: 70%;
+    height: 100vh;
+    z-index: 100;
+  }
+
+  html.dark:not(.ati-theme-legacy) .attendance_item {
+    margin: 4px 6px !important;
+  }
+}
+
+/* ---- Font rendering ---- */
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+p,
+span,
+div,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+/* ---- Firefox ---- */
+
+@-moz-document url-prefix() {
+  html.dark:not(.ati-theme-legacy) * {
+    scrollbar-color: rgba(59, 130, 246, 0.4) transparent !important;
+    scrollbar-width: thin !important;
+  }
+}

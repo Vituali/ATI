@@ -1,0 +1,254 @@
+@import './quickReply.css';
+@import './injectedchatmix.css';
+@import './injectedchatmix-legacy.css';
+:root {
+  --chatPrimary: rgb(0, 100, 255);
+  --chatHover: rgb(0, 60, 255);
+}
+
+/* =================================================================== */
+/* == BOTÕES DE AÇÃO (ATI)                                          == */
+/* =================================================================== */
+
+/* --- Container principal dos botões --- */
+#actionsContainerV2 {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 6px;
+  padding: 8px;
+  background: transparent;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* =================================================================== */
+/* == MODAL DE HISTÓRICO CHATMIX (Apenas Maior e sem quebrar)       == */
+/* =================================================================== */
+
+/* O Modal de Histórico Nativo */
+.sm\:align-middle.sm\:max-w-lg.lg\:max-w-3xl {
+  max-width: 95vw !important;
+  width: auto !important; /* Estica pra acompanhar o filho */
+  min-width: 800px !important; /* Já abre lindo */
+}
+
+/* A CAIXA PAI TRAVADA EM 550PX - Colocamos o resize:both nela!! */
+.sm\:align-middle.sm\:max-w-lg.lg\:max-w-3xl .h-\[550px\] {
+  height: 90vh !important; /* Altura padrão */
+  min-height: 300px !important;
+  max-height: 90vh !important;
+  max-width: 40vw !important;
+  resize: both !important; /* Estica pra todos os lados */
+  overflow: hidden !important; /* Pra alça de redimensionamento funcionar precisa disso */
+}
+
+/* A Janela de Chat (Basta obedecer o tamanho do pai!) */
+.sm\:align-middle.sm\:max-w-lg.lg\:max-w-3xl .overflow-y-scroll {
+  flex: 1 !important; /* Pega tudo que tiver de altura livre */
+  height: 100% !important;
+  min-width: 100% !important;
+}
+
+/* --- Estilo base de todos os botões --- */
+.action-btn {
+  padding: 14px 0;
+  font-size: 15px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(145deg, rgba(0, 100, 255, 0.9), rgba(0, 60, 255, 0.9));
+  backdrop-filter: blur(6px);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.18s ease;
+}
+
+/* --- Hover: escurece e sobe levemente --- */
+.action-btn:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow:
+    0 8px 18px rgba(0, 60, 255, 0.45),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.action-btn i,
+.action-btn span.icon {
+  width: 22px;
+  height: 22px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+
+  font-size: 12px;
+}
+
+.action-btn:active {
+  transform: scale(0.95);
+}
+
+/* --- Estado desabilitado (durante carregamento) --- */
+.action-btn:disabled {
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+/* =================================================================== */
+/* == FEEDBACK VISUAL DOS BOTÕES                                    == */
+/* =================================================================== */
+
+/* --- Sucesso: verde com brilho --- */
+.action-btn--success {
+  background-color: #28a745 !important;
+  box-shadow: 0 0 15px #28a745 !important;
+}
+
+/* --- Erro: vermelho com brilho --- */
+.action-btn--error {
+  background-color: #dc3545 !important;
+  box-shadow: 0 0 15px #dc3545 !important;
+}
+
+/* =================================================================== */
+/* == SPINNER DE CARREGAMENTO                                       == */
+/* =================================================================== */
+
+/* --- Bolinha girando que aparece ao clicar --- */
+.spinner {
+  width: 12px;
+  height: 12px;
+  border: 3px solid white;
+  border-top-color: transparent; /* cria o efeito de arco incompleto */
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin 0.6s linear infinite;
+}
+
+/* --- Animação de rotação --- */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =================================================================== */
+/* == NOTIFICAÇÃO DE ATUALIZAÇÃO (ATI)                              == */
+/* =================================================================== */
+
+.ati-update-notification {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999999;
+  background: #ff4d4f;
+  color: white;
+  padding: 16px 24px;
+  border-radius: 12px;
+  font-family: sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 10px 30px rgba(255, 77, 79, 0.4);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.ati-update-notification .ati-notification-icon {
+  font-size: 20px;
+}
+
+.ati-update-notification .ati-notification-content {
+  flex: 1;
+}
+
+.ati-update-notification .ati-notification-title {
+  font-size: 15px;
+  margin-bottom: 2px;
+}
+
+.ati-update-notification .ati-notification-subtitle {
+  opacity: 0.9;
+  font-weight: 400;
+  font-size: 13px;
+}
+
+.ati-update-notification.ati-notification-hidden {
+  top: -100px;
+  opacity: 0;
+}
+
+/* =================================================================== */
+/* == TOAST NOTIFICATIONS (ATI)                                     == */
+/* =================================================================== */
+
+#ati-toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column-reverse; /* Toasts novos em baixo */
+  gap: 12px;
+  z-index: 1000000;
+  pointer-events: none;
+}
+
+.ati-toast {
+  pointer-events: auto;
+  min-width: 280px;
+  max-width: 400px;
+  background: #1f1f1f;
+  color: white;
+  padding: 14px 18px;
+  border-radius: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: ati-toast-slide-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.3s ease;
+}
+
+.ati-toast--error {
+  border-left: 5px solid #ff4d4f;
+}
+
+.ati-toast--success {
+  border-left: 5px solid #52c41a;
+}
+
+.ati-toast--info {
+  border-left: 5px solid #1890ff;
+}
+
+.ati-toast-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.ati-toast-content {
+  flex: 1;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.ati-toast-hidden {
+  opacity: 0;
+  transform: translateX(40px);
+}
+
+@keyframes ati-toast-slide-in {
+  from { opacity: 0; transform: translateX(40px); }
+  to { opacity: 1; transform: translateX(0); }
+}

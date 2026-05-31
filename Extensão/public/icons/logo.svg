@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+ <defs>
+  <linearGradient id="grad" x1="0%" x2="100%" y1="0%" y2="100%">
+   <stop offset="0%" stop-color="#007BFF"/>
+   <stop offset="100%" stop-color="#00C6FF"/>
+  </linearGradient>
+ </defs>
+ <!-- Fundo -->
+ <!-- Balão de chat -->
+ <!-- Raio (internet / velocidade) -->
+ <g class="layer">
+  <title>Layer 1</title>
+  <rect fill="url(#grad)" height="448" id="svg_1" rx="96" width="448" x="32" y="32"/>
+  <path d="m140,107.37l232,0a40,77.74 0 0 1 40,77.74l0,155.49a40,77.74 0 0 1 -40,77.74l-120,0l-78.99,104.59l-1.03,-103.05l-31.98,-1.54a40,77.74 0 0 1 -40,-77.74l0,-155.49a40,77.74 0 0 1 40,-77.74z" fill="white" id="svg_2" transform="matrix(1.23719 0 0 0.981731 -59.1365 -37.3353)"/>
+  <polygon fill="#007BFF" id="svg_3" points="270,190 230,260 270,260 240,330 320,240 280,240" transform="matrix(1.84193 0 0 1.85816 -240.72 -261.778)"/>
+ </g>
+</svg>

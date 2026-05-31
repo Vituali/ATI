@@ -1,0 +1,190 @@
+/* =================================================================== */
+/* == TEMA DARK ATI PARA CHATMIX (Classic / Legacy)                 == */
+/* =================================================================== */
+
+/* ---- Fundos principais ---- */
+
+/* Header do topo */
+html.dark.ati-theme-legacy header.dark\:bg-neutral-700 {
+  background-color: rgb(35, 35, 35) !important;
+}
+
+/* Sidebar (lista de conversas) */
+html.dark.ati-theme-legacy .chat_sidebar {
+  background-color: rgb(25, 25, 25) !important;
+}
+
+/* Remove fundos desnecessários dentro do header da sidebar */
+html.dark.ati-theme-legacy .chat_sidebar header .dark\:bg-neutral-700,
+html.dark.ati-theme-legacy .chat_sidebar header .dark\:bg-neutral-600,
+html.dark.ati-theme-legacy .bg-amber-100,
+html.dark.ati-theme-legacy .bg-slate-100 {
+  background-color: transparent !important;
+}
+
+/* Elementos secundários */
+html.dark.ati-theme-legacy .dark\:bg-neutral-500 {
+  background-color: rgb(45, 45, 45) !important;
+}
+
+/* Borda do campo de busca */
+html.dark.ati-theme-legacy .chat_sidebar input.dark\:border-gray-600 {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Elementos brancos viram cinza escuro */
+html.dark.ati-theme-legacy .bg-white {
+  background-color: rgb(40, 40, 40) !important;
+}
+
+/* ---- Cores do tema e mensagens ---- */
+
+/* Cor primária do chat (azul translúcido) */
+html.dark.ati-theme-legacy body {
+  --chatPrimary: rgba(0, 110, 255, 0.377) !important;
+}
+
+/* Elementos com cor primária do chat */
+html.dark.ati-theme-legacy .bg-chat-primary {
+  background-color: var(--chatPrimary) !important;
+}
+
+/* Balões de mensagem recebida */
+html.dark.ati-theme-legacy .message_received:is(.dark *) {
+  background-color: rgba(50, 50, 50, 0.5) !important;
+}
+
+/* Elementos neutros */
+html.dark.ati-theme-legacy .bg-neutral-400 {
+  background-color: rgba(179, 179, 179, 0.377) !important;
+}
+
+/* ---- Itens da lista de atendimentos ---- */
+
+/* Suaviza a troca de cor ao passar o mouse */
+html.dark.ati-theme-legacy .attendance_item {
+  transition: background-color 0.2s ease-in-out;
+}
+
+/* Fundo padrão de cada conversa na lista */
+html.dark.ati-theme-legacy .attendance_item {
+  background-color: rgb(60, 60, 60) !important;
+}
+
+/* Hover em conversa não selecionada */
+html.dark.ati-theme-legacy .attendance_item:not(.active):hover {
+  background-color: rgba(0, 120, 215, 0.25) !important;
+}
+
+/* Conversa atualmente selecionada */
+html.dark.ati-theme-legacy .attendance_item.active {
+  background-color: var(--chatPrimary) !important;
+}
+
+/* Conversa com mensagem nova (não selecionada) */
+html.dark.ati-theme-legacy .attendance_item.newMessage:not(.active) {
+  background-color: rgba(0, 120, 215, 0.4) !important;
+}
+
+/* ---- Divisórias e bordas ---- */
+
+/* Borda direita do header e sidebar */
+html.dark.ati-theme-legacy header.dark\:bg-neutral-700,
+html.dark.ati-theme-legacy .chat_sidebar {
+  border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Borda superior de elementos internos */
+html.dark.ati-theme-legacy .dark\:bg-neutral-800\/50 {
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Borda inferior do header do chat */
+html.dark.ati-theme-legacy .chat_content .dark\:bg-neutral-500 {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* ---- Correções de bugs e melhorias ---- */
+
+/* Scrollbar visível e elegante no dark mode (Otimizado para Performance) */
+html.dark.ati-theme-legacy .chat_sidebar section,
+html.dark.ati-theme-legacy .chat_content,
+html.dark.ati-theme-legacy #attendanceMessages,
+html.dark.ati-theme-legacy .h-full,
+html.dark.ati-theme-legacy textarea,
+html.dark.ati-theme-legacy ul.overflow-scroll {
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent !important;
+}
+
+/* Customização para Chrome, Edge e Safari */
+html.dark.ati-theme-legacy #attendanceMessages::-webkit-scrollbar,
+html.dark.ati-theme-legacy .chat_sidebar section::-webkit-scrollbar,
+html.dark.ati-theme-legacy .chat_content::-webkit-scrollbar,
+html.dark.ati-theme-legacy .h-full::-webkit-scrollbar,
+html.dark.ati-theme-legacy textarea::-webkit-scrollbar,
+html.dark.ati-theme-legacy ul.overflow-scroll::-webkit-scrollbar {
+  width: 6px !important;
+  height: 6px !important;
+}
+
+html.dark.ati-theme-legacy #attendanceMessages::-webkit-scrollbar-track,
+html.dark.ati-theme-legacy .chat_sidebar section::-webkit-scrollbar-track,
+html.dark.ati-theme-legacy .chat_content::-webkit-scrollbar-track,
+html.dark.ati-theme-legacy .h-full::-webkit-scrollbar-track,
+html.dark.ati-theme-legacy textarea::-webkit-scrollbar-track,
+html.dark.ati-theme-legacy ul.overflow-scroll::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+html.dark.ati-theme-legacy #attendanceMessages::-webkit-scrollbar-thumb,
+html.dark.ati-theme-legacy .chat_sidebar section::-webkit-scrollbar-thumb,
+html.dark.ati-theme-legacy .chat_content::-webkit-scrollbar-thumb,
+html.dark.ati-theme-legacy .h-full::-webkit-scrollbar-thumb,
+html.dark.ati-theme-legacy textarea::-webkit-scrollbar-thumb,
+html.dark.ati-theme-legacy ul.overflow-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  border-radius: 10px !important;
+}
+
+html.dark.ati-theme-legacy #attendanceMessages::-webkit-scrollbar-thumb:hover,
+html.dark.ati-theme-legacy .chat_sidebar section::-webkit-scrollbar-thumb:hover,
+html.dark.ati-theme-legacy .chat_content::-webkit-scrollbar-thumb:hover,
+html.dark.ati-theme-legacy .h-full::-webkit-scrollbar-thumb:hover,
+html.dark.ati-theme-legacy textarea::-webkit-scrollbar-thumb:hover,
+html.dark.ati-theme-legacy ul.overflow-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Fundo escuro da área de chat */
+html.dark.ati-theme-legacy .chat_content {
+  position: relative;
+  z-index: 0;
+}
+html.dark.ati-theme-legacy .chat_content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgb(20, 20, 20);
+  z-index: -1;
+}
+
+/* Sidebar ocupa altura total da tela */
+html.dark.ati-theme-legacy .chat_sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+html.dark.ati-theme-legacy .chat_sidebar > section {
+  flex-grow: 1;
+  min-height: 0;
+}
+
+/* Remove borda esquerda desnecessária nas mensagens */
+html.dark.ati-theme-legacy .chat_content .dark\:bg-neutral-500 .border-l-2 {
+  border-left-color: transparent !important;
+}

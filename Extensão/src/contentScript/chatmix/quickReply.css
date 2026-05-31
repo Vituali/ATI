@@ -1,0 +1,152 @@
+/* =================================================================== */
+/* == QUICK REPLY — Respostas rápidas acima do textarea             == */
+/* =================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600&display=swap');
+
+#ati-quick-reply-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 12px;
+  font-family: 'DM Sans', sans-serif;
+  background: rgba(0, 0, 0, 0.03);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+html.dark #ati-quick-reply-container {
+  background: rgba(0, 0, 0, 0.15);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* --- Abas de categoria --- */
+.ati-qr-tabs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.ati-qr-tab {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(0, 100, 255, 0.05);
+  color: rgb(0, 80, 200);
+}
+
+html.dark .ati-qr-tab {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 100, 255, 0.2);
+  color: rgb(100, 160, 255);
+}
+
+.ati-qr-tab:hover {
+  background: rgba(0, 100, 255, 0.1);
+  color: rgb(0, 60, 160);
+}
+
+html.dark .ati-qr-tab:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.ati-qr-tab--active {
+  background: rgba(0, 100, 255, 0.15);
+  border-color: rgba(0, 100, 255, 0.4);
+  color: rgb(0, 80, 200);
+}
+
+html.dark .ati-qr-tab--active {
+  background: rgba(0, 100, 255, 0.2);
+  border-color: rgba(0, 100, 255, 0.4);
+  color: rgb(100, 160, 255);
+}
+
+/* --- Botões de resposta --- */
+.ati-qr-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.ati-qr-btn {
+  padding: 5px 11px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.8);
+  color: rgba(0, 0, 0, 0.7);
+}
+
+html.dark .ati-qr-btn {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.ati-qr-btn:hover {
+  background: rgba(0, 100, 255, 0.1);
+  border-color: rgba(0, 100, 255, 0.35);
+  color: rgb(0, 60, 160);
+}
+
+html.dark .ati-qr-btn:hover {
+  background: rgba(0, 100, 255, 0.2);
+  border-color: rgba(0, 100, 255, 0.35);
+  color: white;
+}
+
+.ati-qr-btn:active {
+  transform: scale(0.97);
+}
+
+/* --- Loading / erro --- */
+.ati-qr-loading {
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.4);
+  font-style: italic;
+  padding: 4px 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+html.dark .ati-qr-loading {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.ati-qr-loading::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid rgba(0, 0, 0, 0.1);
+  border-top-color: rgb(0, 100, 255);
+  border-radius: 50%;
+  animation: ati-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+html.dark .ati-qr-loading::before {
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border-top-color: rgb(0, 100, 255);
+}
+
+@keyframes ati-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

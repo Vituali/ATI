@@ -1,0 +1,745 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600&display=swap');
+
+/* =================================================================== */
+/* == MODAL O.S — Dark theme consistente com o popup                == */
+/* =================================================================== */
+
+.ati-os-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 9998;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(2px);
+}
+
+.ati-os-modal {
+  background: #111111;
+  color: #f0f0f0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  width: 90%;
+  max-width: 620px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* --- Header --- */
+.ati-os-modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 15px;
+  font-weight: 600;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ati-os-modal-header::before {
+  content: '📝';
+  font-size: 16px;
+}
+
+/* --- Body --- */
+.ati-os-modal-body {
+  padding: 18px 20px;
+  overflow-y: auto;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ati-os-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ati-os-modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ati-os-modal-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+
+/* --- Footer --- */
+.ati-os-modal-footer {
+  padding: 14px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* --- Títulos de categoria --- */
+.modal-category-title {
+  margin-top: 16px;
+  margin-bottom: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(100, 160, 255);
+  border-bottom: 1px solid rgba(0, 100, 255, 0.2);
+  padding-bottom: 6px;
+  font-family: 'Space Mono', monospace;
+}
+
+/* --- Grupo de botões --- */
+.modal-btn-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* --- Botões de template --- */
+.template-btn {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 7px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.template-btn:hover {
+  background: rgba(0, 100, 255, 0.2);
+  border-color: rgba(0, 100, 255, 0.4);
+  color: white;
+}
+
+/* Padrão de Cores dos Status dos Contratos */
+.template-btn.contract-item--ativo {
+  background: rgba(74, 222, 128, 0.1);
+  border-color: rgba(74, 222, 128, 0.3);
+  color: #4ade80;
+}
+.template-btn.contract-item--ativo:hover {
+  background: rgba(74, 222, 128, 0.15);
+  border-color: rgba(74, 222, 128, 0.5);
+  color: #86efac;
+}
+
+.template-btn.contract-item--vel-red {
+  background: rgba(250, 204, 21, 0.1);
+  border-color: rgba(250, 204, 21, 0.3);
+  color: #facc15;
+}
+.template-btn.contract-item--vel-red:hover {
+  background: rgba(250, 204, 21, 0.15);
+  border-color: rgba(250, 204, 21, 0.5);
+  color: #fde047;
+}
+
+.template-btn.contract-item--suspenso {
+  background: rgba(251, 146, 60, 0.1);
+  border-color: rgba(251, 146, 60, 0.3);
+  color: #fb923c;
+}
+.template-btn.contract-item--suspenso:hover {
+  background: rgba(251, 146, 60, 0.15);
+  border-color: rgba(251, 146, 60, 0.5);
+  color: #fdba74;
+}
+
+.template-btn.contract-item--inativo {
+  background: rgba(156, 163, 175, 0.1);
+  border-color: rgba(156, 163, 175, 0.3);
+  color: #9ca3af;
+}
+.template-btn.contract-item--inativo:hover {
+  background: rgba(156, 163, 175, 0.15);
+  border-color: rgba(156, 163, 175, 0.5);
+  color: #d1d5db;
+}
+
+.template-btn.contract-item--cancelado {
+  background: rgba(248, 113, 113, 0.1);
+  border-color: rgba(248, 113, 113, 0.3);
+  color: #f87171;
+}
+.template-btn.contract-item--cancelado:hover {
+  background: rgba(248, 113, 113, 0.15);
+  border-color: rgba(248, 113, 113, 0.5);
+  color: #fca5a5;
+}
+
+.contract-status {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 20px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.contract-status--online {
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.1);
+}
+.contract-status--offline {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.1);
+}
+
+/* --- Textarea e inputs --- */
+.modal-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #f0f0f0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+  outline: none;
+}
+
+label.modal-textarea-label {
+  color: rgb(100, 160, 255);
+}
+
+.ati-os-modal .modal-textarea {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #f0f0f0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+.modal-textarea:focus {
+  border-color: rgba(0, 100, 255, 0.6);
+  box-shadow: 0 0 0 3px rgba(0, 100, 255, 0.15);
+}
+
+textarea.modal-textarea {
+  min-height: 110px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+input.modal-textarea {
+  height: 40px;
+  resize: none;
+}
+
+/* --- Label descrição --- */
+.modal-textarea-label {
+  margin-top: 14px;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+  display: block;
+  font-family: 'Space Mono', monospace;
+}
+
+/* --- Toggles --- */
+.modal-checkboxes {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.modal-checkbox-label {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  transition: background 0.15s;
+  user-select: none;
+}
+
+.modal-checkbox-label:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.modal-checkbox-label.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* Esconde o input nativo */
+.modal-checkbox-label input[type='checkbox'] {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+/* Track */
+.modal-checkbox-label .toggle-track {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.15);
+  transition: background 0.2s;
+  cursor: pointer;
+}
+
+/* Thumb */
+.modal-checkbox-label .toggle-track::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  transition: left 0.2s;
+}
+
+/* Checked */
+.modal-checkbox-label input:checked ~ .toggle-track {
+  background: #5348c7;
+}
+
+.modal-checkbox-label input:checked ~ .toggle-track::after {
+  left: 19px;
+}
+
+.ati-os-modal-body input[type='checkbox'] {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  width: 40px;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 22px;
+  cursor: pointer;
+  outline: none;
+  transition: background-color 0.25s ease;
+  flex-shrink: 0;
+}
+
+.ati-os-modal-body input[type='checkbox']::before {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  top: 3px;
+  left: 3px;
+  transition:
+    transform 0.25s ease,
+    background-color 0.25s ease;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.ati-os-modal-body input[type='checkbox']:checked {
+  background: rgb(0, 100, 255);
+}
+
+.ati-os-modal-body input[type='checkbox']:checked::before {
+  transform: translateX(18px);
+  background: white;
+}
+
+/* --- Loader --- */
+.modal-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.35);
+  font-style: italic;
+  gap: 8px;
+}
+
+.modal-loader::before {
+  content: '';
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-top-color: rgb(0, 100, 255);
+  border-radius: 50%;
+  animation: ati-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes ati-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* --- Seletor com busca --- */
+.searchable-select-container {
+  position: relative;
+}
+
+.searchable-options-list {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  z-index: 10000;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.searchable-options-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.searchable-options-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+
+.searchable-option {
+  padding: 9px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.75);
+  transition: background 0.1s;
+}
+
+.searchable-option:hover,
+.searchable-option.focus {
+  background: rgba(0, 100, 255, 0.2);
+  color: white;
+}
+
+/* --- Contratos (radio buttons) --- */
+.template-btn.contract-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 12px;
+  width: 100%;
+  text-align: left;
+  line-height: 1.5;
+  padding: 10px 14px;
+}
+
+label.template-btn.contract-item {
+  font-size: 14px;
+}
+
+.template-btn.contract-item input[type='radio'] {
+  margin-top: 2px;
+  accent-color: rgb(0, 100, 255);
+  flex-shrink: 0;
+}
+
+/* --- Botões do rodapé --- */
+.main-btn {
+  padding: 9px 18px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.main-btn--cancel {
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-right: auto;
+}
+
+.main-btn--cancel:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.main-btn--confirm {
+  background: rgba(0, 200, 100, 0.15);
+  color: rgb(100, 220, 150);
+  border: 1px solid rgba(0, 200, 100, 0.25);
+}
+
+.main-btn--confirm:hover {
+  background: rgba(0, 200, 100, 0.25);
+}
+
+.main-btn--sgp {
+  background: rgba(0, 100, 255, 0.15);
+  color: rgb(100, 160, 255);
+  border: 1px solid rgba(0, 100, 255, 0.25);
+}
+
+.main-btn--sgp:hover {
+  background: rgba(0, 100, 255, 0.25);
+}
+
+.main-btn--change-sgp {
+  background: rgba(251, 146, 60, 0.15);
+  color: rgb(251, 146, 60);
+  border: 1px solid rgba(251, 146, 60, 0.25);
+}
+
+.main-btn--change-sgp:hover {
+  background: rgba(251, 146, 60, 0.25);
+}
+
+.main-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* --- Templates container --- */
+.modal-templates-container {
+  margin-top: 16px;
+}
+
+.modal-templates-container > strong {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+  font-family: 'Space Mono', monospace;
+}
+
+.modal-status-summary {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 8px;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+  text-align: center;
+}
+
+/* =================================================================== */
+/* == MODO CLARO (Quando html não tem a classe .dark)               == */
+/* =================================================================== */
+
+html:not(.dark) .ati-os-modal-overlay {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+html:not(.dark) .ati-os-modal {
+  background: #ffffff;
+  color: #333333;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
+}
+
+html:not(.dark) .ati-os-modal-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  color: #111111;
+}
+
+html:not(.dark) .ati-os-modal-body::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+html:not(.dark) .ati-os-modal-footer {
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+html:not(.dark) .modal-category-title {
+  color: rgb(0, 100, 255);
+  border-bottom: 1px solid rgba(0, 100, 255, 0.2);
+}
+
+html:not(.dark) .template-btn {
+  background: rgba(0, 0, 0, 0.03);
+  color: #333333;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+html:not(.dark) .template-btn:hover {
+  background: rgba(0, 100, 255, 0.1);
+  border-color: rgba(0, 100, 255, 0.3);
+  color: #111111;
+}
+
+/* Colors adjustments for contract statuses in light mode */
+html:not(.dark) .template-btn.contract-item--ativo {
+  color: #16a34a;
+}
+html:not(.dark) .template-btn.contract-item--vel-red {
+  color: #ca8a04;
+}
+html:not(.dark) .template-btn.contract-item--suspenso {
+  color: #ea580c;
+}
+html:not(.dark) .template-btn.contract-item--inativo {
+  color: #4b5563;
+}
+html:not(.dark) .template-btn.contract-item--cancelado {
+  color: #dc2626;
+}
+
+html:not(.dark) .contract-status--online {
+  color: #16a34a;
+}
+html:not(.dark) .contract-status--offline {
+  color: #dc2626;
+}
+
+html:not(.dark) .modal-textarea {
+  background: rgba(0, 0, 0, 0.02) !important;
+  color: #333333 !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+}
+
+html:not(.dark) .modal-textarea:focus {
+  border-color: rgba(0, 100, 255, 0.6) !important;
+  box-shadow: 0 0 0 3px rgba(0, 100, 255, 0.15) !important;
+}
+
+html:not(.dark) .modal-textarea-label {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+html:not(.dark) .modal-checkbox-label {
+  border: 0.5px solid rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+html:not(.dark) .modal-checkbox-label:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+html:not(.dark) .modal-checkbox-label .toggle-track {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+html:not(.dark) .ati-os-modal-body input[type='checkbox'] {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+html:not(.dark) .ati-os-modal-body input[type='checkbox']::before {
+  background: #ffffff;
+}
+
+html:not(.dark) .modal-loader {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+html:not(.dark) .modal-loader::before {
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-top-color: rgb(0, 100, 255);
+}
+
+html:not(.dark) .searchable-options-list {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+html:not(.dark) .searchable-options-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+html:not(.dark) .searchable-option {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+html:not(.dark) .searchable-option:hover {
+  background: rgba(0, 100, 255, 0.1);
+  color: #111111;
+}
+
+html:not(.dark) .main-btn--cancel {
+  background: rgba(0, 0, 0, 0.04);
+  color: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+html:not(.dark) .main-btn--cancel:hover {
+  background: rgba(0, 0, 0, 0.08);
+  color: rgba(0, 0, 0, 0.8);
+}
+
+html:not(.dark) .main-btn--change-sgp {
+  background: rgba(234, 88, 12, 0.1);
+  color: rgb(234, 88, 12);
+  border: 1px solid rgba(234, 88, 12, 0.25);
+}
+
+html:not(.dark) .main-btn--change-sgp:hover {
+  background: rgba(234, 88, 12, 0.25);
+}
+
+html:not(.dark) .modal-templates-container > strong {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+html:not(.dark) .modal-status-summary {
+  color: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+/* --- SGP Badges in Header --- */
+.sgp-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+  margin-left: 10px;
+  font-family: 'Space Mono', monospace;
+  text-transform: uppercase;
+  display: inline-block;
+  line-height: 1.2;
+}
+
+/* SGP ANTIGO (.35) - Laranja/Vermelho */
+.sgp-badge--old {
+  background: rgba(249, 115, 22, 0.15);
+  color: rgb(249, 115, 22);
+  border: 1px solid rgba(249, 115, 22, 0.3);
+}
+
+/* SGP NOVO (.53) - Roxo/Azul vibrante */
+.sgp-badge--new {
+  background: rgba(139, 92, 246, 0.15);
+  color: rgb(167, 139, 250);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+/* Light mode overrides for badges */
+html:not(.dark) .sgp-badge--old {
+  background: rgba(234, 88, 12, 0.1);
+  color: rgb(234, 88, 12);
+  border: 1px solid rgba(234, 88, 12, 0.2);
+}
+
+html:not(.dark) .sgp-badge--new {
+  background: rgba(109, 40, 217, 0.1);
+  color: rgb(109, 40, 217);
+  border: 1px solid rgba(109, 40, 217, 0.2);
+}

@@ -1,0 +1,47 @@
+{
+  "name": "ati-auxiliar-de-atendimentos",
+  "displayName": "ATI - Auxiliar de Atendimentos",
+  "version": "2.2.0.1",
+  "author": "Vituali",
+  "description": "Extensão para auxiliar atendentes do suporte ATI Internet no ChatMix",
+  "type": "module",
+  "license": "MIT",
+  "keywords": [
+    "chrome-extension",
+    "atendimento",
+    "chatmix",
+    "sgp",
+    "ati"
+  ],
+  "engines": {
+    "node": ">=14.18.0"
+  },
+  "scripts": {
+    "dev": "vite build --mode development --watch",
+    "dev:prod": "vite build --mode dev_prod --watch",
+    "build": "tsc && vite build",
+    "fmt": "prettier --write '**/*.{tsx,ts,json,css,scss,md}'",
+    "zip": "npm run build && node src/zip.js",
+    "env:dev": "node switch-env.cjs dev",
+    "env:prod": "node switch-env.cjs prod",
+    "release": "npm run build && node src/zip.js && node src/update-firebase-version.js"
+  },
+  "dependencies": {
+    "firebase": "12.10.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "devDependencies": {
+    "@crxjs/vite-plugin": "2.0.0-beta.26",
+    "@types/chrome": "0.0.246",
+    "@types/react": "18.2.28",
+    "@types/react-dom": "18.2.13",
+    "@vitejs/plugin-react": "4.1.0",
+    "eslint": "10.0.3",
+    "gulp": "5.0.0",
+    "gulp-zip": "6.0.0",
+    "prettier": "3.0.3",
+    "typescript": "5.2.2",
+    "vite": "5.4.10"
+  }
+}

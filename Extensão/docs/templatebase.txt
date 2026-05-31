@@ -1,0 +1,41 @@
+[AÇÃO PRINCIPAL]:
+{Descreva o que você quer em 1 ou 2 frases.}
+
+Contexto:
+{Onde isso vai rodar?}
+
+Regras Estritas (OBRIGATÓRIO):
+
+1. Leia e utilize CLAUDE.md e FIREBASE_SCHEMA.md como fonte principal.
+2. PRIORIZE essas fontes sobre qualquer conhecimento externo.
+3. Se algo não estiver nos arquivos, NÃO invente — peça informação ou indique ausência.
+4. Se violar qualquer regra dos arquivos, a resposta está ERRADA.
+
+Restrições Técnicas:
+
+- Não inventar variáveis, chaves de Firebase ou classes CSS.
+- Usar TypeScript estritamente tipado (evitar any).
+- Seguir arquitetura e padrões definidos.
+
+Saída Esperada:
+
+- Retorne APENAS:
+  - código necessário OU
+  - diff claro (somente o que muda)
+
+- NÃO:
+  - explicar desnecessariamente
+  - reescrever arquivos inteiros
+  - adicionar contexto extra
+
+- Se precisar criar regra nova:
+  - forneça o texto exato para adicionar ao CLAUDE.md
+
+- Validação final:
+  - Revise a resposta e confirme se TODAS as regras foram seguidas.
+  - Se não, corrija antes de responder.
+
+- Escopo de Alteração (OBRIGATÓRIO):
+  - Trabalhar APENAS dentro de: /extensao
+  - É PROIBIDO modificar qualquer arquivo fora dessa pasta
+  - NÃO acessar ou alterar arquivos de /site

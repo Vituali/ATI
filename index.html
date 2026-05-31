@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <link id="favicon" rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ATI - Auxiliar de atendimentos</title>
+    <meta name="description" content="Sistema auxiliar de atendimentos técnico e suporte para agilizar processos no SGP." />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://vituali.github.io/ATI/" />
+    <meta property="og:title" content="ATI - Auxiliar de Atendimentos" />
+    <meta property="og:description" content="Otimize seus atendimentos técnicos e suporte com ferramentas integradas ao SGP." />
+    <meta property="og:image" content="https://vituali.github.io/ATI/extension_preview.png" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://vituali.github.io/ATI/" />
+    <meta property="twitter:title" content="ATI - Auxiliar de Atendimentos" />
+    <meta property="twitter:description" content="Otimize seus atendimentos técnicos e suporte com ferramentas integradas ao SGP." />
+    <meta property="twitter:image" content="https://vituali.github.io/ATI/extension_preview.png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://identitytoolkit.googleapis.com">
+    <link rel="preconnect" href="https://googleapis.com">
+    
+    <link 
+      href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600&display=swap" 
+      rel="stylesheet" 
+      media="print" 
+      onload="this.media='all'"
+    >
+    <noscript>
+      <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    </noscript>
+    <link 
+      rel="stylesheet" 
+      href="data:text/css;base64,DQo6cm9vdCB7DQogIC8qIERBUksgVEhFTUUgKERlZmF1bHQpICovDQogIC0tYmctZGFyazogIzExMTExMTsNCiAgLS1iZy1wYW5lbDogIzE2MTYxNjsNCiAgLS1iZy1ibGFjazogIzBhMGEwYTsNCiAgLS1iZy1jYXJkOiByZ2JhKDI1NSwgMjU1LCAyNTUsIDAuMDUpOw0KICAtLWJnLWlucHV0OiByZ2JhKDAsIDAsIDAsIDAuNjAzKTsNCiAgLS10ZXh0LW1haW46ICNmMGYwZjA7DQogIC0tdGV4dC13aGl0ZTogI2ZmZmZmZjsNCiAgLS10ZXh0LWdyZXk6IHJnYmEoMjU1LCAyNTUsIDI1NSwgMC42KTsNCiAgLS10ZXh0LW11dGVkOiByZ2JhKDI1NSwgMjU1LCAyNTUsIDAuMzUpOw0KICAtLWFjY2VudC1ibHVlOiByZ2IoMCwgMTAwLCAyNTUpOw0KICAtLWFjY2VudC1ibHVlLWhvdmVyOiByZ2JhKDAsIDEwMCwgMjU1LCAwLjI1KTsNCiAgLS1hY2NlbnQtYmx1ZS1ib3JkZXI6IHJnYmEoMCwgMTAwLCAyNTUsIDAuMik7DQogIC0tc2lkZWJhci1iZzogIzExMTExMTsNCiAgLS1mb290ZXItYmc6ICMxMTExMTE7DQogIC0tYm9yZGVyLXN1YnRsZTogcmdiYSgyNTUsIDI1NSwgMjU1LCAwLjA4KTsNCiAgLS1yYWRpdXMtbWQ6IDhweDsNCiAgLS1yYWRpdXMtbGc6IDEwcHg7DQogIC0tZm9udC1tYWluOiAiRE0gU2FucyIsIHNhbnMtc2VyaWY7DQogIC0tZm9udC1tb25vOiAiU3BhY2UgTW9ubyIsIG1vbm9zcGFjZTsNCiAgLS1zaGFkb3ctc3VidGxlOiAwIDEwcHggMzBweCByZ2JhKDAsIDAsIDAsIDAuNCk7DQogIC0tdGV4dC1vbi1hY2NlbnQ6ICNmZmZmZmY7DQp9DQoNCi8qIExJR0hUIFRIRU1FIE92ZXJyaWRlcyAqLw0KLmxpZ2h0LXRoZW1lIHsNCiAgLS1iZy1kYXJrOiAjZWFlZGYwOw0KICAtLWJnLXBhbmVsOiAjZmZmZmZmOw0KICAtLWJnLWJsYWNrOiAjZjFmM2Y1Ow0KICAtLWJnLWNhcmQ6ICNmZmZmZmY7DQogIC0tYmctaW5wdXQ6ICNmMWYzZjU7DQogIC0tdGV4dC1tYWluOiAjMjEyNTI5Ow0KICAtLXRleHQtd2hpdGU6ICMyMTI1Mjk7DQogIC0tdGV4dC1ncmV5OiAjNDk1MDU3Ow0KICAtLXRleHQtbXV0ZWQ6ICM4NjhlOTY7DQogIC0tYWNjZW50LWJsdWU6ICMwMDYxZTA7DQogIC0tYWNjZW50LWJsdWUtaG92ZXI6IHJnYmEoMCwgOTcsIDIyNCwgMC4xKTsNCiAgLS1hY2NlbnQtYmx1ZS1ib3JkZXI6IHJnYmEoMCwgOTcsIDIyNCwgMC4xNSk7DQogIC0tc2lkZWJhci1iZzogI2Y4ZjlmYTsNCiAgLS1mb290ZXItYmc6ICNmOGY5ZmE7DQogIC0tYm9yZGVyLXN1YnRsZTogcmdiYSgwLCAwLCAwLCAwLjA4KTsNCiAgLS1zaGFkb3ctc3VidGxlOiAwIDRweCAxMnB4IHJnYmEoMCwgMCwgMCwgMC4wNSk7DQogIC0tdGV4dC1vbi1hY2NlbnQ6ICNmZmZmZmY7DQp9DQoNCiogew0KICBib3gtc2l6aW5nOiBib3JkZXItYm94Ow0KICBtYXJnaW46IDA7DQogIHBhZGRpbmc6IDA7DQp9DQoNCmJvZHkgew0KICBtaW4taGVpZ2h0OiAxMDB2aDsNCiAgYmFja2dyb3VuZC1jb2xvcjogdmFyKC0tYmctZGFyayk7DQogIGNvbG9yOiB2YXIoLS10ZXh0LW1haW4pOw0KICBmb250LWZhbWlseTogdmFyKC0tZm9udC1tYWluKTsNCiAgLXdlYmtpdC1mb250LXNtb290aGluZzogYW50aWFsaWFzZWQ7DQogIHRyYW5zaXRpb246DQogICAgYmFja2dyb3VuZC1jb2xvciAwLjJzIGVhc2UsDQogICAgY29sb3IgMC4ycyBlYXNlOw0KfQ0KDQojcm9vdCB7DQogIG1pbi1oZWlnaHQ6IDEwMHZoOw0KICBkaXNwbGF5OiBmbGV4Ow0KICBmbGV4LWRpcmVjdGlvbjogY29sdW1uOw0KfQ0KDQovKiAtLS0gQ1VTVE9NIFNDUk9MTEJBUiAtLS0gKi8NCjo6LXdlYmtpdC1zY3JvbGxiYXIgew0KICB3aWR0aDogOHB4Ow0KICBoZWlnaHQ6IDhweDsNCn0NCg0KOjotd2Via2l0LXNjcm9sbGJhci10cmFjayB7DQogIGJhY2tncm91bmQ6IHZhcigtLWJnLWRhcmspOw0KfQ0KDQo6Oi13ZWJraXQtc2Nyb2xsYmFyLXRodW1iIHsNCiAgYmFja2dyb3VuZDogcmdiYSgyNTUsIDI1NSwgMjU1LCAwLjEpOw0KICBib3JkZXItcmFkaXVzOiAyMHB4Ow0KICBib3JkZXI6IDJweCBzb2xpZCB2YXIoLS1iZy1kYXJrKTsNCn0NCg0KOjotd2Via2l0LXNjcm9sbGJhci10aHVtYjpob3ZlciB7DQogIGJhY2tncm91bmQ6IHZhcigtLWFjY2VudC1ibHVlKTsNCn0NCg0KLyogRmlyZWZveCAqLw0KKiB7DQogIHNjcm9sbGJhci13aWR0aDogdGhpbjsNCiAgc2Nyb2xsYmFyLWNvbG9yOiByZ2JhKDI1NSwgMjU1LCAyNTUsIDAuMSkgdmFyKC0tYmctZGFyayk7DQp9DQoNCi8qIC0tLSBSRVVTQUJMRSBMT0FESU5HIENPTVBPTkVOVCAtLS0gKi8NCi5sb2FkaW5nLW92ZXJsYXkgew0KICBkaXNwbGF5OiBmbGV4Ow0KICBmbGV4LWRpcmVjdGlvbjogY29sdW1uOw0KICBhbGlnbi1pdGVtczogY2VudGVyOw0KICBqdXN0aWZ5LWNvbnRlbnQ6IGNlbnRlcjsNCiAgZ2FwOiAxLjVyZW07DQogIHBhZGRpbmc6IDJyZW07DQogIHRleHQtYWxpZ246IGNlbnRlcjsNCiAgd2lkdGg6IDEwMCU7DQogIGhlaWdodDogMTAwJTsNCiAgbWluLWhlaWdodDogMjAwcHg7DQp9DQoNCi5sb2FkaW5nLW92ZXJsYXkuZnVsbC1zY3JlZW4gew0KICBwb3NpdGlvbjogZml4ZWQ7DQogIGluc2V0OiAwOw0KICBiYWNrZ3JvdW5kOiB2YXIoLS1iZy1kYXJrKTsNCiAgei1pbmRleDogOTk5OTsNCn0NCg0KLmxvYWRpbmctc3Bpbm5lciB7DQogIHdpZHRoOiA1MHB4Ow0KICBoZWlnaHQ6IDUwcHg7DQogIGJvcmRlcjogNHB4IHNvbGlkIHZhcigtLWJvcmRlci1zdWJ0bGUpOw0KICBib3JkZXItdG9wOiA0cHggc29saWQgdmFyKC0tYWNjZW50LWJsdWUpOw0KICBib3JkZXItcmFkaXVzOiA1MCU7DQogIGFuaW1hdGlvbjogc3BpbiAxcyBjdWJpYy1iZXppZXIoMC41LCAwLCAwLjUsIDEpIGluZmluaXRlOw0KICBib3gtc2hhZG93OiAwIDAgMjBweCByZ2JhKDAsIDEwMCwgMjU1LCAwLjE1KTsNCn0NCg0KLmxvYWRpbmctc3Bpbm5lci5zbWFsbCB7DQogIHdpZHRoOiAzMHB4Ow0KICBoZWlnaHQ6IDMwcHg7DQogIGJvcmRlci13aWR0aDogM3B4Ow0KfQ0KDQoubG9hZGluZy10ZXh0IHsNCiAgZm9udC1mYW1pbHk6IHZhcigtLWZvbnQtbW9ubyk7DQogIGZvbnQtc2l6ZTogMC45cmVtOw0KICBsZXR0ZXItc3BhY2luZzogMC4xNWVtOw0KICBjb2xvcjogdmFyKC0tdGV4dC1tdXRlZCk7DQogIHRleHQtdHJhbnNmb3JtOiB1cHBlcmNhc2U7DQogIGFuaW1hdGlvbjogcHVsc2UtdGV4dCAycyBlYXNlLWluLW91dCBpbmZpbml0ZTsNCn0NCg0KQGtleWZyYW1lcyBzcGluIHsNCiAgMCUgeyB0cmFuc2Zvcm06IHJvdGF0ZSgwZGVnKTsgfQ0KICAxMDAlIHsgdHJhbnNmb3JtOiByb3RhdGUoMzYwZGVnKTsgfQ0KfQ0KDQpAa2V5ZnJhbWVzIHB1bHNlLXRleHQgew0KICAwJSwgMTAwJSB7IG9wYWNpdHk6IDAuNDsgfQ0KICA1MCUgeyBvcGFjaXR5OiAxOyB9DQp9DQoNCkBrZXlmcmFtZXMgZmFkZS1pbiB7DQogIGZyb20geyBvcGFjaXR5OiAwLjg7IHRyYW5zZm9ybTogdHJhbnNsYXRlWSg0cHgpOyB9DQogIHRvIHsgb3BhY2l0eTogMTsgdHJhbnNmb3JtOiB0cmFuc2xhdGVZKDApOyB9DQp9DQoNCi5mYWRlLWluIHsNCiAgYW5pbWF0aW9uOiBmYWRlLWluIDAuM3MgZWFzZS1vdXQgZm9yd2FyZHM7DQp9DQoNCg==" 
+      media="print" 
+      onload="this.media='all'"
+    >
+    <noscript>
+    </noscript>
+
+    <script type="module" crossorigin src="/ati/assets/index-Bq0K7OxN.js"></script>
+    <link rel="stylesheet" crossorigin href="/ati/assets/index-DhLCWrXu.css">
+  </head>
+
+  <body>
+    <div id="root">
+      <div class="initial-loader">
+        <div class="spinner"></div>
+        <div
+          style="
+            font-size: 14px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+          "
+        >
+          Iniciando Sistema...
+        </div>
+      </div>
+      <!-- LCP Element Pre-render for Lighthouse -->
+      <div class="skeleton-home">
+        <div class="skeleton-card" style="height: 160px; margin-bottom: 2rem;"></div>
+        <div class="skeleton-card">
+          <div style="width: 150px; height: 20px; background: rgba(255,255,255,0.1); border-radius: 4px;"></div>
+          <p class="home-card-desc">
+            Use a barra lateral ou clique nos atalhos abaixo para navegar pelo sistema.
+          </p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div style="height: 60px; background: rgba(255,255,255,0.05); border-radius: 8px;"></div>
+            <div style="height: 60px; background: rgba(255,255,255,0.05); border-radius: 8px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

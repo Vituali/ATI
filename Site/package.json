@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "predeploy": "npm run build",
+    "predeploy": "node -e \"require('fs').copyFileSync('../.env.production','.env.production')\" && node switch-env.cjs prod && npm run build",
     "deploy": "gh-pages -d build",
     "env:dev": "node switch-env.cjs dev",
     "env:prod": "node switch-env.cjs prod"

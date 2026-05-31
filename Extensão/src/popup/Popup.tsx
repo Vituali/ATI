@@ -82,7 +82,18 @@ export const Popup = () => {
   }
 
   const handleOpenSite = () => {
-    chrome.tabs.create({ url: 'https://vituali.github.io/ATI/' })
+    const targetUrl = 'https://vituali.github.io/ati/'
+    chrome.tabs.query({ url: 'https://vituali.github.io/ati/*' }, (tabs) => {
+      if (tabs && tabs.length > 0) {
+        const tab = tabs[0]
+        chrome.tabs.update(tab.id!, { active: true })
+        if (tab.windowId) {
+          chrome.windows.update(tab.windowId, { focused: true })
+        }
+      } else {
+        chrome.tabs.create({ url: targetUrl })
+      }
+    })
   }
 
   const handleSaveSgp = () => {

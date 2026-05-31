@@ -44,23 +44,20 @@ async function checkSgpStatus(): Promise<{ isLoggedIn: boolean; baseUrl: string 
 
   // Fallback padrão se não houver preferência
   try {
-    const dns = await performLoginCheck(SGP_DNS)
-    if (dns.isLoggedIn) return dns
+    const ip35 = await performLoginCheck(SGP_IP_35)
+    if (ip35.isLoggedIn) return ip35
   } catch {
-    console.warn('Extensão ATI: DNS falhou, tentando IPs...')
+    console.warn('Extensão ATI: IP 35 falhou, tentando IP 53...')
   }
 
-  const ips = [SGP_IP_53, SGP_IP_35]
-  for (const ipUrl of ips) {
-    try {
-      const ip = await performLoginCheck(ipUrl)
-      if (ip.isLoggedIn) return ip
-    } catch {
-      console.warn(`Extensão ATI: IP ${ipUrl} falhou.`)
-    }
+  try {
+    const ip53 = await performLoginCheck(SGP_IP_53)
+    if (ip53.isLoggedIn) return ip53
+  } catch {
+    console.warn('Extensão ATI: IP 53 falhou.')
   }
 
-  return { isLoggedIn: false, baseUrl: SGP_DNS }
+  return { isLoggedIn: false, baseUrl: SGP_IP_35 }
 }
 
 export async function performSilentLogin(baseUrl: string): Promise<boolean> {

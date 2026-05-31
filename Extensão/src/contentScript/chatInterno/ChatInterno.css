@@ -108,3 +108,56 @@
   border: none;
   display: block;
 }
+
+.ati-chat-navbar {
+  display: flex;
+  background: #1a1a1a;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 6px 4px;
+  gap: 4px;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.ati-chat-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid transparent;
+  color: rgba(255, 255, 255, 0.55);
+  padding: 6px 2px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  flex: 1;
+  min-width: 0;
+  outline: none;
+}
+
+.ati-chat-nav-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+}
+
+.ati-chat-nav-item.active {
+  background: rgba(0, 100, 255, 0.12);
+  color: #0064ff;
+  border-color: rgba(0, 100, 255, 0.25);
+  box-shadow: 0 0 10px rgba(0, 100, 255, 0.1);
+}
+
+.ati-chat-nav-icon {
+  font-size: 16px;
+  margin-bottom: 2px;
+}
+
+.ati-chat-nav-text {
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.2px;
+}

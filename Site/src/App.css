@@ -89,3 +89,179 @@
   background-color: #ff6b81;
   color: white;
 }
+
+/* ==========================================
+   EMBED MODE premium navigation styles
+   ========================================== */
+
+.embed-panel-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background-color: var(--bg-dark, #111) !important;
+}
+
+.embed-navbar {
+  display: flex;
+  background: rgba(17, 17, 17, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.4rem 0.25rem;
+  gap: 0.25rem;
+  justify-content: space-around;
+  align-items: center;
+  backdrop-filter: blur(12px);
+  z-index: 100;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.embed-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid transparent;
+  color: rgba(255, 255, 255, 0.55);
+  padding: 0.3rem 0.25rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  flex: 1;
+  min-width: 0;
+  outline: none;
+}
+
+.embed-nav-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+}
+
+.embed-nav-item.active {
+  background: rgba(0, 100, 255, 0.12);
+  color: #0064ff;
+  border-color: rgba(0, 100, 255, 0.25);
+  box-shadow: 0 0 10px rgba(0, 100, 255, 0.1);
+}
+
+.embed-nav-icon {
+  font-size: 1.1rem;
+  margin-bottom: 1px;
+}
+
+.embed-nav-text {
+  font-size: 0.65rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.2px;
+}
+
+.embed-section-content {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--bg-dark, #111);
+  padding: 0.5rem;
+}
+
+/* Custom Compact Rules for Embed Mode */
+.layout-embed .main-content {
+  padding: 0.5rem !important;
+}
+
+.layout-embed .anotacoes-container,
+.layout-embed .conversor-page,
+.layout-embed .modelos-os-page,
+.layout-embed .respostas-rapidas-page,
+.layout-embed .senhas-page {
+  padding: 0.25rem !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+.layout-embed .modelos-os-header,
+.layout-embed .respostas-rapidas-header,
+.layout-embed .senhas-header {
+  margin-bottom: 0.75rem !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 0.5rem !important;
+}
+
+.layout-embed .modelos-os-titulo,
+.layout-embed .respostas-rapidas-titulo,
+.layout-embed .senhas-titulo {
+  font-size: 1.2rem !important;
+}
+
+.layout-embed .modelos-os-subtitulo,
+.layout-embed .respostas-rapidas-subtitulo {
+  font-size: 0.8rem !important;
+}
+
+.layout-embed .modelos-os-toolbar,
+.layout-embed .respostas-rapidas-toolbar {
+  flex-direction: column !important;
+  gap: 0.5rem !important;
+}
+
+.layout-embed .modelos-os-busca,
+.layout-embed .modelos-os-filtro-cat,
+.layout-embed .respostas-rapidas-busca,
+.layout-embed .respostas-rapidas-filtro,
+.layout-embed .senhas-busca {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.layout-embed .modelos-os-lista,
+.layout-embed .respostas-rapidas-lista,
+.layout-embed .senhas-lista {
+  grid-template-columns: 1fr !important;
+  gap: 0.75rem !important;
+}
+
+/* Embedded Chat Interno Polishing */
+.layout-embed .ci-header {
+  display: none !important;
+}
+
+.layout-embed .ci-page {
+  height: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  gap: 0 !important;
+}
+
+.layout-embed .ci-mensagens {
+  border-left: none !important;
+  border-right: none !important;
+  padding: 0.75rem !important;
+}
+
+.layout-embed .ci-input-area {
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0.75rem 0.5rem !important;
+  background: var(--bg-card, #1a1a1a) !important;
+}
+
+/* Embedded Conversor Polishing to prevent truncated inputs */
+.layout-embed .conv-inline {
+  grid-template-columns: 1fr !important;
+  gap: 10px !important;
+}
+
+.layout-embed .conv-card {
+  padding: 12px 14px !important;
+  gap: 0.75rem !important;
+}
+
+.layout-embed .conv-card-titulo {
+  padding-bottom: 6px !important;
+}
+

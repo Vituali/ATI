@@ -31,8 +31,8 @@ export async function showOSModal(allTemplates: OsTemplate[], extractChatFn: () 
 
     const storage = await chrome.storage.local.get('ati_preferred_sgp')
     const currentPref = storage.ati_preferred_sgp || SGP_IP_53
-    const isOld = currentPref === SGP_IP_35
-    const modalTitle = isOld
+    let activeIsOld = currentPref === SGP_IP_35
+    const modalTitle = activeIsOld
       ? 'Criar Ordem de Serviço <span class="sgp-badge sgp-badge--old">SGP ANTIGO</span>'
       : 'Criar Ordem de Serviço <span class="sgp-badge sgp-badge--new">SGP NOVO</span>'
 
@@ -65,7 +65,7 @@ export async function showOSModal(allTemplates: OsTemplate[], extractChatFn: () 
     // Setup de handlers
     setupDraftSaving(chatId, osTextArea, modalElement, () => sgpData)
     setupOsCheckbox(osCheckbox, statusCheckbox, statusLabel)
-    setupTemplateButtons(modalElement, osTextArea, osBaseText, () => sgpData?.occurrenceTypes ?? [], !isOld)
+    setupTemplateButtons(modalElement, osTextArea, osBaseText, () => sgpData?.occurrenceTypes ?? [], () => !activeIsOld)
 
     // Carrega dados SGP (cache ou busca)
     loadSgpData({
@@ -77,8 +77,20 @@ export async function showOSModal(allTemplates: OsTemplate[], extractChatFn: () 
       sgpButton,
       signal: modalController.signal,
       existingDraft,
-      onSgpDataLoaded: (data) => {
+      onSgpDataLoaded: async (data) => {
         sgpData = data
+
+        // Atualiza a UI do Header se o SGP tiver sido alterado pelo auto-swap
+        const freshStorage = await chrome.storage.local.get('ati_preferred_sgp')
+        const freshPref = freshStorage.ati_preferred_sgp || SGP_IP_53
+        activeIsOld = freshPref === SGP_IP_35
+
+        const headerEl = modalElement.querySelector('.ati-os-modal-header')
+        if (headerEl) {
+          headerEl.innerHTML = activeIsOld
+            ? 'Criar Ordem de Serviço <span class="sgp-badge sgp-badge--old">SGP ANTIGO</span>'
+            : 'Criar Ordem de Serviço <span class="sgp-badge sgp-badge--new">SGP NOVO</span>'
+        }
       },
     })
 
@@ -91,6 +103,9 @@ export async function showOSModal(allTemplates: OsTemplate[], extractChatFn: () 
       const newSgp = currentPref === SGP_IP_35 ? SGP_IP_53 : SGP_IP_35
 
       await chrome.storage.local.set({ ati_preferred_sgp: newSgp })
+      if (chatId) {
+        await chrome.storage.local.set({ [`ati_manual_sgp_force_${chatId}`]: newSgp })
+      }
       await safeSendMessage({ action: 'clearSgpCache', cacheKey: 'all' })
       await chrome.storage.local.remove('sgp_status_cache')
 
@@ -133,7 +148,10 @@ export async function showOSModal(allTemplates: OsTemplate[], extractChatFn: () 
 
     if (userAction.action === 'copy') {
       await navigator.clipboard.writeText(submissionData.osText)
-      if (chatId) clearDraft(chatId)
+      if (chatId) {
+        clearDraft(chatId)
+        await chrome.storage.local.remove(`ati_manual_sgp_force_${chatId}`)
+      }
       safeSendMessage<ClearSgpCacheRequest>({
         action: 'clearSgpCache',
         cacheKey: clientKey,
@@ -143,7 +161,10 @@ export async function showOSModal(allTemplates: OsTemplate[], extractChatFn: () 
       if (!submissionData.osText || !submissionData.selectedContract || !submissionData.occurrenceType) {
         throw new Error('Descrição, Contrato e Tipo são obrigatórios.')
       }
-      if (chatId) clearDraft(chatId)
+      if (chatId) {
+        clearDraft(chatId)
+        await chrome.storage.local.remove(`ati_manual_sgp_force_${chatId}`)
+      }
       safeSendMessage<ClearSgpCacheRequest>({
         action: 'clearSgpCache',
         cacheKey: clientKey,
@@ -155,6 +176,9 @@ export async function showOSModal(allTemplates: OsTemplate[], extractChatFn: () 
       })
     }
   } catch (error: unknown) {
+    if (chatId) {
+      await chrome.storage.local.remove(`ati_manual_sgp_force_${chatId}`)
+    }
     const isCancel = error instanceof Error ? error.message === 'cancel' : error === 'cancel'
     if (!isCancel) {
       console.error('Extensão ATI: Erro no modal O.S.', error)

@@ -193,20 +193,27 @@ function injectListeners(): void {
 
     btn.dataset.listenerAdded = 'true'
 
-    // Lógica para detecção de clique longo (2s)
+    // Lógica para detecção de clique longo (SGP button)
     let pressTimer: ReturnType<typeof setTimeout> | null = null
     let isLongPress = false
 
-    const handleSgpLongPress = async () => {
-      isLongPress = true
-      log('Clique longo detectado, abrindo seletor de SGP...')
-      await showSgpSelectionModal()
-    }
+    if (id === 'ati-open-sgp') {
+      const handleLongPress = async () => {
+        isLongPress = true
+        log('Clique longo detectado no botão SGP, forçando exibição do leque de cadastros...')
+        const data = await getClientData()
+        if (!data.isIdentified && !data.cpfCnpj && !data.phoneNumber) {
+          showToast('Extensão ATI: Sem dados do cliente para realizar busca.', 'error')
+          return
+        }
+        await execAction(btn, async () => {
+          await smartOpenSGP(data, currentChatId ?? undefined, true)
+        })
+      }
 
-    if (id === 'ati-open-os' || id === 'ati-open-sgp') {
       btn.addEventListener('mousedown', () => {
         isLongPress = false
-        pressTimer = setTimeout(handleSgpLongPress, 500)
+        pressTimer = setTimeout(handleLongPress, 500)
       })
 
       btn.addEventListener('mouseup', () => {

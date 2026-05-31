@@ -34,7 +34,7 @@ chrome.runtime.onMessage.addListener((request: ExtensionRequest, _sender, sendRe
   }
 
   if (request.action === 'openInSgp') {
-    handleOpenInSgp(request.clientData, request.cachedContract, request.forceClientId, request.uid)
+    handleOpenInSgp(request.clientData, request.cachedContract, request.forceClientId, request.uid, request.forceShowModal)
       .then((res) => sendResponse(res))
       .catch((error) => sendResponse({ success: false, error: error.message }))
     return true

@@ -17,7 +17,7 @@ export function setCachedContract(value: string | null) {
   cachedContract = value
 }
 
-export async function smartOpenSGP(clientData: ClientData, uid?: string): Promise<void> {
+export async function smartOpenSGP(clientData: ClientData, uid?: string, forceShowModal?: boolean): Promise<void> {
   if (isSearchRunning) {
     log('Busca já em andamento, ignorando clique duplo.')
     return
@@ -33,6 +33,7 @@ export async function smartOpenSGP(clientData: ClientData, uid?: string): Promis
         clientData,
         cachedContract,
         uid,
+        forceShowModal,
       }),
       new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout: background não respondeu em 5s')), 5000)),
     ])

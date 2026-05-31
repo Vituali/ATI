@@ -6,7 +6,6 @@ import { SgpStatus } from './types'
 import { getLoginCache, setLoginCache, clearLoginCache } from './cache'
 
 const SGP_URLS = {
-  dns: 'https://sgp.atiinternet.com.br',
   ip: 'http://201.158.20.35:8000',
   ipNew: 'http://201.158.20.53:8000',
 } as const
@@ -49,27 +48,20 @@ async function checkSgpStatus(): Promise<SgpStatus> {
 
   // Fallback caso não haja preferência salva
   try {
-    const dnsStatus = await performLoginCheck(SGP_URLS.dns)
-    if (dnsStatus.isLoggedIn) return dnsStatus
-  } catch {
-    console.warn('Extensão ATI: DNS falhou, tentando IP direto...')
-  }
-
-  try {
     const ipStatus = await performLoginCheck(SGP_URLS.ip)
     if (ipStatus.isLoggedIn) return ipStatus
   } catch {
-    console.warn('Extensão ATI: IP antigo falhou, tentando IP novo...')
+    console.warn('Extensão ATI: IP 35 falhou, tentando IP 53...')
   }
 
   try {
     const ipNewStatus = await performLoginCheck(SGP_URLS.ipNew)
     if (ipNewStatus.isLoggedIn) return ipNewStatus
   } catch {
-    console.error('Extensão ATI: IP novo também falhou.')
+    console.error('Extensão ATI: IP 53 também falhou.')
   }
 
-  return { isLoggedIn: false, baseUrl: SGP_URLS.dns }
+  return { isLoggedIn: false, baseUrl: SGP_URLS.ip }
 }
 
 // Verifica status com cache de 2 horas

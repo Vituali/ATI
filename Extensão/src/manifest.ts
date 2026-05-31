@@ -31,7 +31,7 @@ export default defineManifest({
       js: ['src/contentScript/sgp/fillForm.ts'],
     },
     {
-      matches: ['https://vituali.github.io/ATI/*', 'http://localhost:*/*'],
+      matches: ['https://vituali.github.io/ati/*'],
       js: ['src/contentScript/sso/bridge.ts'],
     },
   ],
@@ -42,19 +42,8 @@ export default defineManifest({
     },
   ],
   permissions: ['sidePanel', 'storage', 'tabs', 'alarms', 'notifications'],
-  host_permissions: [
-    '*://*.chatmix.com.br/*', 
-    '*://sgp.atiinternet.com.br/*', 
-    'http://201.158.20.35:8000/*', 
-    'http://201.158.20.53:8000/*',
-    'https://site-ati-75d83-default-rtdb.firebaseio.com/*'
-  ],
+  host_permissions: ['*://*.chatmix.com.br/*', '*://sgp.atiinternet.com.br/*', 'http://201.158.20.35:8000/*', 'http://201.158.20.53:8000/*', 'https://site-ati-75d83-default-rtdb.firebaseio.com/*'],
   externally_connectable: {
-    matches: [
-      'https://site-ati-75d83.web.app/*',
-      'https://site-ati-75d83.firebaseapp.com/*',
-      'https://vituali.github.io/*',
-      'http://localhost/*'
-    ]
-  }
+    matches: ['https://site-ati-75d83.web.app/*', 'https://site-ati-75d83.firebaseapp.com/*', 'https://vituali.github.io/*'],
+  },
 })

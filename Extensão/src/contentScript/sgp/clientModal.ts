@@ -58,7 +58,8 @@ export async function showClientSelectionModal(clients: { id: string; text: stri
 
       const btn = document.createElement('button')
       btn.className = `ati-client-modal-btn ati-client-modal-btn--${status}`
-      btn.textContent = `ID ${client.id} - ${client.text}`
+      const displayId = client.id.includes('|') ? client.id.split('|')[1] : client.id
+      btn.textContent = `ID ${displayId} - ${client.text}`
 
       btn.onclick = () => {
         cleanup()

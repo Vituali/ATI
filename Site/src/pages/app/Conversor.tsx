@@ -46,9 +46,13 @@ type Portador = "none" | "ITAU AGT" | "GERENCIANET AGT" | "ITAU ATI" | "GERENCIA
 
 function formatAddress(fullAddress: string): string {
   if (!fullAddress) return "N/A";
-  const parts = fullAddress.split(",");
-  if (parts.length < 3) return fullAddress;
-  return parts.slice(0, 3).join(",").replace(",", " ").trim();
+  // Mantém o endereço completo removendo apenas quebras de linha, espaços duplos e a terminação '/ RJ.' de forma segura
+  return fullAddress
+    .replace(/\r?\n/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/\s*\/?\s*RJ\.?$/i, "")
+    .replace(/,\s*$/, "")
+    .trim();
 }
 
 function formatPhone(phone: string): { formatted: string; isValid: boolean } {

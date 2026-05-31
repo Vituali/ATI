@@ -11,6 +11,7 @@ export interface OpenInSgpRequest {
   cachedContract: string | null
   forceClientId?: string
   uid?: string
+  forceShowModal?: boolean
 }
 export interface GetSgpFormParamsRequest {
   action: 'getSgpFormParams'

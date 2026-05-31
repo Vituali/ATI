@@ -8,6 +8,12 @@ import { Sidebar, Footer, LoadingOverlay, ToastContainer, UserPanel, BugReportMo
 import { ref, onValue } from "firebase/database";
 import "./App.css";
 
+const isVideoUrl = (url: string) => {
+  if (!url) return false;
+  const cleanUrl = url.split("?")[0].toLowerCase();
+  return cleanUrl.endsWith(".mp4") || cleanUrl.endsWith(".webm") || cleanUrl.endsWith(".ogg");
+};
+
 type AuthScreen = "login" | "register";
 
 export default function App() {
@@ -17,6 +23,12 @@ export default function App() {
 
   const [authScreen, setAuthScreen] = useState<AuthScreen>("login");
   const [currentSection, setCurrentSection] = useState<Section>("home");
+  const [embedSection, setEmbedSection] = useState<Section>(() => {
+    const sec = params.get("section") as Section;
+    return sec && ["chat_interno", "modelos_os", "senhas", "anotacoes", "conversor", "respostas_rapidas"].includes(sec)
+      ? sec
+      : "chat_interno";
+  });
   const [theme, setTheme] = useState<"dark" | "light">(() => {
     return (localStorage.getItem("ati-theme") as "dark" | "light") || "dark";
   });
@@ -115,6 +127,15 @@ export default function App() {
     localStorage.setItem("ati-theme", theme);
   }, [theme]);
 
+  // Sincroniza a aba ativa em modo embed quando o iframe src muda de section
+  useEffect(() => {
+    if (!isEmbed) return;
+    const sec = new URLSearchParams(window.location.search).get("section") as Section;
+    if (sec && ["chat_interno", "modelos_os", "senhas", "anotacoes", "conversor", "respostas_rapidas"].includes(sec)) {
+      setEmbedSection(sec);
+    }
+  }, [window.location.search, isEmbed]);
+
   // SSO: Ouvinte de Mensagens da Extensão
   useEffect(() => {
     const handleExtensionMessages = (event: MessageEvent) => {
@@ -176,10 +197,52 @@ export default function App() {
         return <div className="layout-embed"><Login onLogin={() => {}} onGoToRegister={() => setAuthScreen("register")} /></div>;
     }
 
+    const availableTabs = [
+      { id: "chat_interno" as Section, label: "Chat", icon: "💬" },
+      { id: "modelos_os" as Section, label: "O.S.", icon: "📋" },
+      { id: "senhas" as Section, label: "Senhas", icon: "🔑" },
+      { id: "anotacoes" as Section, label: "Notas", icon: "📝" },
+      { id: "conversor" as Section, label: "Conversor", icon: "🔄" },
+      { id: "respostas_rapidas" as Section, label: "Respostas", icon: "🗨️" },
+    ].filter(tab => canAccess(user.role, user.setor, tab.id));
+
+    const activeEmbedSection = availableTabs.some(t => t.id === embedSection)
+      ? embedSection
+      : (availableTabs[0]?.id || "chat_interno");
+
     return (
-      <div className="layout-embed">
-         <ChatInterno unreadRooms={[]} />
-         <ToastContainer />
+      <div className={`layout-embed fade-in ${bgUrl ? "has-custom-bg" : ""}`}>
+        {/* Plano de fundo customizado no modo Embed */}
+        {bgUrl && (
+          <div className="app-custom-bg-container">
+            {isVideoUrl(bgUrl) ? (
+              <video
+                src={bgUrl}
+                autoPlay
+                loop
+                muted
+                playsInline
+                // @ts-expect-error: referrerPolicy is valid for video but missing in React types
+                referrerPolicy="no-referrer"
+                className="app-custom-bg-content"
+              />
+            ) : (
+              <img src={bgUrl} alt="" crossOrigin="anonymous" referrerPolicy="no-referrer" className="app-custom-bg-content image" />
+            )}
+          </div>
+        )}
+
+        <div className="embed-panel-container">
+          <div 
+            className="embed-section-content" 
+            style={{ padding: activeEmbedSection === "chat_interno" ? 0 : "12px 10px" }}
+          >
+            <Suspense fallback={<LoadingOverlay message="Carregando..." />}>
+              {renderSection(activeEmbedSection, user)}
+            </Suspense>
+          </div>
+        </div>
+        <ToastContainer />
       </div>
     );
   }
@@ -196,12 +259,6 @@ export default function App() {
 
   // Se a seção não é permitida para role+setor, volta pra home
   const safeSection: Section = canAccess(user.role, user.setor, currentSection) ? currentSection : "home";
-
-  const isVideoUrl = (url: string) => {
-    if (!url) return false;
-    const cleanUrl = url.split("?")[0].toLowerCase();
-    return cleanUrl.endsWith(".mp4") || cleanUrl.endsWith(".webm") || cleanUrl.endsWith(".ogg");
-  };
 
   return (
     <>

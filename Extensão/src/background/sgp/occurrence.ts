@@ -1,8 +1,4 @@
-// =================================================================
-// SGP — OCORRÊNCIAS E ABERTURA DE ABAS
-// =================================================================
-
-import { ClientData } from './constants'
+import { ClientData, SGP_DNS, SGP_IP_53 } from './constants'
 import { getSgpStatus } from './auth'
 import { findClientInSgp } from './search'
 import { fetchContractOnlineStatus, buildContracts, extractOptions } from './contracts'
@@ -32,7 +28,53 @@ export async function focusOrOpenTab(url: string, clientId?: string): Promise<vo
   await chrome.tabs.create({ url })
 }
 
-export async function handleOpenInSgp(clientData: ClientData, cachedContract: string | null, forceClientId?: string, uid?: string): Promise<any> {
+async function enrichSgpClient(baseUrl: string, client: { id: string; text: string }, label: string): Promise<{ id: string; text: string; systemLabel: string; baseUrl: string; isActive: boolean }> {
+  try {
+    const url = `${baseUrl}/admin/atendimento/cliente/${client.id}/ocorrencia/add/`
+    const response = await fetch(url, {
+      credentials: 'include',
+      signal: AbortSignal.timeout(8000),
+    })
+    if (!response.ok) throw new Error('Network response was not ok')
+    const html = await response.text()
+
+    const initialContracts = extractOptions(html, /<select[^>]+id=['"]id_clientecontrato['"][^>]*>([\s\S]*?)<\/select>/)
+    const needsOnlineStatus = initialContracts.some((c) => {
+      const lower = c.text.toLowerCase()
+      return !lower.includes('cancelado') && !lower.includes('inativo') && !lower.includes('suspenso')
+    })
+
+    const onlineStatusMap = needsOnlineStatus ? await fetchContractOnlineStatus(baseUrl, client.id) : new Map<string, boolean>()
+    const contracts = await buildContracts(baseUrl, client, html, false, onlineStatusMap)
+
+    const clientText = contracts.length > 0 ? contracts.map((c) => c.text).join(' | ') : 'Sem contratos ativos'
+    
+    // Verifica se algum contrato está ativo
+    const isActive = contracts.some((c) => {
+      const lower = c.text.toLowerCase()
+      return lower.includes('ativo') && !lower.includes('inativo')
+    })
+
+    return { 
+      id: client.id, 
+      text: clientText, 
+      systemLabel: label, 
+      baseUrl, 
+      isActive 
+    }
+  } catch (e) {
+    console.warn(`Extensão ATI: Erro ao buscar contratos para cliente ${client.id} em ${baseUrl}.`, e)
+    return { 
+      id: client.id, 
+      text: client.text || 'Erro ao buscar contratos ou sem contratos', 
+      systemLabel: label, 
+      baseUrl, 
+      isActive: false 
+    }
+  }
+}
+
+export async function handleOpenInSgp(clientData: ClientData, cachedContract: string | null, forceClientId?: string, uid?: string, forceShowModal?: boolean): Promise<any> {
   // Forçamos uma verificação real de login para garantir que não vamos abrir uma aba
   // que caia na tela de login (especialmente se o ID vier do cache ou for extraído do DOM).
   const { isLoggedIn, baseUrl } = await getSgpStatus(true)
@@ -50,13 +92,26 @@ export async function handleOpenInSgp(clientData: ClientData, cachedContract: st
     return { success: true }
   }
 
-  if (forceClientId) {
-    console.log(`Extensão ATI: ID do cliente forçado — ID ${forceClientId}`)
-    await focusOrOpenTab(`${baseUrl}/admin/cliente/${forceClientId}/contratos/`, forceClientId)
-    return { success: true, clientId: forceClientId }
+  let targetBaseUrl = baseUrl
+  let targetClientId = forceClientId
+
+  if (forceClientId && forceClientId.includes('|')) {
+    const parts = forceClientId.split('|')
+    targetBaseUrl = parts[0]
+    targetClientId = parts[1]
+    
+    // Define como preferido para que futuros acessos também usem este ambiente
+    await chrome.storage.local.set({ ati_preferred_sgp: targetBaseUrl })
+    console.log(`Extensão ATI: Definindo SGP preferido como ${targetBaseUrl}`)
   }
 
-  if (clientData.clientSgpId) {
+  if (targetClientId) {
+    console.log(`Extensão ATI: ID do cliente forçado — ID ${targetClientId} em ${targetBaseUrl}`)
+    await focusOrOpenTab(`${targetBaseUrl}/admin/cliente/${targetClientId}/contratos/`, targetClientId)
+    return { success: true, clientId: targetClientId }
+  }
+
+  if (!forceShowModal && clientData.clientSgpId) {
     // Só utiliza o ID extraído do DOM se ele pertencer EXATAMENTE ao mesmo ambiente (baseUrl) atual
     if (clientData.clientSgpOrigin === baseUrl) {
       console.log(`Extensão ATI: ID do cliente extraído do DOM — ID ${clientData.clientSgpId}`)
@@ -75,65 +130,148 @@ export async function handleOpenInSgp(clientData: ClientData, cachedContract: st
     return { success: true }
   }
 
-  const clients = await findClientInSgp(baseUrl, clientData, uid)
+  console.log('Extensão ATI: Iniciando busca unificada em ambos os SGPs...')
+  
+  // Realiza as buscas em paralelo nos dois sistemas
+  const [clientsPrincipal, clientsReserva] = await Promise.all([
+    findClientInSgp(SGP_DNS, clientData, uid).catch((err) => {
+      console.error('Erro na busca SGP Principal:', err)
+      return null
+    }),
+    findClientInSgp(SGP_IP_53, clientData, uid).catch((err) => {
+      console.error('Erro na busca SGP Reserva:', err)
+      return null
+    })
+  ])
 
-  if (clients && clients.length > 0) {
-    if (clients.length === 1) {
-      const client = clients[0]
-      console.log(`Extensão ATI: Cliente encontrado — ID ${client.id}`)
-      await focusOrOpenTab(`${baseUrl}/admin/cliente/${client.id}/contratos/`, client.id)
-      return { success: true, clientId: client.id }
-    } else {
-      console.log(`Extensão ATI: Múltiplos clientes encontrados — ${clients.length} opções`)
+  // Enriquecimento em paralelo de todos os resultados encontrados
+  const enrichmentPromises: Promise<any>[] = []
 
-      const enrichedClients = await Promise.all(
-        clients.map(async (client) => {
-          try {
-            const url = `${baseUrl}/admin/atendimento/cliente/${client.id}/ocorrencia/add/`
-            const response = await fetch(url, {
-              credentials: 'include',
-              signal: AbortSignal.timeout(8000),
-            })
-            if (!response.ok) throw new Error('Network response was not ok')
-            const html = await response.text()
+  if (clientsPrincipal && clientsPrincipal.length > 0) {
+    clientsPrincipal.forEach((c) => {
+      enrichmentPromises.push(enrichSgpClient(SGP_DNS, c, 'Principal'))
+    })
+  }
 
-            const initialContracts = extractOptions(html, /<select[^>]+id=['"]id_clientecontrato['"][^>]*>([\s\S]*?)<\/select>/)
-            const needsOnlineStatus = initialContracts.some((c) => {
-              const lower = c.text.toLowerCase()
-              return !lower.includes('cancelado') && !lower.includes('inativo') && !lower.includes('suspenso')
-            })
+  if (clientsReserva && clientsReserva.length > 0) {
+    clientsReserva.forEach((c) => {
+      enrichmentPromises.push(enrichSgpClient(SGP_IP_53, c, 'Reserva (IP 53)'))
+    })
+  }
 
-            const onlineStatusMap = needsOnlineStatus ? await fetchContractOnlineStatus(baseUrl, client.id) : new Map<string, boolean>()
+  const allClients = await Promise.all(enrichmentPromises)
 
-            const contracts = await buildContracts(baseUrl, client, html, false, onlineStatusMap)
-
-            const clientText = contracts.length > 0 ? contracts.map((c) => c.text).join(' | ') : 'Sem contratos ativos'
-
-            return { id: client.id, text: clientText }
-          } catch (e) {
-            console.warn(`Extensão ATI: Erro ao buscar contratos para cliente ${client.id}.`, e)
-            return { id: client.id, text: 'Erro ao buscar contratos ou sem contratos' }
-          }
-        }),
-      )
-
-      return { success: true, multipleClients: true, clients: enrichedClients }
-    }
-  } else {
-    console.warn('Extensão ATI: Cliente não encontrado, abrindo admin geral.')
+  if (allClients.length === 0) {
+    console.warn('Extensão ATI: Cliente não encontrado em nenhum dos sistemas.')
     await focusOrOpenTab(`${baseUrl}/admin/`)
     return { success: true }
   }
+
+  // Se houver exatamente 1 cliente em total nas buscas, vai direto nele (se não for forçado a exibir o modal)
+  if (!forceShowModal && allClients.length === 1) {
+    const client = allClients[0]
+    console.log(`Extensão ATI: Único cliente encontrado em ${client.systemLabel} — ID ${client.id}`)
+    
+    // Atualiza SGP preferido
+    await chrome.storage.local.set({ ati_preferred_sgp: client.baseUrl })
+    
+    await focusOrOpenTab(`${client.baseUrl}/admin/cliente/${client.id}/contratos/`, client.id)
+    return { success: true, clientId: client.id }
+  }
+
+  // Se houver múltiplos cadastros, mas apenas 1 ATIVO em todo o ecossistema,
+  // vai direto nele automaticamente! (se não for forçado a exibir o modal)
+  const activeClients = allClients.filter((c) => c.isActive)
+  if (!forceShowModal && activeClients.length === 1) {
+    const client = activeClients[0]
+    console.log(`Extensão ATI: Único cadastro ativo encontrado em ${client.systemLabel} — ID ${client.id}. Redirecionando automaticamente...`)
+    
+    // Atualiza SGP preferido
+    await chrome.storage.local.set({ ati_preferred_sgp: client.baseUrl })
+    
+    await focusOrOpenTab(`${client.baseUrl}/admin/cliente/${client.id}/contratos/`, client.id)
+    return { success: true, clientId: client.id }
+  }
+
+  // Se houver mais de 1 cadastro ativo ou nenhum ativo (ex: todos cancelados/inativos),
+  // exibe o modal de seleção unificado contendo todas as opções!
+  console.log(`Extensão ATI: Múltiplas opções encontradas no ecossistema (${allClients.length} cadastros). Exibindo modal...`)
+  
+  const formattedClients = allClients.map((c) => ({
+    id: `${c.baseUrl}|${c.id}`, // ID unificado contendo o ambiente do cadastro
+    text: `[${c.systemLabel}] - ${c.text}`
+  }))
+
+  return { success: true, multipleClients: true, clients: formattedClients }
 }
 
 export async function getSgpFormParams(clientData: ClientData, chatId: string, idToken: string, uid?: string): Promise<SgpData> {
-  const { isLoggedIn, baseUrl } = await getSgpStatus()
+  // 1. Verifica se o usuário forçou um SGP manualmente para este atendimento (evita loop infinito se ele quiser trocar de SGP no modal)
+  const forceResult = await chrome.storage.local.get(`ati_manual_sgp_force_${chatId}`)
+  const forcedSgp = forceResult[`ati_manual_sgp_force_${chatId}`]
+
+  let targetBaseUrl = forcedSgp || (await getSgpStatus()).baseUrl
+
+  const hasData = !forcedSgp && (clientData.clientSgpId || clientData.cpfCnpj || (clientData.fullName && clientData.fullName !== 'Cliente') || clientData.phoneNumber)
+
+  if (hasData) {
+    try {
+      const [clientsPrincipal, clientsReserva] = await Promise.all([
+        findClientInSgp(SGP_DNS, clientData, uid).catch(() => null),
+        findClientInSgp(SGP_IP_53, clientData, uid).catch(() => null)
+      ])
+
+      const enrichmentPromises: Promise<any>[] = []
+
+      if (clientsPrincipal && clientsPrincipal.length > 0) {
+        clientsPrincipal.forEach((c) => {
+          enrichmentPromises.push(enrichSgpClient(SGP_DNS, c, 'Principal'))
+        })
+      }
+
+      if (clientsReserva && clientsReserva.length > 0) {
+        clientsReserva.forEach((c) => {
+          enrichmentPromises.push(enrichSgpClient(SGP_IP_53, c, 'Reserva (IP 53)'))
+        })
+      }
+
+      const allClients = await Promise.all(enrichmentPromises)
+
+      let autoSelectedClient: any = null
+
+      if (allClients.length === 1) {
+        autoSelectedClient = allClients[0]
+      } else {
+        const activeClients = allClients.filter((c) => c.isActive)
+        if (activeClients.length === 1) {
+          autoSelectedClient = activeClients[0]
+        }
+      }
+
+      if (autoSelectedClient) {
+        targetBaseUrl = autoSelectedClient.baseUrl
+        // Salva o preferido para futuras operações
+        await chrome.storage.local.set({ ati_preferred_sgp: targetBaseUrl })
+        console.log(`Extensão ATI: Auto-selecionado SGP preferido no FormParams como ${targetBaseUrl}`)
+        // Também injeta o ID correto para busca no SGP selecionado
+        clientData.clientSgpId = autoSelectedClient.id
+        clientData.clientSgpOrigin = targetBaseUrl
+      }
+    } catch (e) {
+      console.warn('Extensão ATI: Erro no auto-seletor do FormParams, usando preferido padrão.', e)
+    }
+  }
+
+  if (forcedSgp) {
+    // Se foi forçado manualmente, garante que salvamos e usamos ele como preferido
+    await chrome.storage.local.set({ ati_preferred_sgp: targetBaseUrl })
+    console.log(`Extensão ATI: Usando SGP forçado manualmente para este atendimento: ${targetBaseUrl}`)
+  }
+
+  const { isLoggedIn, baseUrl } = await getSgpStatus(true) // Força check com a baseUrl atualizada
   if (!isLoggedIn) throw new Error('Não está logado no SGP.')
 
   const clientKey = clientData.clientSgpId || clientData.cpfCnpj || clientData.phoneNumber || clientData.fullName || chatId
-
-  // Adiciona o baseUrl na chave para evitar que IDs de um ambiente (.35)
-  // sejam usados em outro (.53) onde podem ser diferentes.
   const cacheKey = `${baseUrl}_${clientKey}`
 
   if (await hasSgpFormCache(cacheKey)) {

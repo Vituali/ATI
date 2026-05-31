@@ -63,7 +63,7 @@ export function setupOsCheckbox(osCheckbox: HTMLInputElement, statusCheckbox: HT
 // BOTÕES DE TEMPLATE
 // =================================================================
 
-export function setupTemplateButtons(modalElement: HTMLElement, osTextArea: HTMLTextAreaElement, osBaseText: string, getOccurrenceTypes: () => SgpOccurrenceType[], is53: boolean): void {
+export function setupTemplateButtons(modalElement: HTMLElement, osTextArea: HTMLTextAreaElement, osBaseText: string, getOccurrenceTypes: () => SgpOccurrenceType[], is53: boolean | (() => boolean)): void {
   modalElement.querySelectorAll<HTMLButtonElement>('.template-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
       const templateText = btn.getAttribute('data-template-text') ?? ''
@@ -81,11 +81,15 @@ export function setupTemplateButtons(modalElement: HTMLElement, osTextArea: HTML
       if (searchInput && hiddenInput) {
         const types = getOccurrenceTypes()
         let found: SgpOccurrenceType | undefined
+        const activeIs53 = typeof is53 === 'function' ? is53() : is53
 
-        if (is53) {
-          // 1. Tenta match exato pelo ID de 53
+        if (activeIs53) {
+          // 1. Tenta match exato pelo ID de 53 (se o nome coincidir com o esperado)
           if (typeId53) {
-            found = types.find((t) => String(t.id) === String(typeId53))
+            const byId = types.find((t) => String(t.id) === String(typeId53))
+            if (byId && (!typeName || byId.text.toLowerCase().trim() === typeName.toLowerCase().trim())) {
+              found = byId
+            }
           }
           // 2. Fallback: match por nome amigável
           if (!found && typeName) {
@@ -93,9 +97,12 @@ export function setupTemplateButtons(modalElement: HTMLElement, osTextArea: HTML
             found = types.find((t) => t.text.toLowerCase().trim() === cleanName)
           }
         } else {
-          // 1. Tenta match exato pelo ID de 35 (legado)
+          // 1. Tenta match exato pelo ID de 35 (legado) (se o nome coincidir com o esperado)
           if (typeId35) {
-            found = types.find((t) => String(t.id) === String(typeId35))
+            const byId = types.find((t) => String(t.id) === String(typeId35))
+            if (byId && (!typeName || byId.text.toLowerCase().trim() === typeName.toLowerCase().trim())) {
+              found = byId
+            }
           }
           // 2. Fallback: match por nome amigável
           if (!found && typeName) {

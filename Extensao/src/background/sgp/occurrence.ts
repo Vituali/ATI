@@ -161,9 +161,14 @@ export async function handleOpenInSgp(clientData: ClientData, cachedContract: st
   let targetClientId = forceClientId
 
   if (targetClientId) {
+    if (targetClientId.includes('|')) {
+      const parts = targetClientId.split('|')
+      targetBaseUrl = parts[0]
+      targetClientId = parts[1]
+    }
     console.log(`Extensão ATI: ID do cliente forçado — ID ${targetClientId} em ${targetBaseUrl}`)
     await focusOrOpenTab(`${targetBaseUrl}/admin/cliente/${targetClientId}/contratos/`, targetClientId)
-    return { success: true, clientId: targetClientId }
+    return { success: true, clientId: targetClientId, sgpOrigin: targetBaseUrl }
   }
 
   if (!forceShowModal && clientData.clientSgpId) {
@@ -171,7 +176,7 @@ export async function handleOpenInSgp(clientData: ClientData, cachedContract: st
     if (clientData.clientSgpOrigin === baseUrl) {
       console.log(`Extensão ATI: ID do cliente extraído do DOM — ID ${clientData.clientSgpId}`)
       await focusOrOpenTab(`${baseUrl}/admin/cliente/${clientData.clientSgpId}/contratos/`, clientData.clientSgpId)
-      return { success: true, clientId: clientData.clientSgpId }
+      return { success: true, clientId: clientData.clientSgpId, sgpOrigin: baseUrl }
     } else {
       console.log(`Extensão ATI: ID ${clientData.clientSgpId} ignorado pois a origem (${clientData.clientSgpOrigin || 'desconhecida'}) não coincide com o ambiente ativo (${baseUrl}). Forçando nova busca...`)
     }
@@ -216,7 +221,7 @@ export async function handleOpenInSgp(clientData: ClientData, cachedContract: st
     const tTotalEnd = performance.now()
     console.log(`${getTs()} ⏱️ [ATI Perf] Total handleOpenInSgp (FAST PATH) demorou ${(tTotalEnd - tTotalStart).toFixed(1)}ms.`)
     await focusOrOpenTab(`${client.baseUrl}/admin/cliente/${client.id}/contratos/`, client.id)
-    return { success: true, clientId: client.id }
+    return { success: true, clientId: client.id, sgpOrigin: client.baseUrl }
   }
 
   // Caso contrário, faz o enriquecimento em paralelo apenas dos cadastros encontrados para desempate!
@@ -232,7 +237,7 @@ export async function handleOpenInSgp(clientData: ClientData, cachedContract: st
   if (!forceShowModal && activeClients.length === 1) {
     const client = activeClients[0]
     await focusOrOpenTab(`${client.baseUrl}/admin/cliente/${client.id}/contratos/`, client.id)
-    return { success: true, clientId: client.id }
+    return { success: true, clientId: client.id, sgpOrigin: client.baseUrl }
   }
 
   // Se houver mais de 1 cadastro ativo ou nenhum ativo, exibe o modal de seleção

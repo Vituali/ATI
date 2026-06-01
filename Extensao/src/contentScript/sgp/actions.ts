@@ -47,6 +47,7 @@ export async function smartOpenSGP(clientData: ClientData, uid?: string, forceSh
       multipleClients?: boolean
       clients?: { id: string; text: string }[]
       clientId?: string
+      sgpOrigin?: string
     }
     if (!res?.success) {
       throw new Error(res?.error ?? 'Erro desconhecido no background.')
@@ -54,9 +55,12 @@ export async function smartOpenSGP(clientData: ClientData, uid?: string, forceSh
 
     // Se o background retornou um ID (busca única sucesso), salvamos no cache local do content script
     // para que o próximo clique já tenha o clientSgpId e pule a busca.
-    if (res.clientId && !clientData.clientSgpId) {
+    if (res.clientId) {
       log(`ID do cliente (${res.clientId}) recebido do background e salvo no cache de sessão.`)
       clientData.clientSgpId = res.clientId
+      if (res.sgpOrigin) {
+        clientData.clientSgpOrigin = res.sgpOrigin
+      }
       setLastExtractedData(lastExtractedData.chatId, clientData)
     }
 

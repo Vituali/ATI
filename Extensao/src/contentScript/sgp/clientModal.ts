@@ -41,14 +41,32 @@ export async function showClientSelectionModal(clients: { id: string; text: stri
     const getStatus = (text: string) => {
       const lower = text.toLowerCase()
       if (lower.includes('cancelado')) return 'cancelado'
-      if (lower.includes('suspenso')) return 'suspenso'
       if (lower.includes('inativo')) return 'inativo'
+      if (lower.includes('suspenso')) return 'suspenso'
       if (lower.includes('reduzida') || lower.includes('vel. red') || lower.includes('v. red')) return 'vel-red'
       if (lower.includes('ativo')) return 'ativo'
       return 'inativo'
     }
 
-    clients.forEach((client) => {
+    const getStatusScore = (status: string): number => {
+      switch (status) {
+        case 'ativo':     return 4
+        case 'vel-red':   return 3
+        case 'suspenso':  return 2
+        case 'inativo':   return 1
+        case 'cancelado': return 0
+        default:          return 0
+      }
+    }
+
+    // Ordena por prioridade: ativo > vel-red > suspenso > inativo > cancelado
+    const sortedClients = [...clients].sort((a, b) => {
+      const scoreA = getStatusScore(getStatus(a.text))
+      const scoreB = getStatusScore(getStatus(b.text))
+      return scoreB - scoreA
+    })
+
+    sortedClients.forEach((client) => {
       const status = getStatus(client.text)
       if (status === 'ativo') summary.ativos++
       else if (status === 'vel-red') summary.velRed++

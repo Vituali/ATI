@@ -28,16 +28,34 @@ export function populateContracts(container: Element | null, contracts: SgpContr
   const getStatus = (text: string) => {
     const lower = text.toLowerCase()
     if (lower.includes('cancelado')) return 'cancelado'
-    if (lower.includes('suspenso')) return 'suspenso'
     if (lower.includes('inativo')) return 'inativo'
+    if (lower.includes('suspenso')) return 'suspenso'
     if (lower.includes('reduzida') || lower.includes('vel. red') || lower.includes('v. red')) return 'vel-red'
     if (lower.includes('ativo')) return 'ativo'
     return 'inativo'
   }
 
+  const getStatusScore = (status: string): number => {
+    switch (status) {
+      case 'ativo':     return 4
+      case 'vel-red':   return 3
+      case 'suspenso':  return 2
+      case 'inativo':   return 1
+      case 'cancelado': return 0
+      default:          return 0
+    }
+  }
+
   const summary = { ativos: 0, velRed: 0, suspensos: 0, cancelados: 0, inativos: 0 }
 
-  const html = valid
+  // Ordena por prioridade: ativo > vel-red > suspenso > inativo > cancelado
+  const sorted = [...valid].sort((a, b) => {
+    const scoreA = getStatusScore(getStatus(a.text))
+    const scoreB = getStatusScore(getStatus(b.text))
+    return scoreB - scoreA
+  })
+
+  const html = sorted
     .map((contract, index) => {
       const status = getStatus(contract.text)
       if (status === 'ativo') summary.ativos++

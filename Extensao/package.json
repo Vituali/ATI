@@ -1,7 +1,7 @@
 {
   "name": "ati-auxiliar-de-atendimentos",
   "displayName": "ATI - Auxiliar de Atendimentos",
-  "version": "2.2.0.1",
+  "version": "2.2.0.3",
   "author": "Vituali",
   "description": "Extensão para auxiliar atendentes do suporte ATI Internet no ChatMix",
   "type": "module",
@@ -19,7 +19,8 @@
   "scripts": {
     "dev": "vite build --mode development --watch",
     "dev:prod": "vite build --mode dev_prod --watch",
-    "build": "tsc && vite build",
+    "clean": "node -e \"const {rmSync,existsSync}=require('fs');if(existsSync('build'))rmSync('build',{recursive:true,force:true});\"",
+    "build": "npm run clean && tsc && vite build",
     "fmt": "prettier --write '**/*.{tsx,ts,json,css,scss,md}'",
     "zip": "npm run build && node src/zip.js",
     "env:dev": "node ../switch-env.cjs dev",

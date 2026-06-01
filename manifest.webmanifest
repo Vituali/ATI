@@ -1,0 +1,1 @@
+{"name":"ATI - Auxiliar de Atendimento","short_name":"ATI","description":"Sistema auxiliar de atendimentos técnicos e suporte.","start_url":"/ati/","display":"standalone","background_color":"#1a1a1a","theme_color":"#1a1a1a","lang":"en","scope":"/ati/","orientation":"any","icons":[{"src":"favicon.svg","sizes":"192x192 512x512","type":"image/svg+xml","purpose":"any maskable"}]}

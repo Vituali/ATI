@@ -2,7 +2,7 @@
 // SGP — AUTENTICAÇÃO
 // =================================================================
 
-import { SGP_DNS, SGP_IP_35, SGP_IP_53, LOGIN_CACHE_TTL_MS } from './constants'
+import { SGP_IP_35, SGP_IP_53, LOGIN_CACHE_TTL_MS } from './constants'
 
 export async function performLoginCheck(baseUrl: string): Promise<{ isLoggedIn: boolean; baseUrl: string }> {
   try {
@@ -28,21 +28,7 @@ export async function updateSgpStatusCache(status: { isLoggedIn: boolean; baseUr
 async function checkSgpStatus(): Promise<{ isLoggedIn: boolean; baseUrl: string }> {
   console.log('Extensão ATI: Verificando status do SGP...')
 
-  // Verifica se há uma preferência manual
-  const { ati_preferred_sgp } = await chrome.storage.local.get('ati_preferred_sgp')
-
-  if (ati_preferred_sgp) {
-    console.log(`Extensão ATI: Usando SGP preferido: ${ati_preferred_sgp}`)
-    try {
-      const pref = await performLoginCheck(ati_preferred_sgp)
-      return pref
-    } catch {
-      console.warn(`Extensão ATI: SGP preferido falhou (${ati_preferred_sgp}), retornando como offline.`)
-      return { isLoggedIn: false, baseUrl: ati_preferred_sgp }
-    }
-  }
-
-  // Fallback padrão se não houver preferência
+  // Fallback padrão
   try {
     const ip35 = await performLoginCheck(SGP_IP_35)
     if (ip35.isLoggedIn) return ip35
@@ -171,4 +157,44 @@ export async function getSgpStatus(forceCheck = false): Promise<{ isLoggedIn: bo
   }
 
   return status
+}
+
+export async function ensureSgpSession(baseUrl: string, forceCheck = false): Promise<boolean> {
+  const cacheKey = `sgp_session_cache_${baseUrl.replace(/[^a-zA-Z0-9]/g, '_')}`
+  const result = await chrome.storage.local.get(cacheKey)
+  const cache = result[cacheKey]
+
+  if (!forceCheck && cache?.isLoggedIn) {
+    const isExpired = Date.now() - cache.timestamp > LOGIN_CACHE_TTL_MS
+    if (!isExpired) {
+      return true
+    }
+  }
+
+  // Se não estiver logado no cache, tenta verificar no site
+  try {
+    const status = await performLoginCheck(baseUrl)
+    if (status.isLoggedIn) {
+      await chrome.storage.local.set({ [cacheKey]: { isLoggedIn: true, timestamp: Date.now() } })
+      return true
+    }
+  } catch {
+    console.warn(`Extensão ATI: Checagem inicial de login falhou em ${baseUrl}, tentando login silencioso...`)
+  }
+
+  // Tenta o login silencioso antes de desistir
+  const loginSuccess = await performSilentLogin(baseUrl)
+  if (loginSuccess) {
+    // Verifica de novo após o login
+    try {
+      const status = await performLoginCheck(baseUrl)
+      if (status.isLoggedIn) {
+        await chrome.storage.local.set({ [cacheKey]: { isLoggedIn: true, timestamp: Date.now() } })
+        return true
+      }
+    } catch {}
+  }
+
+  await chrome.storage.local.set({ [cacheKey]: { isLoggedIn: false, timestamp: Date.now() } })
+  return false
 }

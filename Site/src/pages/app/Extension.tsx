@@ -1,4 +1,7 @@
 // components/ExtensionModal.tsx
+import { useState, useEffect } from "react";
+import { ref, get } from "firebase/database";
+import { db } from "../../services";
 import Modal from "../../components/ui/Modal";
 import "./Extension.css";
 
@@ -13,6 +16,25 @@ export default function ExtensionModal({
 }: ExtensionModalProps) {
   const extensionUrl =
     "https://chromewebstore.google.com/detail/ati-auxiliar-de-atendimen/mlgmmjacfbnkolflbankfiackpcnmckl";
+
+  const [version, setVersion] = useState("v2.2.0.1");
+
+  useEffect(() => {
+    if (!aberto) return;
+
+    get(ref(db, "config/extension"))
+      .then((snap) => {
+        if (snap.exists()) {
+          const data = snap.val();
+          if (data.minVersion) {
+            setVersion(`v${data.minVersion}`);
+          }
+        }
+      })
+      .catch((err) => {
+        console.warn("Erro ao buscar versão da extensão:", err);
+      });
+  }, [aberto]);
 
   return (
     <Modal
@@ -29,7 +51,7 @@ export default function ExtensionModal({
             className="extension-preview-img"
           />
           <div className="extension-preview-overlay">
-            <span className="extension-version">v2.0.5.3</span>
+            <span className="extension-version">{version}</span>
           </div>
         </div>
 

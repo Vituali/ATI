@@ -120,9 +120,9 @@
 /* ── Salas por setor ── */
 .ci-filtros {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1.25rem;
+  align-items: stretch;
+  gap: 0.25rem;
+  padding: 0 1.25rem;
   background: var(--bg-card);
   border-left: 1px solid var(--border-subtle);
   border-right: 1px solid var(--border-subtle);
@@ -130,6 +130,7 @@
   overflow-x: auto;
   scrollbar-width: none;
   border-bottom: 1px solid var(--border-subtle);
+  height: 48px;
 }
 
 .ci-filtros::-webkit-scrollbar {
@@ -141,34 +142,53 @@
   height: 20px;
   background: var(--border-subtle);
   margin: 0 0.25rem;
+  align-self: center;
   flex-shrink: 0;
 }
 
 .ci-filtro-btn {
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  color: var(--text-main);
-  padding: 0.6rem 1rem;
-  border-radius: var(--radius-md);
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 0 1.25rem;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s ease;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 13.5px;
   white-space: nowrap;
   position: relative;
+  height: 100%;
 }
 
 .ci-filtro-btn:hover {
-  border-color: var(--accent-blue-border);
-  background: var(--bg-input);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-white);
 }
 
 .ci-filtro-btn.active {
-  background: var(--accent-blue);
-  color: #fff;
-  border-color: var(--accent-blue);
+  background: transparent;
+  color: var(--accent-blue);
+}
+
+.ci-filtro-btn::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 3px;
+  background-color: var(--accent-blue);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateX(-50%);
+  border-radius: 3px 3px 0 0;
+}
+
+.ci-filtro-btn.active::after {
+  width: 80%;
 }
 
 .ci-unread-dot {

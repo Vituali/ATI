@@ -26,6 +26,7 @@ export async function smartOpenSGP(clientData: ClientData, uid?: string, forceSh
   isSearchRunning = true
   log('Botão SGP pressionado, enviando dados para o background...')
 
+  const tStart = performance.now()
   try {
     const response = await Promise.race([
       safeSendMessage<OpenInSgpRequest>({
@@ -37,6 +38,8 @@ export async function smartOpenSGP(clientData: ClientData, uid?: string, forceSh
       }),
       new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout: background não respondeu em 5s')), 5000)),
     ])
+    const tEnd = performance.now()
+    log(`⏱️ [ATI Perf] openInSgp (busca unificada) demorou ${(tEnd - tStart).toFixed(1)}ms.`)
 
     const res = response as {
       success?: boolean
@@ -75,6 +78,8 @@ export async function smartOpenSGP(clientData: ClientData, uid?: string, forceSh
 
     log('SGP aberto com sucesso.')
   } catch (error: any) {
+    const tEndErr = performance.now()
+    logError(`⏱️ [ATI Perf] openInSgp falhou após ${(tEndErr - tStart).toFixed(1)}ms.`)
     logError('Erro ao enviar mensagem para o background:', error)
     showToast(`Extensão ATI: Erro ao enviar mensagem para o background: ${error.message || error}`, 'error')
     throw error

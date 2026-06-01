@@ -4,6 +4,7 @@ import { onAuthStateChanged, User } from "firebase/auth";
 import { ref, get, update } from "firebase/database";
 import { auth, db } from "../services/firebase";
 import { Role, Setor } from "../services/permissions";
+import { syncWithExtension } from "../services/auth";
 
 export interface UserProfile {
   uid: string;
@@ -97,9 +98,7 @@ export function useUser(): UseUserReturn {
           setError(null);
 
           // NOVO: Sincroniza com a extensão assim que o perfil está pronto
-          import("../services/auth").then(({ syncWithExtension }) => {
-            syncWithExtension(firebaseUser);
-          });
+          syncWithExtension(firebaseUser);
         } catch (err: any) {
           setError(err.message || "Erro ao carregar perfil.");
           setUser(null);

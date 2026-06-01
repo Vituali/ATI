@@ -3,10 +3,11 @@ import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { RespostasRapidas, ModelosOS, Conversor, Senhas, Admin, ChatInterno, Anotacoes } from "./pages/lazy";
 import { Login, Register, Home, ErrorPage, ExtensionModal } from "./pages";
 import { useUser, UserProfile } from "./hooks";
-import { canAccess, Section, Setor, getSetorLabel, logout, db, auth } from "./services";
+import { canAccess, Section, Setor, getSetorLabel, logout, db, auth, syncWithExtension, performSSOLogin } from "./services";
 import { Sidebar, Footer, LoadingOverlay, ToastContainer, UserPanel, BugReportModal } from "./components";
 import { ref, onValue } from "firebase/database";
 import "./App.css";
+import { useRegisterSW } from "virtual:pwa-register/react";
 
 const isVideoUrl = (url: string) => {
   if (!url) return false;
@@ -18,16 +19,37 @@ type AuthScreen = "login" | "register";
 
 export default function App() {
   const { user, loading, error } = useUser();
+
+  const {
+    needRefresh: [needRefresh, setNeedRefresh],
+    updateServiceWorker,
+  } = useRegisterSW({
+    onRegistered(r) {
+      console.log("PWA: Service Worker registrado!");
+      if (r) {
+        setInterval(() => {
+          r.update();
+        }, 3600000); // 1 hora
+      }
+    },
+    onRegisterError(error) {
+      console.error("PWA: Erro ao registrar SW:", error);
+    }
+  });
+
   const [params] = useState(() => new URLSearchParams(window.location.search));
   const isEmbed = params.get("mode") === "embed";
 
   const [authScreen, setAuthScreen] = useState<AuthScreen>("login");
-  const [currentSection, setCurrentSection] = useState<Section>("home");
+  const [currentSection, setCurrentSection] = useState<Section>(() => {
+    return (localStorage.getItem("ati-active-section") as Section) || "home";
+  });
   const [embedSection, setEmbedSection] = useState<Section>(() => {
     const sec = params.get("section") as Section;
-    return sec && ["chat_interno", "modelos_os", "senhas", "anotacoes", "conversor", "respostas_rapidas"].includes(sec)
-      ? sec
-      : "chat_interno";
+    if (sec && ["chat_interno", "modelos_os", "senhas", "anotacoes", "conversor", "respostas_rapidas"].includes(sec)) {
+      return sec;
+    }
+    return (localStorage.getItem("ati-active-embed-section") as Section) || "chat_interno";
   });
   const [theme, setTheme] = useState<"dark" | "light">(() => {
     return (localStorage.getItem("ati-theme") as "dark" | "light") || "dark";
@@ -105,19 +127,34 @@ export default function App() {
     }
   }, [currentSection]);
 
-  // Document Title e Favicon com badge detalhado
+  // Document Title, Favicon e Badge PWA para mensagens do chat
   useEffect(() => {
     const baseTitle = "ATI — Auxiliar de Atendimento";
     const favicon = document.getElementById("favicon") as HTMLLinkElement;
+    const baseUrl = import.meta.env.BASE_URL || "/ati/";
 
     if (unreadRooms.length > 0) {
       // Exemplo: (1) 💬 FINANCEIRO! | ATI
       const nomesSalas = unreadRooms.map((s) => getSetorLabel(s).toUpperCase()).join(", ");
       document.title = `(${unreadRooms.length}) 💬 ${nomesSalas} | ${baseTitle}`;
-      if (favicon) favicon.href = "./favicon-unread.svg";
+      if (favicon) favicon.href = `${baseUrl}favicon-unread.svg`;
+
+      // PWA: Define badge vermelho com número de novas mensagens no ícone da barra de tarefas
+      if ("setAppBadge" in navigator) {
+        (navigator as any).setAppBadge(unreadRooms.length).catch((err: any) => {
+          console.error("Erro ao definir badge do PWA:", err);
+        });
+      }
     } else {
       document.title = baseTitle;
-      if (favicon) favicon.href = "./favicon.svg";
+      if (favicon) favicon.href = `${baseUrl}favicon.svg`;
+
+      // PWA: Limpa o badge do ícone da barra de tarefas
+      if ("clearAppBadge" in navigator) {
+        (navigator as any).clearAppBadge().catch((err: any) => {
+          console.error("Erro ao limpar badge do PWA:", err);
+        });
+      }
     }
   }, [unreadRooms]);
 
@@ -126,6 +163,15 @@ export default function App() {
     document.body.classList.toggle("light-theme", theme === "light");
     localStorage.setItem("ati-theme", theme);
   }, [theme]);
+
+  // Salva a aba/seção ativa para persistir ao recarregar a página
+  useEffect(() => {
+    localStorage.setItem("ati-active-section", currentSection);
+  }, [currentSection]);
+
+  useEffect(() => {
+    localStorage.setItem("ati-active-embed-section", embedSection);
+  }, [embedSection]);
 
   // Sincroniza a aba ativa em modo embed quando o iframe src muda de section
   useEffect(() => {
@@ -142,21 +188,19 @@ export default function App() {
       const { type, action, session } = event.data || {};
       
       if (type === "ATI_EXTENSION_TO_SITE") {
-        import("./services/auth").then(({ syncWithExtension, performSSOLogin }) => {
-          // 1. Se a ponte estiver pronta, o site envia o login se já tiver
-          if (action === "BRIDGE_READY") {
-            console.log("SSO: 🟠 Ponte detectada. Sincronizando...");
-            if (auth.currentUser) syncWithExtension(auth.currentUser);
-          }
+        // 1. Se a ponte estiver pronta, o site envia o login se já tiver
+        if (action === "BRIDGE_READY") {
+          console.log("SSO: 🟠 Ponte detectada. Sincronizando...");
+          if (auth.currentUser) syncWithExtension(auth.currentUser);
+        }
 
-          // 2. Se a extensão mandou a sessão e o site está deslogado, tenta login reverso
-          if (action === "SSO_SESSION_DATA" && session) {
-            console.log("SSO: 🔵 Dados recebidos da extensão. Verificando auto-login...");
-            if (!auth.currentUser) {
-              performSSOLogin(session);
-            }
+        // 2. Se a extensão mandou a sessão e o site está deslogado, tenta login reverso
+        if (action === "SSO_SESSION_DATA" && session) {
+          console.log("SSO: 🔵 Dados recebidos da extensão. Verificando auto-login...");
+          if (!auth.currentUser) {
+            performSSOLogin(session);
           }
-        });
+        }
       }
     };
 
@@ -288,7 +332,7 @@ export default function App() {
           <main className={`main-content ${safeSection === "chat_interno" ? "compact-padding" : ""}`}>
             <Suspense fallback={<LoadingOverlay message="Carregando seção..." />}>{renderSection(safeSection, user)}</Suspense>
           </main>
-          {safeSection !== "chat_interno" && <Footer />}
+          <Footer />
         </div>
       </div>
 
@@ -307,6 +351,28 @@ export default function App() {
       <ExtensionModal aberto={extensaoModalAberto} onFechar={() => setExtensaoModalAberto(false)} />
 
       <ToastContainer />
+
+      {needRefresh && (
+        <div className="pwa-toast-container">
+          <div className="pwa-toast-content">
+            <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+              <span className="pwa-toast-icon">✨</span>
+              <div className="pwa-toast-message">
+                <strong>Nova Versão Disponível!</strong>
+                <p>O sistema foi atualizado para otimizar seus atendimentos.</p>
+              </div>
+            </div>
+            <div className="pwa-toast-actions">
+              <button className="pwa-btn-reload" onClick={() => updateServiceWorker(true)}>
+                Atualizar Agora
+              </button>
+              <button className="pwa-btn-close" onClick={() => setNeedRefresh(false)}>
+                Depois
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Botão flutuante para reportar bug */}
       <button 

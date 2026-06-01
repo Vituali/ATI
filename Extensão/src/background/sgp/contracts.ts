@@ -65,6 +65,7 @@ export async function buildContracts(baseUrl: string, client: SgpClient, html: s
   const mappedContracts = initialContracts.map((c) => ({
     ...c,
     clientId: client.id,
+    baseUrl: baseUrl,
     text: multipleClients ? `[Cadastro ${client.id}] ${c.text}` : c.text,
     online: onlineStatusMap.has(c.id) ? onlineStatusMap.get(c.id) : null,
     cancelled: c.text.toLowerCase().includes('cancelado'),
@@ -73,6 +74,10 @@ export async function buildContracts(baseUrl: string, client: SgpClient, html: s
   // Busca endereço de cada contrato
   const contractsWithAddress = await Promise.all(
     mappedContracts.map(async (contract) => {
+      const lowerText = contract.text.toLowerCase()
+      if (contract.cancelled || lowerText.includes('inativo') || lowerText.includes('suspenso')) {
+        return contract
+      }
       try {
         const servRes = await fetch(`${baseUrl}/admin/clientecontrato/servico/list/ajax/?contrato_id=${contract.id}`, { credentials: 'include', signal: AbortSignal.timeout(8000) })
         const services = await servRes.json()

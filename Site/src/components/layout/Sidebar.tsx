@@ -100,6 +100,7 @@ export default function Sidebar({
           <button
             className={`sidebar-button chat-highlight ${activeSection === "chat_interno" ? "active" : ""}`}
             onClick={() => onSelectSection("chat_interno")}
+            title="Chat Interno"
           >
             <span className="icon">
               💬
@@ -138,6 +139,7 @@ export default function Sidebar({
                     key={item.section}
                     className={`sidebar-button ${activeSection === item.section ? "active" : ""}`}
                     onClick={() => onSelectSection(item.section)}
+                    title={item.label}
                   >
                     <span className="icon">
                       {item.icon}
@@ -153,7 +155,11 @@ export default function Sidebar({
           );
         })}
 
-        <button className="sidebar-button" onClick={onOpenExtensionModal}>
+        <button 
+          className="sidebar-button" 
+          onClick={onOpenExtensionModal}
+          title="Extensão"
+        >
           <span className="icon">🌐</span>
           <span className="text">Extensão</span>
         </button>
@@ -163,6 +169,7 @@ export default function Sidebar({
         <button
           className="bottom-toggle profile-toggle"
           onClick={onOpenUserModal}
+          title={userName}
         >
           <div className="sidebar-avatar">
             {avatarUrl ? (
@@ -179,7 +186,11 @@ export default function Sidebar({
           </div>
           <span className="text">{userName}</span>
         </button>
-        <button className="bottom-toggle theme-toggle" onClick={onOpenSettings}>
+        <button 
+          className="bottom-toggle theme-toggle" 
+          onClick={onOpenSettings}
+          title={theme === "dark" ? "Ativar Modo Claro" : "Ativar Modo Escuro"}
+        >
           <span className="icon">{theme === "dark" ? "☀️" : "🌙"}</span>
           <span className="text">
             {theme === "dark" ? "Modo Claro" : "Modo Escuro"}

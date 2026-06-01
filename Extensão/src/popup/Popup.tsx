@@ -161,6 +161,23 @@ export const Popup = () => {
     }
   };
 
+  const handleCheckUpdates = () => {
+    setLoading(true);
+    chrome.runtime.sendMessage({ action: 'checkVersion' }, (response) => {
+      setLoading(false);
+      chrome.storage.local.get(['ati_update_required', 'ati_latest_version'], (result) => {
+        const hasUpdate = !!result.ati_update_required;
+        setUpdateRequired(hasUpdate);
+        setLatestVersion(result.ati_latest_version || '');
+        if (hasUpdate) {
+          setToast(`🚀 Nova versão disponível: ${result.ati_latest_version}`);
+        } else {
+          setToast('✨ Sua extensão está atualizada!');
+        }
+      });
+    });
+  };
+
   const currentManifestVersion = chrome.runtime.getManifest().version;
   const canRelease = session?.role === 'admin' && currentManifestVersion !== latestVersion;
 
@@ -307,6 +324,9 @@ export const Popup = () => {
       <div className="popup-divider" />
 
       <div className="popup-actions">
+        <button className="popup-btn popup-btn--check-updates" onClick={handleCheckUpdates} disabled={loading}>
+          🔄 Verificar Atualizações
+        </button>
         <button className="popup-btn popup-btn--site" onClick={handleOpenSite}>
           ↗ Abrir Site ATI
         </button>

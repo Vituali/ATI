@@ -90,6 +90,9 @@ export interface ClearSessionCachesRequest {
 export interface LogoutRequest {
   action: 'logout'
 }
+export interface CheckVersionRequest {
+  action: 'checkVersion'
+}
 
 export type ExtensionRequest =
   | FirebaseLoginRequest
@@ -112,3 +115,4 @@ export type ExtensionRequest =
   | RefreshUserSessionRequest
   | ClearSessionCachesRequest
   | LogoutRequest
+  | CheckVersionRequest

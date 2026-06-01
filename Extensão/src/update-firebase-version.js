@@ -6,15 +6,25 @@ import { fileURLToPath } from 'url';
 // Node 18+ já tem fetch nativo
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Tenta ler o .env manualment para evitar dependência do dotenv
+// Tenta ler o .env manualmente na raiz do monorepo ou na pasta da extensão
 async function loadEnv() {
-  const envPath = path.join(__dirname, '../.env.dev_prod');
-  if (fs.existsSync(envPath)) {
-    const content = fs.readFileSync(envPath, 'utf-8');
-    content.split('\n').forEach(line => {
-      const [key, value] = line.split('=');
-      if (key && value) process.env[key.trim()] = value.trim();
-    });
+  const possiblePaths = [
+    path.join(__dirname, '../../.env'),
+    path.join(__dirname, '../../.env.production'),
+    path.join(__dirname, '../../.env.dev_prod'),
+    path.join(__dirname, '../.env')
+  ];
+
+  for (const envPath of possiblePaths) {
+    if (fs.existsSync(envPath)) {
+      const content = fs.readFileSync(envPath, 'utf-8');
+      content.split('\n').forEach(line => {
+        const [key, value] = line.split('=');
+        if (key && value) process.env[key.trim()] = value.trim();
+      });
+      console.log(`ℹ️ Carregou variáveis de ambiente de: ${envPath}`);
+      return;
+    }
   }
 }
 

@@ -78,7 +78,18 @@ export async function showOSModal(allTemplates: OsTemplate[], extractChatFn: () 
       signal: modalController.signal,
       existingDraft,
       onSgpDataLoaded: async (data) => {
-        sgpData = data
+        if (sgpData) {
+          sgpData = {
+            clientSgpId: data.clientSgpId || sgpData.clientSgpId,
+            contracts: data.contracts && data.contracts.length > 0 ? data.contracts : sgpData.contracts,
+            responsibleUsers: data.responsibleUsers && data.responsibleUsers.length > 0 ? data.responsibleUsers : sgpData.responsibleUsers,
+            occurrenceTypes: data.occurrenceTypes && data.occurrenceTypes.length > 0 ? data.occurrenceTypes : sgpData.occurrenceTypes,
+            // @ts-ignore
+            clientSgpOrigin: data.clientSgpOrigin || sgpData.clientSgpOrigin,
+          }
+        } else {
+          sgpData = data
+        }
 
         // Atualiza a UI do Header se o SGP tiver sido alterado pelo auto-swap
         const freshStorage = await chrome.storage.local.get('ati_preferred_sgp')
@@ -132,10 +143,13 @@ export async function showOSModal(allTemplates: OsTemplate[], extractChatFn: () 
     const selectedContractId = userAction.data.selectedContract ?? validContracts[0]?.id ?? null
     const selectedContractObj = validContracts.find((c: SgpContract) => c.id === selectedContractId)
     const correctClientSgpId = selectedContractObj?.clientId ?? resolvedSgpData?.clientSgpId ?? null
+    // @ts-ignore
+    const selectedSgpOrigin = selectedContractObj?.baseUrl ?? resolvedSgpData?.clientSgpOrigin ?? null
 
     const submissionData = {
       ...clientData,
       clientSgpId: correctClientSgpId,
+      sgpOrigin: selectedSgpOrigin,
       osText: userAction.data.osText,
       selectedContract: selectedContractId,
       occurrenceType: userAction.data.occurrenceType,

@@ -13,7 +13,11 @@
     "release:extension": "npm run release --prefix \"Extensão\"",
     "lint:site": "npm run lint --prefix \"Site\"",
     "install:all": "npm install --prefix \"Extensão\" && npm install --prefix \"Site\"",
-    "deploy": "npm run deploy --prefix \"Site\""
+    "deploy": "npm run deploy --prefix \"Site\"",
+    "env:dev": "node switch-env.cjs dev",
+    "env:prod": "node switch-env.cjs prod",
+    "env:dev_prod": "node switch-env.cjs dev_prod",
+    "generate-icons": "npm run generate-icons --prefix \"Site\""
   },
   "author": "Vituali",
   "license": "MIT"

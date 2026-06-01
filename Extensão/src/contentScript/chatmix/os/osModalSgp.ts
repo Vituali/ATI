@@ -3,9 +3,10 @@
 // =================================================================
 
 import { SgpData, SgpContract, ClientData } from '../../sgp/types'
-import { GetSgpFormParamsRequest, RefreshSgpOnlineStatusesRequest } from '../../../background/types'
+import { GetSgpFormParamsRequest, RefreshSgpOnlineStatusesRequest, GetGlobalOccurrenceTypesRequest } from '../../../background/types'
 import { OsDraft } from './osDraft'
 import { safeSendMessage } from '../helpers'
+import { log, logError } from '../state'
 
 // =================================================================
 // POPULAR CONTRATOS
@@ -299,6 +300,47 @@ export function loadSgpData({ clientData, chatId, idToken, uid, modalElement, sg
       })
   } else {
     // --- Busca completa no SGP ---
+    const tStart = performance.now()
+    let occurrenceTypesPopulated = false
+
+    // Fast-path: Busca rápida dos tipos de ocorrência globais de forma assíncrona
+    safeSendMessage<GetGlobalOccurrenceTypesRequest>({
+      action: 'getGlobalOccurrenceTypes',
+      idToken,
+    })
+      .then((res: any) => {
+        if (res?.success && Array.isArray(res.types) && res.types.length > 0) {
+          if (!occurrenceTypesPopulated) {
+            occurrenceTypesPopulated = true
+            console.log(`Extensão ATI: Tipos de ocorrência globais carregados via Fast-Path (${res.types.length} tipos).`)
+            
+            // Expõe os tipos rápidos para o modal (por ex., habilita botões de template)
+            onSgpDataLoaded({
+              occurrenceTypes: res.types,
+              contracts: [],
+              responsibleUsers: [],
+              clientSgpId: '',
+            })
+            
+            const container = modalElement.querySelector('#modal-occurrence-types-container')
+            populateOccurrenceTypes(container, res.types, signal)
+
+            // Restaura tipo de ocorrência do draft se existir
+            if (existingDraft?.occurrenceType && existingDraft?.occurrenceTypeText) {
+              const searchInput = modalElement.querySelector<HTMLInputElement>('#occurrenceTypeSearchInput')
+              const hiddenInput = modalElement.querySelector<HTMLInputElement>('#occurrenceTypeSelectedValue')
+              if (searchInput && hiddenInput) {
+                searchInput.value = existingDraft.occurrenceTypeText
+                hiddenInput.value = existingDraft.occurrenceType
+              }
+            }
+          }
+        }
+      })
+      .catch((err) => {
+        console.warn('Extensão ATI: Falha ao carregar tipos de ocorrência globais de forma rápida:', err)
+      })
+
     safeSendMessage<GetSgpFormParamsRequest>({
         action: 'getSgpFormParams',
         clientData,
@@ -307,17 +349,28 @@ export function loadSgpData({ clientData, chatId, idToken, uid, modalElement, sg
         uid,
       })
       .then((response: { success?: boolean; data?: unknown; message?: string }) => {
+        const tEnd = performance.now()
+        log(`⏱️ [ATI Perf] getSgpFormParams demorou ${(tEnd - tStart).toFixed(1)}ms.`)
         if (response?.success) {
           const sgpData = response.data as SgpData
           onSgpDataLoaded(sgpData)
           populateContracts(modalElement.querySelector('#modal-sgp-contracts-container'), sgpData.contracts)
-          populateOccurrenceTypes(modalElement.querySelector('#modal-occurrence-types-container'), sgpData.occurrenceTypes, signal)
+          
+          if (!occurrenceTypesPopulated) {
+            occurrenceTypesPopulated = true
+            populateOccurrenceTypes(modalElement.querySelector('#modal-occurrence-types-container'), sgpData.occurrenceTypes, signal)
+          } else {
+            console.log('Extensão ATI: Ignorando repopulação de tipos de ocorrência pois já foram carregados pelo Fast-Path.')
+          }
+          
           sgpButton.disabled = false
         } else {
           throw new Error(response?.message ?? 'Falha ao buscar dados do SGP.')
         }
       })
       .catch((error: Error) => {
+        const tEndErr = performance.now()
+        logError(`⏱️ [ATI Perf] getSgpFormParams falhou após ${(tEndErr - tStart).toFixed(1)}ms. Erro:`, error)
         console.error('Extensão ATI: Erro ao buscar dados SGP.', error)
         modalElement.querySelectorAll('.modal-loader').forEach((l) => {
           l.textContent = `Erro: ${error.message}`

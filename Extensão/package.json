@@ -22,8 +22,8 @@
     "build": "tsc && vite build",
     "fmt": "prettier --write '**/*.{tsx,ts,json,css,scss,md}'",
     "zip": "npm run build && node src/zip.js",
-    "env:dev": "node switch-env.cjs dev",
-    "env:prod": "node switch-env.cjs prod",
+    "env:dev": "node ../switch-env.cjs dev",
+    "env:prod": "node ../switch-env.cjs prod",
     "release": "npm run build && node src/zip.js && node src/update-firebase-version.js"
   },
   "dependencies": {

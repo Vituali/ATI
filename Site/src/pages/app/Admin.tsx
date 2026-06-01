@@ -88,9 +88,10 @@ export default function Admin() {
   const [carregandoBugs, setCarregandoBugs] = useState(false);
   const { user } = useUser();
 
-  // Carrega todos os atendentes do banco ao montar
+  // Carrega atendentes e bugs ao montar
   useEffect(() => {
     carregarAtendentes();
+    carregarBugs();
   }, []);
 
   async function carregarAtendentes() {
@@ -273,6 +274,8 @@ export default function Admin() {
   // RENDER
   // ---------------------------------------------------------------
 
+  const openBugsCount = bugs.filter((b) => b.status === "aberto").length;
+
   return (
     <div className="admin-page">
       {/* Cabeçalho */}
@@ -314,8 +317,12 @@ export default function Admin() {
         <button
           className={`admin-aba ${abaAdmin === "bugs" ? "ativa" : ""}`}
           onClick={() => setAbaAdmin("bugs")}
+          style={{ position: "relative" }}
         >
           🐛 Bugs Relatados
+          {openBugsCount > 0 && (
+            <span className="admin-aba-badge">{openBugsCount}</span>
+          )}
         </button>
       </div>
 

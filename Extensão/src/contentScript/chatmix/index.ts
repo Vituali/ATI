@@ -389,6 +389,10 @@ async function init(): Promise<void> {
 
   currentSession = session
   log(`Sessão ativa: ${session.username} (${session.role})`)
+
+  // Verifica se há novas atualizações da extensão de forma assíncrona
+  safeSendMessage({ action: 'checkVersion' }).catch(() => null)
+
   injectButtons()
   injectListeners()
   injectFloatingChat(session)

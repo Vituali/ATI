@@ -1,16 +1,42 @@
-import { ClientData, SGP_DNS, SGP_IP_53 } from './constants'
-import { getSgpStatus } from './auth'
+import { ClientData, SGP_IP_35, SGP_IP_53 } from './constants'
+import { getSgpStatus, updateSgpStatusCache, ensureSgpSession } from './auth'
 import { findClientInSgp } from './search'
 import { fetchContractOnlineStatus, buildContracts, extractOptions } from './contracts'
 import { hasSgpFormCache, getSgpFormCache, setSgpFormCache } from './cache'
 import { SgpData, SgpContract, SgpUser, SgpOccurrenceType } from '../../contentScript/sgp/types'
+
+const getTs = () => `[${new Date().toLocaleTimeString('pt-BR')}]`
+
+const sgpScrapeMemoryCache = new Map<string, {
+  contracts: SgpContract[]
+  responsibleUsers: SgpUser[]
+  occurrenceTypes: SgpOccurrenceType[]
+  timestamp: number
+}>()
+
+function getScrapeCache(key: string) {
+  const cached = sgpScrapeMemoryCache.get(key)
+  if (!cached) return null
+  if (Date.now() - cached.timestamp > 120000) { // 2 minutos TTL
+    sgpScrapeMemoryCache.delete(key)
+    return null
+  }
+  return cached
+}
+
+function setScrapeCache(key: string, data: { contracts: SgpContract[]; responsibleUsers: SgpUser[]; occurrenceTypes: SgpOccurrenceType[] }) {
+  if (sgpScrapeMemoryCache.size > 20) {
+    sgpScrapeMemoryCache.clear()
+  }
+  sgpScrapeMemoryCache.set(key, { ...data, timestamp: Date.now() })
+}
 
 export async function focusOrOpenTab(url: string, clientId?: string): Promise<void> {
   if (clientId) {
     // Busca abas do SGP pelo título: "SGP - NOME DO CLIENTE (19433)"
     // Isso funciona independente da rota atual (/contratos/, /servicos/, etc.)
     const sgpTabs = await chrome.tabs.query({
-      url: ['https://sgp.atiinternet.com.br/admin/*', 'http://201.158.20.35:8000/admin/*', 'http://201.158.20.53:8000/admin/*'],
+      url: ['http://201.158.20.35:8000/admin/*', 'http://201.158.20.53:8000/admin/*'],
     })
 
     const titlePattern = new RegExp(`SGP - .+\\(${clientId}\\)`)
@@ -28,7 +54,8 @@ export async function focusOrOpenTab(url: string, clientId?: string): Promise<vo
   await chrome.tabs.create({ url })
 }
 
-async function enrichSgpClient(baseUrl: string, client: { id: string; text: string }, label: string): Promise<{ id: string; text: string; systemLabel: string; baseUrl: string; isActive: boolean }> {
+async function enrichSgpClient(baseUrl: string, client: { id: string; text: string }, label: string, fastEnrich = false): Promise<{ id: string; text: string; systemLabel: string; baseUrl: string; isActive: boolean }> {
+  const tStart = performance.now()
   try {
     const url = `${baseUrl}/admin/atendimento/cliente/${client.id}/ocorrencia/add/`
     const response = await fetch(url, {
@@ -39,13 +66,27 @@ async function enrichSgpClient(baseUrl: string, client: { id: string; text: stri
     const html = await response.text()
 
     const initialContracts = extractOptions(html, /<select[^>]+id=['"]id_clientecontrato['"][^>]*>([\s\S]*?)<\/select>/)
-    const needsOnlineStatus = initialContracts.some((c) => {
-      const lower = c.text.toLowerCase()
-      return !lower.includes('cancelado') && !lower.includes('inativo') && !lower.includes('suspenso')
-    })
+    
+    let contracts: any[] = []
+    if (fastEnrich) {
+      // Fast path: mapeia contratos sem fazer requisições de status online e endereço
+      contracts = initialContracts.map((c) => ({
+        ...c,
+        clientId: client.id,
+        baseUrl: baseUrl,
+        text: c.text,
+        online: null,
+        cancelled: c.text.toLowerCase().includes('cancelado'),
+      }))
+    } else {
+      const needsOnlineStatus = initialContracts.some((c) => {
+        const lower = c.text.toLowerCase()
+        return !lower.includes('cancelado') && !lower.includes('inativo') && !lower.includes('suspenso')
+      })
 
-    const onlineStatusMap = needsOnlineStatus ? await fetchContractOnlineStatus(baseUrl, client.id) : new Map<string, boolean>()
-    const contracts = await buildContracts(baseUrl, client, html, false, onlineStatusMap)
+      const onlineStatusMap = needsOnlineStatus ? await fetchContractOnlineStatus(baseUrl, client.id) : new Map<string, boolean>()
+      contracts = await buildContracts(baseUrl, client, html, false, onlineStatusMap)
+    }
 
     const clientText = contracts.length > 0 ? contracts.map((c) => c.text).join(' | ') : 'Sem contratos ativos'
     
@@ -54,6 +95,16 @@ async function enrichSgpClient(baseUrl: string, client: { id: string; text: stri
       const lower = c.text.toLowerCase()
       return lower.includes('ativo') && !lower.includes('inativo')
     })
+
+    if (!fastEnrich) {
+      // Extrai e armazena em cache de memória os dados do formulário raspados
+      const responsibleUsers = extractOptions(html, /<select[^>]+id=['"]id_responsavel['"][^>]*>([\s\S]*?)<\/select>/).map((u) => ({ id: u.id, username: u.text.toLowerCase() }))
+      const occurrenceTypes = extractOptions(html, /<select[^>]+id=['"]id_tipo['"][^>]*>([\s\S]*?)<\/select>/)
+      setScrapeCache(`${baseUrl}_${client.id}`, { contracts, responsibleUsers, occurrenceTypes })
+    }
+
+    const tEnd = performance.now()
+    console.log(`${getTs()} ⏱️ [ATI Perf] Enriquecimento do cliente ID ${client.id} em ${label} demorou ${(tEnd - tStart).toFixed(1)}ms. (FastEnrich: ${fastEnrich})`)
 
     return { 
       id: client.id, 
@@ -64,6 +115,8 @@ async function enrichSgpClient(baseUrl: string, client: { id: string; text: stri
     }
   } catch (e) {
     console.warn(`Extensão ATI: Erro ao buscar contratos para cliente ${client.id} em ${baseUrl}.`, e)
+    const tEndErr = performance.now()
+    console.log(`${getTs()} ⏱️ [ATI Perf] Enriquecimento com ERRO para cliente ID ${client.id} em ${label} demorou ${(tEndErr - tStart).toFixed(1)}ms.`)
     return { 
       id: client.id, 
       text: client.text || 'Erro ao buscar contratos ou sem contratos', 
@@ -74,10 +127,28 @@ async function enrichSgpClient(baseUrl: string, client: { id: string; text: stri
   }
 }
 
+async function searchAndEnrich(baseUrl: string, label: string, clientData: ClientData, uid?: string): Promise<any[]> {
+  try {
+    // 1. Garante que está autenticado de forma rápida e segura
+    await ensureSgpSession(baseUrl)
+    
+    // 2. Realiza a busca de cliente no SGP correspondente
+    const clients = await findClientInSgp(baseUrl, clientData, uid)
+    if (!clients || clients.length === 0) return []
+    
+    // 3. Enriquece os clientes encontrados
+    const enrichmentPromises = clients.map((c) => enrichSgpClient(baseUrl, c, label))
+    return await Promise.all(enrichmentPromises)
+  } catch (error) {
+    console.error(`Extensão ATI: Erro na busca/enriquecimento em ${label} (${baseUrl}):`, error)
+    return []
+  }
+}
+
 export async function handleOpenInSgp(clientData: ClientData, cachedContract: string | null, forceClientId?: string, uid?: string, forceShowModal?: boolean): Promise<any> {
-  // Forçamos uma verificação real de login para garantir que não vamos abrir uma aba
-  // que caia na tela de login (especialmente se o ID vier do cache ou for extraído do DOM).
-  const { isLoggedIn, baseUrl } = await getSgpStatus(true)
+  const tTotalStart = performance.now()
+  // 1. Checagem rápida não-forçada da sessão (usa cache)
+  const { isLoggedIn, baseUrl } = await getSgpStatus(false)
 
   if (cachedContract) {
     console.log(`Extensão ATI: Usando contrato cacheado — ${cachedContract}`)
@@ -86,24 +157,8 @@ export async function handleOpenInSgp(clientData: ClientData, cachedContract: st
     return { success: true, clientId: cachedContract }
   }
 
-  if (!isLoggedIn) {
-    console.warn('Extensão ATI: Não logado no SGP, abrindo login...')
-    await focusOrOpenTab(`${baseUrl}/accounts/login/`)
-    return { success: true }
-  }
-
   let targetBaseUrl = baseUrl
   let targetClientId = forceClientId
-
-  if (forceClientId && forceClientId.includes('|')) {
-    const parts = forceClientId.split('|')
-    targetBaseUrl = parts[0]
-    targetClientId = parts[1]
-    
-    // Define como preferido para que futuros acessos também usem este ambiente
-    await chrome.storage.local.set({ ati_preferred_sgp: targetBaseUrl })
-    console.log(`Extensão ATI: Definindo SGP preferido como ${targetBaseUrl}`)
-  }
 
   if (targetClientId) {
     console.log(`Extensão ATI: ID do cliente forçado — ID ${targetClientId} em ${targetBaseUrl}`)
@@ -130,75 +185,60 @@ export async function handleOpenInSgp(clientData: ClientData, cachedContract: st
     return { success: true }
   }
 
-  console.log('Extensão ATI: Iniciando busca unificada em ambos os SGPs...')
-  
-  // Realiza as buscas em paralelo nos dois sistemas
-  const [clientsPrincipal, clientsReserva] = await Promise.all([
-    findClientInSgp(SGP_DNS, clientData, uid).catch((err) => {
-      console.error('Erro na busca SGP Principal:', err)
-      return null
-    }),
-    findClientInSgp(SGP_IP_53, clientData, uid).catch((err) => {
-      console.error('Erro na busca SGP Reserva:', err)
-      return null
-    })
+  console.log('Extensão ATI: Iniciando busca rápida paralela nos SGPs...')
+  const tBuscaStart = performance.now()
+
+  // 1. Garante autenticação rápida em ambos (usa cache)
+  await Promise.all([
+    ensureSgpSession(SGP_IP_35).catch(() => null),
+    ensureSgpSession(SGP_IP_53).catch(() => null)
   ])
 
-  // Enriquecimento em paralelo de todos os resultados encontrados
-  const enrichmentPromises: Promise<any>[] = []
+  // 2. Realiza a busca autocomplete simples em paralelo nos dois sistemas (ultra-rápido!)
+  const [clientsPrincipal, clientsReserva] = await Promise.all([
+    findClientInSgp(SGP_IP_35, clientData, uid).catch(() => null),
+    findClientInSgp(SGP_IP_53, clientData, uid).catch(() => null)
+  ])
 
-  if (clientsPrincipal && clientsPrincipal.length > 0) {
-    clientsPrincipal.forEach((c) => {
-      enrichmentPromises.push(enrichSgpClient(SGP_DNS, c, 'Principal'))
-    })
-  }
+  const foundPrincipal = (clientsPrincipal || []).map(c => ({ ...c, baseUrl: SGP_IP_35, systemLabel: 'Principal' }))
+  const foundReserva = (clientsReserva || []).map(c => ({ ...c, baseUrl: SGP_IP_53, systemLabel: 'Reserva (IP 53)' }))
+  const allFound = [...foundPrincipal, ...foundReserva]
 
-  if (clientsReserva && clientsReserva.length > 0) {
-    clientsReserva.forEach((c) => {
-      enrichmentPromises.push(enrichSgpClient(SGP_IP_53, c, 'Reserva (IP 53)'))
-    })
-  }
-
-  const allClients = await Promise.all(enrichmentPromises)
-
-  if (allClients.length === 0) {
+  if (allFound.length === 0) {
     console.warn('Extensão ATI: Cliente não encontrado em nenhum dos sistemas.')
     await focusOrOpenTab(`${baseUrl}/admin/`)
     return { success: true }
   }
 
-  // Se houver exatamente 1 cliente em total nas buscas, vai direto nele (se não for forçado a exibir o modal)
-  if (!forceShowModal && allClients.length === 1) {
-    const client = allClients[0]
-    console.log(`Extensão ATI: Único cliente encontrado em ${client.systemLabel} — ID ${client.id}`)
-    
-    // Atualiza SGP preferido
-    await chrome.storage.local.set({ ati_preferred_sgp: client.baseUrl })
-    
+  // Se houver exatamente 1 cliente em todo o ecossistema, abre direto imediatamente (FAST PATH: sem enriquecimento!)
+  if (!forceShowModal && allFound.length === 1) {
+    const client = allFound[0]
+    const tTotalEnd = performance.now()
+    console.log(`${getTs()} ⏱️ [ATI Perf] Total handleOpenInSgp (FAST PATH) demorou ${(tTotalEnd - tTotalStart).toFixed(1)}ms.`)
     await focusOrOpenTab(`${client.baseUrl}/admin/cliente/${client.id}/contratos/`, client.id)
     return { success: true, clientId: client.id }
   }
 
-  // Se houver múltiplos cadastros, mas apenas 1 ATIVO em todo o ecossistema,
-  // vai direto nele automaticamente! (se não for forçado a exibir o modal)
+  // Caso contrário, faz o enriquecimento em paralelo apenas dos cadastros encontrados para desempate!
+  console.log(`Extensão ATI: Múltiplos candidatos encontrados (${allFound.length}). Iniciando enriquecimento para desempate...`)
+  const enrichmentPromises = allFound.map((c) => enrichSgpClient(c.baseUrl, c, c.systemLabel, true))
+  const allClients = await Promise.all(enrichmentPromises)
+
+  const tTotalEnd = performance.now()
+  console.log(`${getTs()} ⏱️ [ATI Perf] Total handleOpenInSgp (DETAILED PATH) demorou ${(tTotalEnd - tTotalStart).toFixed(1)}ms.`)
+
+  // Se houver múltiplos cadastros, mas apenas 1 ATIVO em todo o ecossistema, vai direto
   const activeClients = allClients.filter((c) => c.isActive)
   if (!forceShowModal && activeClients.length === 1) {
     const client = activeClients[0]
-    console.log(`Extensão ATI: Único cadastro ativo encontrado em ${client.systemLabel} — ID ${client.id}. Redirecionando automaticamente...`)
-    
-    // Atualiza SGP preferido
-    await chrome.storage.local.set({ ati_preferred_sgp: client.baseUrl })
-    
     await focusOrOpenTab(`${client.baseUrl}/admin/cliente/${client.id}/contratos/`, client.id)
     return { success: true, clientId: client.id }
   }
 
-  // Se houver mais de 1 cadastro ativo ou nenhum ativo (ex: todos cancelados/inativos),
-  // exibe o modal de seleção unificado contendo todas as opções!
-  console.log(`Extensão ATI: Múltiplas opções encontradas no ecossistema (${allClients.length} cadastros). Exibindo modal...`)
-  
+  // Se houver mais de 1 cadastro ativo ou nenhum ativo, exibe o modal de seleção
+  console.log(`Extensão ATI: Exibindo modal para seleção entre ${allClients.length} opções...`)
   const formattedClients = allClients.map((c) => ({
-    id: `${c.baseUrl}|${c.id}`, // ID unificado contendo o ambiente do cadastro
+    id: `${c.baseUrl}|${c.id}`,
     text: `[${c.systemLabel}] - ${c.text}`
   }))
 
@@ -206,6 +246,8 @@ export async function handleOpenInSgp(clientData: ClientData, cachedContract: st
 }
 
 export async function getSgpFormParams(clientData: ClientData, chatId: string, idToken: string, uid?: string): Promise<SgpData> {
+  const tTotalStart = performance.now()
+
   // 1. Verifica se o usuário forçou um SGP manualmente para este atendimento (evita loop infinito se ele quiser trocar de SGP no modal)
   const forceResult = await chrome.storage.local.get(`ati_manual_sgp_force_${chatId}`)
   const forcedSgp = forceResult[`ati_manual_sgp_force_${chatId}`]
@@ -216,26 +258,18 @@ export async function getSgpFormParams(clientData: ClientData, chatId: string, i
 
   if (hasData) {
     try {
+      const tBuscaStart = performance.now()
+
+      // Realiza a busca e o enriquecimento em paralelo nos dois sistemas
       const [clientsPrincipal, clientsReserva] = await Promise.all([
-        findClientInSgp(SGP_DNS, clientData, uid).catch(() => null),
-        findClientInSgp(SGP_IP_53, clientData, uid).catch(() => null)
+        searchAndEnrich(SGP_IP_35, 'Principal', clientData, uid),
+        searchAndEnrich(SGP_IP_53, 'Reserva (IP 53)', clientData, uid)
       ])
 
-      const enrichmentPromises: Promise<any>[] = []
+      const allClients = [...clientsPrincipal, ...clientsReserva]
 
-      if (clientsPrincipal && clientsPrincipal.length > 0) {
-        clientsPrincipal.forEach((c) => {
-          enrichmentPromises.push(enrichSgpClient(SGP_DNS, c, 'Principal'))
-        })
-      }
-
-      if (clientsReserva && clientsReserva.length > 0) {
-        clientsReserva.forEach((c) => {
-          enrichmentPromises.push(enrichSgpClient(SGP_IP_53, c, 'Reserva (IP 53)'))
-        })
-      }
-
-      const allClients = await Promise.all(enrichmentPromises)
+      const tBuscaEnd = performance.now()
+      console.log(`${getTs()} ⏱️ [ATI Perf] FormParams: Busca e enriquecimento unificado demorou ${(tBuscaEnd - tBuscaStart).toFixed(1)}ms.`)
 
       let autoSelectedClient: any = null
 
@@ -252,10 +286,12 @@ export async function getSgpFormParams(clientData: ClientData, chatId: string, i
         targetBaseUrl = autoSelectedClient.baseUrl
         // Salva o preferido para futuras operações
         await chrome.storage.local.set({ ati_preferred_sgp: targetBaseUrl })
-        console.log(`Extensão ATI: Auto-selecionado SGP preferido no FormParams como ${targetBaseUrl}`)
         // Também injeta o ID correto para busca no SGP selecionado
         clientData.clientSgpId = autoSelectedClient.id
         clientData.clientSgpOrigin = targetBaseUrl
+
+        // Sincroniza o status cache para que a verificação de sessão use cache e seja instantânea!
+        await updateSgpStatusCache({ isLoggedIn: true, baseUrl: targetBaseUrl })
       }
     } catch (e) {
       console.warn('Extensão ATI: Erro no auto-seletor do FormParams, usando preferido padrão.', e)
@@ -266,31 +302,65 @@ export async function getSgpFormParams(clientData: ClientData, chatId: string, i
     // Se foi forçado manualmente, garante que salvamos e usamos ele como preferido
     await chrome.storage.local.set({ ati_preferred_sgp: targetBaseUrl })
     console.log(`Extensão ATI: Usando SGP forçado manualmente para este atendimento: ${targetBaseUrl}`)
+    // Sincroniza o status cache para o SGP forçado
+    await ensureSgpSession(targetBaseUrl).catch(() => null)
+    await updateSgpStatusCache({ isLoggedIn: true, baseUrl: targetBaseUrl })
   }
 
-  const { isLoggedIn, baseUrl } = await getSgpStatus(true) // Força check com a baseUrl atualizada
+  const tLoginCheckStart = performance.now()
+  const { isLoggedIn, baseUrl } = await getSgpStatus(false) // Usa cache se possível (0ms se sincronizado acima!)
+  const tLoginCheckEnd = performance.now()
+  console.log(`${getTs()} ⏱️ [ATI Perf] FormParams: Login/status check demorou ${(tLoginCheckEnd - tLoginCheckStart).toFixed(1)}ms.`)
   if (!isLoggedIn) throw new Error('Não está logado no SGP.')
 
   const clientKey = clientData.clientSgpId || clientData.cpfCnpj || clientData.phoneNumber || clientData.fullName || chatId
   const cacheKey = `${baseUrl}_${clientKey}`
 
-  if (await hasSgpFormCache(cacheKey)) {
+  const tCacheCheckStart = performance.now()
+  const hasCache = await hasSgpFormCache(cacheKey)
+  const tCacheCheckEnd = performance.now()
+  console.log(`${getTs()} ⏱️ [ATI Perf] FormParams: Verificação de cache demorou ${(tCacheCheckEnd - tCacheCheckStart).toFixed(1)}ms.`)
+
+  if (hasCache) {
     console.log(`Extensão ATI: Usando cache SGP (cacheKey: ${cacheKey}) para atendimento ${chatId}`)
-    return (await getSgpFormCache(cacheKey)) as SgpData
+    const cachedData = await getSgpFormCache(cacheKey)
+    const tTotalEnd = performance.now()
+    console.log(`${getTs()} ⏱️ [ATI Perf] Total getSgpFormParams (CACHE HIT) demorou ${(tTotalEnd - tTotalStart).toFixed(1)}ms.`)
+    return cachedData as SgpData
   }
 
+  const tSearchBaseStart = performance.now()
   const clients = await findClientInSgp(baseUrl, clientData, uid)
+  const tSearchBaseEnd = performance.now()
+  console.log(`${getTs()} ⏱️ [ATI Perf] FormParams: findClientInSgp local (${baseUrl}) demorou ${(tSearchBaseEnd - tSearchBaseStart).toFixed(1)}ms. Encontrados: ${clients?.length ?? 0}`)
+
   if (!clients || clients.length === 0) throw new Error('Cliente não encontrado no SGP.')
 
-  console.log(`Extensão ATI: Buscando dados do formulário para ${clients.length} cliente(s).`)
+  console.log(`Extensão ATI: Buscando dados do formulário para ${clients.length} cliente(s)...`)
 
   let allContracts: SgpContract[] = []
   let responsibleUsers: SgpUser[] = []
   let occurrenceTypes: SgpOccurrenceType[] = []
 
+  const tScrapingStart = performance.now()
   for (let i = 0; i < clients.length; i++) {
     const client = clients[i]
+    const clientCacheKey = `${baseUrl}_${client.id}`
+    const cachedScrape = getScrapeCache(clientCacheKey)
+
+    if (cachedScrape) {
+      console.log(`Extensão ATI: Usando cache de scrape em memória para o cliente ID ${client.id}`)
+      allContracts = allContracts.concat(cachedScrape.contracts)
+      if (i === 0) {
+        responsibleUsers = cachedScrape.responsibleUsers
+        occurrenceTypes = cachedScrape.occurrenceTypes
+      }
+      console.log(`${getTs()} ⏱️ [ATI Perf] FormParams: Scrape HIT em memória para ID ${client.id} (0.0 ms)`)
+      continue
+    }
+
     const url = `${baseUrl}/admin/atendimento/cliente/${client.id}/ocorrencia/add/`
+    const tLoopStart = performance.now()
 
     try {
       const response = await fetch(url, {
@@ -321,22 +391,32 @@ export async function getSgpFormParams(clientData: ClientData, chatId: string, i
         responsibleUsers = extractOptions(html, /<select[^>]+id=['"]id_responsavel['"][^>]*>([\s\S]*?)<\/select>/).map((u) => ({ id: u.id, username: u.text.toLowerCase() }))
         occurrenceTypes = extractOptions(html, /<select[^>]+id=['"]id_tipo['"][^>]*>([\s\S]*?)<\/select>/)
       }
+      
+      const tLoopEnd = performance.now()
+      console.log(`${getTs()} ⏱️ [ATI Perf] FormParams: Scraping para ID ${client.id} em ${baseUrl} demorou ${(tLoopEnd - tLoopStart).toFixed(1)}ms.`)
     } catch (error) {
       console.error(`Extensão ATI: Falha ao buscar dados para cliente ${client.id}.`, error)
       throw error
     }
   }
+  const tScrapingEnd = performance.now()
+  console.log(`Extensão ATI: Buscando dados do formulário para ${clients.length} cliente(s) finalizado (levou ${(tScrapingEnd - tScrapingStart).toFixed(1)}ms).`)
 
   if (allContracts.length === 0) throw new Error('Nenhum contrato encontrado.')
 
   const result = {
     clientSgpId: clients[0].id,
+    clientSgpOrigin: baseUrl,
     contracts: allContracts,
     responsibleUsers,
     occurrenceTypes,
   }
 
   await setSgpFormCache(cacheKey, result)
+  
+  const tTotalEnd = performance.now()
+  console.log(`${getTs()} ⏱️ [ATI Perf] Total getSgpFormParams (CACHE MISS) demorou ${(tTotalEnd - tTotalStart).toFixed(1)}ms.`)
+
   return result
 }
 
@@ -373,11 +453,12 @@ export async function refreshSgpOnlineStatuses(clientData: ClientData, chatId: s
 }
 
 export async function createOccurrenceVisually(data: Record<string, any>): Promise<void> {
-  const { isLoggedIn, baseUrl } = await getSgpStatus(true)
+  const targetBaseUrl = data.sgpOrigin || (await getSgpStatus()).baseUrl
+  const { isLoggedIn } = await getSgpStatus(false) // Checagem rápida no cache
   if (!isLoggedIn) throw new Error('Não está logado no SGP.')
 
   const requestId = Math.random().toString(36).substring(2, 9)
-  const url = `${baseUrl}/admin/atendimento/cliente/${data.clientSgpId}/ocorrencia/add/?ati_req_id=${requestId}`
+  const url = `${targetBaseUrl}/admin/atendimento/cliente/${data.clientSgpId}/ocorrencia/add/?ati_req_id=${requestId}`
 
   await chrome.storage.local.set({ [`pendingSgpData_${requestId}`]: data })
   await chrome.tabs.create({ url, active: true })

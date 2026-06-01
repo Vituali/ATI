@@ -47,7 +47,7 @@ export async function getCpfCache(cpf: string, currentBaseUrl: string): Promise<
   const entry = store[cpf]
   if (!entry) return null
 
-  // Além do TTL, verifica se o ambiente (SGP_DNS, .35, .53) é o mesmo do cache
+  // Além do TTL, verifica se o ambiente (SGP_IP_35, .35, .53) é o mesmo do cache
   const isDifferentEnv = entry.baseUrl && entry.baseUrl !== currentBaseUrl
   const isExpired = Date.now() - entry.createdAt > TTL_MS
 

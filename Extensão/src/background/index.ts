@@ -28,7 +28,12 @@ checkExtensionVersion();
 chrome.runtime.onMessage.addListener((request: ExtensionRequest, _sender, sendResponse) => {
   if (request.action === 'firebaseLogin') {
     handleFirebaseLogin(request.email, request.password)
-      .then((result) => sendResponse(result))
+      .then((result) => {
+        if (result.success) {
+          checkExtensionVersion();
+        }
+        sendResponse(result);
+      })
       .catch((error) => sendResponse({ success: false, error: error.message }))
     return true
   }
@@ -181,6 +186,7 @@ chrome.runtime.onMessage.addListener((request: ExtensionRequest, _sender, sendRe
       chrome.storage.local.set({ ati_user_session: newSession })
         .then(() => {
           console.log(`${getTs()} Extensão ATI: Sessão sincronizada (Senha preservada: ${!!newSession.password})`);
+          checkExtensionVersion();
           sendResponse({ success: true });
           
           chrome.notifications.create('sso-login', {
@@ -236,6 +242,7 @@ chrome.runtime.onMessage.addListener((request: ExtensionRequest, _sender, sendRe
             }
             await chrome.storage.local.set({ ati_user_session: updatedSession })
             console.log(`Extensão ATI: Sessão sincronizada do Firebase para ${session.username}`)
+            checkExtensionVersion();
             sendResponse({ success: true, session: updatedSession })
             return
           }
@@ -277,6 +284,13 @@ chrome.runtime.onMessage.addListener((request: ExtensionRequest, _sender, sendRe
       })
     return true
   }
+
+  if (request.action === 'checkVersion') {
+    checkExtensionVersion()
+      .then(() => sendResponse({ success: true }))
+      .catch((err) => sendResponse({ success: false, error: err.message }))
+    return true
+  }
 })
 
 // Sincronização de Login (SSO) do Site para a Extensão
@@ -287,6 +301,7 @@ chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => 
     chrome.storage.local.set({ ati_user_session: request.session })
       .then(() => {
         console.log(`${getTs()} Extensão ATI: Sessão sincronizada via SSO iniciada.`);
+        checkExtensionVersion();
         sendResponse({ success: true });
         
         // Opcional: Notifica o usuário

@@ -5,7 +5,7 @@
 // Google Maps removido por enquanto (será adicionado depois).
 // ---------------------------------------------------------------
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useUser } from "../../hooks/useUser";
 import "./Conversor.css";
 import LoadingOverlay from "../../components/ui/LoadingOverlay";
@@ -89,38 +89,96 @@ async function copiar(texto: string): Promise<void> {
 export default function Conversor() {
   const { user } = useUser();
 
+  // Auxiliar para buscar valores salvos no localStorage
+  const getSavedValue = <T,>(key: string, defaultValue: T): T => {
+    const saved = localStorage.getItem("ati_conversor_state");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed[key] !== undefined ? parsed[key] : defaultValue;
+      } catch (e) {
+        return defaultValue;
+      }
+    }
+    return defaultValue;
+  };
+
   // Etapa: "upload" | "form"
-  const [etapa, setEtapa] = useState<"upload" | "form">("upload");
+  const [etapa, setEtapa] = useState<"upload" | "form">(() => getSavedValue("etapa", "upload"));
   const [dragOver, setDragOver] = useState(false);
   const [processando, setProcessando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [copiado, setCopiado] = useState<string | null>(null);
 
   // Dados extraídos do PDF
-  const [pdfData, setPdfData] = useState<PdfData | null>(null);
+  const [pdfData, setPdfData] = useState<PdfData | null>(() => getSavedValue("pdfData", null));
 
   // Campos editáveis
-  const [oldAddress, setOldAddress] = useState("");
-  const [newAddress, setNewAddress] = useState("");
-  const [phone, setPhone] = useState("");
+  const [oldAddress, setOldAddress] = useState(() => getSavedValue("oldAddress", ""));
+  const [newAddress, setNewAddress] = useState(() => getSavedValue("newAddress", ""));
+  const [phone, setPhone] = useState(() => getSavedValue("phone", ""));
   const [phoneErro, setPhoneErro] = useState("");
-  const [equipamento, setEquipamento] = useState<Equipamento>("alcl");
-  const [assinatura, setAssinatura] = useState<Assinatura>("digital");
-  const [taxa, setTaxa] = useState<Taxa>("100");
-  const [renovacao, setRenovacao] = useState(false);
-  const [migracao, setMigracao] = useState(false);
-  const [portador, setPortador] = useState<Portador>("none");
-  const [clienteRetira, setClienteRetira] = useState(false);
-  const [retiradaData, setRetiradaData] = useState("");
-  const [retiradaPeriodo, setRetiradaPeriodo] = useState<Periodo>("Manhã");
-  const [instalacaoData, setInstalacaoData] = useState("");
-  const [instalacaoPeriodo, setInstalacaoPeriodo] = useState<Periodo>("Manhã");
+  const [equipamento, setEquipamento] = useState<Equipamento>(() => getSavedValue("equipamento", "alcl"));
+  const [assinatura, setAssinatura] = useState<Assinatura>(() => getSavedValue("assinatura", "digital"));
+  const [taxa, setTaxa] = useState<Taxa>(() => getSavedValue("taxa", "100"));
+  const [renovacao, setRenovacao] = useState(() => getSavedValue("renovacao", false));
+  const [migracao, setMigracao] = useState(() => getSavedValue("migracao", false));
+  const [portador, setPortador] = useState<Portador>(() => getSavedValue("portador", "none"));
+  const [clienteRetira, setClienteRetira] = useState(() => getSavedValue("clienteRetira", false));
+  const [retiradaData, setRetiradaData] = useState(() => getSavedValue("retiradaData", ""));
+  const [retiradaPeriodo, setRetiradaPeriodo] = useState<Periodo>(() => getSavedValue("retiradaPeriodo", "Manhã"));
+  const [instalacaoData, setInstalacaoData] = useState(() => getSavedValue("instalacaoData", ""));
+  const [instalacaoPeriodo, setInstalacaoPeriodo] = useState<Periodo>(() => getSavedValue("instalacaoPeriodo", "Manhã"));
 
   // Output gerado
-  const [osGerada, setOsGerada] = useState("");
-  const [osData, setOsData] = useState<OsTextData | null>(null);
+  const [osGerada, setOsGerada] = useState(() => getSavedValue("osGerada", ""));
+  const [osData, setOsData] = useState<OsTextData | null>(() => getSavedValue("osData", null));
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Efeito para salvar o estado do conversor sempre que um campo for alterado
+  useEffect(() => {
+    const state = {
+      etapa,
+      pdfData,
+      oldAddress,
+      newAddress,
+      phone,
+      equipamento,
+      assinatura,
+      taxa,
+      renovacao,
+      migracao,
+      portador,
+      clienteRetira,
+      retiradaData,
+      retiradaPeriodo,
+      instalacaoData,
+      instalacaoPeriodo,
+      osGerada,
+      osData
+    };
+    localStorage.setItem("ati_conversor_state", JSON.stringify(state));
+  }, [
+    etapa,
+    pdfData,
+    oldAddress,
+    newAddress,
+    phone,
+    equipamento,
+    assinatura,
+    taxa,
+    renovacao,
+    migracao,
+    portador,
+    clienteRetira,
+    retiradaData,
+    retiradaPeriodo,
+    instalacaoData,
+    instalacaoPeriodo,
+    osGerada,
+    osData
+  ]);
 
   // ---------------------------------------------------------------
   // LÓGICA DE TAXA

@@ -165,11 +165,33 @@ export async function getOccurrenceTypes(baseUrl: string, idToken: string): Prom
   // Camada 1: cache de sessão (específico por baseUrl para evitar conflitos entre ambientes)
   const cacheKey = `occurrenceTypes_${baseUrl}`
   const cached = await chrome.storage.session.get(cacheKey)
+  
   if (cached[cacheKey]) {
-    console.log(`Extensão ATI: Tipos de ocorrência do cache de sessão (${cached[cacheKey].length} tipos).`)
+    console.log(`Extensão ATI: [Cache HIT] Tipos de ocorrência do cache de sessão (${cached[cacheKey].length} tipos). Revalidando em background...`)
+    
+    // Dispara a revalidação em background silenciosamente
+    _revalidateOccurrenceTypes(baseUrl, idToken, cacheKey, cached[cacheKey]).catch((err) => {
+      console.warn('Extensão ATI: Falha silenciosa ao revalidar tipos de ocorrência:', err)
+    })
+    
     return cached[cacheKey]
   }
 
+  return await _fetchOccurrenceTypesInternal(baseUrl, idToken, cacheKey)
+}
+
+async function _revalidateOccurrenceTypes(baseUrl: string, idToken: string, cacheKey: string, oldTypes: SgpOccurrenceType[]): Promise<void> {
+  const freshTypes = await _fetchOccurrenceTypesInternal(baseUrl, idToken, cacheKey, true)
+  if (freshTypes && freshTypes.length > 0) {
+    const changed = JSON.stringify(freshTypes) !== JSON.stringify(oldTypes)
+    if (changed) {
+      console.log(`Extensão ATI: Revalidação detectou alteração nos tipos de ocorrência (${freshTypes.length} tipos). Cache atualizado.`)
+      await chrome.storage.session.set({ [cacheKey]: freshTypes })
+    }
+  }
+}
+
+async function _fetchOccurrenceTypesInternal(baseUrl: string, idToken: string, cacheKey: string, isSilent = false): Promise<SgpOccurrenceType[]> {
   const today = new Date().toISOString().slice(0, 10) // "YYYY-MM-DD"
   const is53 = baseUrl.includes('201.158.20.53')
   const dbNode = is53 ? 'sgp_cache_53' : 'sgp_cache'
@@ -185,14 +207,17 @@ export async function getOccurrenceTypes(baseUrl: string, idToken: string): Prom
     } | null
 
     if (fbData?.updatedAt === today && Array.isArray(fbData.occurrenceTypes) && fbData.occurrenceTypes.length > 0) {
-      // Cache do Firebase válido para hoje — usa direto
-      console.log(`Extensão ATI: Tipos de ocorrência do Firebase em ${dbNode} (${fbData.occurrenceTypes.length} tipos, cache de hoje).`)
+      if (!isSilent) {
+        console.log(`Extensão ATI: Tipos de ocorrência do Firebase em ${dbNode} (${fbData.occurrenceTypes.length} tipos, cache de hoje).`)
+      }
       await chrome.storage.session.set({ [cacheKey]: fbData.occurrenceTypes })
       return fbData.occurrenceTypes
     }
 
     // Camada 3: Cache expirado/ausente — busca do SGP e atualiza Firebase
-    console.log('Extensão ATI: Cache de tipos expirado. Sincronizando com o SGP...')
+    if (!isSilent) {
+      console.log('Extensão ATI: Cache de tipos expirado. Sincronizando com o SGP...')
+    }
     const sgpRes = await fetch(`${baseUrl}/admin/atendimento/cliente/1/ocorrencia/add/`, {
       credentials: 'include',
       signal: AbortSignal.timeout(10000),
@@ -209,7 +234,7 @@ export async function getOccurrenceTypes(baseUrl: string, idToken: string): Prom
         signal: AbortSignal.timeout(5000),
       })
         .then(() => {
-          console.log(`Extensão ATI: Firebase ${dbNode} atualizado com ${freshTypes.length} tipos.`)
+          if (!isSilent) console.log(`Extensão ATI: Firebase ${dbNode} atualizado com ${freshTypes.length} tipos.`)
         })
         .catch((writeErr) => {
           console.warn(`Extensão ATI: Falha ao atualizar ${dbNode} no Firebase.`, writeErr)
@@ -234,7 +259,9 @@ export async function getOccurrenceTypes(baseUrl: string, idToken: string): Prom
                 body: JSON.stringify({ updatedAt: today, occurrenceTypes: otherTypes }),
                 signal: AbortSignal.timeout(5000),
               })
-                .then(() => console.log(`Extensão ATI: Sincronização secundária em background para ${otherDbNode} concluída com ${otherTypes.length} tipos.`))
+                .then(() => {
+                  if (!isSilent) console.log(`Extensão ATI: Sincronização secundária em background para ${otherDbNode} concluída com ${otherTypes.length} tipos.`)
+                })
                 .catch((err) => console.warn(`Extensão ATI: Erro ao salvar sync secundário para ${otherDbNode}:`, err))
             }
           }
@@ -249,14 +276,14 @@ export async function getOccurrenceTypes(baseUrl: string, idToken: string): Prom
 
     // SGP também falhou — retorna o que havia no Firebase mesmo expirado
     if (Array.isArray(fbData?.occurrenceTypes) && fbData!.occurrenceTypes!.length > 0) {
-      console.warn('Extensão ATI: SGP falhou. Usando tipos desatualizados do Firebase.')
+      if (!isSilent) console.warn('Extensão ATI: SGP falhou. Usando tipos desatualizados do Firebase.')
       await chrome.storage.session.set({ [cacheKey]: fbData!.occurrenceTypes! })
       return fbData!.occurrenceTypes!
     }
 
     return []
   } catch (error) {
-    console.error('Extensão ATI: Erro ao buscar tipos de ocorrência.', error)
+    if (!isSilent) console.error('Extensão ATI: Erro ao buscar tipos de ocorrência.', error)
     const cached = await chrome.storage.session.get(cacheKey)
     return cached[cacheKey] ?? []
   }

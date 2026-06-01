@@ -9,18 +9,20 @@ import { ClientData } from '../sgp/types'
 // false = apenas logs essenciais
 export const DEBUG_MODE = true
 
+const getTs = () => `[${new Date().toLocaleTimeString('pt-BR')}]`
+
 export function log(...args: unknown[]): void {
   if (DEBUG_MODE) {
-    console.log('Extensão ATI:', ...args)
+    console.log(`${getTs()} Extensão ATI:`, ...args)
   }
 }
 
 export function logWarn(...args: unknown[]): void {
-  console.warn('Extensão ATI:', ...args)
+  console.warn(`${getTs()} Extensão ATI:`, ...args)
 }
 
 export function logError(...args: unknown[]): void {
-  console.error('Extensão ATI:', ...args)
+  console.error(`${getTs()} Extensão ATI:`, ...args)
 }
 
 // --- Estado da sessão atual ---

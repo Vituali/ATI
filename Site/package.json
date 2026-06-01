@@ -8,10 +8,11 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "predeploy": "node -e \"require('fs').copyFileSync('../.env.production','.env.production')\" && node switch-env.cjs prod && npm run build",
+    "predeploy": "node ../switch-env.cjs prod && npm run build",
     "deploy": "gh-pages -d build",
-    "env:dev": "node switch-env.cjs dev",
-    "env:prod": "node switch-env.cjs prod"
+    "env:dev": "node ../switch-env.cjs dev",
+    "env:prod": "node ../switch-env.cjs prod",
+    "generate-icons": "node tools/convert-icons.js"
   },
   "dependencies": {
     "firebase": "12.11.0",
@@ -29,7 +30,9 @@
     "eslint-plugin-react-refresh": "0.5.2",
     "gh-pages": "6.3.0",
     "globals": "17.4.0",
+    "sharp": "^0.34.5",
     "typescript": "5.8.3",
-    "vite": "6.4.1"
+    "vite": "6.4.1",
+    "vite-plugin-pwa": "^1.3.0"
   }
 }

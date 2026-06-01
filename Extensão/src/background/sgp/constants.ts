@@ -2,7 +2,6 @@
 // SGP — CONSTANTES E INTERFACES
 // =================================================================
 
-export const SGP_DNS = 'http://201.158.20.35:8000'
 export const SGP_IP_35 = 'http://201.158.20.35:8000'
 export const SGP_IP_53 = 'http://201.158.20.53:8000'
 export const LOGIN_CACHE_TTL_MS = 2 * 60 * 60 * 1000 // 2 horas

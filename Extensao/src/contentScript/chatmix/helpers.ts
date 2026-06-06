@@ -225,13 +225,26 @@ function handleInvalidatedContext() {
   notification.id = 'ati-update-notification'
   notification.className = 'ati-update-notification'
 
-  notification.innerHTML = `
-    <span class="ati-notification-icon">⚠️</span>
-    <div class="ati-notification-content">
-      <div class="ati-notification-title">Extensão Atualizada!</div>
-      <div class="ati-notification-subtitle">Clique para recarregar a aba e continuar.</div>
-    </div>
-  `
+  const notifIcon = document.createElement('span')
+  notifIcon.className = 'ati-notification-icon'
+  notifIcon.textContent = '⚠️'
+
+  const notifContent = document.createElement('div')
+  notifContent.className = 'ati-notification-content'
+
+  const notifTitle = document.createElement('div')
+  notifTitle.className = 'ati-notification-title'
+  notifTitle.textContent = 'Extensão Atualizada!'
+
+  const notifSubtitle = document.createElement('div')
+  notifSubtitle.className = 'ati-notification-subtitle'
+  notifSubtitle.textContent = 'Clique para recarregar a aba e continuar.'
+
+  notifContent.appendChild(notifTitle)
+  notifContent.appendChild(notifSubtitle)
+
+  notification.appendChild(notifIcon)
+  notification.appendChild(notifContent)
 
   notification.onclick = () => window.location.reload()
   document.body.appendChild(notification)
@@ -262,10 +275,16 @@ export function showToast(message: string, type: 'error' | 'success' | 'info' = 
 
   const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️'
 
-  toast.innerHTML = `
-    <span class="ati-toast-icon">${icon}</span>
-    <div class="ati-toast-content">${message}</div>
-  `
+  const iconSpan = document.createElement('span')
+  iconSpan.className = 'ati-toast-icon'
+  iconSpan.textContent = icon
+  
+  const contentDiv = document.createElement('div')
+  contentDiv.className = 'ati-toast-content'
+  contentDiv.textContent = message
+  
+  toast.appendChild(iconSpan)
+  toast.appendChild(contentDiv)
 
   container.appendChild(toast)
 

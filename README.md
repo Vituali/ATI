@@ -56,11 +56,34 @@ ati/ (Root)
 │   ├── background.js      # Interceptador declarativo de cookies do iframe
 │   └── teste.html
 │
+├── .gemini/               # Diretório de agentes e Skills Inteligentes
+│   └── skills/            # Instruções e diretrizes especializadas por escopo
+│
 ├── package.json           # Orquestrador de scripts globais do monorepo
-├── .cursorrules           # Diretrizes globais consolidadas para AIs
+├── .cursorrules           # Diretrizes globais consolidadas para AIs (Cursor)
 ├── .gitignore             # Ignora dependências e builds recursivamente
 └── README.md              # Esta documentação mestre
 ```
+
+---
+
+## 🧠 Sistema de IA & Skills Co-locadas
+
+O ecossistema utiliza o sistema de **AI Skills** do Antigravity/Gemini localizado na pasta `.gemini/skills/`. Isso permite que agentes de IA carreguem as instruções e regras ideais dinamicamente conforme o contexto da tarefa:
+
+1. **`chrome-extension`:** Diretrizes do Manifest V3, restrições do service worker e regras de injeção segura no DOM do ChatMix.
+2. **`site-panel`:** Boas práticas em React 19, convenção de nomes em português e tratamento de SSO e Embedded Mode.
+3. **`firebase-dev-ops`:** Lista de comandos do monorepo, controle de ambiente e o schema JSON do banco de dados Realtime.
+4. **`ui-ux-pro-max`:** Paletas HSL no Dark Theme, micro-animações dinâmicas e design de glassmorphism premium.
+5. **`anthropic-design`:** Filosofia de design limpa e minimalista baseada em cores quentes, tipografia de alta legibilidade e bordas finas com foco em usabilidade.
+6. **`code-reviewer`:** Padrões de revisão de código, qualidade TypeScript, prevenção de vazamento de memória e auditoria crítica de segurança contra Prototype Pollution, XSS e Path Traversal.
+7. **`vercel-react-best-practices`:** Padrões de componentes React 18/19, otimização de estado/hooks e tratamento de re-renders.
+8. **`frontend-design`:** Alinhamento de design clean, contraste tipográfico e regras de layouts responsivos.
+9. **`mattpocock-typescript`:** Padrões avançados de TypeScript, tipagem estrita, exclusão do tipo 'any' e guardas de tipo.
+10. **`code-simplifier`:** Diretrizes para simplificação de lógica, redução de aninhamento (guard clauses) e divisão de funções.
+
+
+
 
 ### 🛰️ Diagrama de Fluxo e Integração
 

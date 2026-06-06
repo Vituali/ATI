@@ -85,8 +85,21 @@
       }
 
       // Fixos
-      const is53 = window.location.href.includes('201.158.20.53')
-      setValue('#id_setor', is53 ? '100006' : '2')
+      const setorSelect = document.querySelector('#id_setor')
+      let sectorValue = '2'
+      if (setorSelect) {
+        const has53Sector = Array.from(setorSelect.options).some(function(o) {
+          return o.value === '100006'
+        })
+        if (has53Sector) {
+          sectorValue = '100006'
+        }
+      } else {
+        if (window.location.href.includes('201.158.20.53')) {
+          sectorValue = '100006'
+        }
+      }
+      setValue('#id_setor', sectorValue)
       setValue('#id_metodo', '3')
       setValue('#id_data_agendamento', dateStr)
 

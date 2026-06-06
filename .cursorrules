@@ -54,6 +54,10 @@ O site e a extensão mantêm sincronia de sessões automatizada usando uma ponte
 ### 5. Estilização no Painel Web
 * **Estilo:** CSS Nativo Vanilla de altíssima qualidade (com variáveis globais em `index.css` e arquivos CSS escopados por componente/página). Evitar TailwindCSS a menos que explicitamente solicitado.
 
+## 📝 Atualização de Documentação e Registro de Erros
+* **Regra:** Sempre que um erro/bug for identificado (pelo usuário, logs de execução ou pelo compilador/linter) e corrigido, ou sempre que uma nova diretriz de desenvolvimento for descoberta, você **DEVE** atualizar o arquivo [ERROS_COMUNS.md](file:///c:/Users/Dell/Documents/GitHub/ati/docs/ERROS_COMUNS.md) (ou outros documentos relevantes em `docs/`).
+* **Objetivo:** Manter o histórico de aprendizado do repositório atualizado e garantir que erros resolvidos não voltem a ocorrer (regressões).
+
 ---
 
 ## ✍️ Tom e Idioma de Comunicação

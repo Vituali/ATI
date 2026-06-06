@@ -25,26 +25,6 @@ export async function updateSgpStatusCache(status: { isLoggedIn: boolean; baseUr
   })
 }
 
-async function checkSgpStatus(): Promise<{ isLoggedIn: boolean; baseUrl: string }> {
-  console.log('Extensão ATI: Verificando status do SGP...')
-
-  // Fallback padrão
-  try {
-    const ip35 = await performLoginCheck(SGP_IP_35)
-    if (ip35.isLoggedIn) return ip35
-  } catch {
-    console.warn('Extensão ATI: IP 35 falhou, tentando IP 53...')
-  }
-
-  try {
-    const ip53 = await performLoginCheck(SGP_IP_53)
-    if (ip53.isLoggedIn) return ip53
-  } catch {
-    console.warn('Extensão ATI: IP 53 falhou.')
-  }
-
-  return { isLoggedIn: false, baseUrl: SGP_IP_35 }
-}
 
 export async function performSilentLogin(baseUrl: string): Promise<boolean> {
   try {

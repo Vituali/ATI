@@ -59,15 +59,25 @@ export async function fetchContractOnlineStatus(baseUrl: string, clientId: strin
   return statusMap
 }
 
-export async function buildContracts(baseUrl: string, client: SgpClient, html: string, multipleClients: boolean, onlineStatusMap: Map<string, boolean>): Promise<any[]> {
+export async function buildContracts(
+  baseUrl: string,
+  client: SgpClient,
+  html: string,
+  multipleClients: boolean,
+  onlineStatusMap?: Map<string, boolean>
+): Promise<any[]> {
   const initialContracts = extractOptions(html, /<select[^>]+id=['"]id_clientecontrato['"][^>]*>([\s\S]*?)<\/select>/)
+
+  // Recupera endereços previamente cacheados em lote
+  const cacheKeys = initialContracts.map((c) => `contract_addr_${c.id}`)
+  const cachedData = await chrome.storage.local.get(cacheKeys)
 
   const mappedContracts = initialContracts.map((c) => ({
     ...c,
     clientId: client.id,
     baseUrl: baseUrl,
     text: multipleClients ? `[Cadastro ${client.id}] ${c.text}` : c.text,
-    online: onlineStatusMap.has(c.id) ? onlineStatusMap.get(c.id) : null,
+    online: onlineStatusMap && onlineStatusMap.has(c.id) ? onlineStatusMap.get(c.id) : null,
     cancelled: c.text.toLowerCase().includes('cancelado'),
   }))
 
@@ -78,6 +88,15 @@ export async function buildContracts(baseUrl: string, client: SgpClient, html: s
       if (contract.cancelled || lowerText.includes('inativo') || lowerText.includes('suspenso')) {
         return contract
       }
+
+      // 1. Tenta recuperar do cache local
+      const cachedAddr = cachedData[`contract_addr_${contract.id}`]
+      if (cachedAddr) {
+        console.log(`Extensão ATI: Endereço cacheado encontrado para contrato ${contract.id}: ${cachedAddr}`)
+        return { ...contract, text: `${contract.text} - ${cachedAddr}` }
+      }
+
+      // 2. Se não estiver no cache, realiza a busca
       try {
         const servRes = await fetch(`${baseUrl}/admin/clientecontrato/servico/list/ajax/?contrato_id=${contract.id}`, { credentials: 'include', signal: AbortSignal.timeout(8000) })
         const services = await servRes.json()
@@ -85,7 +104,9 @@ export async function buildContracts(baseUrl: string, client: SgpClient, html: s
           const detailRes = await fetch(`${baseUrl}/admin/atendimento/ocorrencia/servico/detalhe/ajax/?servico_id=${services[0].id}&contrato_id=${contract.id}`, { credentials: 'include', signal: AbortSignal.timeout(8000) })
           const details = await detailRes.json()
           if (details?.length > 0 && details[0]?.end_instalacao) {
-            return { ...contract, text: `${contract.text} - ${details[0].end_instalacao}` }
+            const address = details[0].end_instalacao
+            await chrome.storage.local.set({ [`contract_addr_${contract.id}`]: address })
+            return { ...contract, text: `${contract.text} - ${address}` }
           }
         }
       } catch {

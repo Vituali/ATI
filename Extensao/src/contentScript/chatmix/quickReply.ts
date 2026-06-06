@@ -32,8 +32,6 @@ export function clearQuickReplyCache(): void {
   log('Cache de quick replies limpo.')
 }
 
-// Aba ativa atual
-let activeTab = ''
 
 // =================================================================
 // INJETA O CONTAINER DE QUICK REPLY

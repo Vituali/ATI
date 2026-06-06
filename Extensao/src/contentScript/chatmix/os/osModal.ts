@@ -3,7 +3,7 @@
 // =================================================================
 
 import './osModal.css'
-import { ClientData, SgpData, SgpOccurrenceType, SgpContract } from '../../sgp/types'
+import { ClientData, SgpData, SgpContract } from '../../sgp/types'
 import { formatPhoneNumber, safeSendMessage, showToast } from '../helpers'
 import { clearDraft, loadDraft, saveDraft } from './osDraft'
 import { SGP_IP_35, SGP_IP_53 } from '../../../background/sgp/constants'

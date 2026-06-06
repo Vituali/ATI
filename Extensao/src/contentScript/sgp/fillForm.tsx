@@ -304,18 +304,33 @@ if (!isOccurrencePage && !isPromessaPage && !isOsAddPage) {
       
       // Validade de 3 minutos para a ação (dando tempo caso passe por página de O.S. ou redirecionamentos)
       if (now - pendingTimestamp < 180000) {
-        const bodyTextLower = document.body.textContent?.toLowerCase() || ''
-        const hasSuccessMessage = !!(
-          document.querySelector('.messagelist li.success, .messagelist .success, .alert-success, .success, .alert, .messages, .message') ||
-          document.querySelector('.messagelist') ||
-          bodyTextLower.includes('sucesso') ||
-          bodyTextLower.includes('cadastrada') ||
-          bodyTextLower.includes('cadastrado') ||
-          bodyTextLower.includes('adicionada') ||
-          bodyTextLower.includes('adicionado') ||
-          bodyTextLower.includes('salvo') ||
-          bodyTextLower.includes('salva')
-        )
+        let hasSuccessMessage = false
+        const msgContainer = document.querySelector('.messagelist, .messagelist2, .alert-success, .alert, .messages, .message')
+        if (msgContainer) {
+          const containerText = msgContainer.textContent?.toLowerCase() || ''
+          hasSuccessMessage = !!(
+            msgContainer.querySelector('.success') ||
+            containerText.includes('sucesso') ||
+            containerText.includes('cadastrad') ||
+            containerText.includes('adicionad') ||
+            containerText.includes('salv')
+          )
+        } else {
+          // Fallback mais leve limitando a busca ao container principal de conteúdo
+          const contentEl = document.querySelector('#content, #content-main, #container')
+          if (contentEl) {
+            const contentText = contentEl.textContent?.toLowerCase() || ''
+            hasSuccessMessage = (
+              contentText.includes('sucesso') ||
+              contentText.includes('cadastrada') ||
+              contentText.includes('cadastrado') ||
+              contentText.includes('adicionada') ||
+              contentText.includes('adicionado') ||
+              contentText.includes('salvo') ||
+              contentText.includes('salva')
+            )
+          }
+        }
         
         if (hasSuccessMessage) {
           sessionStorage.removeItem('ati_just_submitted_payment_occurrence')

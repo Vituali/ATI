@@ -1,7 +1,7 @@
 // hooks/useUser.ts
 import { useState, useEffect } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { ref, get, update } from "firebase/database";
+import { ref, get, update, onValue } from "firebase/database";
 import { auth, db } from "../services/firebase";
 import { Role, Setor } from "../services/permissions";
 import { syncWithExtension } from "../services/auth";
@@ -16,6 +16,7 @@ export interface UserProfile {
   status: "ativo" | "inativo";
   sgpUsername?: string;
   avatarUrl?: string;
+  customBg?: string;
 }
 
 interface UseUserReturn {
@@ -48,6 +49,7 @@ async function fetchProfileWithRetry(
             status: data.status ?? "ativo",
             sgpUsername: data.sgpUsername ?? undefined,
             avatarUrl: data.avatarUrl ?? undefined,
+            customBg: data.customBg ?? undefined,
           };
         }
       });
@@ -69,9 +71,17 @@ export function useUser(): UseUserReturn {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(
+    let unsubscribeProfile: (() => void) | null = null;
+
+    const unsubscribeAuth = onAuthStateChanged(
       auth,
       async (firebaseUser: User | null) => {
+        // Limpa inscrição do perfil anterior
+        if (unsubscribeProfile) {
+          unsubscribeProfile();
+          unsubscribeProfile = null;
+        }
+
         if (!firebaseUser) {
           setUser(null);
           setLoading(false);
@@ -94,10 +104,27 @@ export function useUser(): UseUserReturn {
             profile.email = firebaseUser.email;
           }
 
-          setUser(profile);
-          setError(null);
+          // Escuta alterações em tempo real do perfil do atendente
+          const profileRef = ref(db, `atendentes/${profile.username}`);
+          unsubscribeProfile = onValue(profileRef, (snap) => {
+            if (snap.exists()) {
+              const data = snap.val();
+              setUser({
+                uid: data.uid,
+                email: data.email,
+                username: profile.username,
+                nomeCompleto: data.nomeCompleto,
+                role: (data.role ?? "usuario") as Role,
+                setor: (data.setor ?? "geral") as Setor,
+                status: data.status ?? "ativo",
+                sgpUsername: data.sgpUsername ?? undefined,
+                avatarUrl: data.avatarUrl ?? undefined,
+                customBg: data.customBg ?? undefined,
+              });
+            }
+          });
 
-          // NOVO: Sincroniza com a extensão assim que o perfil está pronto
+          setError(null);
           syncWithExtension(firebaseUser);
         } catch (err: any) {
           setError(err.message || "Erro ao carregar perfil.");
@@ -108,7 +135,10 @@ export function useUser(): UseUserReturn {
       },
     );
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeProfile) unsubscribeProfile();
+    };
   }, []);
 
   return { user, loading, error };

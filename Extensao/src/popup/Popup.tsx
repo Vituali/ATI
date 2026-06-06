@@ -171,7 +171,7 @@ export const Popup = () => {
 
   const handleCheckUpdates = () => {
     setLoading(true);
-    chrome.runtime.sendMessage({ action: 'checkVersion' }, (response) => {
+    chrome.runtime.sendMessage({ action: 'checkVersion' }, (_response) => {
       setLoading(false);
       chrome.storage.local.get(['ati_update_required', 'ati_latest_version'], (result) => {
         const hasUpdate = !!result.ati_update_required;

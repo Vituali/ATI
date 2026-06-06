@@ -1,5 +1,5 @@
 // pages/ModelosOS.tsx
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { ref, get, set, remove } from "firebase/database";
 import { db } from "../../services/firebase";
 import { useUser } from "../../hooks/useUser";
@@ -105,23 +105,7 @@ export default function ModelosOS() {
   // CARREGAR
   // ---------------------------------------------------------------
 
-  useEffect(() => {
-    if (!user) return;
-    carregarTudo();
-  }, [user]);
-
-  // Fecha dropdown de occurrence ao clicar fora
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (occRef.current && !occRef.current.contains(e.target as Node)) {
-        setOccAberto(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
-
-  async function carregarTudo() {
+  const carregarTudo = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     try {
@@ -173,13 +157,29 @@ export default function ModelosOS() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    carregarTudo();
+  }, [user, carregarTudo]);
+
+  // Fecha dropdown de occurrence ao clicar fora
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (occRef.current && !occRef.current.contains(e.target as Node)) {
+        setOccAberto(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   // ---------------------------------------------------------------
   // SALVAR / APAGAR
   // ---------------------------------------------------------------
 
-  async function salvarModelo(modelo: ModeloOS) {
+  const salvarModelo = useCallback(async (modelo: ModeloOS) => {
     if (!user) return;
     setSalvando(true);
     try {
@@ -189,9 +189,9 @@ export default function ModelosOS() {
     } finally {
       setSalvando(false);
     }
-  }
+  }, [user]);
 
-  async function apagarModelo(id: string) {
+  const apagarModelo = useCallback(async (id: string) => {
     if (!user) return;
     try {
       await remove(ref(db, `modelos_os/${user.username}/${id}`));
@@ -199,13 +199,13 @@ export default function ModelosOS() {
     } catch (e) {
       console.error(e);
     }
-  }
+  }, [user]);
 
   // ---------------------------------------------------------------
   // MODAL
   // ---------------------------------------------------------------
 
-  function abrirNovo() {
+  const abrirNovo = useCallback(() => {
     setForm({ ...FORM_VAZIO });
     setKeywordInput("");
     setOccBusca("");
@@ -213,9 +213,9 @@ export default function ModelosOS() {
     setModalModo("novo");
     setEditandoId(null);
     setModalAberto(true);
-  }
+  }, []);
 
-  function abrirEditar(modelo: ModeloOS) {
+  const abrirEditar = useCallback((modelo: ModeloOS) => {
     setForm({
       title: modelo.title,
       text: modelo.text,
@@ -237,9 +237,9 @@ export default function ModelosOS() {
     setModalModo("editar");
     setEditandoId(modelo.id);
     setModalAberto(true);
-  }
+  }, [occurrenceTypes]);
 
-  async function handleSalvar() {
+  const handleSalvar = useCallback(async () => {
     if (!form.title.trim() || !form.text.trim() || !form.category.trim())
       return;
 
@@ -267,53 +267,59 @@ export default function ModelosOS() {
     });
 
     setModalAberto(false);
-  }
+  }, [form, modalModo, editandoId, salvarModelo]);
 
   // ---------------------------------------------------------------
   // KEYWORDS
   // ---------------------------------------------------------------
 
-  function adicionarKeyword() {
+  const adicionarKeyword = useCallback(() => {
     const k = keywordInput.trim().toLowerCase();
     if (!k || form.keywords?.includes(k)) return;
     setForm((f) => ({ ...f, keywords: [...(f.keywords ?? []), k] }));
     setKeywordInput("");
-  }
+  }, [keywordInput, form.keywords]);
 
-  function removerKeyword(k: string) {
+  const removerKeyword = useCallback((k: string) => {
     setForm((f) => ({ ...f, keywords: f.keywords?.filter((kw) => kw !== k) }));
-  }
+  }, []);
 
   // ---------------------------------------------------------------
   // FILTROS DA LISTAGEM
   // ---------------------------------------------------------------
 
-  const categorias = [...new Set(modelos.map((m) => m.category))].sort();
+  const categorias = useMemo(() => {
+    return [...new Set(modelos.map((m) => m.category))].sort();
+  }, [modelos]);
 
-  const modelosFiltrados = modelos.filter((m) => {
-    const q = busca.toLowerCase();
-    const matchBusca =
-      !busca ||
-      m.title.toLowerCase().includes(q) ||
-      m.text.toLowerCase().includes(q) ||
-      m.keywords?.some((k) => k.includes(q));
-    const matchCat = !catFiltro || m.category === catFiltro;
-    return matchBusca && matchCat;
-  });
+  const modelosFiltrados = useMemo(() => {
+    return modelos.filter((m) => {
+      const q = busca.toLowerCase();
+      const matchBusca =
+        !busca ||
+        m.title.toLowerCase().includes(q) ||
+        m.text.toLowerCase().includes(q) ||
+        m.keywords?.some((k) => k.includes(q));
+      const matchCat = !catFiltro || m.category === catFiltro;
+      return matchBusca && matchCat;
+    });
+  }, [modelos, busca, catFiltro]);
 
-  // Agrupa por categoria
-  const agrupados = categorias
-    .filter((c) => !catFiltro || c === catFiltro)
-    .map((cat) => ({
-      cat,
-      itens: modelosFiltrados.filter((m) => m.category === cat),
-    }))
-    .filter((g) => g.itens.length > 0);
+  const agrupados = useMemo(() => {
+    return categorias
+      .filter((c) => !catFiltro || c === catFiltro)
+      .map((cat) => ({
+        cat,
+        itens: modelosFiltrados.filter((m) => m.category === cat),
+      }))
+      .filter((g) => g.itens.length > 0);
+  }, [categorias, modelosFiltrados, catFiltro]);
 
-  // Occurrence types filtrados pela busca no modal
-  const occFiltrados = occurrenceTypes.filter((o) =>
-    o.text.toLowerCase().includes(occBusca.toLowerCase()),
-  );
+  const occFiltrados = useMemo(() => {
+    return occurrenceTypes.filter((o) =>
+      o.text.toLowerCase().includes(occBusca.toLowerCase()),
+    );
+  }, [occurrenceTypes, occBusca]);
 
   // ---------------------------------------------------------------
   // RENDER

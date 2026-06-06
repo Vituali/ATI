@@ -95,6 +95,7 @@ export default function UserPanel({
         nomeCompleto: nomeTrimmed,
         sgpUsername: sgpTrimmed || null,
         avatarUrl: avatarUrlForm.trim() || null,
+        customBg: tempBg.trim() || null,
       });
       showFeedback(setFeedbackPerfil, "Perfil atualizado com sucesso!", "ok");
     } catch (e: any) {

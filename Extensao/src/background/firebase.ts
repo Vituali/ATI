@@ -7,11 +7,9 @@
 import { firebaseConfig } from './config'
 export { firebaseConfig }
 
-interface AuthResponseData {
-  localId?: string
-  idToken?: string
-  error?: { message: string }
-}
+// =================================================================
+// LOGIN
+// =================================================================
 
 interface FirebaseAtendente {
   uid: string

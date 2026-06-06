@@ -5,7 +5,7 @@ import { Login, Register, Home, ErrorPage, ExtensionModal } from "./pages";
 import { useUser, UserProfile } from "./hooks";
 import { canAccess, Section, Setor, getSetorLabel, logout, db, auth, syncWithExtension, performSSOLogin } from "./services";
 import { Sidebar, Footer, LoadingOverlay, ToastContainer, UserPanel, BugReportModal } from "./components";
-import { ref, onValue } from "firebase/database";
+import { ref, onValue, update } from "firebase/database";
 import "./App.css";
 import { useRegisterSW } from "virtual:pwa-register/react";
 
@@ -91,6 +91,18 @@ export default function App() {
     },
     [setCurrentSection],
   );
+
+  // Sincroniza plano de fundo do Firebase
+  useEffect(() => {
+    if (user && user.customBg !== undefined) {
+      setBgUrl(user.customBg);
+      if (user.customBg) {
+        localStorage.setItem("ati-custom-bg", user.customBg);
+      } else {
+        localStorage.removeItem("ati-custom-bg");
+      }
+    }
+  }, [user]);
 
   // Notificações em real-time (Escutando apenas o nó meta leve)
   useEffect(() => {
@@ -218,6 +230,11 @@ export default function App() {
       localStorage.setItem("ati-custom-bg", url);
     } else {
       localStorage.removeItem("ati-custom-bg");
+    }
+    if (user) {
+      update(ref(db, `atendentes/${user.username}`), {
+        customBg: url || null,
+      }).catch((err) => console.error("Erro ao salvar customBg no Firebase:", err));
     }
   };
 

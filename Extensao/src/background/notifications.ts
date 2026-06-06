@@ -149,7 +149,7 @@ function showChatNotification(room: string, autor: string) {
 
 // Limpar o badge quando o usuário abrir a aba do Chatmix ou interagir
 if (chrome.notifications && chrome.notifications.onClicked) {
-  chrome.notifications.onClicked.addListener((id) => {
+  chrome.notifications.onClicked.addListener((_id) => {
       // Limpar badge
       if (chrome.action) chrome.action.setBadgeText({ text: '' });
       

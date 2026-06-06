@@ -4,7 +4,7 @@
 // Usa Firebase Realtime Database: /chat/salas/{room}/mensagens
 // ---------------------------------------------------------------
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
   ref,
   push,
@@ -62,7 +62,7 @@ interface ChatProps {
 
 export default function ChatInterno({ unreadRooms = [] }: ChatProps) {
   const { user } = useUser();
-  const { notify } = useNotification();
+  const { notify, confirm } = useNotification();
   const [mensagens, setMensagens] = useState<Mensagem[]>([]);
   const [profiles, setProfiles] = useState<Record<string, any>>({});
   const [texto, setTexto] = useState("");
@@ -124,7 +124,7 @@ export default function ChatInterno({ unreadRooms = [] }: ChatProps) {
     return () => unsubscribe();
   }, []);
 
-  async function enviar() {
+  const enviar = useCallback(async () => {
     if (!user || !texto.trim() || enviando) return;
 
     const charLimit = 500;
@@ -170,12 +170,12 @@ export default function ChatInterno({ unreadRooms = [] }: ChatProps) {
     } finally {
       setEnviando(false);
     }
-  }
+  }, [user, texto, enviando, lastSent, activeRoom, notify]);
 
-  async function limparSala() {
+  const limparSala = useCallback(async () => {
     if (!user) return;
 
-    const confirmacao = window.confirm(
+    const confirmacao = await confirm(
       `Deseja realmente apagar TODO o histórico da sala ${getSetorLabel(activeRoom)}?`,
     );
 
@@ -188,38 +188,41 @@ export default function ChatInterno({ unreadRooms = [] }: ChatProps) {
       console.error("Erro ao limpar sala:", e);
       notify("Erro ao limpar mensagens.", "error");
     }
-  }
+  }, [user, activeRoom, confirm, notify]);
 
-  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       enviar();
     }
-  }
+  }, [enviar]);
 
-  if (!user) return null;
-
-  const isPrivileged = ["supervisor", "moderador", "admin"].includes(user.role);
+  const isPrivileged = user ? ["supervisor", "moderador", "admin"].includes(user.role) : false;
 
   // Salas visíveis: Geral sempre, e a sala do setor do usuário se não for 'geral'.
   // Cargos privilegiados veem todas as salas.
-  const salasVisiveis = (Object.keys(ROOM_ICONS) as Setor[]).filter((s) => {
-    if (isPrivileged) return true;
-    if (s === "geral") return true;
-    return s === user.setor;
-  });
+  const salasVisiveis = useMemo(() => {
+    return (Object.keys(ROOM_ICONS) as Setor[]).filter((s) => {
+      if (isPrivileged) return true;
+      if (s === "geral") return true;
+      return s === user?.setor;
+    });
+  }, [isPrivileged, user?.setor]);
 
   // Agrupar mensagens para balões compactos
-  const grupos: { msg: Mensagem; isOwn: boolean; showHeader: boolean }[] =
-    mensagens.map((msg, i) => {
+  const grupos = useMemo(() => {
+    return mensagens.map((msg, i) => {
       const prev = mensagens[i - 1];
-      const isOwn = msg.autor === user.username;
+      const isOwn = msg.autor === user?.username;
       const showHeader =
         !prev ||
         prev.autor !== msg.autor ||
         msg.timestamp - prev.timestamp > 60_000;
       return { msg, isOwn, showHeader };
     });
+  }, [mensagens, user?.username]);
+
+  if (!user) return null;
 
   return (
     <div className="ci-page">

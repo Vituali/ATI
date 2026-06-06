@@ -1,5 +1,5 @@
 // pages/RespostasRapidas.tsx
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { ref, get, set } from "firebase/database";
 import { db } from "../../services/firebase";
 import { useUser } from "../../hooks/useUser";
@@ -108,7 +108,7 @@ export default function RespostasRapidas() {
     carregarTudo();
   }, [user]);
 
-  async function carregarTudo() {
+  const carregarTudo = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     try {
@@ -131,13 +131,18 @@ export default function RespostasRapidas() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    carregarTudo();
+  }, [user, carregarTudo]);
 
   // ---------------------------------------------------------------
   // SALVAR
   // ---------------------------------------------------------------
 
-  async function salvarRespostas(lista: Resposta[]) {
+  const salvarRespostas = useCallback(async (lista: Resposta[]) => {
     if (!user) return;
     setSalvando(true);
     try {
@@ -147,16 +152,16 @@ export default function RespostasRapidas() {
     } finally {
       setSalvando(false);
     }
-  }
+  }, [user]);
 
-  async function salvarOrdemCats(ordem: string[]) {
+  const salvarOrdemCats = useCallback(async (ordem: string[]) => {
     if (!user) return;
     try {
       await set(ref(db, `categorias_ordem/${user.username}`), ordem);
     } catch (e) {
       console.error(e);
     }
-  }
+  }, [user]);
 
   // ---------------------------------------------------------------
   // CATEGORIAS ORDENADAS
@@ -164,22 +169,26 @@ export default function RespostasRapidas() {
   // Categorias novas (ainda não na ordem) vão pro final
   // ---------------------------------------------------------------
 
-  const todasCats = [...new Set(respostas.map((r) => r.subCategory))];
+  const todasCats = useMemo(() => {
+    return [...new Set(respostas.map((r) => r.subCategory))];
+  }, [respostas]);
 
-  const catsOrdenadas = [
-    ...ordemCats.filter((c) => todasCats.includes(c)), // salvas + existentes
-    ...todasCats.filter((c) => !ordemCats.includes(c)), // novas ainda não salvas
-  ];
+  const catsOrdenadas = useMemo(() => {
+    return [
+      ...ordemCats.filter((c) => todasCats.includes(c)), // salvas + existentes
+      ...todasCats.filter((c) => !ordemCats.includes(c)), // novas ainda não salvas
+    ];
+  }, [ordemCats, todasCats]);
 
   // ---------------------------------------------------------------
   // DRAG AND DROP — CATEGORIAS
   // ---------------------------------------------------------------
 
-  function handleCatDragStart(i: number) {
+  const handleCatDragStart = useCallback((i: number) => {
     dragCatIdx.current = i;
-  }
+  }, []);
 
-  function handleCatDragOver(e: React.DragEvent, i: number) {
+  const handleCatDragOver = useCallback((e: React.DragEvent, i: number) => {
     e.preventDefault();
     if (dragCatIdx.current === null || dragCatIdx.current === i) return;
 
@@ -189,30 +198,32 @@ export default function RespostasRapidas() {
 
     dragCatIdx.current = i;
     setOrdemCats(nova);
-  }
+  }, [catsOrdenadas]);
 
-  async function handleCatDragEnd() {
+  const handleCatDragEnd = useCallback(async () => {
     dragCatIdx.current = null;
     await salvarOrdemCats(catsOrdenadas);
-  }
+  }, [catsOrdenadas, salvarOrdemCats]);
 
   // ---------------------------------------------------------------
   // SELEÇÃO EM CASCATA
   // ---------------------------------------------------------------
 
-  const respostasDaCat = respostas
-    .map((r, i) => ({ ...r, _idx: i }))
-    .filter((r) => r.subCategory === subCatSel);
+  const respostasDaCat = useMemo(() => {
+    return respostas
+      .map((r, i) => ({ ...r, _idx: i }))
+      .filter((r) => r.subCategory === subCatSel);
+  }, [respostas, subCatSel]);
 
-  function handleSubCatChange(val: string) {
+  const handleSubCatChange = useCallback((val: string) => {
     if (reordenandoCats) return; // bloqueia seleção durante reordenação
     setSubCatSel(val);
     setRespostaSel("");
     setTextoFinal("");
     setTituloFinal("");
-  }
+  }, [reordenandoCats]);
 
-  function handleRespostaChange(idxStr: string) {
+  const handleRespostaChange = useCallback((idxStr: string) => {
     const idx = Number(idxStr);
     setRespostaSel(idx);
     const r = respostas[idx];
@@ -220,32 +231,32 @@ export default function RespostasRapidas() {
       setTituloFinal(r.title);
       setTextoFinal(aplicarMarcadores(r.text));
     }
-  }
+  }, [respostas]);
 
-  async function handleCopiar() {
+  const handleCopiar = useCallback(async () => {
     const ok = await copiar(textoFinal);
     if (ok) {
       setCopiado(true);
       setTimeout(() => setCopiado(false), 2000);
     }
-  }
+  }, [textoFinal]);
 
-  function handleLimpar() {
+  const handleLimpar = useCallback(() => {
     setSubCatSel("");
     setRespostaSel("");
     setTextoFinal("");
     setTituloFinal("");
-  }
+  }, []);
 
   // ---------------------------------------------------------------
   // DRAG AND DROP — RESPOSTAS
   // ---------------------------------------------------------------
 
-  function handleRespostaDragStart(globalIdx: number) {
+  const handleRespostaDragStart = useCallback((globalIdx: number) => {
     dragRespostaIdx.current = globalIdx;
-  }
+  }, []);
 
-  function handleRespostaDragOver(e: React.DragEvent, globalIdx: number) {
+  const handleRespostaDragOver = useCallback((e: React.DragEvent, globalIdx: number) => {
     e.preventDefault();
     if (
       dragRespostaIdx.current === null ||
@@ -257,35 +268,35 @@ export default function RespostasRapidas() {
     nova.splice(globalIdx, 0, item);
     dragRespostaIdx.current = globalIdx;
     setRespostas(nova);
-  }
+  }, [respostas]);
 
-  async function handleRespostaDragEnd() {
+  const handleRespostaDragEnd = useCallback(async () => {
     dragRespostaIdx.current = null;
     await salvarRespostas(respostas);
-  }
+  }, [respostas, salvarRespostas]);
 
   // ---------------------------------------------------------------
   // CRUD
   // ---------------------------------------------------------------
 
-  function abrirModalNovo() {
+  const abrirModalNovo = useCallback(() => {
     setModalForm({ ...MODAL_VAZIO, subCategory: subCatSel });
     setModalModo("novo");
     setModalIdx(null);
     setModalNovaCat(false);
     setModalAberto(true);
-  }
+  }, [subCatSel]);
 
-  function abrirModalEditar() {
+  const abrirModalEditar = useCallback(() => {
     if (respostaSel === "") return;
     setModalForm({ ...respostas[respostaSel as number] });
     setModalModo("editar");
     setModalIdx(respostaSel as number);
     setModalNovaCat(false);
     setModalAberto(true);
-  }
+  }, [respostaSel, respostas]);
 
-  async function handleModalSalvar() {
+  const handleModalSalvar = useCallback(async () => {
     if (
       !modalForm.title.trim() ||
       !modalForm.text.trim() ||
@@ -313,9 +324,9 @@ export default function RespostasRapidas() {
     setRespostas(novaLista);
     await salvarRespostas(novaLista);
     setModalAberto(false);
-  }
+  }, [modalForm, modalModo, modalIdx, respostas, ordemCats, respostaSel, salvarRespostas, salvarOrdemCats]);
 
-  async function handleApagar() {
+  const handleApagar = useCallback(async () => {
     if (respostaSel === "") return;
     const novaLista = respostas.filter((_, i) => i !== respostaSel);
     setRespostas(novaLista);
@@ -323,7 +334,7 @@ export default function RespostasRapidas() {
     setTextoFinal("");
     setTituloFinal("");
     await salvarRespostas(novaLista);
-  }
+  }, [respostaSel, respostas, salvarRespostas]);
 
   // ---------------------------------------------------------------
   // RENDER

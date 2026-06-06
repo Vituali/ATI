@@ -1,6 +1,6 @@
 // App.tsx
 import { useState, useEffect, useCallback, useRef, Suspense } from "react";
-import { RespostasRapidas, ModelosOS, Conversor, Senhas, Admin, ChatInterno, Anotacoes } from "./pages/lazy";
+import { RespostasRapidas, ModelosOS, Conversor, Senhas, Admin, ChatInterno, Anotacoes, Relatorios } from "./pages/lazy";
 import { Login, Register, Home, ErrorPage, ExtensionModal } from "./pages";
 import { useUser, UserProfile } from "./hooks";
 import { canAccess, Section, Setor, getSetorLabel, logout, db, auth, syncWithExtension, performSSOLogin } from "./services";
@@ -84,7 +84,7 @@ export default function App() {
         case "senhas":
           return <Senhas />;
         case "relatorios":
-          return <div>{"Relatórios — em breve"}</div>;
+          return <Relatorios />;
         case "admin":
           return <Admin />;
       }

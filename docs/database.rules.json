@@ -97,6 +97,10 @@
       ".read": "auth != null",
       ".write": "auth != null"
     },
+    "historico_potencias": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
 
     // ---------------------------------------------------------------
     // CHAT 

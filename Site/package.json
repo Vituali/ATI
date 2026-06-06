@@ -8,10 +8,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "predeploy": "node ../switch-env.cjs prod && npm run build",
+    "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
-    "env:dev": "node ../switch-env.cjs dev",
-    "env:prod": "node ../switch-env.cjs prod",
     "generate-icons": "node tools/convert-icons.js"
   },
   "dependencies": {

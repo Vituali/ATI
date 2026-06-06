@@ -122,7 +122,24 @@
 
       // Descrição e tipo
       if (data.osText) setValue('#id_conteudo', data.osText.toUpperCase())
-      if (data.occurrenceType) setValue('#id_tipo', data.occurrenceType)
+      if (data.occurrenceType) {
+        setValue('#id_tipo', data.occurrenceType)
+      }
+
+      // Fallback por nome caso a seleção por ID resulte em vazio
+      if (data.occurrenceTypeText) {
+        const tipoSelect = document.querySelector('#id_tipo')
+        if (tipoSelect && tipoSelect.value === '') {
+          const cleanTypeName = data.occurrenceTypeText.toLowerCase().trim()
+          const opt = Array.from(tipoSelect.options).find(function(o) {
+            return o.textContent.toLowerCase().trim() === cleanTypeName
+          })
+          if (opt) {
+            console.log('ATI: Tipo de ocorrência selecionado pelo nome (fallback): ' + opt.textContent)
+            setValue('#id_tipo', opt.value)
+          }
+        }
+      }
 
       // OS e status
       if (data.shouldCreateOS) {

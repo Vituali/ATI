@@ -86,7 +86,7 @@ export function setupTemplateButtons(modalElement: HTMLElement, osTextArea: HTML
         if (activeIs53) {
           // 1. Tenta match exato pelo ID de 53 (se o nome coincidir com o esperado)
           if (typeId53) {
-            const byId = types.find((t) => String(t.id) === String(typeId53))
+            const byId = types.find((t) => String(t.id) === String(typeId53) || String(t.id_53) === String(typeId53))
             if (byId && (!typeName || byId.text.toLowerCase().trim() === typeName.toLowerCase().trim())) {
               found = byId
             }
@@ -99,7 +99,7 @@ export function setupTemplateButtons(modalElement: HTMLElement, osTextArea: HTML
         } else {
           // 1. Tenta match exato pelo ID de 35 (legado) (se o nome coincidir com o esperado)
           if (typeId35) {
-            const byId = types.find((t) => String(t.id) === String(typeId35))
+            const byId = types.find((t) => String(t.id) === String(typeId35) || String(t.id_35) === String(typeId35))
             if (byId && (!typeName || byId.text.toLowerCase().trim() === typeName.toLowerCase().trim())) {
               found = byId
             }

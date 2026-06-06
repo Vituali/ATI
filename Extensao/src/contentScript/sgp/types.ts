@@ -34,6 +34,8 @@ export interface SgpUser {
 export interface SgpOccurrenceType {
   id: string
   text: string
+  id_35?: string
+  id_53?: string
 }
 
 export interface SgpData {

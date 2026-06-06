@@ -146,13 +146,28 @@ export async function showOSModal(allTemplates: OsTemplate[], extractChatFn: () 
     // @ts-ignore
     const selectedSgpOrigin = selectedContractObj?.baseUrl ?? resolvedSgpData?.clientSgpOrigin ?? null
 
+    const isTarget53 = selectedSgpOrigin && selectedSgpOrigin.includes('201.158.20.53')
+    let resolvedOccurrenceType = userAction.data.occurrenceType
+    if (resolvedOccurrenceType && resolvedOccurrenceType.startsWith('{')) {
+      try {
+        const parsed = JSON.parse(resolvedOccurrenceType)
+        resolvedOccurrenceType = isTarget53 ? (parsed.id_53 || parsed.id_35) : (parsed.id_35 || parsed.id_53)
+      } catch (e) {
+        console.warn('Extensão ATI: Falha ao parsear tipo de ocorrência unificado:', e)
+      }
+    }
+
+    const occurrenceTypeSearchInput = modalElement.querySelector<HTMLInputElement>('#occurrenceTypeSearchInput')
+    const occurrenceTypeText = occurrenceTypeSearchInput?.value ?? null
+
     const submissionData = {
       ...clientData,
       clientSgpId: correctClientSgpId,
       sgpOrigin: selectedSgpOrigin,
       osText: userAction.data.osText,
       selectedContract: selectedContractId,
-      occurrenceType: userAction.data.occurrenceType,
+      occurrenceType: resolvedOccurrenceType,
+      occurrenceTypeText: occurrenceTypeText,
       shouldCreateOS: userAction.data.shouldCreateOS,
       occurrenceStatus: userAction.data.occurrenceStatus,
       responsibleUsers: resolvedSgpData?.responsibleUsers ?? [],

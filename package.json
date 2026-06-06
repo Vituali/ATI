@@ -19,9 +19,7 @@
     "format": "npm run fmt --prefix \"Extensao\"",
     "install:all": "npm install --prefix \"Extensao\" && npm install --prefix \"Site\"",
     "deploy": "npm run deploy --prefix \"Site\"",
-    "env:dev": "node switch-env.cjs dev",
-    "env:prod": "node switch-env.cjs prod",
-    "env:dev_prod": "node switch-env.cjs dev_prod",
+    "db:import-users": "node tools/import-users.js",
     "generate-icons": "npm run generate-icons --prefix \"Site\""
   },
   "author": "Vituali",

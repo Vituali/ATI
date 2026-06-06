@@ -7,3 +7,4 @@ export const Senhas = lazy(() => import("./app/Senhas"));
 export const Admin = lazy(() => import("./app/Admin"));
 export const ChatInterno = lazy(() => import("./app/ChatInterno"));
 export const Anotacoes = lazy(() => import("./app/Anotacoes"));
+export const Relatorios = lazy(() => import("./app/Relatorios"));

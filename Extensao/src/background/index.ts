@@ -4,10 +4,11 @@
 
 import { handleFirebaseLogin, getOsTemplates, getQuickReplies, getOccurrenceTypes, refreshIdToken } from './firebase'
 import { handleOpenInSgp, getSgpFormParams, createOccurrenceVisually, refreshSgpOnlineStatuses, fetchSgpClientContacts, searchSgpFeasibilityHtml } from './sgp/occurrence'
-import { getSgpStatus, performDailySgpCheck } from './sgp/auth'
+import { performDailySgpCheck } from './sgp/auth'
 import { deleteSgpFormCache } from './sgp/cache'
 import { deleteCpfCacheEntry, deleteCpfCacheByUid } from './sgp/cpfCache'
 import { setupChatNotifications } from './notifications'
+import { SGP_IP_35, SGP_IP_53 } from './sgp/constants'
 import type { ExtensionRequest } from './types'
 
 const getTs = () => `[${new Date().toLocaleTimeString('pt-BR')}]`;
@@ -117,9 +118,43 @@ chrome.runtime.onMessage.addListener((request: ExtensionRequest, _sender, sendRe
   }
 
   if (request.action === 'getGlobalOccurrenceTypes') {
-    getSgpStatus()
-      .then(({ baseUrl }) => getOccurrenceTypes(baseUrl, request.idToken))
-      .then((types) => sendResponse({ success: true, types }))
+    Promise.all([
+      getOccurrenceTypes(SGP_IP_35, request.idToken).catch(() => []),
+      getOccurrenceTypes(SGP_IP_53, request.idToken).catch(() => [])
+    ])
+      .then(([types35, types53]) => {
+        const mergedMap = new Map<string, { id: string; text: string; id_35?: string; id_53?: string }>()
+        
+        // Adiciona todos de .35
+        for (const t of types35) {
+          const key = t.text.toLowerCase().trim()
+          mergedMap.set(key, {
+            id: JSON.stringify({ id_35: String(t.id) }),
+            text: t.text,
+            id_35: String(t.id)
+          })
+        }
+        
+        // Adiciona/Mescla todos de .53
+        for (const t of types53) {
+          const key = t.text.toLowerCase().trim()
+          const existing = mergedMap.get(key)
+          if (existing) {
+            existing.id_53 = String(t.id)
+            existing.id = JSON.stringify({ id_35: existing.id_35, id_53: String(t.id) })
+          } else {
+            mergedMap.set(key, {
+              id: JSON.stringify({ id_53: String(t.id) }),
+              text: t.text,
+              id_53: String(t.id)
+            })
+          }
+        }
+        
+        const mergedTypes = Array.from(mergedMap.values())
+        console.log(`Extensão ATI: Unificados ${mergedTypes.length} tipos de ocorrência globais de ambos os SGPs.`)
+        sendResponse({ success: true, types: mergedTypes })
+      })
       .catch((error) => sendResponse({ success: false, types: [], error: error.message }))
     return true
   }

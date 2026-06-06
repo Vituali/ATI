@@ -7,14 +7,18 @@
 
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getDatabase } from "firebase/database";
+import { getDatabase, connectDatabaseEmulator } from "firebase/database";
 
 // Cole aqui as chaves do seu projeto no Firebase Console
 // (Configurações do projeto > Seus apps > SDK)
+const isDev = import.meta.env.DEV;
+
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
+  databaseURL: isDev 
+    ? "https://site-ati-75d83.firebaseio.com/"
+    : import.meta.env.VITE_FIREBASE_DATABASE_URL,
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
@@ -27,3 +31,10 @@ const app = initializeApp(firebaseConfig);
 // Exporta as instâncias prontas para uso nos outros arquivos
 export const auth = getAuth(app);
 export const db = getDatabase(app);
+
+// Conecta ao emulador se estiver em modo desenvolvimento
+if (import.meta.env.DEV) {
+  console.log("Conectando ao Firebase Realtime Database Emulator...");
+  connectDatabaseEmulator(db, "127.0.0.1", 9000);
+}
+

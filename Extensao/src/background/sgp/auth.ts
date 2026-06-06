@@ -131,32 +131,18 @@ export async function performSilentLogin(baseUrl: string): Promise<boolean> {
 }
 
 export async function getSgpStatus(forceCheck = false): Promise<{ isLoggedIn: boolean; baseUrl: string }> {
-  const result = await chrome.storage.local.get('sgp_status_cache')
-  const cache = result.sgp_status_cache
-
-  if (!forceCheck && cache?.isLoggedIn) {
-    const isExpired = Date.now() - cache.timestamp > LOGIN_CACHE_TTL_MS
-    if (!isExpired) {
-      return { isLoggedIn: cache.isLoggedIn, baseUrl: cache.baseUrl }
-    }
+  // Obtém o SGP preferencial salvo pelo usuário (fallback para SGP_IP_53 se não existir)
+  const result = await chrome.storage.local.get('ati_preferred_sgp')
+  const defaultBaseUrl = result.ati_preferred_sgp || SGP_IP_53;
+  
+  // Realiza a verificação dupla
+  const bothLogged = await doubleCheckSgpLogins(forceCheck);
+  
+  if (!bothLogged) {
+    return { isLoggedIn: false, baseUrl: defaultBaseUrl };
   }
-
-  // Se não estiver logado no cache, tenta verificar no site
-  let status = await checkSgpStatus()
-
-  // Se não estiver logado, tenta o login silencioso antes de desistir
-  if (!status.isLoggedIn) {
-    const loginSuccess = await performSilentLogin(status.baseUrl)
-    if (loginSuccess) {
-      status = await checkSgpStatus() // Verifica de novo após o login
-    }
-  }
-
-  if (status.isLoggedIn) {
-    await updateSgpStatusCache(status)
-  }
-
-  return status
+  
+  return { isLoggedIn: true, baseUrl: defaultBaseUrl };
 }
 
 export async function ensureSgpSession(baseUrl: string, forceCheck = false): Promise<boolean> {
@@ -197,4 +183,62 @@ export async function ensureSgpSession(baseUrl: string, forceCheck = false): Pro
 
   await chrome.storage.local.set({ [cacheKey]: { isLoggedIn: false, timestamp: Date.now() } })
   return false
+}
+
+export async function redirectUserToSgpLogins(is35Ok: boolean, is53Ok: boolean) {
+  try {
+    const tabs = await chrome.tabs.query({});
+    
+    if (!is35Ok) {
+      const has35Tab = tabs.some(t => t.url && (t.url.includes('201.158.20.35') || t.url.includes('sgp.atiinternet.com.br')));
+      if (!has35Tab) {
+        await chrome.tabs.create({ url: `${SGP_IP_35}/admin/` });
+      }
+    }
+    
+    if (!is53Ok) {
+      const has53Tab = tabs.some(t => t.url && t.url.includes('201.158.20.53'));
+      if (!has53Tab) {
+        await chrome.tabs.create({ url: `${SGP_IP_53}/admin/` });
+      }
+    }
+  } catch (err) {
+    console.error('Erro ao redirecionar para logins do SGP:', err);
+  }
+}
+
+export async function doubleCheckSgpLogins(forceCheck = false): Promise<boolean> {
+  const is35Logged = await ensureSgpSession(SGP_IP_35, forceCheck).catch(() => false);
+  const is53Logged = await ensureSgpSession(SGP_IP_53, forceCheck).catch(() => false);
+  
+  if (!is35Logged || !is53Logged) {
+    await redirectUserToSgpLogins(is35Logged, is53Logged);
+    return false;
+  }
+  return true;
+}
+
+export async function performDailySgpCheck() {
+  try {
+    const today = new Date().toLocaleDateString('pt-BR');
+    const result = await chrome.storage.local.get('sgp_last_daily_check_date');
+    
+    if (result.sgp_last_daily_check_date === today) {
+      console.log('Extensão ATI: Verificação diária de login do SGP já realizada hoje.');
+      return;
+    }
+    
+    console.log('Extensão ATI: Iniciando verificação diária de login nos dois SGPs...');
+    const is35Logged = await ensureSgpSession(SGP_IP_35).catch(() => false);
+    const is53Logged = await ensureSgpSession(SGP_IP_53).catch(() => false);
+    
+    if (!is35Logged || !is53Logged) {
+      console.log(`Extensão ATI: Login pendente no início do dia. .35: ${is35Logged}, .53: ${is53Logged}. Abrindo abas de login...`);
+      await redirectUserToSgpLogins(is35Logged, is53Logged);
+    }
+    
+    await chrome.storage.local.set({ sgp_last_daily_check_date: today });
+  } catch (err) {
+    console.error('Erro na verificação diária do SGP:', err);
+  }
 }

@@ -59,25 +59,102 @@ export async function showClientSelectionModal(clients: { id: string; text: stri
       }
     }
 
+    const getClientOverallStatus = (clientText: string): string => {
+      const parts = clientText.split('|').map((p) => p.trim())
+      let maxScore = -1
+      let bestStatus = 'inativo'
+      for (const part of parts) {
+        const status = getStatus(part)
+        const score = getStatusScore(status)
+        if (score > maxScore) {
+          maxScore = score
+          bestStatus = status
+        }
+      }
+      return bestStatus
+    }
+
     // Ordena por prioridade: ativo > vel-red > suspenso > inativo > cancelado
     const sortedClients = [...clients].sort((a, b) => {
-      const scoreA = getStatusScore(getStatus(a.text))
-      const scoreB = getStatusScore(getStatus(b.text))
+      const scoreA = getStatusScore(getClientOverallStatus(a.text))
+      const scoreB = getStatusScore(getClientOverallStatus(b.text))
       return scoreB - scoreA
     })
 
     sortedClients.forEach((client) => {
-      const status = getStatus(client.text)
-      if (status === 'ativo') summary.ativos++
-      else if (status === 'vel-red') summary.velRed++
-      else if (status === 'suspenso') summary.suspensos++
-      else if (status === 'cancelado') summary.cancelados++
-      else if (status === 'inativo') summary.inativos++
+      const overallStatus = getClientOverallStatus(client.text)
+
+      // Extrai o label do sistema e os contratos reais do texto
+      let systemLabel = 'SGP'
+      let rawText = client.text
+      const labelMatch = client.text.match(/^\[(.*?)\]/)
+      if (labelMatch) {
+        systemLabel = labelMatch[1]
+        rawText = client.text.replace(/^\[.*?\]\s*-\s*/, '')
+      }
+
+      // Calcula o resumo e os itens a partir de rawText
+      const parts = rawText.split('|').map((p) => p.trim())
+      parts.forEach((part) => {
+        const status = getStatus(part)
+        if (status === 'ativo') summary.ativos++
+        else if (status === 'vel-red') summary.velRed++
+        else if (status === 'suspenso') summary.suspensos++
+        else if (status === 'cancelado') summary.cancelados++
+        else if (status === 'inativo') summary.inativos++
+      })
+
+      const displayId = client.id.includes('|') ? client.id.split('|')[1] : client.id
+
+      // Constrói as linhas de contrato em HTML
+      const contractRowsHtml = parts.map((part) => {
+        if (part.toLowerCase().includes('sem contratos') || part.trim() === '') {
+          return `
+            <div class="ati-client-contract-row ati-client-contract-row--empty">
+              <span>${part}</span>
+            </div>
+          `
+        }
+
+        const partParts = part.split(' - ').map((s) => s.trim())
+        const contractId = partParts[0] || 'Sem ID'
+        let contractStatus = 'Inativo'
+        let contractVenc = ''
+        let contractPop = ''
+
+        for (const sp of partParts) {
+          if (sp.startsWith('Status:')) {
+            contractStatus = sp.replace('Status:', '').trim()
+          } else if (sp.startsWith('Venc:')) {
+            contractVenc = sp.replace('Venc:', '').trim()
+          } else if (sp.startsWith('Pop:')) {
+            contractPop = sp.replace('Pop:', '').trim()
+          }
+        }
+
+        const statusClass = getStatus(part)
+
+        return `
+          <div class="ati-client-contract-row">
+            <span class="ati-contract-id">#${contractId}</span>
+            ${contractPop ? `<span class="ati-contract-pop">${contractPop}</span>` : ''}
+            ${contractVenc ? `<span class="ati-contract-venc">Dia ${contractVenc}</span>` : ''}
+            <span class="ati-contract-status-badge ati-contract-status-badge--${statusClass}">${contractStatus}</span>
+          </div>
+        `
+      }).join('')
 
       const btn = document.createElement('button')
-      btn.className = `ati-client-modal-btn ati-client-modal-btn--${status}`
-      const displayId = client.id.includes('|') ? client.id.split('|')[1] : client.id
-      btn.textContent = `ID ${displayId} - ${client.text}`
+      btn.className = `ati-client-modal-btn ati-client-modal-btn--${overallStatus}`
+      btn.innerHTML = `
+        <div class="ati-client-card-header">
+          <span class="ati-client-card-system">${systemLabel}</span>
+          <span class="ati-client-card-id">Cadastro ID ${displayId}</span>
+        </div>
+        <div class="ati-client-card-contracts">
+          ${contractRowsHtml}
+        </div>
+      `
 
       btn.onclick = () => {
         cleanup()

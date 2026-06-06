@@ -3,8 +3,8 @@
 // =================================================================
 
 import { handleFirebaseLogin, getOsTemplates, getQuickReplies, getOccurrenceTypes, refreshIdToken } from './firebase'
-import { handleOpenInSgp, getSgpFormParams, createOccurrenceVisually, refreshSgpOnlineStatuses } from './sgp/occurrence'
-import { getSgpStatus } from './sgp/auth'
+import { handleOpenInSgp, getSgpFormParams, createOccurrenceVisually, refreshSgpOnlineStatuses, fetchSgpClientContacts, searchSgpFeasibilityHtml } from './sgp/occurrence'
+import { getSgpStatus, performDailySgpCheck } from './sgp/auth'
 import { deleteSgpFormCache } from './sgp/cache'
 import { deleteCpfCacheEntry, deleteCpfCacheByUid } from './sgp/cpfCache'
 import { setupChatNotifications } from './notifications'
@@ -21,9 +21,10 @@ const fbConfig = {
 
 console.log(`${getTs()} Extensão ATI: Background iniciado.`)
 
-// Inicializar monitoramento de notificações e versão
+// Inicializar monitoramento de notificações, versão e logins do SGP
 setupChatNotifications();
 checkExtensionVersion();
+performDailySgpCheck();
 
 chrome.runtime.onMessage.addListener((request: ExtensionRequest, _sender, sendResponse) => {
   if (request.action === 'firebaseLogin') {
@@ -89,8 +90,22 @@ chrome.runtime.onMessage.addListener((request: ExtensionRequest, _sender, sendRe
 
   if (request.action === 'getQuickReplies') {
     getQuickReplies(request.username, request.idToken)
-      .then((replies) => sendResponse({ success: true, replies }))
-      .catch((error) => sendResponse({ success: false, replies: [], error: error.message }))
+      .then((result) => sendResponse({ success: true, replies: result.replies, categoriesOrder: result.categoriesOrder }))
+      .catch((error) => sendResponse({ success: false, replies: [], categoriesOrder: [], error: error.message }))
+    return true
+  }
+
+  if (request.action === 'getSgpClientContacts') {
+    fetchSgpClientContacts(request.clientUrl, request.baseUrl, request.clientId, request.clientData, request.uid)
+      .then((html) => sendResponse({ success: true, html }))
+      .catch((error) => sendResponse({ success: false, error: error.message }))
+    return true
+  }
+
+  if (request.action === 'searchSgpFeasibility') {
+    searchSgpFeasibilityHtml(request.baseUrl, request.logradouro, request.numero)
+      .then((html) => sendResponse({ success: true, html }))
+      .catch((error) => sendResponse({ success: false, error: error.message }))
     return true
   }
 

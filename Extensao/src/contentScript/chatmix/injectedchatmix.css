@@ -22,7 +22,6 @@ html.dark:not(.ati-theme-legacy) {
 
 html.dark:not(.ati-theme-legacy) header.dark\:bg-neutral-700 {
   background: linear-gradient(135deg, rgb(35, 35, 40) 0%, rgb(30, 30, 38) 100%) !important;
-  backdrop-filter: blur(10px) !important;
   border-right: 1px solid var(--borderColor) !important;
   box-shadow: 2px 0 12px rgba(0, 0, 0, 0.3) !important;
 }
@@ -33,15 +32,13 @@ html.dark:not(.ati-theme-legacy) .chat_sidebar {
 }
 
 html.dark:not(.ati-theme-legacy) .chat_sidebar header {
-  background: transparent !important;
+  background: rgb(22, 22, 28) !important;
   border-bottom: 1px solid var(--borderColor) !important;
-  backdrop-filter: blur(4px) !important;
 }
 
 html.dark:not(.ati-theme-legacy) .chat_sidebar .dark\:bg-neutral-700,
 html.dark:not(.ati-theme-legacy) .chat_sidebar [class*='neutral-700'] {
-  background: rgba(35, 35, 45, 0.5) !important;
-  backdrop-filter: blur(4px) !important;
+  background: rgb(35, 35, 45) !important;
 }
 
 html.dark:not(.ati-theme-legacy) .chat_sidebar header .dark\:bg-neutral-700,
@@ -152,10 +149,10 @@ html.dark:not(.ati-theme-legacy) .attendance_item.newMessage {
 @keyframes pulseGreen {
   0%,
   100% {
-    box-shadow: 0 2px 8px rgba(0, 141, 43, 0.15) !important;
+    border-color: rgba(0, 141, 43, 0.3) !important;
   }
   50% {
-    box-shadow: 0 4px 20px rgba(0, 141, 43, 0.3) !important;
+    border-color: rgba(0, 141, 43, 0.6) !important;
   }
 }
 
@@ -229,10 +226,10 @@ html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(255, 167, 0)'] {
 @keyframes pulseWarning {
   0%,
   100% {
-    box-shadow: 0 2px 8px rgba(217, 119, 6, 0.1) !important;
+    border-color: rgba(217, 119, 6, 0.3) !important;
   }
   50% {
-    box-shadow: 0 4px 20px rgba(217, 119, 6, 0.25) !important;
+    border-color: rgba(217, 119, 6, 0.6) !important;
   }
 }
 
@@ -281,10 +278,10 @@ html.dark:not(.ati-theme-legacy) .attendance_item[style*='rgb(138, 10, 10)'] {
 @keyframes pulseRed {
   0%,
   100% {
-    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.15) !important;
+    border-color: rgba(220, 38, 38, 0.3) !important;
   }
   50% {
-    box-shadow: 0 4px 24px rgba(220, 38, 38, 0.35) !important;
+    border-color: rgba(220, 38, 38, 0.7) !important;
   }
 }
 

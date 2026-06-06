@@ -14,6 +14,15 @@ export function createModal(config: ModalConfig): {
   const promise = new Promise<ModalResult>((resolve, reject) => {
     document.querySelector('.ati-os-modal-overlay')?.remove()
 
+    const isSgpPage = window.location.hostname.includes('sgp') || 
+                      window.location.hostname.includes('201.158.20.35') || 
+                      window.location.hostname.includes('201.158.20.53');
+
+    const addedDarkClass = isSgpPage && !document.documentElement.classList.contains('dark');
+    if (addedDarkClass) {
+      document.documentElement.classList.add('dark');
+    }
+
     const overlay = document.createElement('div')
     overlay.className = 'ati-os-modal-overlay'
 
@@ -32,6 +41,9 @@ export function createModal(config: ModalConfig): {
     document.body.appendChild(overlay)
 
     const closeModal = (reason: string) => {
+      if (addedDarkClass) {
+        document.documentElement.classList.remove('dark');
+      }
       controller.abort()
       overlay.remove()
       reject(new Error(reason))
@@ -66,6 +78,9 @@ export function createModal(config: ModalConfig): {
         shouldCreateOS: createOSCheckbox?.checked ?? false,
       }
 
+      if (addedDarkClass) {
+        document.documentElement.classList.remove('dark');
+      }
       controller.abort()
       overlay.remove()
       resolve({ action, data })

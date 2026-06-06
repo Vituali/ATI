@@ -22,12 +22,14 @@ export const Popup = () => {
     message: string
     onConfirm: () => void
   } | null>(null)
+  const [hideWaitingNotif, setHideWaitingNotif] = useState(false)
 
   useEffect(() => {
-    chrome.storage.local.get(['ati_user_session', 'ati_theme_version', 'ati_font_size', 'sgp_credentials', 'sgp_credentials_alt', 'ati_update_required', 'ati_latest_version'], (result) => {
+    chrome.storage.local.get(['ati_user_session', 'ati_theme_version', 'ati_font_size', 'sgp_credentials', 'sgp_credentials_alt', 'ati_update_required', 'ati_latest_version', 'hideWaitingNotifications'], (result) => {
       setSession(result.ati_user_session ?? null)
       setUpdateRequired(!!result.ati_update_required)
       setLatestVersion(result.ati_latest_version || '')
+      setHideWaitingNotif(!!result.hideWaitingNotifications)
       if (result.ati_theme_version) {
         setThemeVersion(result.ati_theme_version)
       }
@@ -79,6 +81,12 @@ export const Popup = () => {
     const newSize = parseFloat(e.target.value)
     setFontSize(newSize)
     chrome.storage.local.set({ ati_font_size: newSize })
+  }
+
+  const handleHideWaitingNotifChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newVal = e.target.checked
+    setHideWaitingNotif(newVal)
+    chrome.storage.local.set({ hideWaitingNotifications: newVal })
   }
 
   const handleOpenSite = () => {
@@ -264,6 +272,20 @@ export const Popup = () => {
         </label>
         <input id="font-size-slider" type="range" min="0.8" max="1.8" step="0.05" value={fontSize} onChange={handleFontSizeChange} style={{ width: '100%', marginTop: '0.25rem' }} />
       </div>
+
+      <div className="popup-theme-selector" style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px' }}>
+        <input 
+          id="hide-waiting-notif" 
+          type="checkbox" 
+          checked={hideWaitingNotif} 
+          onChange={handleHideWaitingNotifChange} 
+          style={{ cursor: 'pointer', width: '15px', height: '15px' }}
+        />
+        <label htmlFor="hide-waiting-notif" style={{ cursor: 'pointer', fontSize: '12px', userSelect: 'none', fontWeight: 600 }}>
+          Ocultar alerta "Em espera"
+        </label>
+      </div>
+
       <div className="popup-divider" />
 
       {/* SGP Automation Settings */}

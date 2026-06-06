@@ -383,6 +383,7 @@ async function init(): Promise<void> {
       injectButtons()
       injectListeners()
       injectFloatingChat(newSession)
+      updateChatTimeWarnings()
     })
     return
   }
@@ -397,6 +398,7 @@ async function init(): Promise<void> {
   injectListeners()
   injectFloatingChat(session)
   loadQuickReplies(session)
+  updateChatTimeWarnings()
 }
 
 // =================================================================
@@ -445,8 +447,14 @@ async function loadQuickReplies(session: UserSession, attempt = 0): Promise<void
       username: freshSession.username,
       idToken: freshSession.idToken,
     })
-    const replies = response?.replies ?? []
-    injectQuickReply(replies)
+    const replies = [...(response?.replies ?? [])]
+    replies.push({
+      title: '📞 Validar Contatos (SGP)',
+      text: 'VALIDAR_CONTATOS_DYNAMIC',
+      category: 'quick_reply',
+      subCategory: 'Cadastro',
+    })
+    injectQuickReply(replies, response?.categoriesOrder)
   } catch (error: any) {
     logError('Erro ao carregar quick replies:', error)
     showToast(`Extensão ATI: Erro ao carregar quick replies: ${error.message || error}`, 'error')
@@ -487,15 +495,178 @@ function watchEncerrarBtn(): void {
   }
 }
 
+// =================================================================
+// OCULTAR NOTIFICAÇÕES "EM ESPERA"
+// =================================================================
+
+let hideWaitingNotifications = false
+chrome.storage.local.get('hideWaitingNotifications', (data) => {
+  hideWaitingNotifications = !!data.hideWaitingNotifications
+  if (hideWaitingNotifications) {
+    checkAndHideWaitingNotifications()
+  }
+})
+
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName === 'local' && changes.hideWaitingNotifications) {
+    hideWaitingNotifications = !!changes.hideWaitingNotifications.newValue
+    if (hideWaitingNotifications) {
+      checkAndHideWaitingNotifications()
+    }
+  }
+})
+
+function checkAndHideWaitingNotifications(): void {
+  if (!hideWaitingNotifications) return
+
+  const notifications = document.querySelectorAll('.vue-notification-wrapper')
+  notifications.forEach((notif) => {
+    const title = notif.querySelector('.notification_title')
+    if (title && title.textContent?.includes('Atendimentos em espera')) {
+      const htmlElement = notif as HTMLElement
+      if (htmlElement.style.display !== 'none') {
+        htmlElement.style.display = 'none'
+        log('Notificação de atendimentos em espera ocultada com sucesso.')
+      }
+    }
+  })
+}
+
+// =================================================================
+// VERIFICAÇÃO DE CHATS COM MAIS DE 1 HORA
+// =================================================================
+
+function isChatOlderThanOneHour(timeText: string): boolean {
+  timeText = timeText.trim().toLowerCase()
+  if (!timeText) return false
+
+  // Formato: "17h39" ou "17:39" ou "09h05"
+  const timeRegex = /^(\d{1,2})[h:](\d{2})$/
+  const match = timeText.match(timeRegex)
+  if (match) {
+    const hours = parseInt(match[1], 10)
+    const minutes = parseInt(match[2], 10)
+    if (hours >= 0 && hours < 24 && minutes >= 0 && minutes < 60) {
+      const now = new Date()
+      const currentMinutes = now.getHours() * 60 + now.getMinutes()
+      const chatMinutes = hours * 60 + minutes
+      
+      let diff = currentMinutes - chatMinutes
+      if (diff < 0) {
+        // Virada de dia (meia-noite). Assumimos que passou de 1 hora se a diferença real é maior
+        // ou se simplesmente cruzou a noite
+        const diffCrossed = (currentMinutes + 1440) - chatMinutes
+        return diffCrossed >= 60
+      }
+      return diff >= 60
+    }
+  }
+
+  // Se for tempo relativo em minutos/segundos: "5 min", "45m", "30s"
+  if (/^\d+\s*(min|m|s|seg)$/.test(timeText)) {
+    return false
+  }
+
+  // Se tiver barra de data ("05/06") ou palavras que indicam dias passados
+  if (timeText.includes('/') || timeText.includes('ontem') || timeText.includes('atrás') || timeText.includes('dia')) {
+    return true
+  }
+
+  // Se for do tipo "1h", "2h", "1 hora", "3 horas"
+  const hourMatch = timeText.match(/^(\d+)\s*(h|hora|horas)/)
+  if (hourMatch) {
+    const hours = parseInt(hourMatch[1], 10)
+    return hours >= 1
+  }
+
+  return false
+}
+
+function updateChatTimeWarnings(): void {
+  const items = document.querySelectorAll('.attendance_item')
+  items.forEach((item) => {
+    const timeEl = item.querySelector('time') as HTMLElement | null
+    if (!timeEl) return
+
+    // Obtém texto bruto atual
+    const currentRawText = timeEl.textContent || ''
+    
+    // Verifica se o aviso já está presente
+    const warningSpan = timeEl.querySelector('.ati-time-warning')
+    
+    // Se o span de aviso não está no DOM, o texto atual é a hora limpa que veio do app.
+    // Atualizamos nosso dataset com este valor limpo.
+    if (!warningSpan) {
+      timeEl.classList.remove('ati-time-overdue')
+      const cleanTime = currentRawText.replace(/⚠️/g, '').trim()
+      if (cleanTime) {
+        timeEl.dataset.atiOriginalTime = cleanTime
+      }
+    }
+
+    const timeText = timeEl.dataset.atiOriginalTime || ''
+    if (!timeText) return
+
+    const isOld = isChatOlderThanOneHour(timeText)
+    const hasWarningClass = timeEl.classList.contains('ati-time-overdue')
+
+    if (isOld) {
+      if (!hasWarningClass || !warningSpan) {
+        timeEl.classList.add('ati-time-overdue')
+        if (!warningSpan) {
+          // Esvazia e reconstrói de forma limpa para evitar duplicações
+          timeEl.textContent = ''
+          
+          const newWarningSpan = document.createElement('span')
+          newWarningSpan.className = 'ati-time-warning'
+          newWarningSpan.innerHTML = '⚠️'
+          timeEl.appendChild(newWarningSpan)
+          
+          const textNode = document.createTextNode(timeText)
+          timeEl.appendChild(textNode)
+        }
+      }
+    } else {
+      if (hasWarningClass || warningSpan) {
+        timeEl.classList.remove('ati-time-overdue')
+        if (warningSpan) {
+          warningSpan.remove()
+        }
+        timeEl.textContent = timeText
+      }
+    }
+  })
+}
+
 
 // =================================================================
 // OBSERVER
 // =================================================================
 
 let observerTimer: ReturnType<typeof setTimeout> | null = null
-const observer = new MutationObserver(() => {
+const observer = new MutationObserver((mutations) => {
+  // Ignora se todas as mutações forem originadas por elementos criados pela própria extensão
+  const onlySelfMutations = mutations.every((m) => {
+    const target = m.target.nodeType === Node.ELEMENT_NODE 
+      ? (m.target as HTMLElement) 
+      : m.target.parentElement
+    if (!target) return true
+    return (
+      target.closest?.('#ati-floating-chat-root') ||
+      target.closest?.('#actionsContainerV2') ||
+      target.closest?.('#ati-login-banner') ||
+      target.closest?.('#ati-quick-reply-container') ||
+      target.closest?.('.ati-time-warning') ||
+      target.closest?.('.ati-time-overdue')
+    )
+  })
+
+  if (onlySelfMutations) return
+
   if (observerTimer) clearTimeout(observerTimer)
   observerTimer = setTimeout(() => {
+    checkAndHideWaitingNotifications()
+
     const sidebar = document.querySelector(SELECTORS.sidebar)
     const hasButtons = document.getElementById('actionsContainerV2')
     const hasBanner = document.getElementById('ati-login-banner')
@@ -504,6 +675,7 @@ const observer = new MutationObserver(() => {
 
     checkSessionChange()
     watchEncerrarBtn()
+    updateChatTimeWarnings()
 
     if (sidebar && !hasButtons && !hasBanner) {
       log('Sidebar sem conteúdo, reinjetando...')
@@ -522,3 +694,7 @@ const observer = new MutationObserver(() => {
 const targetContainer = document.getElementById('app') || document.body
 observer.observe(targetContainer, { childList: true, subtree: true })
 init()
+
+// Executa a verificação de tempos dos chats periodicamente a cada 30 segundos
+setInterval(updateChatTimeWarnings, 30000)
+

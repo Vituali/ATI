@@ -35,7 +35,7 @@ export async function handleFirebaseLogin(email: string, password: string) {
     console.log('Extensão ATI: Autenticando via REST API...')
 
     // Clear caches on new login attempts
-    await chrome.storage.session.remove(['cachedTemplates', 'cachedQuickReplies'])
+    await chrome.storage.session.remove(['cachedTemplates', 'cachedQuickReplies', 'cachedCategoriesOrder'])
 
     const authResponse = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${firebaseConfig.apiKey}`, {
       method: 'POST',
@@ -140,7 +140,7 @@ export async function refreshIdToken(refreshToken: string): Promise<{ idToken: s
     const tokenExpiresAt = Date.now() + 55 * 60 * 1000
 
     // Limpa caches de dados para que sejam recarregados com o novo token
-    await chrome.storage.session.remove(['cachedTemplates', 'cachedQuickReplies', 'cachedOccurrenceTypes'])
+    await chrome.storage.session.remove(['cachedTemplates', 'cachedQuickReplies', 'cachedCategoriesOrder', 'cachedOccurrenceTypes'])
 
     console.log('Extensão ATI: Token renovado com sucesso.')
     return { idToken: newIdToken, refreshToken: newRefreshToken, tokenExpiresAt }
@@ -357,29 +357,35 @@ export async function getOsTemplates(username: string, idToken: string): Promise
 // QUICK REPLIES
 // =================================================================
 
-export async function getQuickReplies(username: string, idToken: string): Promise<OsTemplate[]> {
-  const { cachedQuickReplies } = await chrome.storage.session.get('cachedQuickReplies')
-  if (cachedQuickReplies) {
-    console.log(`Extensão ATI: Retornando ${cachedQuickReplies.length} quick replies do cache de sessão.`)
-    return cachedQuickReplies
+export async function getQuickReplies(username: string, idToken: string): Promise<{ replies: OsTemplate[]; categoriesOrder: string[] }> {
+  const { cachedQuickReplies, cachedCategoriesOrder } = await chrome.storage.session.get(['cachedQuickReplies', 'cachedCategoriesOrder'])
+  if (cachedQuickReplies && cachedCategoriesOrder) {
+    console.log(`Extensão ATI: Retornando ${cachedQuickReplies.length} quick replies e ordem do cache de sessão.`)
+    return { replies: cachedQuickReplies, categoriesOrder: cachedCategoriesOrder }
   }
 
   try {
-    const [userRes, masterRes] = await Promise.all([fetch(`${firebaseConfig.databaseURL}respostas/${username}.json?auth=${idToken}`), fetch(`${firebaseConfig.databaseURL}respostas/master.json?auth=${idToken}`)])
+    const [userRes, masterRes, orderRes] = await Promise.all([
+      fetch(`${firebaseConfig.databaseURL}respostas/${username}.json?auth=${idToken}`),
+      fetch(`${firebaseConfig.databaseURL}respostas/master.json?auth=${idToken}`),
+      fetch(`${firebaseConfig.databaseURL}categorias_ordem/${username}.json?auth=${idToken}`)
+    ])
 
     const userData = await userRes.json()
     const masterData = masterRes.ok ? await masterRes.json() : null
+    const orderData = orderRes.ok ? await orderRes.json() : null
 
     const userReplies = Array.isArray(userData) ? userData : Object.values(userData ?? {})
     const masterReplies = masterData ? (Array.isArray(masterData) ? masterData : Object.values(masterData)) : []
 
     const all = [...masterReplies, ...userReplies].filter((r: OsTemplate) => r?.category === 'quick_reply' && r?.text && r?.title)
+    const categoriesOrder = Array.isArray(orderData) ? orderData.filter(Boolean) : []
 
-    await chrome.storage.session.set({ cachedQuickReplies: all })
-    console.log(`Extensão ATI: ${all.length} quick replies carregados para ${username}`)
-    return all
+    await chrome.storage.session.set({ cachedQuickReplies: all, cachedCategoriesOrder: categoriesOrder })
+    console.log(`Extensão ATI: ${all.length} quick replies e ${categoriesOrder.length} categorias em ordem carregadas para ${username}`)
+    return { replies: all, categoriesOrder }
   } catch (error) {
     console.error('Extensão ATI: Erro ao buscar quick replies.', error)
-    return []
+    return { replies: [], categoriesOrder: [] }
   }
 }

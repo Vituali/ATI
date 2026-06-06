@@ -28,7 +28,7 @@ export default defineManifest({
     },
     {
       matches: ['https://sgp.atiinternet.com.br/*', 'http://201.158.20.35:8000/*', 'http://201.158.20.53:8000/*'],
-      js: ['src/contentScript/sgp/fillForm.ts'],
+      js: ['src/contentScript/sgp/fillForm.tsx'],
     },
     {
       matches: ['https://vituali.github.io/ati/*'],

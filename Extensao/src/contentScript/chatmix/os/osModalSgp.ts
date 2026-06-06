@@ -270,6 +270,70 @@ export interface LoadSgpDataParams {
 }
 
 export function loadSgpData({ clientData, chatId, idToken, uid, modalElement, sgpButton, signal, existingDraft, onSgpDataLoaded }: LoadSgpDataParams): void {
+  const isSgpPage = window.location.hostname.includes('sgp') || 
+                    window.location.hostname.includes('201.158.20.35') || 
+                    window.location.hostname.includes('201.158.20.53');
+
+  if (isSgpPage) {
+    console.log('Extensão ATI: Extraindo contratos e tipos diretamente do formulário do SGP local...');
+    const contractSelect = document.querySelector('#id_clientecontrato') as HTMLSelectElement | null;
+    const occurrenceTypeSelect = document.querySelector('#id_tipo') as HTMLSelectElement | null;
+    const responsibleSelect = document.querySelector('#id_responsavel') as HTMLSelectElement | null;
+
+    const contracts: SgpContract[] = [];
+    if (contractSelect) {
+      Array.from(contractSelect.options).forEach((opt) => {
+        if (opt.value) {
+          contracts.push({
+            id: opt.value,
+            text: opt.textContent?.trim() || '',
+            clientId: clientData.clientSgpId || '',
+            baseUrl: window.location.origin,
+            online: null,
+          });
+        }
+      });
+    }
+
+    const occurrenceTypes: any[] = [];
+    if (occurrenceTypeSelect) {
+      Array.from(occurrenceTypeSelect.options).forEach((opt) => {
+        if (opt.value) {
+          occurrenceTypes.push({
+            id: opt.value,
+            text: opt.textContent?.trim() || '',
+          });
+        }
+      });
+    }
+
+    const responsibleUsers: any[] = [];
+    if (responsibleSelect) {
+      Array.from(responsibleSelect.options).forEach((opt) => {
+        if (opt.value) {
+          responsibleUsers.push({
+            id: opt.value,
+            username: opt.textContent?.trim().toLowerCase() || '',
+          });
+        }
+      });
+    }
+
+    const sgpData: SgpData = {
+      clientSgpId: clientData.clientSgpId || '',
+      clientSgpOrigin: window.location.origin,
+      contracts,
+      responsibleUsers,
+      occurrenceTypes,
+    };
+
+    onSgpDataLoaded(sgpData);
+    populateContracts(modalElement.querySelector('#modal-sgp-contracts-container'), sgpData.contracts);
+    populateOccurrenceTypes(modalElement.querySelector('#modal-occurrence-types-container'), sgpData.occurrenceTypes, signal);
+    sgpButton.disabled = false;
+    return;
+  }
+
   if (existingDraft?.sgpData) {
     // --- Usa dados em cache do draft ---
     const sgpData = existingDraft.sgpData as SgpData

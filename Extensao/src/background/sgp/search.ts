@@ -3,7 +3,7 @@
 // =================================================================
 
 import { ClientData, SgpClient } from './constants'
-import { performSilentLogin } from './auth'
+import { performSilentLogin, doubleCheckSgpLogins } from './auth'
 import { getCpfCache, setCpfCache } from './cpfCache'
 
 const getTs = () => `[${new Date().toLocaleTimeString('pt-BR')}]`
@@ -40,6 +40,11 @@ export async function executeSearch(url: string, isRetry = false): Promise<SgpCl
           console.log('Extensão ATI: Login silencioso finalizado. Repetindo busca...')
           return await executeSearch(url, true)
         }
+      }
+
+      if (redirectedToLogin || isHtml) {
+        console.error(`Extensão ATI: Sessão expirada no SGP (${url}). Redirecionando para logins do SGP...`)
+        doubleCheckSgpLogins(true).catch(() => null)
       }
 
       console.error(`Extensão ATI: Erro na resposta de busca (${response.status}) em ${url}. ${isRetry ? '(Após tentativa de login). ' : ''}A resposta não é um JSON válido. Início do conteúdo:`, text.substring(0, 300))

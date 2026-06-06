@@ -206,3 +206,140 @@ html:not(.dark) .ati-client-modal-summary {
   color: rgba(0, 0, 0, 0.6);
   background: rgba(0, 0, 0, 0.03);
 }
+
+/* Estilos adicionais para layout de cards/contratos */
+.ati-client-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.ati-client-card-system {
+  font-weight: 700;
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ati-client-card-id {
+  font-weight: 600;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.ati-client-card-contracts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 8px;
+}
+
+.ati-client-contract-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.ati-client-contract-row--empty {
+  color: rgba(255, 255, 255, 0.4);
+  font-style: italic;
+}
+
+.ati-contract-id {
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.ati-contract-pop {
+  flex-grow: 1;
+  font-size: 11px;
+  opacity: 0.65;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ati-contract-venc {
+  font-size: 11px;
+  opacity: 0.65;
+  white-space: nowrap;
+}
+
+.ati-contract-status-badge {
+  font-size: 9.5px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.ati-contract-status-badge--ativo {
+  background: rgba(74, 222, 128, 0.15);
+  color: #4ade80;
+}
+
+.ati-contract-status-badge--vel-red {
+  background: rgba(250, 204, 21, 0.15);
+  color: #facc15;
+}
+
+.ati-contract-status-badge--suspenso {
+  background: rgba(251, 146, 60, 0.15);
+  color: #fb923c;
+}
+
+.ati-contract-status-badge--inativo {
+  background: rgba(156, 163, 175, 0.15);
+  color: #9ca3af;
+}
+
+.ati-contract-status-badge--cancelado {
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+}
+
+/* Adaptações do modo claro */
+html:not(.dark) .ati-client-card-system {
+  background: rgba(0, 0, 0, 0.08);
+  color: #111111;
+}
+
+html:not(.dark) .ati-client-card-contracts {
+  border-top-color: rgba(0, 0, 0, 0.06);
+}
+
+html:not(.dark) .ati-client-contract-row--empty {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+html:not(.dark) .ati-contract-status-badge--ativo {
+  background: rgba(22, 163, 74, 0.1);
+  color: #16a34a;
+}
+
+html:not(.dark) .ati-contract-status-badge--vel-red {
+  background: rgba(202, 138, 4, 0.1);
+  color: #ca8a04;
+}
+
+html:not(.dark) .ati-contract-status-badge--suspenso {
+  background: rgba(234, 88, 12, 0.1);
+  color: #ea580c;
+}
+
+html:not(.dark) .ati-contract-status-badge--inativo {
+  background: rgba(75, 85, 99, 0.1);
+  color: #4b5563;
+}
+
+html:not(.dark) .ati-contract-status-badge--cancelado {
+  background: rgba(220, 38, 38, 0.1);
+  color: #dc2626;
+}

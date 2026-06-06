@@ -80,6 +80,93 @@ export function findCPF(allTexts: string[]): string | null {
   return validMatches.length > 0 ? validMatches[validMatches.length - 1] : null
 }
 
+// --- Busca CPF/CNPJ com priorização baseada em remetente ---
+export function findCpfCnpjInChat(fullName?: string): string | null {
+  const chatBody = document.querySelector(SELECTORS.chatBody)
+  
+  const clientMatches: string[] = []
+  const otherMatches: string[] = []
+  const headerMatches: string[] = []
+
+  const cpfCnpjRegex = /\b(\d{11}|\d{14})\b/g
+  const blacklist = ['código de barras', 'boleto', 'fatura', 'pix', 'linha digitável']
+
+  const processText = (text: string, list: string[]) => {
+    if (blacklist.some((keyword) => text.toLowerCase().includes(keyword))) return
+
+    const cleanText = text.replace(/[.\-\/]/g, '')
+    const potentialMatches = cleanText.match(cpfCnpjRegex)
+
+    if (potentialMatches) {
+      for (const match of potentialMatches) {
+        if (match.length === 11 && isValidCPF(match)) {
+          if (!list.includes(match)) list.push(match)
+        } else if (match.length === 14 && isValidCNPJ(match)) {
+          if (!list.includes(match)) list.push(match)
+        }
+      }
+    }
+  }
+
+  // 1. Processa o nome do cliente no header (se fornecido)
+  if (fullName) {
+    processText(fullName, headerMatches)
+  }
+
+  // 2. Processa as mensagens do chat
+  if (chatBody) {
+    const messageBlocks = Array.from(chatBody.querySelectorAll<HTMLElement>('.flex.w-full.align-top'))
+
+    // Otimização de fatiamento para chats muito longos
+    let blocksToProcess = messageBlocks
+    if (messageBlocks.length > 100) {
+      const start = messageBlocks.slice(0, 50)
+      const end = messageBlocks.slice(-50)
+      blocksToProcess = [...start, ...end]
+    }
+
+    for (const block of blocksToProcess) {
+      const msgEl = block.querySelector<HTMLElement>('[id^="message-"]')
+      if (!msgEl) continue
+
+      // Ignora mensagens internas de sistema se aplicável
+      if (msgEl.id.includes('message-internal-')) continue
+      if (block.querySelector('.bg-neutral-400')) continue
+
+      // Verifica se a mensagem veio do cliente (.justify-start)
+      const isClient = block.classList.contains('justify-start')
+      const paragraphs = Array.from(block.querySelectorAll<HTMLElement>('p.mensagem'))
+
+      for (const p of paragraphs) {
+        if (p.closest('.cursor-pointer')) continue // Ignora citações/respostas
+        const rawText = p.textContent?.trim() ?? ''
+        const text = rawText.replace(/^.+disse:\n/i, '').trim()
+        if (text) {
+          processText(text, isClient ? clientMatches : otherMatches)
+        }
+      }
+    }
+  }
+
+  // Priorização de correspondências:
+  // 1. Último CPF/CNPJ enviado pelo cliente
+  if (clientMatches.length > 0) {
+    return clientMatches[clientMatches.length - 1]
+  }
+
+  // 2. Último CPF/CNPJ enviado por atendentes/sistema
+  if (otherMatches.length > 0) {
+    return otherMatches[otherMatches.length - 1]
+  }
+
+  // 3. CPF/CNPJ encontrado no header/nome do cliente
+  if (headerMatches.length > 0) {
+    return headerMatches[headerMatches.length - 1]
+  }
+
+  return null
+}
+
 // --- Coleta textos das mensagens do chat ---
 // Otimizado: chats curtos pega tudo, longos pega início (bot) + fim (atual)
 export function collectTextFromMessages(): string[] {

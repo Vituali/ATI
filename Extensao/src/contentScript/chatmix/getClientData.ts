@@ -4,7 +4,7 @@
 
 import { ClientData } from '../sgp/types'
 import { SELECTORS, log, lastExtractedData, setLastExtractedData } from './state'
-import { findCPF, collectTextFromMessages } from './helpers'
+import { findCpfCnpjInChat, collectTextFromMessages } from './helpers'
 
 export async function getClientData(): Promise<ClientData> {
   const matches = window.location.href.match(/\/(\d+)$/)
@@ -19,18 +19,25 @@ export async function getClientData(): Promise<ClientData> {
   log('🔍 Extraindo dados do DOM...')
 
   // Nome e telefone do header do painel direito
+  let rawName = ''
   let fullName = ''
   let phoneNumber = ''
 
   const nameEl = document.querySelector(SELECTORS.clientName)
   const phoneEl = document.querySelector(SELECTORS.clientPhone)
 
-  if (nameEl) fullName = nameEl.textContent?.trim() ?? ''
+  if (nameEl) {
+    rawName = nameEl.textContent?.trim() ?? ''
+    // Remove qualquer CPF/CNPJ de 11 ou 14 dígitos do final do nome para manter a busca limpa
+    fullName = rawName.replace(/\s+\b\d{11}\b/g, '').replace(/\s+\b\d{14}\b/g, '').trim()
+  }
   if (phoneEl) phoneNumber = phoneEl.textContent?.replace(/\D/g, '') ?? ''
 
-  // CPF nas mensagens do chat
+  // CPF/CNPJ priorizado nas mensagens do chat e no header (rawName para fallback)
+  const cpfCnpj = findCpfCnpjInChat(rawName)
+
+  // Coleta de textos para fallback de nome
   const chatTexts = collectTextFromMessages()
-  const cpfCnpj = findCPF(chatTexts)
 
   // Fallback de nome: tenta extrair da saudação do bot
   if ((!fullName || fullName.toUpperCase() === 'CLIENTE') && chatTexts.length > 0) {

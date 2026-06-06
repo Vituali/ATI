@@ -161,3 +161,318 @@
   text-overflow: ellipsis;
   letter-spacing: 0.2px;
 }
+
+/* Viabilidade Panel Styles */
+.ati-feasibility-container {
+  padding: 16px;
+  color: #fff;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.ati-feasibility-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #fff;
+  text-align: left;
+}
+
+.ati-feasibility-subtitle {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 16px;
+  text-align: left;
+  line-height: 1.4;
+}
+
+.ati-feasibility-form {
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.ati-feasibility-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.5);
+  display: block;
+  margin-bottom: 6px;
+  text-align: left;
+}
+
+.ati-feasibility-input-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.ati-feasibility-input {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  outline: none;
+  transition: all 0.2s;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.ati-feasibility-input:focus {
+  border-color: #0064ff;
+  box-shadow: 0 0 0 3px rgba(0, 100, 255, 0.15);
+}
+
+.ati-feasibility-select {
+  background: #1e1e1e;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.ati-feasibility-select:focus {
+  border-color: #0064ff;
+}
+
+.ati-feasibility-btn {
+  background: #0064ff;
+  color: #fff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.ati-feasibility-btn:hover {
+  background: #0056dd;
+}
+
+.ati-feasibility-btn:active {
+  transform: scale(0.98);
+}
+
+.ati-feasibility-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ati-feasibility-results-header {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #4ade80;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.ati-feasibility-results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 20px;
+}
+
+.ati-feasibility-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.ati-feasibility-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.ati-feasibility-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.ati-feasibility-client-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  text-align: left;
+}
+
+.ati-feasibility-badge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ati-feasibility-badge--35 {
+  background: rgba(249, 115, 22, 0.15);
+  color: #f97316;
+  border: 1px solid rgba(249, 115, 22, 0.3);
+}
+
+.ati-feasibility-badge--53 {
+  background: rgba(139, 92, 246, 0.15);
+  color: #a78bfa;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.ati-feasibility-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.ati-feasibility-client-id {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.ati-feasibility-client-cadastro {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.ati-feasibility-results-header--active {
+  color: #4ade80;
+}
+
+.ati-feasibility-results-header--inactive {
+  color: #fbbf24;
+}
+
+.ati-feasibility-card--inactive {
+  border-color: rgba(251, 191, 36, 0.15);
+  background: rgba(251, 191, 36, 0.02);
+}
+
+.ati-feasibility-card--inactive:hover {
+  border-color: rgba(251, 191, 36, 0.3);
+  background: rgba(251, 191, 36, 0.04);
+}
+
+.ati-feasibility-client-address {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.4;
+}
+
+.ati-feasibility-client-status {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.ati-feasibility-empty {
+  text-align: center;
+  padding: 24px 16px;
+  background: rgba(248, 113, 113, 0.04);
+  border: 1px dashed rgba(248, 113, 113, 0.2);
+  border-radius: 12px;
+  color: #f87171;
+  font-size: 13px;
+}
+
+.ati-feasibility-empty-title {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.ati-feasibility-empty-desc {
+  font-size: 11.5px;
+  opacity: 0.8;
+  line-height: 1.4;
+}
+
+.ati-feasibility-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: ati-feasibility-spin 0.6s linear infinite;
+  display: inline-block;
+}
+
+@keyframes ati-feasibility-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ati-feasibility-row {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  width: 100%;
+}
+
+.flex-3 {
+  flex: 3;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.ati-feasibility-local-search {
+  margin-bottom: 12px;
+}
+
+.ati-feasibility-local-search .ati-feasibility-input {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 12px;
+  padding: 8px 12px;
+}
+
+.ati-feasibility-local-search .ati-feasibility-input:focus {
+  border-color: #0064ff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.ati-feasibility-empty-filter {
+  text-align: center;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #888;
+  font-size: 12px;
+}

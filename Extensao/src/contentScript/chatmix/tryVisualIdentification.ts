@@ -3,7 +3,7 @@
 // =================================================================
 
 import { SELECTORS, log, logWarn, identificationLock, setIdentificationLock } from './state'
-import { findCPF, collectTextFromMessages, setNativeValue } from './helpers'
+import { findCpfCnpjInChat, setNativeValue } from './helpers'
 
 export async function tryVisualIdentification(force = false): Promise<boolean> {
   if (identificationLock && !force) {
@@ -26,7 +26,7 @@ export async function tryVisualIdentification(force = false): Promise<boolean> {
     }
 
     if (input && (!input.value || force)) {
-      const cpf = findCPF(collectTextFromMessages())
+      const cpf = findCpfCnpjInChat()
 
       if (cpf) {
         setIdentificationLock(true)

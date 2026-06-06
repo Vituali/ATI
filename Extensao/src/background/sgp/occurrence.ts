@@ -1,5 +1,5 @@
 import { ClientData, SGP_IP_35, SGP_IP_53 } from './constants'
-import { getSgpStatus, updateSgpStatusCache, ensureSgpSession } from './auth'
+import { getSgpStatus, updateSgpStatusCache, ensureSgpSession, doubleCheckSgpLogins } from './auth'
 import { findClientInSgp } from './search'
 import { fetchContractOnlineStatus, buildContracts, extractOptions } from './contracts'
 import { hasSgpFormCache, getSgpFormCache, setSgpFormCache } from './cache'
@@ -150,6 +150,11 @@ export async function handleOpenInSgp(clientData: ClientData, cachedContract: st
   // 1. Checagem rápida não-forçada da sessão (usa cache)
   const { isLoggedIn, baseUrl } = await getSgpStatus(false)
 
+  if (!isLoggedIn) {
+    await doubleCheckSgpLogins(true)
+    throw new Error('Por favor, faça login em ambos os SGPs (.35 e .53) para continuar. Abrindo as telas de login...')
+  }
+
   if (cachedContract) {
     console.log(`Extensão ATI: Usando contrato cacheado — ${cachedContract}`)
     const url = `${baseUrl}/admin/clientecontrato/${cachedContract}/change/`
@@ -205,8 +210,8 @@ export async function handleOpenInSgp(clientData: ClientData, cachedContract: st
     findClientInSgp(SGP_IP_53, clientData, uid).catch(() => null)
   ])
 
-  const foundPrincipal = (clientsPrincipal || []).map(c => ({ ...c, baseUrl: SGP_IP_35, systemLabel: 'Principal' }))
-  const foundReserva = (clientsReserva || []).map(c => ({ ...c, baseUrl: SGP_IP_53, systemLabel: 'Reserva (IP 53)' }))
+  const foundPrincipal = (clientsPrincipal || []).map(c => ({ ...c, baseUrl: SGP_IP_35, systemLabel: 'SGP Antigo' }))
+  const foundReserva = (clientsReserva || []).map(c => ({ ...c, baseUrl: SGP_IP_53, systemLabel: 'SGP Novo' }))
   const allFound = [...foundPrincipal, ...foundReserva]
 
   if (allFound.length === 0) {
@@ -267,8 +272,8 @@ export async function getSgpFormParams(clientData: ClientData, chatId: string, i
 
       // Realiza a busca e o enriquecimento em paralelo nos dois sistemas
       const [clientsPrincipal, clientsReserva] = await Promise.all([
-        searchAndEnrich(SGP_IP_35, 'Principal', clientData, uid),
-        searchAndEnrich(SGP_IP_53, 'Reserva (IP 53)', clientData, uid)
+        searchAndEnrich(SGP_IP_35, 'SGP Antigo', clientData, uid),
+        searchAndEnrich(SGP_IP_53, 'SGP Novo', clientData, uid)
       ])
 
       const allClients = [...clientsPrincipal, ...clientsReserva]
@@ -313,13 +318,16 @@ export async function getSgpFormParams(clientData: ClientData, chatId: string, i
   }
 
   const tLoginCheckStart = performance.now()
-  const { isLoggedIn, baseUrl } = await getSgpStatus(false) // Usa cache se possível (0ms se sincronizado acima!)
+  const { isLoggedIn } = await getSgpStatus(false) // Usa cache se possível (0ms se sincronizado acima!)
   const tLoginCheckEnd = performance.now()
   console.log(`${getTs()} ⏱️ [ATI Perf] FormParams: Login/status check demorou ${(tLoginCheckEnd - tLoginCheckStart).toFixed(1)}ms.`)
-  if (!isLoggedIn) throw new Error('Não está logado no SGP.')
+  if (!isLoggedIn) {
+    await doubleCheckSgpLogins(true)
+    throw new Error('Por favor, faça login em ambos os SGPs (.35 e .53) para continuar. Abrindo as telas de login...')
+  }
 
   const clientKey = clientData.clientSgpId || clientData.cpfCnpj || clientData.phoneNumber || clientData.fullName || chatId
-  const cacheKey = `${baseUrl}_${clientKey}`
+  const cacheKey = `${targetBaseUrl}_${clientKey}`
 
   const tCacheCheckStart = performance.now()
   const hasCache = await hasSgpFormCache(cacheKey)
@@ -335,9 +343,9 @@ export async function getSgpFormParams(clientData: ClientData, chatId: string, i
   }
 
   const tSearchBaseStart = performance.now()
-  const clients = await findClientInSgp(baseUrl, clientData, uid)
+  const clients = await findClientInSgp(targetBaseUrl, clientData, uid)
   const tSearchBaseEnd = performance.now()
-  console.log(`${getTs()} ⏱️ [ATI Perf] FormParams: findClientInSgp local (${baseUrl}) demorou ${(tSearchBaseEnd - tSearchBaseStart).toFixed(1)}ms. Encontrados: ${clients?.length ?? 0}`)
+  console.log(`${getTs()} ⏱️ [ATI Perf] FormParams: findClientInSgp local (${targetBaseUrl}) demorou ${(tSearchBaseEnd - tSearchBaseStart).toFixed(1)}ms. Encontrados: ${clients?.length ?? 0}`)
 
   if (!clients || clients.length === 0) throw new Error('Cliente não encontrado no SGP.')
 
@@ -350,7 +358,7 @@ export async function getSgpFormParams(clientData: ClientData, chatId: string, i
   const tScrapingStart = performance.now()
   for (let i = 0; i < clients.length; i++) {
     const client = clients[i]
-    const clientCacheKey = `${baseUrl}_${client.id}`
+    const clientCacheKey = `${targetBaseUrl}_${client.id}`
     const cachedScrape = getScrapeCache(clientCacheKey)
 
     if (cachedScrape) {
@@ -364,7 +372,7 @@ export async function getSgpFormParams(clientData: ClientData, chatId: string, i
       continue
     }
 
-    const url = `${baseUrl}/admin/atendimento/cliente/${client.id}/ocorrencia/add/`
+    const url = `${targetBaseUrl}/admin/atendimento/cliente/${client.id}/ocorrencia/add/`
     const tLoopStart = performance.now()
 
     try {
@@ -386,9 +394,9 @@ export async function getSgpFormParams(clientData: ClientData, chatId: string, i
       })
 
       // Busca status online/offline dos contratos deste cliente apenas se necessário
-      const onlineStatusMap = needsOnlineStatus ? await fetchContractOnlineStatus(baseUrl, client.id) : new Map<string, boolean>()
+      const onlineStatusMap = needsOnlineStatus ? await fetchContractOnlineStatus(targetBaseUrl, client.id) : new Map<string, boolean>()
 
-      const contracts = await buildContracts(baseUrl, client, html, clients.length > 1, onlineStatusMap)
+      const contracts = await buildContracts(targetBaseUrl, client, html, clients.length > 1, onlineStatusMap)
 
       allContracts = allContracts.concat(contracts)
 
@@ -398,7 +406,7 @@ export async function getSgpFormParams(clientData: ClientData, chatId: string, i
       }
       
       const tLoopEnd = performance.now()
-      console.log(`${getTs()} ⏱️ [ATI Perf] FormParams: Scraping para ID ${client.id} em ${baseUrl} demorou ${(tLoopEnd - tLoopStart).toFixed(1)}ms.`)
+      console.log(`${getTs()} ⏱️ [ATI Perf] FormParams: Scraping para ID ${client.id} em ${targetBaseUrl} demorou ${(tLoopEnd - tLoopStart).toFixed(1)}ms.`)
     } catch (error) {
       console.error(`Extensão ATI: Falha ao buscar dados para cliente ${client.id}.`, error)
       throw error
@@ -411,7 +419,7 @@ export async function getSgpFormParams(clientData: ClientData, chatId: string, i
 
   const result = {
     clientSgpId: clients[0].id,
-    clientSgpOrigin: baseUrl,
+    clientSgpOrigin: targetBaseUrl,
     contracts: allContracts,
     responsibleUsers,
     occurrenceTypes,
@@ -460,11 +468,157 @@ export async function refreshSgpOnlineStatuses(clientData: ClientData, chatId: s
 export async function createOccurrenceVisually(data: Record<string, any>): Promise<void> {
   const targetBaseUrl = data.sgpOrigin || (await getSgpStatus()).baseUrl
   const { isLoggedIn } = await getSgpStatus(false) // Checagem rápida no cache
-  if (!isLoggedIn) throw new Error('Não está logado no SGP.')
+  if (!isLoggedIn) {
+    await doubleCheckSgpLogins(true)
+    throw new Error('Por favor, faça login em ambos os SGPs (.35 e .53) para continuar. Abrindo as telas de login...')
+  }
 
   const requestId = Math.random().toString(36).substring(2, 9)
   const url = `${targetBaseUrl}/admin/atendimento/cliente/${data.clientSgpId}/ocorrencia/add/?ati_req_id=${requestId}`
 
   await chrome.storage.local.set({ [`pendingSgpData_${requestId}`]: data })
   await chrome.tabs.create({ url, active: true })
+}
+
+export async function fetchSgpClientContacts(
+  clientUrl?: string,
+  baseUrl?: string,
+  clientId?: string,
+  clientData?: ClientData,
+  uid?: string
+): Promise<string> {
+  let targetBaseUrl = baseUrl
+  let targetClientId = clientId
+  let targetClientUrl = clientUrl
+
+  // Se tivermos uma URL completa de cliente, extraímos a base e o ID dela
+  if (targetClientUrl) {
+    try {
+      const urlObj = new URL(targetClientUrl)
+      targetBaseUrl = urlObj.origin
+      const match = urlObj.pathname.match(/\/admin\/cliente\/(\d+)/)
+      if (match) {
+        targetClientId = match[1]
+      }
+    } catch (e) {
+      console.warn('Erro ao parsear clientUrl:', e)
+    }
+  }
+
+  // Se não tivermos o ID nem a URL, mas temos os dados, buscamos em paralelo nos dois SGPs!
+  if (!targetClientId && clientData) {
+    console.log('Extensão ATI: Buscando cliente em ambos os SGPs em paralelo...')
+    
+    // Garante autenticação em ambos em paralelo
+    await Promise.all([
+      ensureSgpSession(SGP_IP_35).catch(() => null),
+      ensureSgpSession(SGP_IP_53).catch(() => null)
+    ])
+
+    const [resPrincipal, resReserva] = await Promise.all([
+      findClientInSgp(SGP_IP_35, clientData, uid).catch(() => null),
+      findClientInSgp(SGP_IP_53, clientData, uid).catch(() => null)
+    ])
+
+    if (resPrincipal && resPrincipal.length > 0) {
+      targetBaseUrl = SGP_IP_35
+      targetClientId = resPrincipal[0].id
+      console.log(`Extensão ATI: Cliente encontrado no SGP Antigo (ID: ${targetClientId})`)
+    } else if (resReserva && resReserva.length > 0) {
+      targetBaseUrl = SGP_IP_53
+      targetClientId = resReserva[0].id
+      console.log(`Extensão ATI: Cliente encontrado no SGP Novo (ID: ${targetClientId})`)
+    }
+  }
+
+  if (!targetBaseUrl) {
+    targetBaseUrl = (await getSgpStatus()).baseUrl
+  }
+
+  // Garante autenticação no SGP de destino
+  await ensureSgpSession(targetBaseUrl)
+
+  const urlsToTry: string[] = []
+  if (targetClientId) {
+    urlsToTry.push(`${targetBaseUrl}/admin/contato/list/cliente/${targetClientId}/`)
+    urlsToTry.push(`${targetBaseUrl}/admin/cliente/${targetClientId}/edit/`)
+    urlsToTry.push(`${targetBaseUrl}/admin/cliente/${targetClientId}/change/`)
+    urlsToTry.push(`${targetBaseUrl}/admin/cliente/${targetClientId}/`)
+  }
+  
+  if (targetClientUrl && !urlsToTry.includes(targetClientUrl)) {
+    urlsToTry.push(targetClientUrl)
+  }
+
+  if (urlsToTry.length === 0) {
+    throw new Error('Cliente não identificado no SGP e não encontrado em nenhum dos sistemas.')
+  }
+
+  let lastError: Error = new Error('Sem URLs válidas para buscar contatos.')
+  for (const url of urlsToTry) {
+    try {
+      console.log(`Extensão ATI: Tentando buscar contatos na URL: ${url}`)
+      const response = await fetch(url, {
+        credentials: 'include',
+        signal: AbortSignal.timeout(8000),
+      })
+      if (response.ok) {
+        const html = await response.text()
+        
+        // Detecção robusta de tela de login do Django Admin ou SGP
+        const isLoginPage = html.includes('id_username') || 
+                            html.includes('id_password') || 
+                            html.includes('name="username"') || 
+                            html.includes('name="password"') ||
+                            html.includes('/accounts/login') ||
+                            html.includes('login-container')
+
+        if (isLoginPage) {
+          throw new Error('Sessão expirada no SGP. Faça o login novamente no SGP.')
+        }
+        return html
+      }
+      throw new Error(`Status HTTP: ${response.status}`)
+    } catch (e: any) {
+      console.warn(`Extensão ATI: Falha ao buscar contatos de ${url}:`, e)
+      lastError = new Error(e.message || `Falha ao acessar ${url}`)
+    }
+  }
+  throw lastError
+}
+
+export async function searchSgpFeasibilityHtml(baseUrl: string, logradouro: string, numero?: string): Promise<string> {
+  const isSessionOk = await ensureSgpSession(baseUrl)
+  if (!isSessionOk) {
+    await doubleCheckSgpLogins(true)
+    throw new Error('Por favor, faça login em ambos os SGPs (.35 e .53) para continuar. Abrindo as telas de login...')
+  }
+  const numQuery = numero ? `&numero=${encodeURIComponent(numero)}` : ''
+  const url = `${baseUrl}/admin/cliente/list/?tipo_endereco=cliente&logradouro=${encodeURIComponent(logradouro)}${numQuery}&botao_consulta=Consultar`
+  console.log(`Extensão ATI: Consultando viabilidade no SGP (${baseUrl}) para rua: ${logradouro} ${numero ? 'número: ' + numero : ''}`)
+  
+  const response = await fetch(url, {
+    credentials: 'include',
+    signal: AbortSignal.timeout(10000),
+  })
+  
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status} ao acessar SGP`)
+  }
+  
+  const html = await response.text()
+  
+  const isLoginPage = html.includes('id_username') || 
+                      html.includes('id_password') || 
+                      html.includes('name="username"') || 
+                      html.includes('name="password"') ||
+                      html.includes('/accounts/login') ||
+                      html.includes('login-container')
+
+  if (isLoginPage) {
+    await doubleCheckSgpLogins(true)
+    throw new Error('Sessão expirada no SGP. Por favor, faça login em ambos os SGPs (.35 e .53) para continuar. Abrindo as telas de login...')
+  }
+  
+  return html
 }

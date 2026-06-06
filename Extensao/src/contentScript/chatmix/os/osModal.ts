@@ -183,11 +183,35 @@ export async function showOSModal(allTemplates: OsTemplate[], extractChatFn: () 
         action: 'clearSgpCache',
         cacheKey: clientKey,
       })
-      console.log('Extensão ATI: Abrindo SGP para preenchimento...')
-      safeSendMessage<CreateOccurrenceVisuallyRequest>({
-        action: 'createOccurrenceVisually',
-        data: submissionData,
-      })
+
+      const isSgpPage = window.location.hostname.includes('sgp') || 
+                        window.location.hostname.includes('201.158.20.35') || 
+                        window.location.hostname.includes('201.158.20.53');
+
+      if (isSgpPage) {
+        console.log('Extensão ATI: Preenchendo formulário localmente no SGP...')
+        const script = document.createElement('script')
+        script.src = chrome.runtime.getURL('src/contentScript/sgp/sgpFill.js')
+        script.onload = () => {
+          window.postMessage(
+            {
+              type: 'ATI_SGP_FILL',
+              data: submissionData,
+              username: (session?.sgpUsername ?? session?.username)?.toLowerCase() ?? '',
+              fullname: session?.nomeCompleto?.toLowerCase() ?? '',
+            },
+            window.location.origin,
+          )
+          script.remove()
+        }
+        document.documentElement.appendChild(script)
+      } else {
+        console.log('Extensão ATI: Abrindo SGP para preenchimento...')
+        safeSendMessage<CreateOccurrenceVisuallyRequest>({
+          action: 'createOccurrenceVisually',
+          data: submissionData,
+        })
+      }
     }
   } catch (error: unknown) {
     if (chatId) {

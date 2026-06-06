@@ -93,6 +93,21 @@ export interface LogoutRequest {
 export interface CheckVersionRequest {
   action: 'checkVersion'
 }
+export interface GetSgpClientContactsRequest {
+  action: 'getSgpClientContacts'
+  clientUrl?: string
+  baseUrl?: string
+  clientId?: string
+  clientData?: ClientData
+  uid?: string
+}
+
+export interface SearchSgpFeasibilityRequest {
+  action: 'searchSgpFeasibility'
+  baseUrl: string
+  logradouro: string
+  numero?: string
+}
 
 export type ExtensionRequest =
   | FirebaseLoginRequest
@@ -116,3 +131,7 @@ export type ExtensionRequest =
   | ClearSessionCachesRequest
   | LogoutRequest
   | CheckVersionRequest
+  | GetSgpClientContactsRequest
+  | SearchSgpFeasibilityRequest
+
+

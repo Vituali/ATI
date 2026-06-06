@@ -56,7 +56,6 @@
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: linear-gradient(145deg, rgba(0, 100, 255, 0.9), rgba(0, 60, 255, 0.9));
-  backdrop-filter: blur(6px);
   color: white;
   cursor: pointer;
   display: flex;
@@ -252,3 +251,37 @@
   from { opacity: 0; transform: translateX(40px); }
   to { opacity: 1; transform: translateX(0); }
 }
+
+/* =================================================================== */
+/* == ALERTA DE CHATS COM MAIS DE 1 HORA                              == */
+/* =================================================================== */
+
+.ati-time-overdue {
+  color: #ef4444 !important; /* red-500 */
+  font-weight: bold !important;
+}
+
+html.dark .ati-time-overdue {
+  color: #f87171 !important; /* red-400 */
+}
+
+.ati-time-warning {
+  color: #f59e0b !important; /* amber-500 */
+  display: inline-flex !important;
+  align-items: center !important;
+  font-size: 11px !important;
+  margin-right: 4px !important;
+  animation: atiPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite !important;
+}
+
+@keyframes atiPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.95);
+  }
+}
+

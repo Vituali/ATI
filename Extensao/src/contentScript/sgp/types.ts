@@ -23,6 +23,7 @@ export interface SgpContract {
   clientId: string
   online?: boolean | null
   cancelled?: boolean
+  baseUrl?: string
 }
 
 export interface SgpUser {
@@ -40,6 +41,7 @@ export interface SgpData {
   contracts: SgpContract[]
   responsibleUsers: SgpUser[]
   occurrenceTypes: SgpOccurrenceType[]
+  clientSgpOrigin?: string | null
 }
 
 export interface OsTemplate {

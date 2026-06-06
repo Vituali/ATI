@@ -73,6 +73,9 @@ export default function Sidebar({
 }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [openGroups, setOpenGroups] = useState<string[]>(["ferramentas"]); // Ferramentas aberto por padrão
+  const [debugMode, setDebugMode] = useState(() => {
+    return localStorage.getItem("ati-debug-jefferson") === "true";
+  });
 
   const toggleGroup = (id: string) => {
     setOpenGroups((prev) =>
@@ -80,10 +83,23 @@ export default function Sidebar({
     );
   };
 
+  const isJefferson = userName.toLowerCase().includes("jefferson") || (role === "admin" && debugMode);
+
   const groups = NAV_ITEMS.map((group) => ({
     ...group,
     items: group.items.filter((item) => canAccess(role, setor, item.section)),
   })).filter((group) => group.items.length > 0);
+
+  if (isJefferson) {
+    groups.push({
+      id: "jefferson",
+      label: "Área Secreta",
+      icon: "🦇",
+      items: [
+        { section: "jefferson", icon: "🥤", label: "Goticas & Monster" }
+      ]
+    });
+  }
 
   return (
     <aside className={`sidebar ${isOpen ? "expanded" : ""}`}>
@@ -186,6 +202,20 @@ export default function Sidebar({
           </div>
           <span className="text">{userName}</span>
         </button>
+        {role === "admin" && (
+          <button 
+            className="bottom-toggle theme-toggle" 
+            onClick={() => {
+              const nextVal = !debugMode;
+              setDebugMode(nextVal);
+              localStorage.setItem("ati-debug-jefferson", nextVal ? "true" : "false");
+            }}
+            title={debugMode ? "Ocultar aba do Jefferson" : "Exibir aba do Jefferson"}
+          >
+            <span className="icon">{debugMode ? "👁️" : "👁️‍🗨️"}</span>
+            <span className="text">{debugMode ? "Ocultar Secreta" : "Ver Secreta"}</span>
+          </button>
+        )}
         <button 
           className="bottom-toggle theme-toggle" 
           onClick={onOpenSettings}

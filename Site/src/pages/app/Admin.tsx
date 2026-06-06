@@ -6,7 +6,7 @@
 // ---------------------------------------------------------------
 
 import { useState, useEffect } from "react";
-import { ref, get, set } from "firebase/database";
+import { ref, get, set, update } from "firebase/database";
 import { db } from "../../services/firebase";
 import {
   Role,
@@ -175,7 +175,7 @@ export default function Admin() {
   async function handleSalvar(atendente: Atendente) {
     setSalvando(atendente.username);
     try {
-      await set(ref(db, `atendentes/${atendente.username}`), {
+      await update(ref(db, `atendentes/${atendente.username}`), {
         uid: atendente.uid,
         email: atendente.email,
         nomeCompleto: atendente.nomeCompleto,
@@ -205,7 +205,7 @@ export default function Admin() {
 
     for (const atendente of listaFiltrada) {
       try {
-        await set(ref(db, `atendentes/${atendente.username}`), {
+        await update(ref(db, `atendentes/${atendente.username}`), {
           uid: atendente.uid,
           email: atendente.email,
           nomeCompleto: atendente.nomeCompleto,

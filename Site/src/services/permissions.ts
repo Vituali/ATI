@@ -11,12 +11,13 @@ export type Section =
   | "conversor"
   | "senhas"
   | "relatorios"
-  | "admin";
+  | "admin"
+  | "jefferson";
 
 // ---------------------------------------------------------------
 // PERMISSÕES POR ROLE
 // ---------------------------------------------------------------
-const ROLE_PERMISSIONS: Record<Section, Role[]> = {
+export const ROLE_PERMISSIONS: Record<Section, Role[]> = {
   home: ["usuario", "supervisor", "moderador", "admin"],
   chat_interno: ["usuario", "supervisor", "moderador", "admin"],
   anotacoes: ["usuario", "supervisor", "moderador", "admin"],
@@ -26,6 +27,7 @@ const ROLE_PERMISSIONS: Record<Section, Role[]> = {
   senhas: ["usuario", "supervisor", "moderador", "admin"],
   relatorios: ["supervisor", "moderador", "admin"],
   admin: ["admin"],
+  jefferson: ["usuario", "supervisor", "moderador", "admin"],
 };
 
 // ---------------------------------------------------------------
@@ -43,6 +45,7 @@ export const SETOR_PERMISSIONS: Record<Section, Setor[]> = {
   senhas: ["ti", "suporte"],
   relatorios: ["ti", "financeiro", "suporte", "comercial"],
   admin: ["ti"],
+  jefferson: ["geral", "ti", "financeiro", "suporte", "comercial"],
 };
 
 // ---------------------------------------------------------------
@@ -57,6 +60,8 @@ export function getRolePermissions(section: Section): Role[] {
     case "modelos_os":
     case "conversor":
     case "senhas":
+      return ["usuario", "supervisor", "moderador", "admin"];
+    case "jefferson":
       return ["usuario", "supervisor", "moderador", "admin"];
     case "relatorios":
       return ["supervisor", "moderador", "admin"];
@@ -82,6 +87,8 @@ export function getSetorPermissions(section: Section): Setor[] {
       return ["ti", "suporte", "comercial"];
     case "senhas":
       return ["ti", "suporte"];
+    case "jefferson":
+      return ["geral", "ti", "financeiro", "suporte", "comercial"];
     case "admin":
       return ["ti"];
     default:
@@ -179,6 +186,7 @@ export const SECTION_LABEL: Record<Section, string> = {
   senhas: "Senhas",
   relatorios: "Relatórios",
   admin: "Admin",
+  jefferson: "Goticas & Monster",
 };
 
 export function getSectionLabel(section: string): string {

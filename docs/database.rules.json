@@ -101,6 +101,10 @@
       ".read": "auth != null",
       ".write": "auth != null"
     },
+    "clientes_cadastro": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
 
     // ---------------------------------------------------------------
     // CHAT 

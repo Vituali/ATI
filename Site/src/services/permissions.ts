@@ -12,7 +12,8 @@ export type Section =
   | "senhas"
   | "relatorios"
   | "admin"
-  | "jefferson";
+  | "jefferson"
+  | "heli";
 
 // ---------------------------------------------------------------
 // PERMISSÕES POR ROLE
@@ -28,6 +29,7 @@ export const ROLE_PERMISSIONS: Record<Section, Role[]> = {
   relatorios: ["supervisor", "moderador", "admin"],
   admin: ["admin"],
   jefferson: ["usuario", "supervisor", "moderador", "admin"],
+  heli: ["usuario", "supervisor", "moderador", "admin"],
 };
 
 // ---------------------------------------------------------------
@@ -46,6 +48,7 @@ export const SETOR_PERMISSIONS: Record<Section, Setor[]> = {
   relatorios: ["ti", "financeiro", "suporte", "comercial"],
   admin: ["ti"],
   jefferson: ["geral", "ti", "financeiro", "suporte", "comercial"],
+  heli: ["geral", "ti", "financeiro", "suporte", "comercial"],
 };
 
 // ---------------------------------------------------------------
@@ -62,6 +65,7 @@ export function getRolePermissions(section: Section): Role[] {
     case "senhas":
       return ["usuario", "supervisor", "moderador", "admin"];
     case "jefferson":
+    case "heli":
       return ["usuario", "supervisor", "moderador", "admin"];
     case "relatorios":
       return ["supervisor", "moderador", "admin"];
@@ -88,6 +92,7 @@ export function getSetorPermissions(section: Section): Setor[] {
     case "senhas":
       return ["ti", "suporte"];
     case "jefferson":
+    case "heli":
       return ["geral", "ti", "financeiro", "suporte", "comercial"];
     case "admin":
       return ["ti"];
@@ -187,6 +192,7 @@ export const SECTION_LABEL: Record<Section, string> = {
   relatorios: "Relatórios",
   admin: "Admin",
   jefferson: "Goticas & Monster",
+  heli: "Ordem Paranormal",
 };
 
 export function getSectionLabel(section: string): string {
@@ -200,6 +206,7 @@ export function getSectionLabel(section: string): string {
     case "senhas": return "Senhas";
     case "relatorios": return "Relatórios";
     case "admin": return "Admin";
+    case "heli": return "Ordem Paranormal";
     default: return section;
   }
 }

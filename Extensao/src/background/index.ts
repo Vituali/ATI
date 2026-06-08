@@ -9,6 +9,7 @@ import { deleteSgpFormCache } from './sgp/cache'
 import { deleteCpfCacheEntry, deleteCpfCacheByUid } from './sgp/cpfCache'
 import { setupChatNotifications } from './notifications'
 import { SGP_IP_35, SGP_IP_53 } from './sgp/constants'
+import { findClientInSgp } from './sgp/search'
 import type { ExtensionRequest } from './types'
 
 const getTs = () => `[${new Date().toLocaleTimeString('pt-BR')}]`;
@@ -106,6 +107,13 @@ chrome.runtime.onMessage.addListener((request: ExtensionRequest, _sender, sendRe
   if (request.action === 'searchSgpFeasibility') {
     searchSgpFeasibilityHtml(request.baseUrl, request.logradouro, request.numero)
       .then((html) => sendResponse({ success: true, html }))
+      .catch((error) => sendResponse({ success: false, error: error.message }))
+    return true
+  }
+
+  if (request.action === 'findClientOnSgp') {
+    findClientInSgp(request.baseUrl, request.clientData, request.uid)
+      .then((clients) => sendResponse({ success: true, clients }))
       .catch((error) => sendResponse({ success: false, error: error.message }))
     return true
   }

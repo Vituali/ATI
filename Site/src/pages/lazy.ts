@@ -8,4 +8,6 @@ export const Admin = lazy(() => import("./app/Admin"));
 export const ChatInterno = lazy(() => import("./app/ChatInterno"));
 export const Anotacoes = lazy(() => import("./app/Anotacoes"));
 export const Relatorios = lazy(() => import("./app/Relatorios"));
-export const Jefferson = lazy(() => import("./app/Jefferson"));
+export const Jefferson = lazy(() => import("./app/custom/Jefferson"));
+export const HeliRPG = lazy(() => import("./app/custom/HeliRPG"));
+

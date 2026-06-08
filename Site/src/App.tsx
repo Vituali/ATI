@@ -1,6 +1,6 @@
 // App.tsx
 import { useState, useEffect, useCallback, useRef, Suspense } from "react";
-import { RespostasRapidas, ModelosOS, Conversor, Senhas, Admin, ChatInterno, Anotacoes, Relatorios, Jefferson } from "./pages/lazy";
+import { RespostasRapidas, ModelosOS, Conversor, Senhas, Admin, ChatInterno, Anotacoes, Relatorios, Jefferson, HeliRPG } from "./pages/lazy";
 import { Login, Register, Home, ErrorPage, ExtensionModal } from "./pages";
 import { useUser, UserProfile } from "./hooks";
 import { canAccess, Section, Setor, getSetorLabel, logout, db, auth, syncWithExtension, performSSOLogin } from "./services";
@@ -89,6 +89,8 @@ export default function App() {
           return <Admin />;
         case "jefferson":
           return <Jefferson />;
+        case "heli":
+          return <HeliRPG />;
       }
     },
     [setCurrentSection],
@@ -274,7 +276,7 @@ export default function App() {
       : (availableTabs[0]?.id || "chat_interno");
 
     return (
-      <div className={`layout-embed fade-in ${bgUrl ? "has-custom-bg" : ""}`}>
+      <>
         {/* Plano de fundo customizado no modo Embed */}
         {bgUrl && (
           <div className="app-custom-bg-container">
@@ -295,18 +297,20 @@ export default function App() {
           </div>
         )}
 
-        <div className="embed-panel-container">
-          <div 
-            className="embed-section-content" 
-            style={{ padding: activeEmbedSection === "chat_interno" ? 0 : "12px 10px" }}
-          >
-            <Suspense fallback={<LoadingOverlay message="Carregando..." />}>
-              {renderSection(activeEmbedSection, user)}
-            </Suspense>
+        <div className={`layout-embed fade-in ${bgUrl ? "has-custom-bg" : ""}`}>
+          <div className="embed-panel-container">
+            <div 
+              className="embed-section-content" 
+              style={{ padding: activeEmbedSection === "chat_interno" ? 0 : "12px 10px" }}
+            >
+              <Suspense fallback={<LoadingOverlay message="Carregando..." />}>
+                {renderSection(activeEmbedSection, user)}
+              </Suspense>
+            </div>
           </div>
+          <ToastContainer />
         </div>
-        <ToastContainer />
-      </div>
+      </>
     );
   }
 

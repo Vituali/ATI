@@ -57,7 +57,8 @@
   background-color: transparent !important;
 }
 
-.has-custom-bg .main-content {
+.has-custom-bg .main-content,
+.has-custom-bg .embed-panel-container {
   background-color: transparent !important;
 }
 

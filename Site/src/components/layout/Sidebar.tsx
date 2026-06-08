@@ -84,6 +84,7 @@ export default function Sidebar({
   };
 
   const isJefferson = userName.toLowerCase().includes("jefferson") || (role === "admin" && debugMode);
+  const isHeli = userName.toLowerCase().includes("heli") || (role === "admin" && debugMode);
 
   const groups = NAV_ITEMS.map((group) => ({
     ...group,
@@ -97,6 +98,17 @@ export default function Sidebar({
       icon: "🦇",
       items: [
         { section: "jefferson", icon: "🥤", label: "Goticas & Monster" }
+      ]
+    });
+  }
+
+  if (isHeli) {
+    groups.push({
+      id: "heli",
+      label: "Área de RPG",
+      icon: "🔮",
+      items: [
+        { section: "heli", icon: "🎲", label: "Ordem Paranormal" }
       ]
     });
   }
@@ -210,10 +222,10 @@ export default function Sidebar({
               setDebugMode(nextVal);
               localStorage.setItem("ati-debug-jefferson", nextVal ? "true" : "false");
             }}
-            title={debugMode ? "Ocultar aba do Jefferson" : "Exibir aba do Jefferson"}
+            title={debugMode ? "Ocultar abas secretas" : "Exibir abas secretas"}
           >
             <span className="icon">{debugMode ? "👁️" : "👁️‍🗨️"}</span>
-            <span className="text">{debugMode ? "Ocultar Secreta" : "Ver Secreta"}</span>
+            <span className="text">{debugMode ? "Ocultar Secretas" : "Ver Secretas"}</span>
           </button>
         )}
         <button 

@@ -23,13 +23,29 @@ export const Popup = () => {
     onConfirm: () => void
   } | null>(null)
   const [hideWaitingNotif, setHideWaitingNotif] = useState(false)
+  const [optionsOpen, setOptionsOpen] = useState(false)
+  const [hideSgpOsPrompt, setHideSgpOsPrompt] = useState(false)
+  const [hideSgpPromisePrompt, setHideSgpPromisePrompt] = useState(false)
 
   useEffect(() => {
-    chrome.storage.local.get(['ati_user_session', 'ati_theme_version', 'ati_font_size', 'sgp_credentials', 'sgp_credentials_alt', 'ati_update_required', 'ati_latest_version', 'hideWaitingNotifications'], (result) => {
+    chrome.storage.local.get([
+      'ati_user_session',
+      'ati_theme_version',
+      'ati_font_size',
+      'sgp_credentials',
+      'sgp_credentials_alt',
+      'ati_update_required',
+      'ati_latest_version',
+      'hideWaitingNotifications',
+      'hideSgpOsPrompt',
+      'hideSgpPromisePrompt'
+    ], (result) => {
       setSession(result.ati_user_session ?? null)
       setUpdateRequired(!!result.ati_update_required)
       setLatestVersion(result.ati_latest_version || '')
       setHideWaitingNotif(!!result.hideWaitingNotifications)
+      setHideSgpOsPrompt(!!result.hideSgpOsPrompt)
+      setHideSgpPromisePrompt(!!result.hideSgpPromisePrompt)
       if (result.ati_theme_version) {
         setThemeVersion(result.ati_theme_version)
       }
@@ -87,6 +103,18 @@ export const Popup = () => {
     const newVal = e.target.checked
     setHideWaitingNotif(newVal)
     chrome.storage.local.set({ hideWaitingNotifications: newVal })
+  }
+
+  const handleHideSgpOsPromptChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newVal = e.target.checked
+    setHideSgpOsPrompt(newVal)
+    chrome.storage.local.set({ hideSgpOsPrompt: newVal })
+  }
+
+  const handleHideSgpPromisePromptChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newVal = e.target.checked
+    setHideSgpPromisePrompt(newVal)
+    chrome.storage.local.set({ hideSgpPromisePrompt: newVal })
   }
 
   const handleOpenSite = () => {
@@ -257,33 +285,72 @@ export const Popup = () => {
         </div>
       </div>
 
-      <div className="popup-theme-selector">
-        <label htmlFor="theme-select">Estilo do Tema Escuro:</label>
-        <select id="theme-select" value={themeVersion} onChange={handleThemeChange}>
-          <option value="modern">Moderno (Azul, Neon e Bordas)</option>
-          <option value="legacy">Clássico (Cinza e Simples)</option>
-        </select>
-        <small>*Só surte efeito se o próprio Chatmix estiver usando a "aparência escura" padrão.</small>
-      </div>
+      {/* Opções da Extensão */}
+      <div className="popup-section">
+        <button className={`popup-btn-toggle ${optionsOpen ? 'open' : ''}`} onClick={() => setOptionsOpen(!optionsOpen)}>
+          {optionsOpen ? '▼' : '▶'} Opções da Extensão
+        </button>
 
-      <div className="popup-theme-selector" style={{ marginTop: '0.5rem' }}>
-        <label htmlFor="font-size-slider" style={{ display: 'flex', justifyContent: 'space-between' }}>
-          Tamanho da Fonte: <span>{Math.round(fontSize * 100)}%</span>
-        </label>
-        <input id="font-size-slider" type="range" min="0.8" max="1.8" step="0.05" value={fontSize} onChange={handleFontSizeChange} style={{ width: '100%', marginTop: '0.25rem' }} />
-      </div>
+        {optionsOpen && (
+          <div className="popup-sgp-settings">
+            <div className="popup-theme-selector">
+              <label htmlFor="theme-select">Estilo do Tema Escuro:</label>
+              <select id="theme-select" value={themeVersion} onChange={handleThemeChange}>
+                <option value="modern">Moderno (Azul, Neon e Bordas)</option>
+                <option value="legacy">Clássico (Cinza e Simples)</option>
+              </select>
+              <small>*Só surte efeito se o próprio Chatmix estiver usando a "aparência escura" padrão.</small>
+            </div>
 
-      <div className="popup-theme-selector" style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px' }}>
-        <input 
-          id="hide-waiting-notif" 
-          type="checkbox" 
-          checked={hideWaitingNotif} 
-          onChange={handleHideWaitingNotifChange} 
-          style={{ cursor: 'pointer', width: '15px', height: '15px' }}
-        />
-        <label htmlFor="hide-waiting-notif" style={{ cursor: 'pointer', fontSize: '12px', userSelect: 'none', fontWeight: 600 }}>
-          Ocultar alerta "Em espera"
-        </label>
+            <div className="popup-theme-selector" style={{ marginTop: '0.5rem' }}>
+              <label htmlFor="font-size-slider" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                Tamanho da Fonte: <span>{Math.round(fontSize * 100)}%</span>
+              </label>
+              <input id="font-size-slider" type="range" min="0.8" max="1.8" step="0.05" value={fontSize} onChange={handleFontSizeChange} style={{ width: '100%', marginTop: '0.25rem' }} />
+            </div>
+
+            <div className="popup-divider" style={{ margin: '0.5rem 0' }} />
+
+            <div className="popup-theme-selector" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px' }}>
+              <input 
+                id="hide-waiting-notif" 
+                type="checkbox" 
+                checked={hideWaitingNotif} 
+                onChange={handleHideWaitingNotifChange} 
+                style={{ cursor: 'pointer', width: '15px', height: '15px' }}
+              />
+              <label htmlFor="hide-waiting-notif" style={{ cursor: 'pointer', fontSize: '11px', userSelect: 'none', fontWeight: 600 }}>
+                Ocultar alerta "Em espera" no ChatMix
+              </label>
+            </div>
+
+            <div className="popup-theme-selector" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', marginTop: '0.25rem' }}>
+              <input 
+                id="hide-os-prompt" 
+                type="checkbox" 
+                checked={hideSgpOsPrompt} 
+                onChange={handleHideSgpOsPromptChange} 
+                style={{ cursor: 'pointer', width: '15px', height: '15px' }}
+              />
+              <label htmlFor="hide-os-prompt" style={{ cursor: 'pointer', fontSize: '11px', userSelect: 'none', fontWeight: 600 }}>
+                Ocultar aviso de O.S. (Auxiliar) no SGP
+              </label>
+            </div>
+
+            <div className="popup-theme-selector" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', marginTop: '0.25rem' }}>
+              <input 
+                id="hide-promise-prompt" 
+                type="checkbox" 
+                checked={hideSgpPromisePrompt} 
+                onChange={handleHideSgpPromisePromptChange} 
+                style={{ cursor: 'pointer', width: '15px', height: '15px' }}
+              />
+              <label htmlFor="hide-promise-prompt" style={{ cursor: 'pointer', fontSize: '11px', userSelect: 'none', fontWeight: 600 }}>
+                Ocultar aviso de Promessa de Pagamento
+              </label>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="popup-divider" />

@@ -1,0 +1,574 @@
+/* HeliRPG.css — Estilo Temático Ordem Paranormal */
+
+.heli-rpg-page {
+  color: #f0f0f0;
+  font-family: 'Outfit', 'Inter', sans-serif;
+  min-height: calc(100vh - 150px);
+  width: 100%;
+  box-sizing: border-box;
+  padding: 1.5rem;
+  position: relative;
+  background: radial-gradient(circle at center, rgba(139, 0, 0, 0.05) 0%, rgba(10, 10, 10, 0.8) 100%), #0a0a0a;
+  border-radius: 12px;
+  border: 1px solid rgba(139, 0, 0, 0.25);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+  overflow-x: hidden;
+}
+
+/* Efeito Paranormal de névoa / glow */
+.heli-rpg-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 80% 20%, rgba(255, 42, 42, 0.04) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.heli-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid rgba(139, 0, 0, 0.3);
+  padding-bottom: 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.heli-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #ff2a2a;
+  text-shadow: 0 0 10px rgba(255, 42, 42, 0.6);
+  letter-spacing: 2px;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.heli-subtitle {
+  font-size: 0.95rem;
+  color: #aaa;
+  margin: 0.5rem 0 0;
+  font-family: var(--font-mono, monospace);
+  letter-spacing: 1px;
+}
+
+.heli-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 1024px) {
+  .heli-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.heli-card {
+  background: rgba(15, 15, 15, 0.9);
+  border: 1px solid rgba(255, 42, 42, 0.15);
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.heli-card:hover {
+  border-color: rgba(255, 42, 42, 0.3);
+  box-shadow: 0 6px 24px rgba(255, 42, 42, 0.08);
+}
+
+.heli-card-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #ff2a2a;
+  border-bottom: 1px solid rgba(255, 42, 42, 0.2);
+  padding-bottom: 0.5rem;
+  margin-top: 0;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+}
+
+/* Atributos */
+.attributes-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 480px) {
+  .attributes-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.attribute-box {
+  background: rgba(20, 20, 20, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 0.75rem 0.5rem;
+  text-align: center;
+  transition: all 0.2s;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.attribute-box:hover {
+  border-color: #ff2a2a;
+  background: rgba(139, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.attr-name {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #aaa;
+  margin-bottom: 4px;
+}
+
+.attr-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.attr-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #f0f0f0;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.attr-btn:hover {
+  background: #ff2a2a;
+  color: white;
+  border-color: #ff2a2a;
+}
+
+.attr-val {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #fff;
+  min-width: 20px;
+}
+
+.roll-attr-btn {
+  background: linear-gradient(135deg, #8b0000 0%, #300 100%);
+  border: 1px solid #ff2a2a;
+  color: white;
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.25s;
+  box-shadow: 0 0 10px rgba(139, 0, 0, 0.4);
+}
+
+.roll-attr-btn:hover {
+  transform: scale(1.02);
+  background: linear-gradient(135deg, #a00 0%, #400 100%);
+  box-shadow: 0 0 15px rgba(255, 42, 42, 0.6);
+}
+
+/* Dados Avulsos */
+.dice-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.dice-btn {
+  background: rgba(30, 30, 30, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #ddd;
+}
+
+.dice-btn:hover {
+  border-color: #ff2a2a;
+  background: rgba(139, 0, 0, 0.15);
+  color: #fff;
+}
+
+/* Status do Agente */
+.agent-status-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.status-bar-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.status-bar-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+.status-bar-bg {
+  height: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 7px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.status-bar-fill {
+  height: 100%;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.status-bar-fill.pv {
+  background: linear-gradient(90deg, #421 0%, #ff2a2a 100%);
+  box-shadow: 0 0 8px rgba(255, 42, 42, 0.4);
+}
+
+.status-bar-fill.san {
+  background: linear-gradient(90deg, #124 0%, #3b82f6 100%);
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
+}
+
+.status-bar-fill.pe {
+  background: linear-gradient(90deg, #431 0%, #eab308 100%);
+  box-shadow: 0 0 8px rgba(234, 179, 8, 0.4);
+}
+
+.status-adjust-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 4px;
+}
+
+.adjust-btn {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 0.75rem;
+  padding: 3px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.adjust-btn:hover {
+  background: rgba(255, 42, 42, 0.2);
+  border-color: #ff2a2a;
+}
+
+/* Patente & NEX */
+.nex-control-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(20, 20, 20, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-top: 1rem;
+}
+
+.nex-label-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.nex-title {
+  font-size: 0.75rem;
+  color: #888;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.patent-val {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ff2a2a;
+}
+
+.nex-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nex-btn {
+  width: 24px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nex-btn:hover {
+  background: #ff2a2a;
+  border-color: #ff2a2a;
+}
+
+.nex-val {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #fff;
+  min-width: 45px;
+  text-align: center;
+}
+
+/* Rituais */
+.rituals-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+@media (max-width: 480px) {
+  .rituals-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ritual-item {
+  background: rgba(20, 20, 20, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ritual-item:hover {
+  transform: translateY(-2px);
+}
+
+.ritual-item.morte:hover {
+  border-color: #a855f7;
+  background: rgba(168, 85, 247, 0.08);
+}
+
+.ritual-item.energia:hover {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.ritual-item.sangue:hover {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.ritual-item.conhecimento:hover {
+  border-color: #eab308;
+  background: rgba(234, 179, 8, 0.08);
+}
+
+.ritual-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ritual-name {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.ritual-element-badge {
+  font-size: 0.6rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  border-radius: 99px;
+  border: 1px solid;
+}
+
+.ritual-element-badge.morte {
+  color: #c084fc;
+  border-color: rgba(168, 85, 247, 0.4);
+  background: rgba(168, 85, 247, 0.1);
+}
+
+.ritual-element-badge.energia {
+  color: #60a5fa;
+  border-color: rgba(59, 130, 246, 0.4);
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.ritual-element-badge.sangue {
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.ritual-element-badge.conhecimento {
+  color: #fde047;
+  border-color: rgba(234, 179, 8, 0.4);
+  background: rgba(234, 179, 8, 0.1);
+}
+
+.ritual-desc {
+  font-size: 0.75rem;
+  color: #aaa;
+  line-height: 1.3;
+}
+
+/* Histórico de Rolagens */
+.roll-history-card {
+  display: flex;
+  flex-direction: column;
+  max-height: 600px;
+}
+
+.roll-history-container {
+  flex: 1;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(10, 10, 10, 0.8);
+  border-radius: 8px;
+  padding: 0.75rem;
+  min-height: 250px;
+  max-height: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.roll-history-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  font-size: 0.85rem;
+  height: 100%;
+  text-align: center;
+  padding: 2rem;
+  font-style: italic;
+}
+
+.roll-entry {
+  border-left: 3px solid #ff2a2a;
+  background: rgba(20, 20, 20, 0.9);
+  padding: 0.6rem 0.8rem;
+  border-radius: 0 6px 6px 0;
+  animation: slideInEntry 0.3s ease-out;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+@keyframes slideInEntry {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.roll-entry-time {
+  font-size: 0.65rem;
+  color: #666;
+  font-family: var(--font-mono, monospace);
+  align-self: flex-end;
+}
+
+.roll-entry-title {
+  font-size: 0.85rem;
+  font-weight: bold;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.roll-entry-formula {
+  font-size: 0.75rem;
+  color: #aaa;
+  font-family: var(--font-mono, monospace);
+}
+
+.roll-entry-details {
+  font-size: 0.75rem;
+  color: #888;
+  margin-top: 2px;
+}
+
+.roll-entry-result {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #ff2a2a;
+  text-align: right;
+  text-shadow: 0 0 8px rgba(255, 42, 42, 0.3);
+  margin-top: -10px;
+}
+
+.roll-history-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.75rem;
+}
+
+.clear-history-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #888;
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.clear-history-btn:hover {
+  color: #ff2a2a;
+  border-color: rgba(255, 42, 42, 0.3);
+  background: rgba(139, 0, 0, 0.08);
+}

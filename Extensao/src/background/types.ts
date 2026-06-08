@@ -109,6 +109,13 @@ export interface SearchSgpFeasibilityRequest {
   numero?: string
 }
 
+export interface FindClientOnSgpRequest {
+  action: 'findClientOnSgp'
+  baseUrl: string
+  clientData: ClientData
+  uid?: string
+}
+
 export type ExtensionRequest =
   | FirebaseLoginRequest
   | OpenInSgpRequest
@@ -133,5 +140,6 @@ export type ExtensionRequest =
   | CheckVersionRequest
   | GetSgpClientContactsRequest
   | SearchSgpFeasibilityRequest
+  | FindClientOnSgpRequest
 
 

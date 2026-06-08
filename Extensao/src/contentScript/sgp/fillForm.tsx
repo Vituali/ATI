@@ -337,8 +337,12 @@ if (!isOccurrencePage && !isPromessaPage && !isOsAddPage) {
           sessionStorage.removeItem('ati_just_submitted_payment_timestamp')
           sessionStorage.removeItem('ati_just_submitted_payment_contract')
           
-          // Abre o novo menu de opções de Promessa de Pagamento
-          showPaymentPromiseMenuModal(pendingClientId, pendingContractId)
+          // Abre o novo menu de opções de Promessa de Pagamento se não estiver desativado
+          chrome.storage.local.get('hideSgpPromisePrompt', (result) => {
+            if (!result.hideSgpPromisePrompt) {
+              showPaymentPromiseMenuModal(pendingClientId, pendingContractId)
+            }
+          })
         } else {
           // Se não há mensagem de sucesso na página, limpa para não ficar pendente
           sessionStorage.removeItem('ati_just_submitted_payment_occurrence')
@@ -402,23 +406,26 @@ if (isOccurrencePage) {
   const requestId = new URLSearchParams(window.location.search).get('ati_req_id')
   const storageKey = requestId ? `pendingSgpData_${requestId}` : 'pendingSgpData'
 
-  chrome.storage.local.get([storageKey, 'ati_user_session'], (result) => {
+  chrome.storage.local.get([storageKey, 'ati_user_session', 'hideSgpOsPrompt'], (result) => {
     const data = result[storageKey]
     const session = result.ati_user_session
     const username = (session?.sgpUsername ?? session?.username)?.toLowerCase() ?? ''
+    const hideOsPrompt = !!result.hideSgpOsPrompt
 
     if (!data) {
       console.log('Extensão ATI: Sem dados pendentes para esta requisição.')
-      // Sugerir usar o O.S. (Auxiliar) via Popup Modal
-      showSgpPromptModal(
-        '📋 O.S. (Auxiliar)',
-        'Você está na tela de adicionar ocorrência. Deseja utilizar o auxiliador de O.S. para selecionar templates e preencher os dados automaticamente?',
-        'Sim, abrir auxiliador',
-        'Não, preencher manualmente',
-        () => {
-          handleOpenOS()
-        }
-      )
+      // Sugerir usar o O.S. (Auxiliar) via Popup Modal se não estiver oculto
+      if (!hideOsPrompt) {
+        showSgpPromptModal(
+          '📋 O.S. (Auxiliar)',
+          'Você está na tela de adicionar ocorrência. Deseja utilizar o auxiliador de O.S. para selecionar templates e preencher os dados automaticamente?',
+          'Sim, abrir auxiliador',
+          'Não, preencher manualmente',
+          () => {
+            handleOpenOS()
+          }
+        )
+      }
       return
     }
 

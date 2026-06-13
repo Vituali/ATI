@@ -69,6 +69,23 @@ export async function smartOpenSGP(clientData: ClientData, uid?: string, forceSh
       const selectedId = await showClientSelectionModal(res.clients)
       if (selectedId) {
         log(`Cadastro escolhido: ${selectedId}`)
+
+        // Salva a escolha do usuário no cache local da sessão para uso posterior (ex: no modal de suporte)
+        const parts = selectedId.split('|')
+        if (parts.length === 2) {
+          clientData.clientSgpId = parts[1]
+          clientData.clientSgpOrigin = parts[0]
+          setLastExtractedData(lastExtractedData.chatId, clientData)
+          log(`ID do cliente (${parts[1]}) e origem (${parts[0]}) salvos no cache de sessão local.`)
+
+          // Limpa o cache do suporte para forçar busca nova no cadastro correto
+          const chatId = lastExtractedData.chatId
+          if (chatId) {
+            await chrome.storage.local.remove(`ati_support_cache_${chatId}`)
+            log(`Cache de suporte limpo para o chat ${chatId} devido a troca de cadastro.`)
+          }
+        }
+
         await safeSendMessage<OpenInSgpRequest>({
           action: 'openInSgp',
           clientData,

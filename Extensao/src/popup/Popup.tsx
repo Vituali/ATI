@@ -28,18 +28,7 @@ export const Popup = () => {
   const [hideSgpPromisePrompt, setHideSgpPromisePrompt] = useState(false)
 
   useEffect(() => {
-    chrome.storage.local.get([
-      'ati_user_session',
-      'ati_theme_version',
-      'ati_font_size',
-      'sgp_credentials',
-      'sgp_credentials_alt',
-      'ati_update_required',
-      'ati_latest_version',
-      'hideWaitingNotifications',
-      'hideSgpOsPrompt',
-      'hideSgpPromisePrompt'
-    ], (result) => {
+    chrome.storage.local.get(['ati_user_session', 'ati_theme_version', 'ati_font_size', 'sgp_credentials', 'sgp_credentials_alt', 'ati_update_required', 'ati_latest_version', 'hideWaitingNotifications', 'hideSgpOsPrompt', 'hideSgpPromisePrompt'], (result) => {
       setSession(result.ati_user_session ?? null)
       setUpdateRequired(!!result.ati_update_required)
       setLatestVersion(result.ati_latest_version || '')
@@ -163,59 +152,59 @@ export const Popup = () => {
   }
 
   const handleReleaseVersion = async () => {
-    if (!session || session.role !== 'admin') return;
-    
-    setLoading(true);
+    if (!session || session.role !== 'admin') return
+
+    setLoading(true)
     try {
-      const { firebaseConfig } = await import('../background/config');
-      const currentVersion = chrome.runtime.getManifest().version;
-      const url = `${firebaseConfig.databaseURL}config/extension.json?auth=${session.idToken}`;
-      
+      const { firebaseConfig } = await import('../background/config')
+      const currentVersion = chrome.runtime.getManifest().version
+      const url = `${firebaseConfig.databaseURL}config/extension.json?auth=${session.idToken}`
+
       const response = await fetch(url, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           minVersion: currentVersion,
           updatedAt: new Date().toISOString(),
-          releasedBy: session.username
-        })
-      });
+          releasedBy: session.username,
+        }),
+      })
 
       if (response.ok) {
-        setToast('✅ Versão lançada com sucesso!');
-        setUpdateRequired(false);
+        setToast('✅ Versão lançada com sucesso!')
+        setUpdateRequired(false)
       } else {
-        const error = await response.json();
-        console.error('Erro no release:', error);
-        setToast('❌ Erro ao lançar versão.');
+        const error = await response.json()
+        console.error('Erro no release:', error)
+        setToast('❌ Erro ao lançar versão.')
       }
     } catch (err) {
-      console.error('Erro de conexão:', err);
-      setToast('❌ Erro de conexão.');
+      console.error('Erro de conexão:', err)
+      setToast('❌ Erro de conexão.')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleCheckUpdates = () => {
-    setLoading(true);
+    setLoading(true)
     chrome.runtime.sendMessage({ action: 'checkVersion' }, (_response) => {
-      setLoading(false);
+      setLoading(false)
       chrome.storage.local.get(['ati_update_required', 'ati_latest_version'], (result) => {
-        const hasUpdate = !!result.ati_update_required;
-        setUpdateRequired(hasUpdate);
-        setLatestVersion(result.ati_latest_version || '');
+        const hasUpdate = !!result.ati_update_required
+        setUpdateRequired(hasUpdate)
+        setLatestVersion(result.ati_latest_version || '')
         if (hasUpdate) {
-          setToast(`🚀 Nova versão disponível: ${result.ati_latest_version}`);
+          setToast(`🚀 Nova versão disponível: ${result.ati_latest_version}`)
         } else {
-          setToast('✨ Sua extensão está atualizada!');
+          setToast('✨ Sua extensão está atualizada!')
         }
-      });
-    });
-  };
+      })
+    })
+  }
 
-  const currentManifestVersion = chrome.runtime.getManifest().version;
-  const canRelease = session?.role === 'admin' && currentManifestVersion !== latestVersion;
+  const currentManifestVersion = chrome.runtime.getManifest().version
+  const canRelease = session?.role === 'admin' && currentManifestVersion !== latestVersion
 
   if (loading) {
     return (
@@ -278,11 +267,7 @@ export const Popup = () => {
           <strong>{session.nomeCompleto}</strong>
           <span>@{session.username}</span>
         </div>
-        <div className={`popup-role popup-role--${session.role}`}>
-          {session.role === 'admin' ? '⭐ Admin' : 
-           session.role === 'supervisor' ? '🎖️ Superv.' :
-           session.role === 'moderador' ? '🛡️ Moder.' : '👤 Usuário'}
-        </div>
+        <div className={`popup-role popup-role--${session.role}`}>{session.role === 'admin' ? '⭐ Admin' : session.role === 'supervisor' ? '🎖️ Superv.' : session.role === 'moderador' ? '🛡️ Moder.' : '👤 Usuário'}</div>
       </div>
 
       {/* Opções da Extensão */}
@@ -312,39 +297,21 @@ export const Popup = () => {
             <div className="popup-divider" style={{ margin: '0.5rem 0' }} />
 
             <div className="popup-theme-selector" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px' }}>
-              <input 
-                id="hide-waiting-notif" 
-                type="checkbox" 
-                checked={hideWaitingNotif} 
-                onChange={handleHideWaitingNotifChange} 
-                style={{ cursor: 'pointer', width: '15px', height: '15px' }}
-              />
+              <input id="hide-waiting-notif" type="checkbox" checked={hideWaitingNotif} onChange={handleHideWaitingNotifChange} style={{ cursor: 'pointer', width: '15px', height: '15px' }} />
               <label htmlFor="hide-waiting-notif" style={{ cursor: 'pointer', fontSize: '11px', userSelect: 'none', fontWeight: 600 }}>
                 Ocultar alerta "Em espera" no ChatMix
               </label>
             </div>
 
             <div className="popup-theme-selector" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', marginTop: '0.25rem' }}>
-              <input 
-                id="hide-os-prompt" 
-                type="checkbox" 
-                checked={hideSgpOsPrompt} 
-                onChange={handleHideSgpOsPromptChange} 
-                style={{ cursor: 'pointer', width: '15px', height: '15px' }}
-              />
+              <input id="hide-os-prompt" type="checkbox" checked={hideSgpOsPrompt} onChange={handleHideSgpOsPromptChange} style={{ cursor: 'pointer', width: '15px', height: '15px' }} />
               <label htmlFor="hide-os-prompt" style={{ cursor: 'pointer', fontSize: '11px', userSelect: 'none', fontWeight: 600 }}>
                 Ocultar aviso de O.S. (Auxiliar) no SGP
               </label>
             </div>
 
             <div className="popup-theme-selector" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', marginTop: '0.25rem' }}>
-              <input 
-                id="hide-promise-prompt" 
-                type="checkbox" 
-                checked={hideSgpPromisePrompt} 
-                onChange={handleHideSgpPromisePromptChange} 
-                style={{ cursor: 'pointer', width: '15px', height: '15px' }}
-              />
+              <input id="hide-promise-prompt" type="checkbox" checked={hideSgpPromisePrompt} onChange={handleHideSgpPromisePromptChange} style={{ cursor: 'pointer', width: '15px', height: '15px' }} />
               <label htmlFor="hide-promise-prompt" style={{ cursor: 'pointer', fontSize: '11px', userSelect: 'none', fontWeight: 600 }}>
                 Ocultar aviso de Promessa de Pagamento
               </label>

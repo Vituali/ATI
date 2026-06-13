@@ -1,4 +1,3 @@
-
 export type Role = 'usuario' | 'supervisor' | 'moderador' | 'admin'
 export type Setor = 'geral' | 'ti' | 'financeiro' | 'suporte' | 'comercial'
 

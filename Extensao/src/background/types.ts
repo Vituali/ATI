@@ -116,30 +116,18 @@ export interface FindClientOnSgpRequest {
   uid?: string
 }
 
-export type ExtensionRequest =
-  | FirebaseLoginRequest
-  | OpenInSgpRequest
-  | GetSgpFormParamsRequest
-  | CreateOccurrenceVisuallyRequest
-  | ClearSgpCacheRequest
-  | ClearCpfCacheRequest
-  | ClearCpfCacheByUidRequest
-  | GetOsTemplatesRequest
-  | GetQuickRepliesRequest
-  | RefreshSgpOnlineStatusesRequest
-  | GetGlobalOccurrenceTypesRequest
-  | RefreshTokenRequest
-  | FirebaseFetchRequest
-  | FirebasePostRequest
-  | FirebasePatchRequest
-  | SsoLoginRequest
-  | GetSsoSessionRequest
-  | RefreshUserSessionRequest
-  | ClearSessionCachesRequest
-  | LogoutRequest
-  | CheckVersionRequest
-  | GetSgpClientContactsRequest
-  | SearchSgpFeasibilityRequest
-  | FindClientOnSgpRequest
+export interface FetchSupportDataRequest {
+  action: 'fetchSupportData'
+  baseUrl: string
+  contractId: string
+  clientId?: string
+}
 
+export interface ExecuteOnuCommandRequest {
+  action: 'executeOnuCommand'
+  baseUrl: string
+  sgpOnuId: string
+  command: 'reset' | 'tl1-add' | 'tl1-delete'
+}
 
+export type ExtensionRequest = FirebaseLoginRequest | OpenInSgpRequest | GetSgpFormParamsRequest | CreateOccurrenceVisuallyRequest | ClearSgpCacheRequest | ClearCpfCacheRequest | ClearCpfCacheByUidRequest | GetOsTemplatesRequest | GetQuickRepliesRequest | RefreshSgpOnlineStatusesRequest | GetGlobalOccurrenceTypesRequest | RefreshTokenRequest | FirebaseFetchRequest | FirebasePostRequest | FirebasePatchRequest | SsoLoginRequest | GetSsoSessionRequest | RefreshUserSessionRequest | ClearSessionCachesRequest | LogoutRequest | CheckVersionRequest | GetSgpClientContactsRequest | SearchSgpFeasibilityRequest | FindClientOnSgpRequest | FetchSupportDataRequest | ExecuteOnuCommandRequest

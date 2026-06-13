@@ -2,7 +2,7 @@
 /// <reference types="vite-plugin-pwa/react" />
 
 interface Window {
-  chrome: any;
+  chrome: any
 }
 
-declare const chrome: any;
+declare const chrome: any

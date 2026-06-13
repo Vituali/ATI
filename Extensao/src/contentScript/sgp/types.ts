@@ -70,6 +70,15 @@ export interface ModalResult {
     occurrenceType: string | null
     occurrenceStatus: '1' | '2'
     shouldCreateOS: boolean
+    osMotivo: string | null
+    osPrioridade: string | null
+    osDataAgendamento: string | null
+    osDateModified: boolean
+    osPeriodo: string | null
+    osPeriodoExtra: string
+    osResponsavel: string | null
+    osTecnicos: string[]
+    osObservacao: string
   }
 }
 

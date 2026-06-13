@@ -1,8 +1,9 @@
 ;(function () {
   window.addEventListener('message', function handler(event) {
-    if (!event.data || event.data.type !== 'ATI_SGP_FILL') return
+    if (!event.data || (event.data.type !== 'ATI_SGP_FILL' && event.data.type !== 'ATI_SGP_FILL_OS')) return
     window.removeEventListener('message', handler)
 
+    const type = event.data.type
     const data = event.data.data
     const username = event.data.username
     const fullname = event.data.fullname || ''
@@ -12,6 +13,21 @@
         const el = document.querySelector(selector)
         if (!el) return
         el.value = value
+        el.dispatchEvent(new Event('change', { bubbles: true }))
+        if (typeof window.jQuery !== 'undefined') {
+          window.jQuery(el).trigger('change')
+        }
+      } catch(e) {}
+    }
+
+    function setValueMultiple(selector, values) {
+      try {
+        const el = document.querySelector(selector)
+        if (!el) return
+        const valArray = Array.isArray(values) ? values.map(String) : []
+        Array.from(el.options).forEach(function(opt) {
+          opt.selected = valArray.includes(String(opt.value))
+        })
         el.dispatchEvent(new Event('change', { bubbles: true }))
         if (typeof window.jQuery !== 'undefined') {
           window.jQuery(el).trigger('change')
@@ -29,6 +45,18 @@
           window.jQuery(el).trigger('change')
         }
       } catch(e) {}
+    }
+
+    function toggleSgpAuxGroup(responsavelSelect) {
+      const selectedOption = responsavelSelect.options[responsavelSelect.selectedIndex]
+      const isPlantonista = selectedOption ? selectedOption.textContent.toLowerCase().includes('plantonista') : false
+      const tecnicosEl = document.querySelector('#id_tecnicos')
+      if (tecnicosEl) {
+        const row = tecnicosEl.closest('.form-row') || tecnicosEl.parentElement
+        if (row) {
+          row.style.display = isPlantonista ? 'none' : ''
+        }
+      }
     }
 
     function fill() {
@@ -101,7 +129,21 @@
       }
       setValue('#id_setor', sectorValue)
       setValue('#id_metodo', '3')
-      setValue('#id_data_agendamento', dateStr)
+      
+      let occDateStr = dateStr
+      if (data.osDateModified && data.osDataAgendamento) {
+        const parts = data.osDataAgendamento.split('-')
+        if (parts.length === 3) {
+          const yyyy = parts[0]
+          const mm = parts[1]
+          const dd = parts[2]
+          
+          const nowTime = new Date()
+          const timeStr = pad(nowTime.getHours()) + ':' + pad(nowTime.getMinutes()) + ':' + pad(nowTime.getSeconds())
+          occDateStr = dd + '/' + mm + '/' + yyyy + ' ' + timeStr
+        }
+      }
+      setValue('#id_data_agendamento', occDateStr)
 
       // Contrato
       function setContract() {
@@ -149,7 +191,106 @@
         if (data.occurrenceStatus === '1') setValue('#id_status', '1')
       }
 
-      console.log('ATI: Formulário preenchido!')
+      console.log('ATI: Formulário de ocorrência preenchido!')
+    }
+
+    function fillOS() {
+      if (data.motivo) {
+        setValue('#id_motivoos', data.motivo)
+        setValue('#id_motivo', data.motivo)
+      }
+
+      if (data.prioridade) {
+        setValue('#id_prioridade', data.prioridade)
+      }
+
+      // Ajusta data agendamento conforme o período
+      let dateStr = ''
+      let hour = '09:00:00'
+      if (data.periodo === 'tarde') hour = '13:00:00'
+      else if (data.periodo === 'manha') hour = '09:00:00'
+      else if (data.periodo === '48h') hour = '09:00:00'
+      else if (data.periodo === 'outros') hour = '09:00:00'
+
+      // Se for 48h, a data é hoje + 2 dias
+      if (data.periodo === '48h') {
+        const targetDate = new Date()
+        targetDate.setDate(targetDate.getDate() + 2)
+        const pad = function(n) { return String(n).padStart(2, '0') }
+        dateStr = pad(targetDate.getDate()) + '/' + pad(targetDate.getMonth()+1) + '/' + targetDate.getFullYear() + ' ' + hour
+      } else if (data.dataAgendamento) {
+        const parts = data.dataAgendamento.split('-')
+        if (parts.length === 3) {
+          const yyyy = parts[0]
+          const mm = parts[1]
+          const dd = parts[2]
+          dateStr = dd + '/' + mm + '/' + yyyy + ' ' + hour
+        }
+      }
+
+      if (!dateStr) {
+        const now = new Date()
+        const pad = function(n) { return String(n).padStart(2, '0') }
+        dateStr = pad(now.getDate()) + '/' + pad(now.getMonth()+1) + '/' + now.getFullYear() + ' ' + hour
+      }
+
+      setValue('#id_data_agendamento', dateStr)
+
+      if (data.responsavel) {
+        setValue('#id_responsavel', data.responsavel)
+      }
+
+      if (data.tecnicos) {
+        setValueMultiple('#id_tecnicos', data.tecnicos)
+      }
+
+      // Adiciona o listener e faz o toggle inicial de exibição dos auxiliares no formulário do SGP
+      const respSelect = document.querySelector('#id_responsavel')
+      if (respSelect) {
+        respSelect.addEventListener('change', function() {
+          toggleSgpAuxGroup(respSelect)
+        })
+        toggleSgpAuxGroup(respSelect)
+      }
+
+      // Observação prefixada com o período de agendamento selecionado
+      let prefix = ''
+      if (data.periodo === '48h') {
+        prefix = '[PRAZO DE 48 HORAS]'
+      } else if (data.periodo === 'manha') {
+        if (data.periodoExtra && data.periodoExtra.trim()) {
+          prefix = '[AGENDAMENTO: MANHÃ - ' + data.periodoExtra.trim() + ']'
+        } else {
+          prefix = '[AGENDAMENTO: MANHÃ]'
+        }
+      } else if (data.periodo === 'tarde') {
+        if (data.periodoExtra && data.periodoExtra.trim()) {
+          prefix = '[AGENDAMENTO: TARDE - ' + data.periodoExtra.trim() + ']'
+        } else {
+          prefix = '[AGENDAMENTO: TARDE]'
+        }
+      } else if (data.periodo === 'outros') {
+        if (data.periodoExtra && data.periodoExtra.trim()) {
+          prefix = '[AGENDAMENTO: ' + data.periodoExtra.trim() + ']'
+        } else {
+          prefix = '[AGENDAMENTO: OUTROS]'
+        }
+      }
+
+      let finalObs = ''
+      if (prefix) {
+        finalObs = prefix
+        if (data.observacao) {
+          finalObs += ' ' + data.observacao
+        }
+      } else {
+        finalObs = data.observacao || ''
+      }
+
+      setValue('#id_observacao', finalObs)
+      setValue('#id_observacoes', finalObs)
+
+      console.log('ATI: Formulário de O.S. preenchido!')
     }
 
     function waitAndFill(attempts) {
@@ -166,6 +307,24 @@
       setTimeout(function() { waitAndFill(attempts + 1) }, 300)
     }
 
-    waitAndFill(0)
+    function waitAndFillOS(attempts) {
+      if (document.querySelector('#id_motivoos') || document.querySelector('#id_motivo') || document.querySelector('#id_responsavel')) {
+        fillOS()
+        return
+      }
+      
+      if (attempts >= 30) {
+        console.error('ATI: Formulário de O.S. não encontrado após 9s.')
+        return
+      }
+      
+      setTimeout(function() { waitAndFillOS(attempts + 1) }, 300)
+    }
+
+    if (type === 'ATI_SGP_FILL') {
+      waitAndFill(0)
+    } else if (type === 'ATI_SGP_FILL_OS') {
+      waitAndFillOS(0)
+    }
   })
 })()

@@ -32,7 +32,6 @@ export function clearQuickReplyCache(): void {
   log('Cache de quick replies limpo.')
 }
 
-
 // =================================================================
 // INJETA O CONTAINER DE QUICK REPLY
 // =================================================================
@@ -76,17 +75,15 @@ export function injectQuickReply(replies: QuickReply[], categoriesOrder?: string
   }, {})
 
   // Ordena as subcategorias de acordo com a ordem configurada no site
-  const baseOrder = categoriesOrder && categoriesOrder.length > 0 
-    ? categoriesOrder.map((c) => c.toLowerCase().trim())
-    : ['geral', 'suporte', 'comercial', 'financeiro', 'desastres', 'outros', 'planos']
+  const baseOrder = categoriesOrder && categoriesOrder.length > 0 ? categoriesOrder.map((c) => c.toLowerCase().trim()) : ['geral', 'suporte', 'comercial', 'financeiro', 'desastres', 'outros', 'planos']
 
   const categories = Object.keys(bySubCategory).sort((a, b) => {
     const idxA = baseOrder.indexOf(a.toLowerCase().trim())
     const idxB = baseOrder.indexOf(b.toLowerCase().trim())
-    
+
     const posA = idxA !== -1 ? idxA : 999
     const posB = idxB !== -1 ? idxB : 999
-    
+
     if (posA !== posB) {
       return posA - posB
     }
@@ -153,7 +150,7 @@ function renderButtons(container: HTMLDivElement, replies: QuickReply[], textare
 
     btn.addEventListener('click', async () => {
       const hasPlaceholder = reply.text.includes('[contatossgp]') || reply.text.includes('[numerossgp]')
-      
+
       if (reply.text === 'VALIDAR_CONTATOS_DYNAMIC' || hasPlaceholder) {
         await handleValidarContatos(btn, textarea, reply.text)
         return
@@ -201,12 +198,13 @@ async function handleValidarContatos(btn: HTMLButtonElement, textarea: HTMLTextA
     const contacts: { type: string; contact: string; observation: string }[] = []
 
     // 1. Encontra o grupo ou elemento de contatos
-    const inlineGroup = doc.querySelector('.tablelistcontatos') ||
-                        doc.querySelector('[id*="contato"]') ||
-                        Array.from(doc.querySelectorAll('.inline-group, fieldset, div, table')).find((el) => {
-                          const text = el.textContent || ''
-                          return text.includes('Contatos') || text.includes('Contato')
-                        })
+    const inlineGroup =
+      doc.querySelector('.tablelistcontatos') ||
+      doc.querySelector('[id*="contato"]') ||
+      Array.from(doc.querySelectorAll('.inline-group, fieldset, div, table')).find((el) => {
+        const text = el.textContent || ''
+        return text.includes('Contatos') || text.includes('Contato')
+      })
 
     if (inlineGroup) {
       const rows = inlineGroup.querySelectorAll('tr')
@@ -221,7 +219,7 @@ async function handleValidarContatos(btn: HTMLButtonElement, textarea: HTMLTextA
 
           const contatoInput = cells[1].querySelector<HTMLInputElement>('input')
           const contatoLink = cells[1].querySelector<HTMLAnchorElement>('a')
-          const contatoVal = contatoInput ? contatoInput.value : (contatoLink ? contatoLink.textContent : cells[1].textContent)
+          const contatoVal = contatoInput ? contatoInput.value : contatoLink ? contatoLink.textContent : cells[1].textContent
 
           let obsVal = ''
           if (cells.length >= 3) {
@@ -283,8 +281,14 @@ async function handleValidarContatos(btn: HTMLButtonElement, textarea: HTMLTextA
     // Formatação dos contatos
     const phoneLines = phoneContacts
       .map((c) => {
-        const cleanPhoneText = c.contact.replace(/Validar/g, '').replace(/validar/g, '').trim()
-        const cleanObsText = c.observation.replace(/Validar/g, '').replace(/validar/g, '').trim()
+        const cleanPhoneText = c.contact
+          .replace(/Validar/g, '')
+          .replace(/validar/g, '')
+          .trim()
+        const cleanObsText = c.observation
+          .replace(/Validar/g, '')
+          .replace(/validar/g, '')
+          .trim()
         return cleanObsText ? `• ${cleanPhoneText} (${cleanObsText})` : `• ${cleanPhoneText}`
       })
       .join('\n')
@@ -292,10 +296,8 @@ async function handleValidarContatos(btn: HTMLButtonElement, textarea: HTMLTextA
     // Constrói a mensagem final (com substituição flexível de placeholders)
     let finalMsg = ''
     if (templateText && templateText !== 'VALIDAR_CONTATOS_DYNAMIC') {
-      const replaced = templateText
-        .replace(/\[contatossgp\]/gi, phoneLines)
-        .replace(/\[numerossgp\]/gi, phoneLines)
-      
+      const replaced = templateText.replace(/\[contatossgp\]/gi, phoneLines).replace(/\[numerossgp\]/gi, phoneLines)
+
       finalMsg = processDynamicPlaceholders(replaced)
     } else {
       // Mensagem padrão de fallback

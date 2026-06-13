@@ -10,32 +10,31 @@ import { deleteCpfCacheEntry, deleteCpfCacheByUid } from './sgp/cpfCache'
 import { setupChatNotifications } from './notifications'
 import { SGP_IP_35, SGP_IP_53 } from './sgp/constants'
 import { findClientInSgp } from './sgp/search'
+import { scrapeSupportData, executeOnuCommand } from './sgp/support'
 import type { ExtensionRequest } from './types'
 
-const getTs = () => `[${new Date().toLocaleTimeString('pt-BR')}]`;
+const getTs = () => `[${new Date().toLocaleTimeString('pt-BR')}]`
 
 // Configuração local para evitar imports que dependem de 'window'
 const fbConfig = {
-  databaseURL: (import.meta.env.VITE_FIREBASE_DATABASE_URL ?? '').endsWith('/') 
-    ? (import.meta.env.VITE_FIREBASE_DATABASE_URL ?? '') 
-    : (import.meta.env.VITE_FIREBASE_DATABASE_URL ?? '') + '/'
-};
+  databaseURL: (import.meta.env.VITE_FIREBASE_DATABASE_URL ?? '').endsWith('/') ? import.meta.env.VITE_FIREBASE_DATABASE_URL ?? '' : (import.meta.env.VITE_FIREBASE_DATABASE_URL ?? '') + '/',
+}
 
 console.log(`${getTs()} Extensão ATI: Background iniciado.`)
 
 // Inicializar monitoramento de notificações, versão e logins do SGP
-setupChatNotifications();
-checkExtensionVersion();
-performDailySgpCheck();
+setupChatNotifications()
+checkExtensionVersion()
+performDailySgpCheck()
 
 chrome.runtime.onMessage.addListener((request: ExtensionRequest, _sender, sendResponse) => {
   if (request.action === 'firebaseLogin') {
     handleFirebaseLogin(request.email, request.password)
       .then((result) => {
         if (result.success) {
-          checkExtensionVersion();
+          checkExtensionVersion()
         }
-        sendResponse(result);
+        sendResponse(result)
       })
       .catch((error) => sendResponse({ success: false, error: error.message }))
     return true
@@ -125,24 +124,35 @@ chrome.runtime.onMessage.addListener((request: ExtensionRequest, _sender, sendRe
     return true
   }
 
+  if (request.action === 'fetchSupportData') {
+    scrapeSupportData(request.baseUrl, request.contractId, request.clientId)
+      .then((data) => sendResponse({ success: true, data }))
+      .catch((error) => sendResponse({ success: false, error: error.message }))
+    return true
+  }
+
+  if (request.action === 'executeOnuCommand') {
+    executeOnuCommand(request.baseUrl, request.sgpOnuId, request.command)
+      .then((res) => sendResponse(res))
+      .catch((error) => sendResponse({ success: false, error: error.message }))
+    return true
+  }
+
   if (request.action === 'getGlobalOccurrenceTypes') {
-    Promise.all([
-      getOccurrenceTypes(SGP_IP_35, request.idToken).catch(() => []),
-      getOccurrenceTypes(SGP_IP_53, request.idToken).catch(() => [])
-    ])
+    Promise.all([getOccurrenceTypes(SGP_IP_35, request.idToken).catch(() => []), getOccurrenceTypes(SGP_IP_53, request.idToken).catch(() => [])])
       .then(([types35, types53]) => {
         const mergedMap = new Map<string, { id: string; text: string; id_35?: string; id_53?: string }>()
-        
+
         // Adiciona todos de .35
         for (const t of types35) {
           const key = t.text.toLowerCase().trim()
           mergedMap.set(key, {
             id: JSON.stringify({ id_35: String(t.id) }),
             text: t.text,
-            id_35: String(t.id)
+            id_35: String(t.id),
           })
         }
-        
+
         // Adiciona/Mescla todos de .53
         for (const t of types53) {
           const key = t.text.toLowerCase().trim()
@@ -154,11 +164,11 @@ chrome.runtime.onMessage.addListener((request: ExtensionRequest, _sender, sendRe
             mergedMap.set(key, {
               id: JSON.stringify({ id_53: String(t.id) }),
               text: t.text,
-              id_53: String(t.id)
+              id_53: String(t.id),
             })
           }
         }
-        
+
         const mergedTypes = Array.from(mergedMap.values())
         console.log(`Extensão ATI: Unificados ${mergedTypes.length} tipos de ocorrência globais de ambos os SGPs.`)
         sendResponse({ success: true, types: mergedTypes })
@@ -177,7 +187,7 @@ chrome.runtime.onMessage.addListener((request: ExtensionRequest, _sender, sendRe
   if (request.action === 'firebaseFetch') {
     console.log(`${getTs()} Extensão ATI: [Chat] Fetching:`, request.url)
     fetch(request.url)
-      .then(async res => {
+      .then(async (res) => {
         const data = await res.json()
         if (!res.ok) {
           console.error('Extensão ATI: [Chat] Fetch Error:', data)
@@ -185,7 +195,7 @@ chrome.runtime.onMessage.addListener((request: ExtensionRequest, _sender, sendRe
         }
         sendResponse({ success: true, data })
       })
-      .catch(error => {
+      .catch((error) => {
         console.error('Extensão ATI: [Chat] Fetch Network Error:', error)
         sendResponse({ success: false, error: error.message })
       })
@@ -199,7 +209,7 @@ chrome.runtime.onMessage.addListener((request: ExtensionRequest, _sender, sendRe
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(request.payload),
     })
-      .then(async res => {
+      .then(async (res) => {
         const data = await res.json()
         if (!res.ok) {
           console.error(`${getTs()} Extensão ATI: [Chat] Post Error:`, data)
@@ -208,7 +218,7 @@ chrome.runtime.onMessage.addListener((request: ExtensionRequest, _sender, sendRe
         console.log(`${getTs()} Extensão ATI: [Chat] Post Success`)
         sendResponse({ success: true, data })
       })
-      .catch(error => {
+      .catch((error) => {
         console.error('Extensão ATI: [Chat] Post Network Error:', error)
         sendResponse({ success: false, error: error.message })
       })
@@ -221,49 +231,49 @@ chrome.runtime.onMessage.addListener((request: ExtensionRequest, _sender, sendRe
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(request.payload),
     })
-      .then(async res => {
+      .then(async (res) => {
         const data = await res.json()
         if (!res.ok) return sendResponse({ success: false, error: data.error || 'Erro ao atualizar' })
         sendResponse({ success: true, data })
       })
-      .catch(error => sendResponse({ success: false, error: error.message }))
+      .catch((error) => sendResponse({ success: false, error: error.message }))
     return true
   }
 
   // Sincronização de Login (SSO) via Ponte (Content Script)
   if (request.action === 'SSO_LOGIN' && request.session) {
     chrome.storage.local.get(['ati_user_session']).then((result) => {
-      const existing = result.ati_user_session;
-      const newSession = { ...request.session };
-      
+      const existing = result.ati_user_session
+      const newSession = { ...request.session }
+
       // Se já temos a senha gravada (de um login manual), mantemos ela
       if (existing?.password && !newSession.password) {
-        newSession.password = existing.password;
+        newSession.password = existing.password
       }
 
-      chrome.storage.local.set({ ati_user_session: newSession })
-        .then(() => {
-          console.log(`${getTs()} Extensão ATI: Sessão sincronizada (Senha preservada: ${!!newSession.password})`);
-          checkExtensionVersion();
-          sendResponse({ success: true });
-          
-          chrome.notifications.create('sso-login', {
-            type: 'basic',
-            iconUrl: 'img/logo-128.png',
-            title: 'Sessão Sincronizada',
-            message: `Sua conta (${newSession.username}) está ativa em todos os apps ATI!`,
-            priority: 0
-          });
-        });
-    });
-    return true;
+      chrome.storage.local.set({ ati_user_session: newSession }).then(() => {
+        console.log(`${getTs()} Extensão ATI: Sessão sincronizada (Senha preservada: ${!!newSession.password})`)
+        checkExtensionVersion()
+        sendResponse({ success: true })
+
+        chrome.notifications.create('sso-login', {
+          type: 'basic',
+          iconUrl: 'img/logo-128.png',
+          title: 'Sessão Sincronizada',
+          message: `Sua conta (${newSession.username}) está ativa em todos os apps ATI!`,
+          priority: 0,
+        })
+      })
+    })
+    return true
   }
 
   if (request.action === 'GET_SSO_SESSION') {
-    chrome.storage.local.get(['ati_user_session'])
+    chrome.storage.local
+      .get(['ati_user_session'])
       .then((result) => sendResponse({ success: true, session: result.ati_user_session || null }))
-      .catch((err) => sendResponse({ success: false, error: err.message }));
-    return true;
+      .catch((err) => sendResponse({ success: false, error: err.message }))
+    return true
   }
 
   if (request.action === 'refreshUserSession') {
@@ -300,7 +310,7 @@ chrome.runtime.onMessage.addListener((request: ExtensionRequest, _sender, sendRe
             }
             await chrome.storage.local.set({ ati_user_session: updatedSession })
             console.log(`Extensão ATI: Sessão sincronizada do Firebase para ${session.username}`)
-            checkExtensionVersion();
+            checkExtensionVersion()
             sendResponse({ success: true, session: updatedSession })
             return
           }
@@ -315,7 +325,8 @@ chrome.runtime.onMessage.addListener((request: ExtensionRequest, _sender, sendRe
   }
 
   if (request.action === 'clearSessionCaches') {
-    chrome.storage.session.clear()
+    chrome.storage.session
+      .clear()
       .then(() => {
         console.log('Extensão ATI: Caches de sessão limpos com sucesso.')
         sendResponse({ success: true })
@@ -328,10 +339,7 @@ chrome.runtime.onMessage.addListener((request: ExtensionRequest, _sender, sendRe
   }
 
   if (request.action === 'logout') {
-    Promise.all([
-      chrome.storage.local.remove('ati_user_session'),
-      chrome.storage.session.clear()
-    ])
+    Promise.all([chrome.storage.local.remove('ati_user_session'), chrome.storage.session.clear()])
       .then(() => {
         console.log('Extensão ATI: Sessão local e caches limpos por logout remoto.')
         sendResponse({ success: true })
@@ -353,40 +361,42 @@ chrome.runtime.onMessage.addListener((request: ExtensionRequest, _sender, sendRe
 
 // Sincronização de Login (SSO) do Site para a Extensão
 chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => {
-  console.log(`${getTs()} Extensão ATI: Mensagem externa recebida de ${sender.url}:`, request.action);
+  console.log(`${getTs()} Extensão ATI: Mensagem externa recebida de ${sender.url}:`, request.action)
 
   if (request.action === 'SSO_LOGIN' && request.session) {
-    chrome.storage.local.set({ ati_user_session: request.session })
+    chrome.storage.local
+      .set({ ati_user_session: request.session })
       .then(() => {
-        console.log(`${getTs()} Extensão ATI: Sessão sincronizada via SSO iniciada.`);
-        checkExtensionVersion();
-        sendResponse({ success: true });
-        
+        console.log(`${getTs()} Extensão ATI: Sessão sincronizada via SSO iniciada.`)
+        checkExtensionVersion()
+        sendResponse({ success: true })
+
         // Opcional: Notifica o usuário
         chrome.notifications.create('sso-login', {
           type: 'basic',
           iconUrl: 'img/logo-128.png',
           title: 'Sessão Sincronizada',
           message: `Bem-vindo de volta, ${request.session.nomeCompleto}!`,
-          priority: 0
-        });
+          priority: 0,
+        })
       })
       .catch((err) => {
-        console.error(`${getTs()} Extensão ATI: Erro ao salvar sessão SSO:`, err);
-        sendResponse({ success: false, error: err.message });
-      });
-    return true;
+        console.error(`${getTs()} Extensão ATI: Erro ao salvar sessão SSO:`, err)
+        sendResponse({ success: false, error: err.message })
+      })
+    return true
   }
 
   if (request.action === 'GET_SSO_SESSION') {
-    chrome.storage.local.get(['ati_user_session'])
+    chrome.storage.local
+      .get(['ati_user_session'])
       .then((result) => {
-        sendResponse({ success: true, session: result.ati_user_session || null });
+        sendResponse({ success: true, session: result.ati_user_session || null })
       })
-      .catch((err) => sendResponse({ success: false, error: err.message }));
-    return true;
+      .catch((err) => sendResponse({ success: false, error: err.message }))
+    return true
   }
-});
+})
 
 // =================================================================
 // VERIFICAÇÃO DE VERSÃO E AUTO-UPDATE
@@ -394,64 +404,64 @@ chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => 
 
 async function checkExtensionVersion() {
   try {
-    const result = await chrome.storage.local.get(['ati_user_session']);
-    const session = result.ati_user_session;
-    if (!session || !session.idToken) return;
+    const result = await chrome.storage.local.get(['ati_user_session'])
+    const session = result.ati_user_session
+    if (!session || !session.idToken) return
 
-    const currentVersion = chrome.runtime.getManifest().version;
-    const url = `${fbConfig.databaseURL}config/extension.json?auth=${session.idToken}`;
-    const res = await fetch(url);
-    if (!res.ok) return;
+    const currentVersion = chrome.runtime.getManifest().version
+    const url = `${fbConfig.databaseURL}config/extension.json?auth=${session.idToken}`
+    const res = await fetch(url)
+    if (!res.ok) return
 
-    const config = await res.json();
-    if (!config || !config.minVersion) return;
+    const config = await res.json()
+    if (!config || !config.minVersion) return
 
-    console.log(`${getTs()} Extensão ATI: Versão Local: ${currentVersion} | Mínima: ${config.minVersion}`);
+    console.log(`${getTs()} Extensão ATI: Versão Local: ${currentVersion} | Mínima: ${config.minVersion}`)
 
     if (isVersionLower(currentVersion, config.minVersion)) {
-      console.warn(`${getTs()} Extensão ATI: ATUALIZAÇÃO REQUERIDA!`);
-      
+      console.warn(`${getTs()} Extensão ATI: ATUALIZAÇÃO REQUERIDA!`)
+
       // 1. Salva no storage para o Popup/ContentScript mostrarem aviso
-      await chrome.storage.local.set({ ati_update_required: true, ati_latest_version: config.minVersion });
+      await chrome.storage.local.set({ ati_update_required: true, ati_latest_version: config.minVersion })
 
       // 2. Tenta forçar o update no Google Chrome
       if (chrome.runtime.requestUpdateCheck) {
         chrome.runtime.requestUpdateCheck((status) => {
-          console.log(`${getTs()} Extensão ATI: Status do update check: ${status}`);
-          
+          console.log(`${getTs()} Extensão ATI: Status do update check: ${status}`)
+
           // Notificação de sistema para o usuário
           chrome.notifications.create('ati-update-alert', {
             type: 'basic',
             iconUrl: 'img/logo-128.png',
             title: '✨ Nova Atualização Disponível!',
             message: `A versão ${config.minVersion} da Extensão ATI já está disponível com novas funcionalidades e correções.`,
-            priority: 1
-          });
-        });
+            priority: 1,
+          })
+        })
       }
     } else {
-      await chrome.storage.local.set({ ati_update_required: false });
+      await chrome.storage.local.set({ ati_update_required: false })
     }
   } catch (err) {
-    console.error('Erro ao verificar versão:', err);
+    console.error('Erro ao verificar versão:', err)
   }
 }
 
 // Compara versões (ex: "2.1.0" vs "2.2.0")
 function isVersionLower(current: string, min: string) {
-  const c = current.split('.').map(Number);
-  const m = min.split('.').map(Number);
+  const c = current.split('.').map(Number)
+  const m = min.split('.').map(Number)
   for (let i = 0; i < Math.max(c.length, m.length); i++) {
-    const v1 = c[i] || 0;
-    const v2 = m[i] || 0;
-    if (v1 < v2) return true;
-    if (v1 > v2) return false;
+    const v1 = c[i] || 0
+    const v2 = m[i] || 0
+    if (v1 < v2) return true
+    if (v1 > v2) return false
   }
-  return false;
+  return false
 }
 
 // Ouvir quando o update estiver baixado para aplicar imediatamente
 chrome.runtime.onUpdateAvailable?.addListener((details) => {
-  console.log(`${getTs()} Extensão ATI: Versão ${details.version} disponível e baixada. Reiniciando...`);
-  chrome.runtime.reload();
-});
+  console.log(`${getTs()} Extensão ATI: Versão ${details.version} disponível e baixada. Reiniciando...`)
+  chrome.runtime.reload()
+})

@@ -10,8 +10,8 @@ import { SGP_IP_35, SGP_IP_53 } from '../../../background/sgp/constants'
 import { currentChatId } from '../state'
 import { processDynamicPlaceholders, buildTemplatesHTML, OsTemplate } from './osModalTypes'
 import { createModal, buildOsModalBodyHTML } from './osModalUI'
-import { loadSgpData } from './osModalSgp'
-import { setupDraftSaving, setupOsCheckbox, setupTemplateButtons } from './osModalHandlers'
+import { loadSgpData, populateTechnicians } from './osModalSgp'
+import { setupDraftSaving, setupOsCheckbox, setupTemplateButtons, setupPeriodoChangeListener } from './osModalHandlers'
 import { getSession } from '../auth/session'
 import type { ClearSgpCacheRequest, CreateOccurrenceVisuallyRequest } from '../../../background/types'
 
@@ -32,9 +32,7 @@ export async function showOSModal(allTemplates: OsTemplate[], extractChatFn: () 
     const storage = await chrome.storage.local.get('ati_preferred_sgp')
     const currentPref = storage.ati_preferred_sgp || SGP_IP_53
     let activeIsOld = currentPref === SGP_IP_35
-    const modalTitle = activeIsOld
-      ? 'Criar Ordem de Serviço <span class="sgp-badge sgp-badge--old">SGP ANTIGO</span>'
-      : 'Criar Ordem de Serviço <span class="sgp-badge sgp-badge--new">SGP NOVO</span>'
+    const modalTitle = activeIsOld ? 'Criar Ordem de Serviço <span class="sgp-badge sgp-badge--old">SGP ANTIGO</span>' : 'Criar Ordem de Serviço <span class="sgp-badge sgp-badge--new">SGP NOVO</span>'
 
     // --- Monta modal ---
     const templatesHTML = buildTemplatesHTML(allTemplates)
@@ -62,10 +60,16 @@ export async function showOSModal(allTemplates: OsTemplate[], extractChatFn: () 
     // Texto inicial
     osTextArea.value = existingDraft?.osText ? existingDraft.osText : processDynamicPlaceholders(osBaseText).toUpperCase()
 
-    // Setup de handlers
     setupDraftSaving(chatId, osTextArea, modalElement, () => sgpData)
-    setupOsCheckbox(osCheckbox, statusCheckbox, statusLabel)
-    setupTemplateButtons(modalElement, osTextArea, osBaseText, () => sgpData?.occurrenceTypes ?? [], () => !activeIsOld)
+    setupOsCheckbox(osCheckbox, statusCheckbox, statusLabel, modalElement)
+    setupPeriodoChangeListener(modalElement)
+    setupTemplateButtons(
+      modalElement,
+      osTextArea,
+      osBaseText,
+      () => sgpData?.occurrenceTypes ?? [],
+      () => !activeIsOld,
+    )
 
     // Carrega dados SGP (cache ou busca)
     loadSgpData({
@@ -91,6 +95,9 @@ export async function showOSModal(allTemplates: OsTemplate[], extractChatFn: () 
           sgpData = data
         }
 
+        // Preenche técnicos no formulário do modal
+        populateTechnicians(modalElement, sgpData.responsibleUsers || [])
+
         // Atualiza a UI do Header se o SGP tiver sido alterado pelo auto-swap
         const freshStorage = await chrome.storage.local.get('ati_preferred_sgp')
         const freshPref = freshStorage.ati_preferred_sgp || SGP_IP_53
@@ -98,9 +105,7 @@ export async function showOSModal(allTemplates: OsTemplate[], extractChatFn: () 
 
         const headerEl = modalElement.querySelector('.ati-os-modal-header')
         if (headerEl) {
-          headerEl.innerHTML = activeIsOld
-            ? 'Criar Ordem de Serviço <span class="sgp-badge sgp-badge--old">SGP ANTIGO</span>'
-            : 'Criar Ordem de Serviço <span class="sgp-badge sgp-badge--new">SGP NOVO</span>'
+          headerEl.innerHTML = activeIsOld ? 'Criar Ordem de Serviço <span class="sgp-badge sgp-badge--old">SGP ANTIGO</span>' : 'Criar Ordem de Serviço <span class="sgp-badge sgp-badge--new">SGP NOVO</span>'
         }
       },
     })
@@ -151,7 +156,7 @@ export async function showOSModal(allTemplates: OsTemplate[], extractChatFn: () 
     if (resolvedOccurrenceType && resolvedOccurrenceType.startsWith('{')) {
       try {
         const parsed = JSON.parse(resolvedOccurrenceType)
-        resolvedOccurrenceType = isTarget53 ? (parsed.id_53 || parsed.id_35) : (parsed.id_35 || parsed.id_53)
+        resolvedOccurrenceType = isTarget53 ? parsed.id_53 || parsed.id_35 : parsed.id_35 || parsed.id_53
       } catch (e) {
         console.warn('Extensão ATI: Falha ao parsear tipo de ocorrência unificado:', e)
       }
@@ -171,6 +176,8 @@ export async function showOSModal(allTemplates: OsTemplate[], extractChatFn: () 
       shouldCreateOS: userAction.data.shouldCreateOS,
       occurrenceStatus: userAction.data.occurrenceStatus,
       responsibleUsers: resolvedSgpData?.responsibleUsers ?? [],
+      osDataAgendamento: userAction.data.osDataAgendamento,
+      osDateModified: userAction.data.osDateModified,
     }
 
     const clientKey = clientData.clientSgpId || cpfCnpj || phoneNumber || fullName || chatId
@@ -180,6 +187,7 @@ export async function showOSModal(allTemplates: OsTemplate[], extractChatFn: () 
       if (chatId) {
         clearDraft(chatId)
         await chrome.storage.local.remove(`ati_manual_sgp_force_${chatId}`)
+        await chrome.storage.local.remove(`ati_support_cache_${chatId}`)
       }
       safeSendMessage<ClearSgpCacheRequest>({
         action: 'clearSgpCache',
@@ -190,18 +198,31 @@ export async function showOSModal(allTemplates: OsTemplate[], extractChatFn: () 
       if (!submissionData.osText || !submissionData.selectedContract || !submissionData.occurrenceType) {
         throw new Error('Descrição, Contrato e Tipo são obrigatórios.')
       }
+      if (submissionData.shouldCreateOS) {
+        const osData = {
+          motivo: userAction.data.osMotivo,
+          prioridade: userAction.data.osPrioridade,
+          dataAgendamento: userAction.data.osDataAgendamento,
+          periodo: userAction.data.osPeriodo,
+          periodoExtra: userAction.data.osPeriodoExtra,
+          responsavel: userAction.data.osResponsavel,
+          tecnicos: userAction.data.osTecnicos,
+          observacao: userAction.data.osObservacao,
+        }
+        await chrome.storage.local.set({ ati_pending_os_fill_data: osData })
+        console.log('Extensão ATI: Dados de O.S. agendados para preenchimento posterior:', osData)
+      }
       if (chatId) {
         clearDraft(chatId)
         await chrome.storage.local.remove(`ati_manual_sgp_force_${chatId}`)
+        await chrome.storage.local.remove(`ati_support_cache_${chatId}`)
       }
       safeSendMessage<ClearSgpCacheRequest>({
         action: 'clearSgpCache',
         cacheKey: clientKey,
       })
 
-      const isSgpPage = window.location.hostname.includes('sgp') || 
-                        window.location.hostname.includes('201.158.20.35') || 
-                        window.location.hostname.includes('201.158.20.53');
+      const isSgpPage = window.location.hostname.includes('sgp') || window.location.hostname.includes('201.158.20.35') || window.location.hostname.includes('201.158.20.53')
 
       if (isSgpPage) {
         console.log('Extensão ATI: Preenchendo formulário localmente no SGP...')

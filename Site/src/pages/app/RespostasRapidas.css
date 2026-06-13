@@ -34,9 +34,15 @@
 }
 
 @keyframes chatPulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.5; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 /* .respostas-rapidas-loading removido em favor do LoadingOverlay */
@@ -206,9 +212,6 @@
   gap: 8px;
 }
 
-
-
-
 .btn-copiar {
   background: var(--accent-blue);
   color: var(--text-on-accent);
@@ -220,7 +223,6 @@
   box-shadow: 0 4px 15px var(--accent-blue-hover);
   transform: translateY(-1px);
 }
-
 
 .btn-editar {
   background: var(--bg-card);
@@ -345,11 +347,6 @@
   color: var(--text-muted);
 }
 
-
-
-
-
-
 .btn-nova-cat {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid var(--border-subtle);
@@ -366,7 +363,3 @@
   background: rgba(255, 255, 255, 0.12);
   color: var(--text-white);
 }
-
-
-
-

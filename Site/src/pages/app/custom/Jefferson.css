@@ -16,7 +16,7 @@
 }
 
 .jefferson-page::after {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   box-shadow: inset 0 0 80px rgba(168, 85, 247, 0.25);
@@ -257,7 +257,9 @@
   font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.1s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.2s ease;
   box-shadow: 0 4px 14px rgba(168, 85, 247, 0.3);
   outline: none;
 }
@@ -617,4 +619,3 @@
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.01);
 }
-

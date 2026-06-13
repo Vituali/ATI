@@ -1,6 +1,0 @@
-build/
-node_modules/
-dist/
-teste iframe/
-*.loader.js
-service-worker-loader.js

@@ -248,8 +248,14 @@
 }
 
 @keyframes ati-toast-slide-in {
-  from { opacity: 0; transform: translateX(40px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 /* =================================================================== */
@@ -275,7 +281,8 @@ html.dark .ati-time-overdue {
 }
 
 @keyframes atiPulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
@@ -285,3 +292,91 @@ html.dark .ati-time-overdue {
   }
 }
 
+/* =================================================================== */
+/* == DROPDOWN CONTATO / CPF (ATI)                                   == */
+/* =================================================================== */
+
+.ati-dropdown-container {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.ati-dropdown-toggle {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+}
+
+.ati-dropdown-menu {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0;
+  min-width: 140px;
+  width: 100%;
+  background: rgba(18, 18, 22, 0.96);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  flex-direction: column;
+  padding: 6px;
+  box-sizing: border-box;
+  gap: 4px;
+}
+
+.ati-dropdown-menu.show {
+  display: flex;
+  animation: ati-dropdown-slide-up 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes ati-dropdown-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Itens de menu dentro do dropdown */
+.ati-dropdown-menu .action-btn {
+  padding: 10px 12px;
+  font-size: 13px;
+  justify-content: flex-start;
+  background: transparent;
+  border: none;
+  width: 100%;
+  border-radius: 8px;
+}
+
+.ati-dropdown-menu .action-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: none;
+  box-shadow: none;
+}
+
+.ati-dropdown-menu .action-btn:active {
+  transform: scale(0.98);
+}
+
+/* Compatibilidade com modo claro */
+html:not(.dark) .ati-dropdown-menu {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+}
+
+html:not(.dark) .ati-dropdown-menu .action-btn {
+  color: #374151;
+}
+
+html:not(.dark) .ati-dropdown-menu .action-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+}

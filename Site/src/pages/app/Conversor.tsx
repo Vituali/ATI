@@ -5,81 +5,81 @@
 // Google Maps removido por enquanto (será adicionado depois).
 // ---------------------------------------------------------------
 
-import { useState, useRef, useCallback, useEffect } from "react";
-import { useUser } from "../../hooks/useUser";
-import "./Conversor.css";
-import LoadingOverlay from "../../components/ui/LoadingOverlay";
+import { useState, useRef, useCallback, useEffect } from 'react'
+import { useUser } from '../../hooks/useUser'
+import './Conversor.css'
+import LoadingOverlay from '../../components/ui/LoadingOverlay'
 
 // ---------------------------------------------------------------
 // INSTALA: npm install pdfjs-dist
 // ---------------------------------------------------------------
-import * as pdfjsLib from "pdfjs-dist";
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
+import * as pdfjsLib from 'pdfjs-dist'
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`
 
 // ---------------------------------------------------------------
 // TIPOS
 // ---------------------------------------------------------------
 
 interface PdfData {
-  contrato: string;
-  nomeCompleto: string;
-  primeiroNome: string;
-  oldAddress: string;
-  newAddress: string;
+  contrato: string
+  nomeCompleto: string
+  primeiroNome: string
+  oldAddress: string
+  newAddress: string
 }
 
 interface OsTextData {
-  withdrawal: string;
-  installation: string;
-  os: string;
+  withdrawal: string
+  installation: string
+  os: string
 }
 
-type Periodo = "Manhã" | "Tarde";
-type Equipamento = "alcl" | "nbel" | "proprio" | "huawei" | "tp link";
-type Assinatura = "digital" | "local";
-type Taxa = "100" | "65" | "50" | "isento";
-type Portador = "none" | "ITAU AGT" | "GERENCIANET AGT" | "ITAU ATI" | "GERENCIANET - BANDA LARGA";
+type Periodo = 'Manhã' | 'Tarde'
+type Equipamento = 'alcl' | 'nbel' | 'proprio' | 'huawei' | 'tp link'
+type Assinatura = 'digital' | 'local'
+type Taxa = '100' | '65' | '50' | 'isento'
+type Portador = 'none' | 'ITAU AGT' | 'GERENCIANET AGT' | 'ITAU ATI' | 'GERENCIANET - BANDA LARGA'
 
 // ---------------------------------------------------------------
 // HELPERS — portados diretamente do conversor.js
 // ---------------------------------------------------------------
 
 function formatAddress(fullAddress: string): string {
-  if (!fullAddress) return "N/A";
+  if (!fullAddress) return 'N/A'
   // Mantém o endereço completo removendo apenas quebras de linha, espaços duplos e a terminação '/ RJ.' de forma segura
   return fullAddress
-    .replace(/\r?\n/g, " ")
-    .replace(/\s+/g, " ")
-    .replace(/\s*\/?\s*RJ\.?$/i, "")
-    .replace(/,\s*$/, "")
-    .trim();
+    .replace(/\r?\n/g, ' ')
+    .replace(/\s+/g, ' ')
+    .replace(/\s*\/?\s*RJ\.?$/i, '')
+    .replace(/,\s*$/, '')
+    .trim()
 }
 
 function formatPhone(phone: string): { formatted: string; isValid: boolean } {
-  const cleaned = phone.replace(/\D/g, "");
-  const isValid = /^[1-9]{2}(9?\d{8})$/.test(cleaned);
-  let formatted = cleaned;
+  const cleaned = phone.replace(/\D/g, '')
+  const isValid = /^[1-9]{2}(9?\d{8})$/.test(cleaned)
+  let formatted = cleaned
   if (isValid) {
-    if (cleaned.length === 10) formatted = `${cleaned.slice(0, 2)} ${cleaned.slice(2, 6)}-${cleaned.slice(6)}`;
-    else if (cleaned.length === 11) formatted = `${cleaned.slice(0, 2)} ${cleaned.slice(2, 7)}-${cleaned.slice(7)}`;
+    if (cleaned.length === 10) formatted = `${cleaned.slice(0, 2)} ${cleaned.slice(2, 6)}-${cleaned.slice(6)}`
+    else if (cleaned.length === 11) formatted = `${cleaned.slice(0, 2)} ${cleaned.slice(2, 7)}-${cleaned.slice(7)}`
   }
-  return { formatted, isValid };
+  return { formatted, isValid }
 }
 
 function formatDate(dateStr: string): string {
-  if (!dateStr) return "";
-  const [, month, day] = dateStr.split("-");
-  return `${day}/${month}`;
+  if (!dateStr) return ''
+  const [, month, day] = dateStr.split('-')
+  return `${day}/${month}`
 }
 
 function getTomorrow(): string {
-  const d = new Date();
-  d.setDate(d.getDate() + 1);
-  return d.toISOString().split("T")[0];
+  const d = new Date()
+  d.setDate(d.getDate() + 1)
+  return d.toISOString().split('T')[0]
 }
 
 async function copiar(texto: string): Promise<void> {
-  await navigator.clipboard.writeText(texto);
+  await navigator.clipboard.writeText(texto)
 }
 
 // ---------------------------------------------------------------
@@ -87,54 +87,54 @@ async function copiar(texto: string): Promise<void> {
 // ---------------------------------------------------------------
 
 export default function Conversor() {
-  const { user } = useUser();
+  const { user } = useUser()
 
   // Auxiliar para buscar valores salvos no localStorage
   const getSavedValue = <T,>(key: string, defaultValue: T): T => {
-    const saved = localStorage.getItem("ati_conversor_state");
+    const saved = localStorage.getItem('ati_conversor_state')
     if (saved) {
       try {
-        const parsed = JSON.parse(saved);
-        return parsed[key] !== undefined ? parsed[key] : defaultValue;
+        const parsed = JSON.parse(saved)
+        return parsed[key] !== undefined ? parsed[key] : defaultValue
       } catch (e) {
-        return defaultValue;
+        return defaultValue
       }
     }
-    return defaultValue;
-  };
+    return defaultValue
+  }
 
   // Etapa: "upload" | "form"
-  const [etapa, setEtapa] = useState<"upload" | "form">(() => getSavedValue("etapa", "upload"));
-  const [dragOver, setDragOver] = useState(false);
-  const [processando, setProcessando] = useState(false);
-  const [erro, setErro] = useState<string | null>(null);
-  const [copiado, setCopiado] = useState<string | null>(null);
+  const [etapa, setEtapa] = useState<'upload' | 'form'>(() => getSavedValue('etapa', 'upload'))
+  const [dragOver, setDragOver] = useState(false)
+  const [processando, setProcessando] = useState(false)
+  const [erro, setErro] = useState<string | null>(null)
+  const [copiado, setCopiado] = useState<string | null>(null)
 
   // Dados extraídos do PDF
-  const [pdfData, setPdfData] = useState<PdfData | null>(() => getSavedValue("pdfData", null));
+  const [pdfData, setPdfData] = useState<PdfData | null>(() => getSavedValue('pdfData', null))
 
   // Campos editáveis
-  const [oldAddress, setOldAddress] = useState(() => getSavedValue("oldAddress", ""));
-  const [newAddress, setNewAddress] = useState(() => getSavedValue("newAddress", ""));
-  const [phone, setPhone] = useState(() => getSavedValue("phone", ""));
-  const [phoneErro, setPhoneErro] = useState("");
-  const [equipamento, setEquipamento] = useState<Equipamento>(() => getSavedValue("equipamento", "alcl"));
-  const [assinatura, setAssinatura] = useState<Assinatura>(() => getSavedValue("assinatura", "digital"));
-  const [taxa, setTaxa] = useState<Taxa>(() => getSavedValue("taxa", "100"));
-  const [renovacao, setRenovacao] = useState(() => getSavedValue("renovacao", false));
-  const [migracao, setMigracao] = useState(() => getSavedValue("migracao", false));
-  const [portador, setPortador] = useState<Portador>(() => getSavedValue("portador", "none"));
-  const [clienteRetira, setClienteRetira] = useState(() => getSavedValue("clienteRetira", false));
-  const [retiradaData, setRetiradaData] = useState(() => getSavedValue("retiradaData", ""));
-  const [retiradaPeriodo, setRetiradaPeriodo] = useState<Periodo>(() => getSavedValue("retiradaPeriodo", "Manhã"));
-  const [instalacaoData, setInstalacaoData] = useState(() => getSavedValue("instalacaoData", ""));
-  const [instalacaoPeriodo, setInstalacaoPeriodo] = useState<Periodo>(() => getSavedValue("instalacaoPeriodo", "Manhã"));
+  const [oldAddress, setOldAddress] = useState(() => getSavedValue('oldAddress', ''))
+  const [newAddress, setNewAddress] = useState(() => getSavedValue('newAddress', ''))
+  const [phone, setPhone] = useState(() => getSavedValue('phone', ''))
+  const [phoneErro, setPhoneErro] = useState('')
+  const [equipamento, setEquipamento] = useState<Equipamento>(() => getSavedValue('equipamento', 'alcl'))
+  const [assinatura, setAssinatura] = useState<Assinatura>(() => getSavedValue('assinatura', 'digital'))
+  const [taxa, setTaxa] = useState<Taxa>(() => getSavedValue('taxa', '100'))
+  const [renovacao, setRenovacao] = useState(() => getSavedValue('renovacao', false))
+  const [migracao, setMigracao] = useState(() => getSavedValue('migracao', false))
+  const [portador, setPortador] = useState<Portador>(() => getSavedValue('portador', 'none'))
+  const [clienteRetira, setClienteRetira] = useState(() => getSavedValue('clienteRetira', false))
+  const [retiradaData, setRetiradaData] = useState(() => getSavedValue('retiradaData', ''))
+  const [retiradaPeriodo, setRetiradaPeriodo] = useState<Periodo>(() => getSavedValue('retiradaPeriodo', 'Manhã'))
+  const [instalacaoData, setInstalacaoData] = useState(() => getSavedValue('instalacaoData', ''))
+  const [instalacaoPeriodo, setInstalacaoPeriodo] = useState<Periodo>(() => getSavedValue('instalacaoPeriodo', 'Manhã'))
 
   // Output gerado
-  const [osGerada, setOsGerada] = useState(() => getSavedValue("osGerada", ""));
-  const [osData, setOsData] = useState<OsTextData | null>(() => getSavedValue("osData", null));
+  const [osGerada, setOsGerada] = useState(() => getSavedValue('osGerada', ''))
+  const [osData, setOsData] = useState<OsTextData | null>(() => getSavedValue('osData', null))
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Efeito para salvar o estado do conversor sempre que um campo for alterado
   useEffect(() => {
@@ -156,93 +156,74 @@ export default function Conversor() {
       instalacaoData,
       instalacaoPeriodo,
       osGerada,
-      osData
-    };
-    localStorage.setItem("ati_conversor_state", JSON.stringify(state));
-  }, [
-    etapa,
-    pdfData,
-    oldAddress,
-    newAddress,
-    phone,
-    equipamento,
-    assinatura,
-    taxa,
-    renovacao,
-    migracao,
-    portador,
-    clienteRetira,
-    retiradaData,
-    retiradaPeriodo,
-    instalacaoData,
-    instalacaoPeriodo,
-    osGerada,
-    osData
-  ]);
+      osData,
+    }
+    localStorage.setItem('ati_conversor_state', JSON.stringify(state))
+  }, [etapa, pdfData, oldAddress, newAddress, phone, equipamento, assinatura, taxa, renovacao, migracao, portador, clienteRetira, retiradaData, retiradaPeriodo, instalacaoData, instalacaoPeriodo, osGerada, osData])
 
   // ---------------------------------------------------------------
   // LÓGICA DE TAXA
   // ---------------------------------------------------------------
 
-  const isento = renovacao || migracao;
+  const isento = renovacao || migracao
 
   function handleRenovacao(v: boolean) {
-    setRenovacao(v);
+    setRenovacao(v)
     if (v) {
-      setMigracao(false);
-      setTaxa("isento");
+      setMigracao(false)
+      setTaxa('isento')
     } else {
-      setTaxa("100");
+      setTaxa('100')
     }
   }
 
   function handleMigracao(v: boolean) {
-    setMigracao(v);
+    setMigracao(v)
     if (v) {
-      setRenovacao(false);
-      setTaxa("isento");
+      setRenovacao(false)
+      setTaxa('isento')
     } else {
-      setPortador("none");
-      setTaxa("100");
+      setPortador('none')
+      setTaxa('100')
     }
   }
 
   // Data mínima de instalação: dia seguinte ao da retirada (ou amanhã)
-  const minInstalacao = !clienteRetira && retiradaData ? retiradaData : getTomorrow();
+  const minInstalacao = !clienteRetira && retiradaData ? retiradaData : getTomorrow()
 
   // ---------------------------------------------------------------
   // PROCESSAR PDF — lógica portada do conversor.js
   // ---------------------------------------------------------------
 
   const processarPdf = useCallback(async (file: File) => {
-    if (file.type !== "application/pdf") {
-      setErro("Por favor, selecione um arquivo PDF válido.");
-      return;
+    if (file.type !== 'application/pdf') {
+      setErro('Por favor, selecione um arquivo PDF válido.')
+      return
     }
 
-    setProcessando(true);
-    setErro(null);
+    setProcessando(true)
+    setErro(null)
 
     try {
-      const buffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument(buffer).promise;
-      const page = await pdf.getPage(1);
-      const content = await page.getTextContent();
-      const text = content.items.map((i: any) => i.str).join(" ");
+      const buffer = await file.arrayBuffer()
+      const pdf = await pdfjsLib.getDocument(buffer).promise
+      const page = await pdf.getPage(1)
+      const content = await page.getTextContent()
+      const text = content.items.map((i: any) => i.str).join(' ')
 
-      const normalizedText = text.replace(/\r?\n/g, " ").replace(/\s+/g, " ");
-      const contrato = normalizedText.match(/Aditivo do Contrato (\d+)/)?.[1] ?? "N/A";
-      const nomeCompleto = normalizedText.match(/CONTRATADA e (.*?), CPF\/CNPJ:/)?.[1].trim() ?? "N/A";
-      const primeiroNome = nomeCompleto.split(" ")[0].toUpperCase();
+      const normalizedText = text.replace(/\r?\n/g, ' ').replace(/\s+/g, ' ')
+      const contrato = normalizedText.match(/Aditivo do Contrato (\d+)/)?.[1] ?? 'N/A'
+      const nomeCompleto = normalizedText.match(/CONTRATADA e (.*?), CPF\/CNPJ:/)?.[1].trim() ?? 'N/A'
+      const primeiroNome = nomeCompleto.split(' ')[0].toUpperCase()
 
-      const oldBlock = text.match(/2\s*-\s*Sobre o\(s\) antigo\(s\)[\s\S]*?instalação([\s\S]*?)3\s*-\s*Sobre/i)?.[1];
-      const newBlock = text.match(/3\s*-\s*Sobre o\(s\) novo\(s\)[\s\S]*?instalação([\s\S]*?)4\s*-\s*Gerais/i)?.[1];
-      const addrRegex = /([\s\S]+? \/ RJ\.)/g;
-      const oldAddrs = oldBlock?.match(addrRegex);
-      const newAddrs = newBlock?.match(addrRegex);
+      const oldBlock = text.match(/2\s*-\s*Sobre o\(s\) antigo\(s\)[\s\S]*?instalação([\s\S]*?)3\s*-\s*Sobre/i)?.[1]
+      const newBlock = text.match(/3\s*-\s*Sobre o\(s\) novo\(s\)[\s\S]*?instalação([\s\S]*?)4\s*-\s*Gerais/i)?.[1]
+      const addrRegex = /([\s\S]+? \/ RJ\.)/g
+      const oldAddrs = oldBlock?.match(addrRegex)
+      const newAddrs = newBlock?.match(addrRegex)
 
-      const oldAddr = formatAddress(oldAddrs?.[oldAddrs.length - 1]?.trim().toUpperCase() ?? "") || "Endereço antigo não encontrado";
-      const newAddr = formatAddress(newAddrs?.[newAddrs.length - 1]?.trim().toUpperCase() ?? "") || "Endereço novo não encontrado";
+      const oldAddr = formatAddress(oldAddrs?.[oldAddrs.length - 1]?.trim().toUpperCase() ?? '') || 'Endereço antigo não encontrado'
+      const newAddr = formatAddress(newAddrs?.[newAddrs.length - 1]?.trim().toUpperCase() ?? '') || 'Endereço novo não encontrado'
 
       const dados: PdfData = {
         contrato,
@@ -250,34 +231,34 @@ export default function Conversor() {
         primeiroNome,
         oldAddress: oldAddr,
         newAddress: newAddr,
-      };
+      }
 
-      setPdfData(dados);
-      setOldAddress(oldAddr);
-      setNewAddress(newAddr);
-      setEtapa("form");
+      setPdfData(dados)
+      setOldAddress(oldAddr)
+      setNewAddress(newAddr)
+      setEtapa('form')
     } catch (e) {
-      console.error(e);
-      setErro("Erro ao ler o arquivo PDF.");
+      console.error(e)
+      setErro('Erro ao ler o arquivo PDF.')
     } finally {
-      setProcessando(false);
+      setProcessando(false)
     }
-  }, []);
+  }, [])
 
   // ---------------------------------------------------------------
   // DROP ZONE
   // ---------------------------------------------------------------
 
   function handleDrop(e: React.DragEvent) {
-    e.preventDefault();
-    setDragOver(false);
-    const file = e.dataTransfer.files[0];
-    if (file) processarPdf(file);
+    e.preventDefault()
+    setDragOver(false)
+    const file = e.dataTransfer.files[0]
+    if (file) processarPdf(file)
   }
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (file) processarPdf(file);
+    const file = e.target.files?.[0]
+    if (file) processarPdf(file)
   }
 
   // ---------------------------------------------------------------
@@ -285,108 +266,108 @@ export default function Conversor() {
   // ---------------------------------------------------------------
 
   function handleGerarOS() {
-    if (!pdfData || !user) return;
+    if (!pdfData || !user) return
 
-    const tecnico = user.nomeCompleto.split(" ")[0].toUpperCase();
-    const { formatted, isValid } = formatPhone(phone);
+    const tecnico = user.nomeCompleto.split(' ')[0].toUpperCase()
+    const { formatted, isValid } = formatPhone(phone)
 
     if (!isValid) {
-      setPhoneErro("Telefone inválido. Ex: 21 98765-4321");
-      return;
+      setPhoneErro('Telefone inválido. Ex: 21 98765-4321')
+      return
     }
-    setPhoneErro("");
+    setPhoneErro('')
 
     if (!clienteRetira && !retiradaData) {
-      setErro("Data de Retirada é obrigatória.");
-      return;
+      setErro('Data de Retirada é obrigatória.')
+      return
     }
     if (!instalacaoData) {
-      setErro("Data de Instalação é obrigatória.");
-      return;
+      setErro('Data de Instalação é obrigatória.')
+      return
     }
-    setErro(null);
+    setErro(null)
 
-    const retDia = formatDate(retiradaData);
-    const instDia = formatDate(instalacaoData);
-    const retPer = retiradaPeriodo.toUpperCase();
-    const instPer = instalacaoPeriodo.toUpperCase();
-    const sigText = assinatura === "digital" ? "ASSINATURA DIGITAL PENDENTE" : "TITULAR NO LOCAL PARA ASSINATURA";
+    const retDia = formatDate(retiradaData)
+    const instDia = formatDate(instalacaoData)
+    const retPer = retiradaPeriodo.toUpperCase()
+    const instPer = instalacaoPeriodo.toUpperCase()
+    const sigText = assinatura === 'digital' ? 'ASSINATURA DIGITAL PENDENTE' : 'TITULAR NO LOCAL PARA ASSINATURA'
 
-    let scheduleLines = "";
-    let withdrawalText = "";
+    let scheduleLines = ''
+    let withdrawalText = ''
 
-    const novaOsData: OsTextData = { withdrawal: "", installation: "", os: "" };
+    const novaOsData: OsTextData = { withdrawal: '', installation: '', os: '' }
 
     if (!clienteRetira) {
-      novaOsData.withdrawal = `${retDia} - ${pdfData.contrato} - ${pdfData.primeiroNome} - ${oldAddress} - MUD ENDEREÇO - ${retPer} - ${tecnico}`;
-      scheduleLines += novaOsData.withdrawal + "\n";
-      withdrawalText = `RETIRAR EM ${oldAddress} DIA ${retDia} ${retPer}`;
+      novaOsData.withdrawal = `${retDia} - ${pdfData.contrato} - ${pdfData.primeiroNome} - ${oldAddress} - MUD ENDEREÇO - ${retPer} - ${tecnico}`
+      scheduleLines += novaOsData.withdrawal + '\n'
+      withdrawalText = `RETIRAR EM ${oldAddress} DIA ${retDia} ${retPer}`
     } else {
-      withdrawalText = "CLIENTE FEZ A RETIRADA";
+      withdrawalText = 'CLIENTE FEZ A RETIRADA'
     }
 
-    novaOsData.installation = `${instDia} - ${pdfData.contrato} - ${pdfData.primeiroNome} - ${newAddress} - MUD ENDEREÇO - ${instPer} - ${tecnico}`;
-    scheduleLines += novaOsData.installation;
+    novaOsData.installation = `${instDia} - ${pdfData.contrato} - ${pdfData.primeiroNome} - ${newAddress} - MUD ENDEREÇO - ${instPer} - ${tecnico}`
+    scheduleLines += novaOsData.installation
 
-    const taxaTexto = renovacao ? "ISENTO DA TAXA POR RENOVAÇÃO." : migracao ? "ISENTO DA TAXA POR MIGRAÇÃO." : taxa === "isento" ? "ISENTO DA TAXA." : `TAXA DE R$${taxa}.`;
+    const taxaTexto = renovacao ? 'ISENTO DA TAXA POR RENOVAÇÃO.' : migracao ? 'ISENTO DA TAXA POR MIGRAÇÃO.' : taxa === 'isento' ? 'ISENTO DA TAXA.' : `TAXA DE R$${taxa}.`
 
-    const portadorTexto = migracao && portador !== "none" ? `** ANTIGO PORTADOR ${portador.toUpperCase()} **\n` : "";
+    const portadorTexto = migracao && portador !== 'none' ? `** ANTIGO PORTADOR ${portador.toUpperCase()} **\n` : ''
 
-    novaOsData.os = `${portadorTexto}${formatted} ${pdfData.primeiroNome} | ** ${equipamento.toUpperCase()} **\n${withdrawalText}.\nINSTALAR EM ${newAddress} DIA ${instDia} ${instPer}.\n${taxaTexto}\n${sigText}.`;
+    novaOsData.os = `${portadorTexto}${formatted} ${pdfData.primeiroNome} | ** ${equipamento.toUpperCase()} **\n${withdrawalText}.\nINSTALAR EM ${newAddress} DIA ${instDia} ${instPer}.\n${taxaTexto}\n${sigText}.`
 
-    const textoFinal = `${scheduleLines}\n\n${novaOsData.os}`;
+    const textoFinal = `${scheduleLines}\n\n${novaOsData.os}`
 
-    setOsData(novaOsData);
-    setOsGerada(textoFinal);
+    setOsData(novaOsData)
+    setOsGerada(textoFinal)
   }
 
   // ---------------------------------------------------------------
   // COPIAR COM FEEDBACK
   // ---------------------------------------------------------------
 
-  async function handleCopiar(tipo: "retirada" | "instalacao" | "os") {
-    if (!osData) return;
-    let texto = "";
-    if (tipo === "retirada") {
-      texto = osData.withdrawal;
-    } else if (tipo === "instalacao") {
-      texto = osData.installation;
-    } else if (tipo === "os") {
-      texto = osData.os;
+  async function handleCopiar(tipo: 'retirada' | 'instalacao' | 'os') {
+    if (!osData) return
+    let texto = ''
+    if (tipo === 'retirada') {
+      texto = osData.withdrawal
+    } else if (tipo === 'instalacao') {
+      texto = osData.installation
+    } else if (tipo === 'os') {
+      texto = osData.os
     }
-    if (!texto) return;
-    await copiar(texto);
-    setCopiado(tipo);
-    setTimeout(() => setCopiado(null), 2000);
+    if (!texto) return
+    await copiar(texto)
+    setCopiado(tipo)
+    setTimeout(() => setCopiado(null), 2000)
   }
 
   function resetar() {
-    setEtapa("upload");
-    setPdfData(null);
-    setOldAddress("");
-    setNewAddress("");
-    setPhone("");
-    setPhoneErro("");
-    setEquipamento("alcl");
-    setAssinatura("digital");
-    setTaxa("100");
-    setRenovacao(false);
-    setMigracao(false);
-    setPortador("none");
-    setClienteRetira(false);
-    setRetiradaData("");
-    setInstalacaoData("");
-    setOsGerada("");
-    setOsData(null);
-    setErro(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    setEtapa('upload')
+    setPdfData(null)
+    setOldAddress('')
+    setNewAddress('')
+    setPhone('')
+    setPhoneErro('')
+    setEquipamento('alcl')
+    setAssinatura('digital')
+    setTaxa('100')
+    setRenovacao(false)
+    setMigracao(false)
+    setPortador('none')
+    setClienteRetira(false)
+    setRetiradaData('')
+    setInstalacaoData('')
+    setOsGerada('')
+    setOsData(null)
+    setErro(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   // ---------------------------------------------------------------
   // RENDER — UPLOAD
   // ---------------------------------------------------------------
 
-  if (etapa === "upload") {
+  if (etapa === 'upload') {
     return (
       <div className="conv-page">
         <div className="conv-header">
@@ -395,10 +376,10 @@ export default function Conversor() {
         </div>
 
         <div
-          className={`conv-dropzone ${dragOver ? "over" : ""} ${processando ? "loading" : ""}`}
+          className={`conv-dropzone ${dragOver ? 'over' : ''} ${processando ? 'loading' : ''}`}
           onDragOver={(e) => {
-            e.preventDefault();
-            setDragOver(true);
+            e.preventDefault()
+            setDragOver(true)
           }}
           onDragLeave={() => setDragOver(false)}
           onDragEnd={() => setDragOver(false)}
@@ -418,8 +399,8 @@ export default function Conversor() {
             <button
               className="conv-btn-escolher"
               onClick={(e) => {
-                e.stopPropagation();
-                fileInputRef.current?.click();
+                e.stopPropagation()
+                fileInputRef.current?.click()
               }}
             >
               Escolher Arquivo
@@ -430,7 +411,7 @@ export default function Conversor() {
 
         {erro && <p className="conv-erro">{erro}</p>}
       </div>
-    );
+    )
   }
 
   // ---------------------------------------------------------------
@@ -459,11 +440,11 @@ export default function Conversor() {
           <h2 className="conv-card-titulo">Dados Gerais</h2>
 
           <div className="conv-inline">
-            <div className="conv-info-row" style={{ border: "none", padding: 0 }}>
+            <div className="conv-info-row" style={{ border: 'none', padding: 0 }}>
               <span className="conv-info-label">Contrato</span>
               <span className="conv-info-valor">{pdfData?.contrato}</span>
             </div>
-            <div className="conv-info-row" style={{ border: "none", padding: 0 }}>
+            <div className="conv-info-row" style={{ border: 'none', padding: 0 }}>
               <span className="conv-info-label">Nome</span>
               <span className="conv-info-valor">{pdfData?.nomeCompleto}</span>
             </div>
@@ -471,9 +452,9 @@ export default function Conversor() {
 
           <hr
             style={{
-              border: "none",
-              borderTop: "1px solid var(--border-subtle)",
-              margin: "0",
+              border: 'none',
+              borderTop: '1px solid var(--border-subtle)',
+              margin: '0',
             }}
           />
 
@@ -499,8 +480,8 @@ export default function Conversor() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 onBlur={() => {
-                  const { formatted } = formatPhone(phone);
-                  setPhone(formatted);
+                  const { formatted } = formatPhone(phone)
+                  setPhone(formatted)
                 }}
               />
               {phoneErro && <span className="conv-campo-erro">{phoneErro}</span>}
@@ -575,9 +556,9 @@ export default function Conversor() {
 
           <h3
             style={{
-              fontSize: "14px",
-              color: "var(--text-white)",
-              margin: "4px 0 0 0",
+              fontSize: '14px',
+              color: 'var(--text-white)',
+              margin: '4px 0 0 0',
               fontWeight: 600,
             }}
           >
@@ -606,17 +587,17 @@ export default function Conversor() {
 
           <hr
             style={{
-              border: "none",
-              borderTop: "1px solid var(--border-subtle)",
-              margin: "4px 0",
+              border: 'none',
+              borderTop: '1px solid var(--border-subtle)',
+              margin: '4px 0',
             }}
           />
 
           <h3
             style={{
-              fontSize: "14px",
-              color: "var(--text-white)",
-              margin: "0",
+              fontSize: '14px',
+              color: 'var(--text-white)',
+              margin: '0',
               fontWeight: 600,
             }}
           >
@@ -649,20 +630,20 @@ export default function Conversor() {
             <textarea id="conv-output" name="osGerada" className="conv-output" value={osGerada} onChange={(e) => setOsGerada(e.target.value)} rows={10} />
             <div className="conv-copiar-acoes">
               {osData?.withdrawal && (
-                <button className="conv-btn-copiar" onClick={() => handleCopiar("retirada")}>
-                  {copiado === "retirada" ? "✅ Copiado!" : "📋 Copiar Retirada"}
+                <button className="conv-btn-copiar" onClick={() => handleCopiar('retirada')}>
+                  {copiado === 'retirada' ? '✅ Copiado!' : '📋 Copiar Retirada'}
                 </button>
               )}
-              <button className="conv-btn-copiar" onClick={() => handleCopiar("instalacao")}>
-                {copiado === "instalacao" ? "✅ Copiado!" : "📋 Copiar Instalação"}
+              <button className="conv-btn-copiar" onClick={() => handleCopiar('instalacao')}>
+                {copiado === 'instalacao' ? '✅ Copiado!' : '📋 Copiar Instalação'}
               </button>
-              <button className="conv-btn-copiar principal" onClick={() => handleCopiar("os")}>
-                {copiado === "os" ? "✅ Copiado!" : "📋 Copiar O.S."}
+              <button className="conv-btn-copiar principal" onClick={() => handleCopiar('os')}>
+                {copiado === 'os' ? '✅ Copiado!' : '📋 Copiar O.S.'}
               </button>
             </div>
           </>
         )}
       </div>
     </div>
-  );
+  )
 }

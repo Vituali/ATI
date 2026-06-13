@@ -24,7 +24,9 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-subtle);
   color: var(--text-main);
-  animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1), fade-in 0.4s ease-out;
+  animation:
+    slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    fade-in 0.4s ease-out;
   backdrop-filter: blur(8px);
   position: relative;
   overflow: hidden;
@@ -74,20 +76,40 @@
 }
 
 /* Tipos específicos */
-.toast-success { border-left: 4px solid #10b981; }
-.toast-success .toast-icon { color: #10b981; }
+.toast-success {
+  border-left: 4px solid #10b981;
+}
+.toast-success .toast-icon {
+  color: #10b981;
+}
 
-.toast-error { border-left: 4px solid #ef4444; }
-.toast-error .toast-icon { color: #ef4444; }
+.toast-error {
+  border-left: 4px solid #ef4444;
+}
+.toast-error .toast-icon {
+  color: #ef4444;
+}
 
-.toast-info { border-left: 4px solid var(--accent-blue); }
-.toast-info .toast-icon { color: var(--accent-blue); }
+.toast-info {
+  border-left: 4px solid var(--accent-blue);
+}
+.toast-info .toast-icon {
+  color: var(--accent-blue);
+}
 
-.toast-warning { border-left: 4px solid #f59e0b; }
-.toast-warning .toast-icon { color: #f59e0b; }
+.toast-warning {
+  border-left: 4px solid #f59e0b;
+}
+.toast-warning .toast-icon {
+  color: #f59e0b;
+}
 
-.toast-confirm { border-left: 4px solid #a855f7; }
-.toast-confirm .toast-icon { color: #a855f7; }
+.toast-confirm {
+  border-left: 4px solid #a855f7;
+}
+.toast-confirm .toast-icon {
+  color: #a855f7;
+}
 
 /* Botões da confirmação */
 .toast-buttons {
@@ -106,7 +128,9 @@
   transition: opacity 0.2s;
 }
 
-.toast-btn:hover { opacity: 0.9; }
+.toast-btn:hover {
+  opacity: 0.9;
+}
 
 .toast-btn-confirm {
   background: var(--accent-blue);
@@ -121,15 +145,28 @@
 
 /* Animações */
 @keyframes slide-up {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes fade-out {
-  to { opacity: 0; transform: scale(0.95); }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
 }

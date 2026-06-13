@@ -1,4 +1,3 @@
-
 import { createRoot } from 'react-dom/client'
 import FloatingChat from './ChatInterno'
 import { UserSession } from '../chatmix/auth/session'

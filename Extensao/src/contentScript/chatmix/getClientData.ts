@@ -29,7 +29,10 @@ export async function getClientData(): Promise<ClientData> {
   if (nameEl) {
     rawName = nameEl.textContent?.trim() ?? ''
     // Remove qualquer CPF/CNPJ de 11 ou 14 dígitos do final do nome para manter a busca limpa
-    fullName = rawName.replace(/\s+\b\d{11}\b/g, '').replace(/\s+\b\d{14}\b/g, '').trim()
+    fullName = rawName
+      .replace(/\s+\b\d{11}\b/g, '')
+      .replace(/\s+\b\d{14}\b/g, '')
+      .trim()
   }
   if (phoneEl) phoneNumber = phoneEl.textContent?.replace(/\D/g, '') ?? ''
 

@@ -175,7 +175,7 @@
 }
 
 .ci-filtro-btn::after {
-  content: "";
+  content: '';
   position: absolute;
   bottom: 0;
   left: 50%;
@@ -205,8 +205,14 @@
 }
 
 @keyframes pulse-dot {
-  from { opacity: 1; transform: scale(1); }
-  to { opacity: 0.7; transform: scale(1.1); }
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
 }
 
 .ci-room-tag {
@@ -237,7 +243,7 @@
 }
 
 .ci-mensagens::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   opacity: 0.06;

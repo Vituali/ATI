@@ -15,8 +15,12 @@
 }
 
 @keyframes slideUpHome {
-  from { transform: translateY(8px); }
-  to   { transform: translateY(0); }
+  from {
+    transform: translateY(8px);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
 
 /* ── Hero ── */
@@ -37,9 +41,11 @@
 
 /* Barra de cor no topo */
 .home-hero::before {
-  content: "";
+  content: '';
   position: absolute;
-  top: 0; left: 0; right: 0;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 2px;
   background: linear-gradient(90deg, transparent, var(--accent-blue) 40%, rgba(100, 200, 255, 0.6) 70%, transparent);
 }
@@ -47,8 +53,10 @@
 /* Glow de fundo */
 .home-hero-glow {
   position: absolute;
-  top: -60px; left: -60px;
-  width: 250px; height: 250px;
+  top: -60px;
+  left: -60px;
+  width: 250px;
+  height: 250px;
   background: radial-gradient(circle, rgba(0, 100, 255, 0.12) 0%, transparent 70%);
   pointer-events: none;
 }
@@ -91,8 +99,15 @@
 }
 
 @keyframes pulse-ring {
-  0%, 100% { transform: scale(1); opacity: 0.6; }
-  50%       { transform: scale(1.08); opacity: 0.2; }
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 0.2;
+  }
 }
 
 /* Texto do hero */
@@ -144,7 +159,11 @@
   line-height: 1.5;
 }
 
-.home-aviso-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 2px; }
+.home-aviso-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
 
 /* ── Layout de linha dupla de cards ── */
 .home-cards-row {
@@ -171,9 +190,11 @@
 }
 
 .home-card::before {
-  content: "";
+  content: '';
   position: absolute;
-  top: 0; left: 0; right: 0;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 2px;
   background: linear-gradient(90deg, transparent, var(--accent-blue), transparent);
   opacity: 0.35;

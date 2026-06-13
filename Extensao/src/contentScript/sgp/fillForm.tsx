@@ -8,6 +8,44 @@ import { showToast } from '../chatmix/helpers'
 
 console.log('Extensão ATI: SGP content script carregado.')
 
+// =================================================================
+// CORRETOR DE LINKS DO SGP (.35 / .53 / PRODUÇÃO)
+// =================================================================
+function startSgpLinkFixer() {
+  const fixLinks = () => {
+    const links = document.querySelectorAll('a[href*="201.158.20.35:8000"], a[href*="201.158.20.53:8000"]')
+    links.forEach((link) => {
+      const href = link.getAttribute('href')
+      if (href) {
+        const newHref = href.replace(/https?:\/\/201\.158\.20\.(?:35|53):8000/gi, window.location.origin)
+        if (newHref !== href) {
+          console.log(`Extensão ATI: Corrigindo link ${href} -> ${newHref}`)
+          link.setAttribute('href', newHref)
+        }
+      }
+    })
+  }
+
+  // Executa de imediato
+  fixLinks()
+
+  // Executa ao detectar mudanças no DOM
+  const observer = new MutationObserver(() => {
+    fixLinks()
+  })
+  observer.observe(document.body, { childList: true, subtree: true })
+
+  // Intervalo de segurança de fallback
+  setInterval(fixLinks, 1000)
+}
+
+// Inicializa a correção de links no SGP
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', startSgpLinkFixer)
+} else {
+  startSgpLinkFixer()
+}
+
 // Recupera a sessão do usuário no storage para inicializar o painel flutuante
 chrome.storage.local.get(['ati_user_session'], (result) => {
   const session = result.ati_user_session
@@ -17,16 +55,10 @@ chrome.storage.local.get(['ati_user_session'], (result) => {
 })
 
 // Função auxiliar para exibir popups modais elegantes no SGP
-function showSgpPromptModal(
-  title: string,
-  text: string,
-  confirmText: string,
-  cancelText: string,
-  onConfirm: () => void
-) {
+function showSgpPromptModal(title: string, text: string, confirmText: string, cancelText: string, onConfirm: () => void) {
   const overlay = document.createElement('div')
   overlay.className = 'ati-sgp-modal-overlay'
-  
+
   overlay.innerHTML = `
     <div class="ati-sgp-modal-card">
       <div class="ati-sgp-modal-title">${title}</div>
@@ -37,20 +69,20 @@ function showSgpPromptModal(
       </div>
     </div>
   `
-  
+
   document.body.appendChild(overlay)
-  
+
   // Força reflow e exibe com animação suave
   setTimeout(() => overlay.classList.add('show'), 10)
-  
+
   const close = () => {
     overlay.classList.remove('show')
     setTimeout(() => overlay.remove(), 300)
   }
-  
+
   const cancelBtn = overlay.querySelector('.ati-sgp-modal-btn--secondary') as HTMLButtonElement
   const confirmBtn = overlay.querySelector('.ati-sgp-modal-btn--primary') as HTMLButtonElement
-  
+
   cancelBtn.addEventListener('click', close)
   confirmBtn.addEventListener('click', () => {
     close()
@@ -60,17 +92,10 @@ function showSgpPromptModal(
 
 const isOccurrencePage = window.location.pathname.includes('/ocorrencia/add/')
 const isPromessaPage = window.location.pathname.includes('/financeiro/promessapagamento/cliente/') && window.location.pathname.includes('/add/')
-const isOsAddPage = window.location.pathname.includes('/ordemservico/add/')
+const isOsAddPage = window.location.pathname.includes('/ordemservico/add/') || window.location.pathname.includes('/os/add/')
 
 function findDateInput(): HTMLInputElement | null {
-  return (
-    document.querySelector<HTMLInputElement>('input.vDateField') ||
-    document.querySelector<HTMLInputElement>('input[name*="vencimento"]') ||
-    document.querySelector<HTMLInputElement>('input[name*="data"]') ||
-    document.querySelector<HTMLInputElement>('input[id*="vencimento"]') ||
-    document.querySelector<HTMLInputElement>('input[id*="data"]') ||
-    document.querySelector<HTMLInputElement>('input[type="date"]')
-  )
+  return document.querySelector<HTMLInputElement>('input.vDateField') || document.querySelector<HTMLInputElement>('input[name*="vencimento"]') || document.querySelector<HTMLInputElement>('input[name*="data"]') || document.querySelector<HTMLInputElement>('input[id*="vencimento"]') || document.querySelector<HTMLInputElement>('input[id*="data"]') || document.querySelector<HTMLInputElement>('input[type="date"]')
 }
 
 // Helper para somar 2 dias úteis
@@ -98,12 +123,12 @@ function formatDate(date: Date): string {
 function showPaymentPromiseMenuModal(clientId: string, contractId?: string | null) {
   const overlay = document.createElement('div')
   overlay.className = 'ati-sgp-modal-overlay'
-  
+
   const today = new Date()
   const comprovanteDate = getComprovanteDate(today)
   const comprovanteDateStr = formatDate(comprovanteDate)
   const todayIso = today.toISOString().split('T')[0]
-  
+
   overlay.innerHTML = `
     <div class="ati-sgp-modal-card">
       <div class="ati-sgp-modal-title">🤝 Promessa de Pagamento</div>
@@ -142,22 +167,22 @@ function showPaymentPromiseMenuModal(clientId: string, contractId?: string | nul
       </div>
     </div>
   `
-  
+
   document.body.appendChild(overlay)
   setTimeout(() => overlay.classList.add('show'), 10)
-  
+
   const close = () => {
     overlay.classList.remove('show')
     setTimeout(() => overlay.remove(), 300)
   }
-  
+
   const btnComprovante = overlay.querySelector('#ati-btn-comprovante') as HTMLButtonElement
   const btnPromessa = overlay.querySelector('#ati-btn-promessa') as HTMLButtonElement
   const btnCancel = overlay.querySelector('#ati-btn-cancel') as HTMLButtonElement
   const datePickerContainer = overlay.querySelector('#ati-date-picker-container') as HTMLDivElement
   const dateInput = overlay.querySelector('#ati-promessa-date-input') as HTMLInputElement
   const btnConfirmDate = overlay.querySelector('#ati-btn-confirm-date') as HTMLButtonElement
-  
+
   btnComprovante.addEventListener('click', () => {
     close()
     let promessaUrl = `${window.location.origin}/admin/financeiro/promessapagamento/cliente/${clientId}/add/?ati_promessa_date=${comprovanteDateStr}`
@@ -166,19 +191,19 @@ function showPaymentPromiseMenuModal(clientId: string, contractId?: string | nul
     }
     window.location.href = promessaUrl
   })
-  
+
   btnPromessa.addEventListener('click', () => {
     datePickerContainer.style.display = 'flex'
     dateInput.focus()
   })
-  
+
   btnConfirmDate.addEventListener('click', () => {
     const rawValue = dateInput.value
     if (!rawValue) {
       showToast('⚠️ Selecione uma data antes de prosseguir.', 'error')
       return
     }
-    
+
     const parts = rawValue.split('-')
     if (parts.length === 3) {
       const formatted = `${parts[2]}/${parts[1]}/${parts[0]}`
@@ -190,7 +215,7 @@ function showPaymentPromiseMenuModal(clientId: string, contractId?: string | nul
       window.location.href = promessaUrl
     }
   })
-  
+
   btnCancel.addEventListener('click', close)
 }
 
@@ -218,7 +243,7 @@ if (isPromessaPage) {
           input.dispatchEvent(new Event('input', { bubbles: true }))
           input.dispatchEvent(new Event('change', { bubbles: true }))
           if ((window as any).jQuery) {
-            (window as any).jQuery(input).trigger('change')
+            ;(window as any).jQuery(input).trigger('change')
           }
           showToast('📅 Data da promessa preenchida automaticamente!', 'success')
         } else if (attempts < 30) {
@@ -234,7 +259,7 @@ if (isPromessaPage) {
         const select = document.querySelector('#id_cobranca') as HTMLSelectElement | null
         if (select) {
           let foundValue: string | null = null
-          
+
           // 1. Tenta correspondência direta pelo valor da option
           for (let i = 0; i < select.options.length; i++) {
             const opt = select.options[i]
@@ -243,7 +268,7 @@ if (isPromessaPage) {
               break
             }
           }
-          
+
           // 2. Tenta encontrar pelo texto (ex: "Contrato: 16036")
           if (!foundValue) {
             for (let i = 0; i < select.options.length; i++) {
@@ -255,7 +280,7 @@ if (isPromessaPage) {
               }
             }
           }
-          
+
           // 3. Tenta correspondência flexível (ex: o número do contrato está no texto)
           if (!foundValue) {
             for (let i = 0; i < select.options.length; i++) {
@@ -268,13 +293,13 @@ if (isPromessaPage) {
               }
             }
           }
-          
+
           if (foundValue) {
             select.value = foundValue
             select.dispatchEvent(new Event('input', { bubbles: true }))
             select.dispatchEvent(new Event('change', { bubbles: true }))
             if ((window as any).jQuery) {
-              (window as any).jQuery(select).trigger('change')
+              ;(window as any).jQuery(select).trigger('change')
             }
             showToast('📄 Contrato preenchido automaticamente!', 'success')
           } else {
@@ -297,46 +322,32 @@ if (!isOccurrencePage && !isPromessaPage && !isOsAddPage) {
     const pendingClientId = sessionStorage.getItem('ati_just_submitted_payment_occurrence')
     const pendingTimestampStr = sessionStorage.getItem('ati_just_submitted_payment_timestamp')
     const pendingContractId = sessionStorage.getItem('ati_just_submitted_payment_contract')
-    
+
     if (pendingClientId && pendingTimestampStr) {
       const pendingTimestamp = parseInt(pendingTimestampStr, 10)
       const now = Date.now()
-      
+
       // Validade de 3 minutos para a ação (dando tempo caso passe por página de O.S. ou redirecionamentos)
       if (now - pendingTimestamp < 180000) {
         let hasSuccessMessage = false
         const msgContainer = document.querySelector('.messagelist, .messagelist2, .alert-success, .alert, .messages, .message')
         if (msgContainer) {
           const containerText = msgContainer.textContent?.toLowerCase() || ''
-          hasSuccessMessage = !!(
-            msgContainer.querySelector('.success') ||
-            containerText.includes('sucesso') ||
-            containerText.includes('cadastrad') ||
-            containerText.includes('adicionad') ||
-            containerText.includes('salv')
-          )
+          hasSuccessMessage = !!(msgContainer.querySelector('.success') || containerText.includes('sucesso') || containerText.includes('cadastrad') || containerText.includes('adicionad') || containerText.includes('salv'))
         } else {
           // Fallback mais leve limitando a busca ao container principal de conteúdo
           const contentEl = document.querySelector('#content, #content-main, #container')
           if (contentEl) {
             const contentText = contentEl.textContent?.toLowerCase() || ''
-            hasSuccessMessage = (
-              contentText.includes('sucesso') ||
-              contentText.includes('cadastrada') ||
-              contentText.includes('cadastrado') ||
-              contentText.includes('adicionada') ||
-              contentText.includes('adicionado') ||
-              contentText.includes('salvo') ||
-              contentText.includes('salva')
-            )
+            hasSuccessMessage = contentText.includes('sucesso') || contentText.includes('cadastrada') || contentText.includes('cadastrado') || contentText.includes('adicionada') || contentText.includes('adicionado') || contentText.includes('salvo') || contentText.includes('salva')
           }
         }
-        
+
         if (hasSuccessMessage) {
           sessionStorage.removeItem('ati_just_submitted_payment_occurrence')
           sessionStorage.removeItem('ati_just_submitted_payment_timestamp')
           sessionStorage.removeItem('ati_just_submitted_payment_contract')
-          
+
           // Abre o novo menu de opções de Promessa de Pagamento se não estiver desativado
           chrome.storage.local.get('hideSgpPromisePrompt', (result) => {
             if (!result.hideSgpPromisePrompt) {
@@ -366,31 +377,26 @@ if (isOccurrencePage) {
     try {
       const typeSelect = document.querySelector('#id_tipo') as HTMLSelectElement | null
       const select2Container = document.querySelector('#select2-id_tipo-container')
-      
+
       let optionText = ''
       if (typeSelect && typeSelect.selectedIndex >= 0) {
         const selectedOption = typeSelect.options[typeSelect.selectedIndex]
         optionText = selectedOption ? selectedOption.textContent || '' : ''
       }
-      
+
       if (!optionText && select2Container) {
         optionText = select2Container.getAttribute('title') || select2Container.textContent || ''
       }
-      
+
       const lowerText = optionText.toLowerCase().trim()
-      
-      if (
-        lowerText.includes('comunicação') ||
-        lowerText.includes('comunicacao') ||
-        lowerText.includes('promessa') ||
-        lowerText.includes('acordo')
-      ) {
+
+      if (lowerText.includes('comunicação') || lowerText.includes('comunicacao') || lowerText.includes('promessa') || lowerText.includes('acordo')) {
         const urlMatch = window.location.pathname.match(/\/cliente\/(\d+)/)
         const clientId = urlMatch ? urlMatch[1] : null
         if (clientId) {
           sessionStorage.setItem('ati_just_submitted_payment_occurrence', clientId)
           sessionStorage.setItem('ati_just_submitted_payment_timestamp', Date.now().toString())
-          
+
           // Salva também o contrato se selecionado
           const contractSelect = document.querySelector('#id_clientecontrato, #id_cobranca') as HTMLSelectElement | null
           if (contractSelect && contractSelect.value) {
@@ -416,15 +422,9 @@ if (isOccurrencePage) {
       console.log('Extensão ATI: Sem dados pendentes para esta requisição.')
       // Sugerir usar o O.S. (Auxiliar) via Popup Modal se não estiver oculto
       if (!hideOsPrompt) {
-        showSgpPromptModal(
-          '📋 O.S. (Auxiliar)',
-          'Você está na tela de adicionar ocorrência. Deseja utilizar o auxiliador de O.S. para selecionar templates e preencher os dados automaticamente?',
-          'Sim, abrir auxiliador',
-          'Não, preencher manualmente',
-          () => {
-            handleOpenOS()
-          }
-        )
+        showSgpPromptModal('📋 O.S. (Auxiliar)', 'Você está na tela de adicionar ocorrência. Deseja utilizar o auxiliador de O.S. para selecionar templates e preencher os dados automaticamente?', 'Sim, abrir auxiliador', 'Não, preencher manualmente', () => {
+          handleOpenOS()
+        })
       }
       return
     }
@@ -454,6 +454,38 @@ if (isOccurrencePage) {
   })
 }
 
+if (isOsAddPage) {
+  chrome.storage.local.get(['ati_pending_os_fill_data'], (result) => {
+    const osData = result.ati_pending_os_fill_data
+    if (!osData) {
+      console.log('Extensão ATI: Nenhum dado de O.S. pendente para preenchimento.')
+      return
+    }
+
+    console.log('Extensão ATI: Dados de O.S. pendentes encontrados. Preenchendo...', osData)
+    chrome.storage.local.remove('ati_pending_os_fill_data')
+
+    // Injeta o script externo primeiro
+    const script = document.createElement('script')
+    script.src = chrome.runtime.getURL('src/contentScript/sgp/sgpFill.js')
+
+    // Quando carregar, envia os dados via postMessage
+    script.onload = () => {
+      window.postMessage(
+        {
+          type: 'ATI_SGP_FILL_OS',
+          data: osData,
+        },
+        window.location.origin,
+      )
+      script.remove()
+      showToast('📋 Ordem de Serviço preenchida automaticamente!', 'success')
+    }
+
+    document.documentElement.appendChild(script)
+  })
+}
+
 // =================================================================
 // NOVO: Coletor de Potências Ópticas (Varredura de Rede)
 // =================================================================
@@ -468,12 +500,12 @@ if (isOpticalListPage) {
 
     // Recupera a sessão do usuário para verificar se é admin
     const sessionResult: any = await new Promise((resolve) => {
-      chrome.storage.local.get(['ati_user_session'], resolve);
-    });
-    const session = sessionResult?.ati_user_session;
+      chrome.storage.local.get(['ati_user_session'], resolve)
+    })
+    const session = sessionResult?.ati_user_session
     if (!session || session.role !== 'admin') {
-      console.log('Extensão ATI: Botão de Enviar Sinais ocultado (requer privilégio de administrador).');
-      return;
+      console.log('Extensão ATI: Botão de Enviar Sinais ocultado (requer privilégio de administrador).')
+      return
     }
 
     const btn = document.createElement('button')
@@ -503,178 +535,173 @@ if (isOpticalListPage) {
     btn.onclick = async () => {
       btn.disabled = true
       btn.innerText = '⏳ Enviando...'
-      
+
       try {
         const headers: string[] = []
         table.querySelectorAll('thead th').forEach((th) => {
           headers.push(th.textContent?.trim().toLowerCase() || '')
         })
 
-        const getColIndex = (name: string) => headers.findIndex(h => h.includes(name))
+        const getColIndex = (name: string) => headers.findIndex((h) => h.includes(name))
 
-        const idxOlt = getColIndex("olt")
-        const idxPon = getColIndex("pon") !== -1 ? getColIndex("pon") : getColIndex("slot")
-        const idxVlan = getColIndex("vlan")
-        const idxId = getColIndex("id") !== -1 ? getColIndex("id") : getColIndex("contrato")
-        const idxRx = getColIndex("rx")
-        const idxTx = getColIndex("tx")
-        const idxRxOlt = getColIndex("rx olt") !== -1 ? getColIndex("rx olt") : getColIndex("olt rx")
-        const idxLogin = getColIndex("login")
-        const idxContrato = getColIndex("contrato")
-        const idxNome = getColIndex("nome")
-        const idxBairro = getColIndex("bairro")
-        const idxEndereco = getColIndex("endereço") !== -1 ? getColIndex("endereço") : getColIndex("endereco")
+        const idxOlt = getColIndex('olt')
+        const idxPon = getColIndex('pon') !== -1 ? getColIndex('pon') : getColIndex('slot')
+        const idxVlan = getColIndex('vlan')
+        const idxId = getColIndex('id') !== -1 ? getColIndex('id') : getColIndex('contrato')
+        const idxRx = getColIndex('rx')
+        const idxTx = getColIndex('tx')
+        const idxRxOlt = getColIndex('rx olt') !== -1 ? getColIndex('rx olt') : getColIndex('olt rx')
+        const idxLogin = getColIndex('login')
+        const idxContrato = getColIndex('contrato')
+        const idxNome = getColIndex('nome')
+        const idxBairro = getColIndex('bairro')
+        const idxEndereco = getColIndex('endereço') !== -1 ? getColIndex('endereço') : getColIndex('endereco')
 
         // Helper para buscar Nome, Bairro e Endereço na página de detalhes do serviço
         const fetchClientDetails = async (servicoId: string) => {
           try {
-            const url = `${window.location.origin}/admin/servicos/internet/${servicoId}/`;
-            const response = await fetch(url, { credentials: 'include' });
-            if (!response.ok) return { nome: "", bairro: "", endereco: "" };
-            const htmlText = await response.text();
-            
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(htmlText, 'text/html');
-            
-            // 1. Tenta obter o nome do cliente a partir de links para o cadastro de cliente na página
-            let nome = "";
-            const allLinks = Array.from(doc.querySelectorAll('a'));
-            
-            // Log de diagnóstico dos links de cliente
-            console.log('[ATI DEBUG] Analisando todos os links da página de detalhes...');
-            allLinks.forEach(link => {
-              const href = link.getAttribute('href') || "";
-              if (href.includes('/admin/cliente/cliente/') && !href.includes('/add/') && !href.includes('/list/')) {
-                console.log(`[ATI DEBUG] Link de cliente candidato: href="${href}", texto="${link.textContent?.trim()}"`);
-              }
-            });
+            const url = `${window.location.origin}/admin/servicos/internet/${servicoId}/`
+            const response = await fetch(url, { credentials: 'include' })
+            if (!response.ok) return { nome: '', bairro: '', endereco: '' }
+            const htmlText = await response.text()
 
-            const clientAnchor = allLinks.find(link => {
-              const href = link.getAttribute('href') || "";
+            const parser = new DOMParser()
+            const doc = parser.parseFromString(htmlText, 'text/html')
+
+            // 1. Tenta obter o nome do cliente a partir de links para o cadastro de cliente na página
+            let nome = ''
+            const allLinks = Array.from(doc.querySelectorAll('a'))
+
+            // Log de diagnóstico dos links de cliente
+            console.log('[ATI DEBUG] Analisando todos os links da página de detalhes...')
+            allLinks.forEach((link) => {
+              const href = link.getAttribute('href') || ''
+              if (href.includes('/admin/cliente/cliente/') && !href.includes('/add/') && !href.includes('/list/')) {
+                console.log(`[ATI DEBUG] Link de cliente candidato: href="${href}", texto="${link.textContent?.trim()}"`)
+              }
+            })
+
+            const clientAnchor = allLinks.find((link) => {
+              const href = link.getAttribute('href') || ''
               // Evita links de listagem ou de adicionar
-              return href.includes('/admin/cliente/cliente/') && 
-                     !href.includes('/add/') && 
-                     !href.endsWith('/cliente/') && 
-                     !href.includes('/list/') && 
-                     link.textContent?.trim() && 
-                     !/^(alterar|excluir|histórico|historico|add|adicionar|limpar)$/i.test(link.textContent.trim());
-            });
+              return href.includes('/admin/cliente/cliente/') && !href.includes('/add/') && !href.endsWith('/cliente/') && !href.includes('/list/') && link.textContent?.trim() && !/^(alterar|excluir|histórico|historico|add|adicionar|limpar)$/i.test(link.textContent.trim())
+            })
 
             if (clientAnchor) {
-              const clientText = clientAnchor.textContent?.trim() || "";
+              const clientText = clientAnchor.textContent?.trim() || ''
               // Exemplo: "3634 - DILSON LOPES DA SILVA JUNIOR" ou "DILSON LOPES DA SILVA JUNIOR"
               if (clientText.includes(' - ')) {
-                const parts = clientText.split(' - ');
+                const parts = clientText.split(' - ')
                 if (/^\d+$/.test(parts[0].trim())) {
-                  nome = parts.slice(1).join(' - ').trim();
+                  nome = parts.slice(1).join(' - ').trim()
                 } else {
-                  nome = clientText;
+                  nome = clientText
                 }
               } else {
-                nome = clientText;
+                nome = clientText
               }
-              console.log('[ATI DEBUG] Nome extraído do link de cliente:', nome);
+              console.log('[ATI DEBUG] Nome extraído do link de cliente:', nome)
             }
 
             // 2. Fallback para os breadcrumbs se não achar pelo link
             if (!nome) {
-              const breadcrumbEl = doc.querySelector('.breadcrumbs, .breadcrumb');
+              const breadcrumbEl = doc.querySelector('.breadcrumbs, .breadcrumb')
               if (breadcrumbEl) {
-                const anchors = Array.from(breadcrumbEl.querySelectorAll('a'));
-                const clientLinkInBreadcrumbs = anchors.find(a => a.getAttribute('href')?.includes('/admin/cliente/cliente/'));
+                const anchors = Array.from(breadcrumbEl.querySelectorAll('a'))
+                const clientLinkInBreadcrumbs = anchors.find((a) => a.getAttribute('href')?.includes('/admin/cliente/cliente/'))
                 if (clientLinkInBreadcrumbs) {
-                  nome = clientLinkInBreadcrumbs.textContent?.trim() || "";
+                  nome = clientLinkInBreadcrumbs.textContent?.trim() || ''
                 }
               }
             }
 
             // 3. Fallback para h1 heading
             if (!nome) {
-              const heading = doc.querySelector('#content-main h1, #content h1, h1');
+              const heading = doc.querySelector('#content-main h1, #content h1, h1')
               if (heading) {
-                const headingText = heading.textContent?.trim() || "";
-                console.log('[ATI DEBUG] Heading text:', headingText);
+                const headingText = heading.textContent?.trim() || ''
+                console.log('[ATI DEBUG] Heading text:', headingText)
                 if (headingText.includes('|')) {
-                  nome = headingText.split('|').pop()?.trim() || "";
+                  nome = headingText.split('|').pop()?.trim() || ''
                 } else if (headingText.includes(' - ')) {
-                  nome = headingText.split(' - ').pop()?.trim() || "";
+                  nome = headingText.split(' - ').pop()?.trim() || ''
                 }
               }
             }
 
-            console.log('[ATI DEBUG] Nome final detectado para o serviço ' + servicoId + ':', nome);
+            console.log('[ATI DEBUG] Nome final detectado para o serviço ' + servicoId + ':', nome)
 
             const getInputValue = (id: string) => {
-              const input = doc.getElementById(id) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null;
-              return input ? input.value?.trim() || "" : "";
-            };
+              const input = doc.getElementById(id) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null
+              return input ? input.value?.trim() || '' : ''
+            }
 
             // Tenta obter o bairro da instalação, senão da cobrança
-            let bairro = getInputValue('id_enderecoinst-bairro') || getInputValue('id_enderecocob-bairro');
-            
+            let bairro = getInputValue('id_enderecoinst-bairro') || getInputValue('id_enderecocob-bairro')
+
             // Endereço de instalação
-            let logradouro = getInputValue('id_enderecoinst-logradouro');
-            let numero = getInputValue('id_enderecoinst-numero');
-            let complemento = getInputValue('id_enderecoinst-complemento');
-            
+            let logradouro = getInputValue('id_enderecoinst-logradouro')
+            let numero = getInputValue('id_enderecoinst-numero')
+            let complemento = getInputValue('id_enderecoinst-complemento')
+
             // Se não achar instalação, tenta cobrança
             if (!logradouro) {
-              logradouro = getInputValue('id_enderecocob-logradouro');
-              numero = getInputValue('id_enderecocob-numero');
-              complemento = getInputValue('id_enderecocob-complemento');
+              logradouro = getInputValue('id_enderecocob-logradouro')
+              numero = getInputValue('id_enderecocob-numero')
+              complemento = getInputValue('id_enderecocob-complemento')
             }
 
-            let endereco = "";
+            let endereco = ''
             if (logradouro) {
-              endereco = logradouro;
-              if (numero) endereco += `, ${numero}`;
-              if (complemento) endereco += ` - ${complemento}`;
+              endereco = logradouro
+              if (numero) endereco += `, ${numero}`
+              if (complemento) endereco += ` - ${complemento}`
             }
 
-            return { nome, bairro, endereco };
+            return { nome, bairro, endereco }
           } catch (e) {
-            console.error("Erro ao carregar detalhes do cliente:", e);
-            return { nome: "", bairro: "", endereco: "" };
+            console.error('Erro ao carregar detalhes do cliente:', e)
+            return { nome: '', bairro: '', endereco: '' }
           }
-        };
+        }
 
-        const dados: any[] = [];
+        const dados: any[] = []
         table.querySelectorAll('tbody tr').forEach((row) => {
-          const cells = row.querySelectorAll('td');
-          if (cells.length === 0) return;
+          const cells = row.querySelectorAll('td')
+          if (cells.length === 0) return
 
           const getVal = (index: number) => {
-            if (index === -1 || index >= cells.length) return "";
-            return cells[index].textContent?.trim() || "";
-          };
+            if (index === -1 || index >= cells.length) return ''
+            return cells[index].textContent?.trim() || ''
+          }
 
           // Extrai ID do contrato da coluna de contrato (primeiro grupo de dígitos)
-          const contratoVal = getVal(idxContrato);
-          const contratoIdMatch = contratoVal.match(/^(\d+)/);
-          const contratoId = contratoIdMatch ? contratoIdMatch[1] : "";
+          const contratoVal = getVal(idxContrato)
+          const contratoIdMatch = contratoVal.match(/^(\d+)/)
+          const contratoId = contratoIdMatch ? contratoIdMatch[1] : ''
 
           // Extrai o nome do cliente (parte após o " - ")
-          let nome = "";
-          if (contratoVal.includes(" - ")) {
-            nome = contratoVal.split(" - ").slice(1).join(" - ").trim();
+          let nome = ''
+          if (contratoVal.includes(' - ')) {
+            nome = contratoVal.split(' - ').slice(1).join(' - ').trim()
           } else {
-            const loginVal = getVal(idxLogin);
-            if (loginVal.includes(" - ")) {
-              nome = loginVal.split(" - ").slice(1).join(" - ").trim();
+            const loginVal = getVal(idxLogin)
+            if (loginVal.includes(' - ')) {
+              nome = loginVal.split(' - ').slice(1).join(' - ').trim()
             }
           }
 
           // Tenta extrair o link do serviço e o ID do serviço da coluna de login
-          const loginCell = cells[idxLogin];
-          let servicoId = "";
+          const loginCell = cells[idxLogin]
+          let servicoId = ''
           if (loginCell) {
-            const anchor = loginCell.querySelector('a');
+            const anchor = loginCell.querySelector('a')
             if (anchor) {
-              const href = anchor.getAttribute('href') || "";
+              const href = anchor.getAttribute('href') || ''
               if (href) {
-                const servicoIdMatch = href.match(/\/servicos\/internet\/(\d+)/);
+                const servicoIdMatch = href.match(/\/servicos\/internet\/(\d+)/)
                 if (servicoIdMatch) {
-                  servicoId = servicoIdMatch[1];
+                  servicoId = servicoIdMatch[1]
                 }
               }
             }
@@ -693,122 +720,118 @@ if (isOpticalListPage) {
             nome: nome || getVal(idxNome),
             bairro: getVal(idxBairro),
             endereco: getVal(idxEndereco),
-            status: "Não Verificado",
+            status: 'Não Verificado',
             servicoId,
-            contratoId
-          });
-        });
+            contratoId,
+          })
+        })
 
         if (dados.length === 0) {
-          showToast('⚠️ Nenhuma linha de potência encontrada na tabela.', 'error');
-          btn.disabled = false;
-          btn.innerText = '📊 Enviar Sinais ao Painel ATI';
-          return;
+          showToast('⚠️ Nenhuma linha de potência encontrada na tabela.', 'error')
+          btn.disabled = false
+          btn.innerText = '📊 Enviar Sinais ao Painel ATI'
+          return
         }
 
-        btn.disabled = true;
-        btn.innerText = '⏳ Carregando cache...';
+        btn.disabled = true
+        btn.innerText = '⏳ Carregando cache...'
 
         // Recupera atendente e token da sessão
         const sessionResult: any = await new Promise((resolve) => {
-          chrome.storage.local.get(['ati_user_session'], resolve);
-        });
-        const session = sessionResult?.ati_user_session;
-        const idToken = session?.idToken || '';
-        const atendente = session?.nomeCompleto || 'Victor (Extension)';
+          chrome.storage.local.get(['ati_user_session'], resolve)
+        })
+        const session = sessionResult?.ati_user_session
+        const idToken = session?.idToken || ''
+        const atendente = session?.nomeCompleto || 'Victor (Extension)'
 
-        const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID || 'site-ati-75d83';
-        const dbUrl = import.meta.env.MODE === 'development'
-          ? `http://127.0.0.1:9000/clientes_cadastro.json?ns=${projectId}`
-          : `https://${projectId}-default-rtdb.firebaseio.com/clientes_cadastro.json`;
+        const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID || 'site-ati-75d83'
+        const dbUrl = import.meta.env.MODE === 'development' ? `http://127.0.0.1:9000/clientes_cadastro.json?ns=${projectId}` : `https://${projectId}-default-rtdb.firebaseio.com/clientes_cadastro.json`
 
         // 1. Baixa o cache de clientes já conhecidos do Firebase
-        let cacheClientes: Record<string, { bairro: string, endereco: string, updatedAt?: number }> = {};
+        let cacheClientes: Record<string, { bairro: string; endereco: string; updatedAt?: number }> = {}
         try {
-          const separator = dbUrl.includes('?') ? '&' : '?';
-          const authParam = idToken ? `${separator}auth=${idToken}` : '';
-          const cacheResponse = await fetch(`${dbUrl}${authParam}`, { signal: AbortSignal.timeout(5000) });
+          const separator = dbUrl.includes('?') ? '&' : '?'
+          const authParam = idToken ? `${separator}auth=${idToken}` : ''
+          const cacheResponse = await fetch(`${dbUrl}${authParam}`, { signal: AbortSignal.timeout(5000) })
           if (cacheResponse.ok) {
-            cacheClientes = await cacheResponse.json() || {};
+            cacheClientes = (await cacheResponse.json()) || {}
           }
         } catch (e) {
-          console.warn("Falha ao ler cache do Firebase, buscando direto no SGP:", e);
+          console.warn('Falha ao ler cache do Firebase, buscando direto no SGP:', e)
         }
 
         // 2. Mescla os dados locais com o cache (validade de 1 semana)
-        const CACHE_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 dias
-        dados.forEach(item => {
-          const cache = cacheClientes[item.id] as any;
-          const cacheValido = cache && cache.updatedAt && (Date.now() - cache.updatedAt < CACHE_MAX_AGE);
-          
+        const CACHE_MAX_AGE = 7 * 24 * 60 * 60 * 1000 // 7 dias
+        dados.forEach((item) => {
+          const cache = cacheClientes[item.id] as any
+          const cacheValido = cache && cache.updatedAt && Date.now() - cache.updatedAt < CACHE_MAX_AGE
+
           // Se o nome no cache for vazio, igual ao login ou "ATI DIGITAL", forçamos a busca para atualizar
-          const nomeCacheIncorreto = cache && (!cache.nome || cache.nome === item.login || cache.nome === "ATI DIGITAL");
+          const nomeCacheIncorreto = cache && (!cache.nome || cache.nome === item.login || cache.nome === 'ATI DIGITAL')
 
           if (cacheValido && cache.bairro && cache.endereco && !nomeCacheIncorreto) {
-            item.nome = cache.nome || item.nome;
-            item.bairro = cache.bairro;
-            item.endereco = cache.endereco;
-            item.shouldFetch = false;
+            item.nome = cache.nome || item.nome
+            item.bairro = cache.bairro
+            item.endereco = cache.endereco
+            item.shouldFetch = false
           } else {
-            item.shouldFetch = !!item.servicoId;
+            item.shouldFetch = !!item.servicoId
           }
-        });
+        })
 
         // 3. Executa a busca em segundo plano apenas dos que não estão no cache (lotes de 15)
-        const paraBuscar = dados.filter(item => item.shouldFetch);
-        const total = paraBuscar.length;
-        let completed = 0;
+        const paraBuscar = dados.filter((item) => item.shouldFetch)
+        const total = paraBuscar.length
+        let completed = 0
 
         if (total > 0) {
-          btn.innerText = `⏳ Buscando Endereços (0/${total})...`;
-          const concurrencyLimit = 15;
+          btn.innerText = `⏳ Buscando Endereços (0/${total})...`
+          const concurrencyLimit = 15
 
           const executeFetch = async (item: any) => {
-            const details = await fetchClientDetails(item.servicoId);
-            item.nome = details.nome || item.nome;
-            item.bairro = details.bairro || item.bairro;
-            item.endereco = details.endereco || item.endereco;
-            completed++;
-            btn.innerText = `⏳ Buscando Endereços (${completed}/${total})...`;
-          };
+            const details = await fetchClientDetails(item.servicoId)
+            item.nome = details.nome || item.nome
+            item.bairro = details.bairro || item.bairro
+            item.endereco = details.endereco || item.endereco
+            completed++
+            btn.innerText = `⏳ Buscando Endereços (${completed}/${total})...`
+          }
 
           for (let i = 0; i < paraBuscar.length; i += concurrencyLimit) {
-            const batch = paraBuscar.slice(i, i + concurrencyLimit).map(item => executeFetch(item));
-            await Promise.all(batch);
+            const batch = paraBuscar.slice(i, i + concurrencyLimit).map((item) => executeFetch(item))
+            await Promise.all(batch)
           }
         }
 
         // Limpa campos temporários de todos
-        dados.forEach(item => {
-          delete item.shouldFetch;
-          item.serviceUrl = item.servicoId ? `${window.location.origin}/admin/servicos/internet/${item.servicoId}/` : "";
-        });
+        dados.forEach((item) => {
+          delete item.shouldFetch
+          item.serviceUrl = item.servicoId ? `${window.location.origin}/admin/servicos/internet/${item.servicoId}/` : ''
+        })
 
-        btn.innerText = '⏳ Enviando Sinais ao Painel...';
+        btn.innerText = '⏳ Enviando Sinais ao Painel...'
 
         // O Vite vai injetar o modo correto de build
-        const backendUrl = import.meta.env.MODE === 'development'
-          ? `http://127.0.0.1:5001/${projectId}/us-central1/receberDadosPotencia`
-          : `https://us-central1-${projectId}.cloudfunctions.net/receberDadosPotencia`;
+        const backendUrl = import.meta.env.MODE === 'development' ? `http://127.0.0.1:5001/${projectId}/us-central1/receberDadosPotencia` : `https://us-central1-${projectId}.cloudfunctions.net/receberDadosPotencia`
 
         const response = await fetch(backendUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ atendente, dados })
-        });
+          body: JSON.stringify({ atendente, dados }),
+        })
 
-        const resData = await response.json();
+        const resData = await response.json()
 
         if (resData.ok) {
-          showToast(`🚀 ${dados.length} sinais enviados com sucesso ao Painel!`, 'success');
+          showToast(`🚀 ${dados.length} sinais enviados com sucesso ao Painel!`, 'success')
         } else {
-          showToast(`❌ Falha ao processar sinais: ${resData.error || 'Erro desconhecido'}`, 'error');
+          showToast(`❌ Falha ao processar sinais: ${resData.error || 'Erro desconhecido'}`, 'error')
         }
       } catch (err: any) {
-        showToast(`❌ Erro de conexão: ${err.message}`, 'error');
+        showToast(`❌ Erro de conexão: ${err.message}`, 'error')
       } finally {
-        btn.disabled = false;
-        btn.innerText = '📊 Enviar Sinais ao Painel ATI';
+        btn.disabled = false
+        btn.innerText = '📊 Enviar Sinais ao Painel ATI'
       }
     }
 
@@ -818,4 +841,3 @@ if (isOpticalListPage) {
   // Pequeno atraso para garantir a renderização da tabela
   setTimeout(injectFloatingButton, 1500)
 }
-

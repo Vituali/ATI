@@ -12,12 +12,12 @@ function isChatOlderThanOneHour(timeText: string): boolean {
       const now = new Date()
       const currentMinutes = now.getHours() * 60 + now.getMinutes()
       const chatMinutes = hours * 60 + minutes
-      
+
       let diff = currentMinutes - chatMinutes
       if (diff < 0) {
         // Virada de dia (meia-noite). Assumimos que passou de 1 hora se a diferença real é maior
         // ou se simplesmente cruzou a noite
-        const diffCrossed = (currentMinutes + 1440) - chatMinutes
+        const diffCrossed = currentMinutes + 1440 - chatMinutes
         return diffCrossed >= 60
       }
       return diff >= 60
@@ -52,10 +52,10 @@ export function updateChatTimeWarnings(): void {
 
     // Obtém texto bruto atual
     const currentRawText = timeEl.textContent || ''
-    
+
     // Verifica se o aviso já está presente
     const warningSpan = timeEl.querySelector('.ati-time-warning')
-    
+
     // Se o span de aviso não está no DOM, o texto atual é a hora limpa que veio do app.
     // Atualizamos nosso dataset com este valor limpo.
     if (!warningSpan) {
@@ -78,12 +78,12 @@ export function updateChatTimeWarnings(): void {
         if (!warningSpan) {
           // Esvazia e reconstrói de forma limpa para evitar duplicações
           timeEl.textContent = ''
-          
+
           const newWarningSpan = document.createElement('span')
           newWarningSpan.className = 'ati-time-warning'
           newWarningSpan.textContent = '⚠️'
           timeEl.appendChild(newWarningSpan)
-          
+
           const textNode = document.createTextNode(timeText)
           timeEl.appendChild(textNode)
         }

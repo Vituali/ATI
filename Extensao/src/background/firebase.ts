@@ -2,8 +2,6 @@
 // FIREBASE — CONFIG, LOGIN E DADOS
 // =================================================================
 
-
-
 import { firebaseConfig } from './config'
 export { firebaseConfig }
 
@@ -163,15 +161,15 @@ export async function getOccurrenceTypes(baseUrl: string, idToken: string): Prom
   // Camada 1: cache de sessão (específico por baseUrl para evitar conflitos entre ambientes)
   const cacheKey = `occurrenceTypes_${baseUrl}`
   const cached = await chrome.storage.session.get(cacheKey)
-  
+
   if (cached[cacheKey]) {
     console.log(`Extensão ATI: [Cache HIT] Tipos de ocorrência do cache de sessão (${cached[cacheKey].length} tipos). Revalidando em background...`)
-    
+
     // Dispara a revalidação em background silenciosamente
     _revalidateOccurrenceTypes(baseUrl, idToken, cacheKey, cached[cacheKey]).catch((err) => {
       console.warn('Extensão ATI: Falha silenciosa ao revalidar tipos de ocorrência:', err)
     })
-    
+
     return cached[cacheKey]
   }
 
@@ -241,7 +239,7 @@ async function _fetchOccurrenceTypesInternal(baseUrl: string, idToken: string, c
       // Sincronização secundária em background para a outra base se possível
       const otherUrl = is53 ? 'http://201.158.20.35:8000' : 'http://201.158.20.53:8000'
       const otherDbNode = is53 ? 'sgp_cache' : 'sgp_cache_53'
-      
+
       fetch(`${otherUrl}/admin/atendimento/cliente/1/ocorrencia/add/`, {
         credentials: 'include',
         signal: AbortSignal.timeout(6000),
@@ -295,19 +293,15 @@ export async function getOsTemplates(username: string, idToken: string): Promise
   }
   try {
     // Busca templates, tipos 35 e tipos 53 em paralelo
-    const [templatesRes, types35Res, types53Res] = await Promise.all([
-      fetch(`${firebaseConfig.databaseURL}modelos_os/${username}.json?auth=${idToken}`),
-      fetch(`${firebaseConfig.databaseURL}sgp_cache/occurrenceTypes.json?auth=${idToken}`),
-      fetch(`${firebaseConfig.databaseURL}sgp_cache_53/occurrenceTypes.json?auth=${idToken}`),
-    ])
+    const [templatesRes, types35Res, types53Res] = await Promise.all([fetch(`${firebaseConfig.databaseURL}modelos_os/${username}.json?auth=${idToken}`), fetch(`${firebaseConfig.databaseURL}sgp_cache/occurrenceTypes.json?auth=${idToken}`), fetch(`${firebaseConfig.databaseURL}sgp_cache_53/occurrenceTypes.json?auth=${idToken}`)])
 
     const data = await templatesRes.json()
     const rawTypes35 = await types35Res.json().catch(() => null)
     const rawTypes53 = await types53Res.json().catch(() => null)
 
     const templates = data ? (Object.values(data) as OsTemplate[]) : []
-    const types35 = Array.isArray(rawTypes35) ? rawTypes35 : (rawTypes35 ? Object.values(rawTypes35) : [])
-    const types53 = Array.isArray(rawTypes53) ? rawTypes53 : (rawTypes53 ? Object.values(rawTypes53) : [])
+    const types35 = Array.isArray(rawTypes35) ? rawTypes35 : rawTypes35 ? Object.values(rawTypes35) : []
+    const types53 = Array.isArray(rawTypes53) ? rawTypes53 : rawTypes53 ? Object.values(rawTypes53) : []
 
     // Enriquecimento dinâmico em tempo de execução para retrocompatibilidade
     templates.forEach((t) => {
@@ -326,7 +320,7 @@ export async function getOsTemplates(username: string, idToken: string): Promise
           }
         }
       }
-      
+
       // Vice-versa: se tiver ID .53 mas faltar o nome ou o ID .35
       if (t.occurrenceTypeId_53 && !t.occurrenceTypeId) {
         const found53 = (types53 as any[]).find((item) => item && String(item.id) === String(t.occurrenceTypeId_53))
@@ -363,11 +357,7 @@ export async function getQuickReplies(username: string, idToken: string): Promis
   }
 
   try {
-    const [userRes, masterRes, orderRes] = await Promise.all([
-      fetch(`${firebaseConfig.databaseURL}respostas/${username}.json?auth=${idToken}`),
-      fetch(`${firebaseConfig.databaseURL}respostas/master.json?auth=${idToken}`),
-      fetch(`${firebaseConfig.databaseURL}categorias_ordem/${username}.json?auth=${idToken}`)
-    ])
+    const [userRes, masterRes, orderRes] = await Promise.all([fetch(`${firebaseConfig.databaseURL}respostas/${username}.json?auth=${idToken}`), fetch(`${firebaseConfig.databaseURL}respostas/master.json?auth=${idToken}`), fetch(`${firebaseConfig.databaseURL}categorias_ordem/${username}.json?auth=${idToken}`)])
 
     const userData = await userRes.json()
     const masterData = masterRes.ok ? await masterRes.json() : null

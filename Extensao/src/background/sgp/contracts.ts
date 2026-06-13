@@ -59,13 +59,7 @@ export async function fetchContractOnlineStatus(baseUrl: string, clientId: strin
   return statusMap
 }
 
-export async function buildContracts(
-  baseUrl: string,
-  client: SgpClient,
-  html: string,
-  multipleClients: boolean,
-  onlineStatusMap?: Map<string, boolean>
-): Promise<any[]> {
+export async function buildContracts(baseUrl: string, client: SgpClient, html: string, multipleClients: boolean, onlineStatusMap?: Map<string, boolean>): Promise<any[]> {
   const initialContracts = extractOptions(html, /<select[^>]+id=['"]id_clientecontrato['"][^>]*>([\s\S]*?)<\/select>/)
 
   // Recupera endereços previamente cacheados em lote

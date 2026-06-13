@@ -83,7 +83,7 @@ export function findCPF(allTexts: string[]): string | null {
 // --- Busca CPF/CNPJ com priorização baseada em remetente ---
 export function findCpfCnpjInChat(fullName?: string): string | null {
   const chatBody = document.querySelector(SELECTORS.chatBody)
-  
+
   const clientMatches: string[] = []
   const otherMatches: string[] = []
   const headerMatches: string[] = []
@@ -278,11 +278,11 @@ export function showToast(message: string, type: 'error' | 'success' | 'info' = 
   const iconSpan = document.createElement('span')
   iconSpan.className = 'ati-toast-icon'
   iconSpan.textContent = icon
-  
+
   const contentDiv = document.createElement('div')
   contentDiv.className = 'ati-toast-content'
   contentDiv.textContent = message
-  
+
   toast.appendChild(iconSpan)
   toast.appendChild(contentDiv)
 

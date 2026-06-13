@@ -4,87 +4,87 @@
 // Mostra boas-vindas, perfil completo (incluindo SGP) e atalhos rápidos.
 // ---------------------------------------------------------------
 
-import { UserProfile } from "../../hooks/useUser";
-import { isPendente, getSetorLabel, getRoleLabel, getAllowedSections, Section } from "../../services/permissions";
-import "./Home.css";
-import AvisosHome from "../../components/app/AvisosHome";
+import { UserProfile } from '../../hooks/useUser'
+import { isPendente, getSetorLabel, getRoleLabel, getAllowedSections, Section } from '../../services/permissions'
+import './Home.css'
+import AvisosHome from '../../components/app/AvisosHome'
 
 interface HomeProps {
-  user: UserProfile;
-  onSelectSection: (section: Section) => void;
+  user: UserProfile
+  onSelectSection: (section: Section) => void
 }
 
 function getSaudacao(): string {
-  const h = new Date().getHours();
-  if (h >= 5 && h < 12) return "Bom dia";
-  if (h >= 12 && h < 18) return "Boa tarde";
-  return "Boa noite";
+  const h = new Date().getHours()
+  if (h >= 5 && h < 12) return 'Bom dia'
+  if (h >= 12 && h < 18) return 'Boa tarde'
+  return 'Boa noite'
 }
 
 const SECTION_META: Record<Section, { icon: string; label: string; desc: string; color: string }> = {
   home: {
-    icon: "🏠",
-    label: "Home",
-    desc: "Página inicial",
-    color: "#64b5f6",
+    icon: '🏠',
+    label: 'Home',
+    desc: 'Página inicial',
+    color: '#64b5f6',
   },
   chat_interno: {
-    icon: "💬",
-    label: "Chat Interno",
-    desc: "Chat interno",
-    color: "#4dd0e1",
+    icon: '💬',
+    label: 'Chat Interno',
+    desc: 'Chat interno',
+    color: '#4dd0e1',
   },
   anotacoes: {
-    icon: "📓",
-    label: "Minhas Anotações",
-    desc: "Notas pessoais, rascunhos e lembretes rápidos",
-    color: "#ff8a65",
+    icon: '📓',
+    label: 'Minhas Anotações',
+    desc: 'Notas pessoais, rascunhos e lembretes rápidos',
+    color: '#ff8a65',
   },
   respostas_rapidas: {
-    icon: "🗨️",
-    label: "Respostas Rápidas",
-    desc: "Respostas rápidas e categorizadas para atendimentos",
-    color: "#4dd0e1",
+    icon: '🗨️',
+    label: 'Respostas Rápidas',
+    desc: 'Respostas rápidas e categorizadas para atendimentos',
+    color: '#4dd0e1',
   },
   modelos_os: {
-    icon: "📝",
-    label: "Modelos de O.S.",
-    desc: "Templates de ordens de serviço para o SGP",
-    color: "#aed581",
+    icon: '📝',
+    label: 'Modelos de O.S.',
+    desc: 'Templates de ordens de serviço para o SGP',
+    color: '#aed581',
   },
   conversor: {
-    icon: "📄",
-    label: "Conversor de Aditivo",
-    desc: "Extrai dados de PDFs de aditivo e gera O.S. formatada",
-    color: "#ffb74d",
+    icon: '📄',
+    label: 'Conversor de Aditivo',
+    desc: 'Extrai dados de PDFs de aditivo e gera O.S. formatada',
+    color: '#ffb74d',
   },
   senhas: {
-    icon: "🔑",
-    label: "Senhas",
-    desc: "Logins e acessos rápidos a equipamentos e sistemas",
-    color: "#f06292",
+    icon: '🔑',
+    label: 'Senhas',
+    desc: 'Logins e acessos rápidos a equipamentos e sistemas',
+    color: '#f06292',
   },
   relatorios: {
-    icon: "📊",
-    label: "Relatórios",
-    desc: "Visão gerencial e indicadores de atendimento",
-    color: "#ba68c8",
+    icon: '📊',
+    label: 'Relatórios',
+    desc: 'Visão gerencial e indicadores de atendimento',
+    color: '#ba68c8',
   },
   admin: {
-    icon: "🛡️",
-    label: "Admin",
-    desc: "Gerenciamento de usuários, roles e setores",
-    color: "#0064ff",
+    icon: '🛡️',
+    label: 'Admin',
+    desc: 'Gerenciamento de usuários, roles e setores',
+    color: '#0064ff',
   },
-};
+}
 
 export default function Home({ user, onSelectSection }: HomeProps) {
-  const pendente = isPendente(user.setor);
-  const primeiroNome = user.nomeCompleto.split(" ")[0];
-  const inicial = primeiroNome.charAt(0).toUpperCase();
+  const pendente = isPendente(user.setor)
+  const primeiroNome = user.nomeCompleto.split(' ')[0]
+  const inicial = primeiroNome.charAt(0).toUpperCase()
 
   // Seções acessíveis (excluindo home)
-  const acessos = getAllowedSections(user.role, user.setor).filter((s) => s !== "home");
+  const acessos = getAllowedSections(user.role, user.setor).filter((s) => s !== 'home')
 
   return (
     <div className="home-page">
@@ -105,7 +105,7 @@ export default function Home({ user, onSelectSection }: HomeProps) {
           <p className="home-subtitulo">Bem-vindo ao ATI — Auxiliar de Atendimentos</p>
           <div className="home-hero-badges">
             <span className={`home-badge role-${user.role}`}>{getRoleLabel(user.role)}</span>
-            <span className={`home-badge setor ${pendente ? "pendente" : "ok"}`}>{getSetorLabel(user.setor)}</span>
+            <span className={`home-badge setor ${pendente ? 'pendente' : 'ok'}`}>{getSetorLabel(user.setor)}</span>
             <span className="home-badge ok">Ativo</span>
           </div>
         </div>
@@ -143,13 +143,13 @@ export default function Home({ user, onSelectSection }: HomeProps) {
             </div>
             <div className="home-info-item">
               <span className="home-info-label">E-mail</span>
-              <span className="home-info-valor" style={{ fontSize: "0.9rem" }}>
+              <span className="home-info-valor" style={{ fontSize: '0.9rem' }}>
                 {user.email}
               </span>
             </div>
             <div className="home-info-item">
               <span className="home-info-label">Setor</span>
-              <span className={`home-badge setor ${pendente ? "pendente" : "ok"}`}>{getSetorLabel(user.setor)}</span>
+              <span className={`home-badge setor ${pendente ? 'pendente' : 'ok'}`}>{getSetorLabel(user.setor)}</span>
             </div>
           </div>
         </div>
@@ -160,7 +160,7 @@ export default function Home({ user, onSelectSection }: HomeProps) {
             <span className="home-card-icon">🖥️</span>
             <h2 className="home-card-titulo">SGP</h2>
           </div>
-          <div className="home-info-grid" style={{ gridTemplateColumns: "1fr" }}>
+          <div className="home-info-grid" style={{ gridTemplateColumns: '1fr' }}>
             <div className="home-info-item">
               <span className="home-info-label">Usuário SGP</span>
               {user.sgpUsername ? (
@@ -203,20 +203,20 @@ export default function Home({ user, onSelectSection }: HomeProps) {
           <p className="home-card-desc">Use a barra lateral ou clique nos atalhos abaixo para navegar pelo sistema.</p>
           <div className="home-shortcuts-grid">
             {acessos.map((section) => {
-              const meta = SECTION_META[section];
+              const meta = SECTION_META[section]
               return (
-                <div key={section} className="home-shortcut" onClick={() => onSelectSection(section)} style={{ "--shortcut-color": meta.color } as React.CSSProperties}>
+                <div key={section} className="home-shortcut" onClick={() => onSelectSection(section)} style={{ '--shortcut-color': meta.color } as React.CSSProperties}>
                   <span className="home-shortcut-icon">{meta.icon}</span>
                   <div className="home-shortcut-info">
                     <span className="home-shortcut-label">{meta.label}</span>
                     <span className="home-shortcut-desc">{meta.desc}</span>
                   </div>
                 </div>
-              );
+              )
             })}
           </div>
         </div>
       )}
     </div>
-  );
+  )
 }

@@ -1,52 +1,52 @@
 // services/auth.ts
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, onAuthStateChanged, User } from "firebase/auth";
-import { ref, set, get } from "firebase/database";
-import { auth, db } from "./firebase";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, onAuthStateChanged, User } from 'firebase/auth'
+import { ref, set, get } from 'firebase/database'
+import { auth, db } from './firebase'
 
 export interface AtendenteData {
-  uid: string;
-  email: string;
-  nomeCompleto: string;
-  role: "usuario" | "admin";
-  setor: string;
-  status: "ativo" | "inativo";
-  sgpUsername?: string;
+  uid: string
+  email: string
+  nomeCompleto: string
+  role: 'usuario' | 'admin'
+  setor: string
+  status: 'ativo' | 'inativo'
+  sgpUsername?: string
 }
 
 export interface RegisterDetails {
-  username: string;
-  fullName: string;
-  email: string;
-  password: string;
+  username: string
+  fullName: string
+  email: string
+  password: string
   // setor removido do cadastro — novo usuário sempre começa como "geral"
   // o admin atribui o setor correto depois pelo painel
 }
 
 export async function register(details: RegisterDetails): Promise<void> {
-  const { username, fullName, email, password } = details;
-  const sanitizedUsername = username.trim().toLowerCase().replace(/\s+/g, "_");
+  const { username, fullName, email, password } = details
+  const sanitizedUsername = username.trim().toLowerCase().replace(/\s+/g, '_')
 
   if (/[.$#[\]/]/.test(sanitizedUsername)) {
-    throw new Error("Nome de usuário inválido. Evite pontos, #, $, [ ou ].");
+    throw new Error('Nome de usuário inválido. Evite pontos, #, $, [ ou ].')
   }
 
-  const usernameSnap = await get(ref(db, `atendentes/${sanitizedUsername}`));
-  if (usernameSnap.exists()) throw new Error("Este nome de usuário já está em uso.");
+  const usernameSnap = await get(ref(db, `atendentes/${sanitizedUsername}`))
+  if (usernameSnap.exists()) throw new Error('Este nome de usuário já está em uso.')
 
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-  const user = userCredential.user;
+  const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+  const user = userCredential.user
 
   // Aguarda o auth state propagar antes de escrever no banco
   await new Promise<void>((resolve) => {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
       if (u && u.uid === user.uid) {
-        unsubscribe();
-        resolve();
+        unsubscribe()
+        resolve()
       }
-    });
-  });
+    })
+  })
 
-  await updateProfile(user, { displayName: fullName });
+  await updateProfile(user, { displayName: fullName })
 
   // Novo usuário sempre entra com setor "geral" e role "usuario"
   // O admin define o setor real pelo painel de administração
@@ -54,145 +54,151 @@ export async function register(details: RegisterDetails): Promise<void> {
     uid: user.uid,
     email,
     nomeCompleto: fullName,
-    role: "usuario",
-    setor: "geral", // ← sempre geral no cadastro
-    status: "ativo",
-  });
+    role: 'usuario',
+    setor: 'geral', // ← sempre geral no cadastro
+    status: 'ativo',
+  })
 }
 
 export async function loginWithEmail(email: string, password: string): Promise<User> {
-  return (await signInWithEmailAndPassword(auth, email, password)).user;
+  return (await signInWithEmailAndPassword(auth, email, password)).user
 }
 
 export async function loginWithUsername(username: string, password: string): Promise<User> {
-  const snap = await get(ref(db, `atendentes/${username.trim().toLowerCase()}`));
-  if (!snap.exists()) throw new Error("Usuário não encontrado.");
+  const snap = await get(ref(db, `atendentes/${username.trim().toLowerCase()}`))
+  if (!snap.exists()) throw new Error('Usuário não encontrado.')
 
-  const data = snap.val() as AtendenteData;
-  if (!data.email) throw new Error("Credenciais inválidas.");
-  if (data.status === "inativo") throw new Error("Conta inativa. Contate o administrador.");
+  const data = snap.val() as AtendenteData
+  if (!data.email) throw new Error('Credenciais inválidas.')
+  if (data.status === 'inativo') throw new Error('Conta inativa. Contate o administrador.')
 
-  return loginWithEmail(data.email, password);
+  return loginWithEmail(data.email, password)
 }
 
 export async function login(usernameOrEmail: string, password: string): Promise<User> {
-  return usernameOrEmail.includes("@") ? loginWithEmail(usernameOrEmail, password) : loginWithUsername(usernameOrEmail, password);
+  return usernameOrEmail.includes('@') ? loginWithEmail(usernameOrEmail, password) : loginWithUsername(usernameOrEmail, password)
 }
 
 export async function logout(): Promise<void> {
-  await signOut(auth);
+  await signOut(auth)
 }
 
 // Realiza o login no site usando dados da extensão (SSO Reverso)
 export async function performSSOLogin(session: any) {
   if (!session.email || !session.password) {
-    console.warn("SSO: ⚠️ Sensão da extensão incompleta para login automático.");
-    return;
+    console.warn('SSO: ⚠️ Sensão da extensão incompleta para login automático.')
+    return
   }
 
-  if (auth.currentUser) return; // Já logado
+  if (auth.currentUser) return // Já logado
 
   try {
-    console.log("SSO: 🚀 Tentando login automático com dados da extensão...");
-    await signInWithEmailAndPassword(auth, session.email, session.password);
-    console.log("SSO: ✅ Login automático realizado com sucesso!");
+    console.log('SSO: 🚀 Tentando login automático com dados da extensão...')
+    await signInWithEmailAndPassword(auth, session.email, session.password)
+    console.log('SSO: ✅ Login automático realizado com sucesso!')
   } catch (error) {
-    console.error("SSO: ❌ Falha no login automático:", error);
+    console.error('SSO: ❌ Falha no login automático:', error)
   }
 }
 
 // Sincronização com a Extensão (SSO via Bridge)
 export async function syncWithExtension(user: User | null) {
   if (!user) {
-    window.postMessage({
-      type: "ATI_SITE_TO_EXTENSION",
-      action: "SSO_LOGOUT",
-    }, "*");
-    console.log("SSO: 🔴 Mensagem de logout enviada para a ponte.");
-    return;
+    window.postMessage(
+      {
+        type: 'ATI_SITE_TO_EXTENSION',
+        action: 'SSO_LOGOUT',
+      },
+      '*',
+    )
+    console.log('SSO: 🔴 Mensagem de logout enviada para a ponte.')
+    return
   }
 
   try {
-    console.log("SSO: 🔍 Buscando perfil para sincronizar...");
-    
-    // Busca apenas o nó do atendente correspondente ao UID (mais seguro e performático)
-    const atendentesSnap = await get(ref(db, "atendentes"));
-    if (!atendentesSnap.exists()) return;
+    console.log('SSO: 🔍 Buscando perfil para sincronizar...')
 
-    const atendentes = atendentesSnap.val();
-    let foundUsername = "";
-    let foundData: AtendenteData | null = null;
+    // Busca apenas o nó do atendente correspondente ao UID (mais seguro e performático)
+    const atendentesSnap = await get(ref(db, 'atendentes'))
+    if (!atendentesSnap.exists()) return
+
+    const atendentes = atendentesSnap.val()
+    let foundUsername = ''
+    let foundData: AtendenteData | null = null
 
     // Encontra o username pelo UID
     for (const [username, data] of Object.entries(atendentes) as [string, any][]) {
       if (data.uid === user.uid) {
-        foundUsername = username;
-        foundData = data as AtendenteData;
-        break;
+        foundUsername = username
+        foundData = data as AtendenteData
+        break
       }
     }
 
     if (!foundData) {
-      console.warn("SSO: ⚠️ Perfil não encontrado no banco para este UID.");
-      return;
+      console.warn('SSO: ⚠️ Perfil não encontrado no banco para este UID.')
+      return
     }
 
-    const idToken = await user.getIdToken(true);
-    const refreshToken = user.refreshToken || (user as any).stsTokenManager?.refreshToken;
+    const idToken = await user.getIdToken(true)
+    const refreshToken = user.refreshToken || (user as any).stsTokenManager?.refreshToken
 
     const session = {
       uid: user.uid,
       username: foundUsername,
       nomeCompleto: foundData.nomeCompleto,
       role: foundData.role,
-      setor: foundData.setor || "geral",
+      setor: foundData.setor || 'geral',
       email: foundData.email,
       idToken,
-      refreshToken: refreshToken || "",
+      refreshToken: refreshToken || '',
       tokenExpiresAt: Date.now() + 55 * 60 * 1000,
       sgpUsername: foundData.sgpUsername,
-    };
+    }
 
-    // Envia via postMessage 
-    window.postMessage({
-      type: "ATI_SITE_TO_EXTENSION",
-      action: "SSO_LOGIN",
-      session,
-    }, "*");
-    
-    console.log("SSO: 🟢 Mensagem de login enviada para a ponte.");
+    // Envia via postMessage
+    window.postMessage(
+      {
+        type: 'ATI_SITE_TO_EXTENSION',
+        action: 'SSO_LOGIN',
+        session,
+      },
+      '*',
+    )
+
+    console.log('SSO: 🟢 Mensagem de login enviada para a ponte.')
   } catch (error) {
-    console.error("SSO: ❌ Erro durante sincronização:", error);
+    console.error('SSO: ❌ Erro durante sincronização:', error)
   }
 }
 
 // Escuta a ponte e gerencia ciclos de vida
-if (typeof window !== "undefined") {
-  window.addEventListener("message", (event) => {
-    const { type, action } = event.data || {};
+if (typeof window !== 'undefined') {
+  window.addEventListener('message', (event) => {
+    const { type, action } = event.data || {}
 
-    if (type === "ATI_EXTENSION_TO_SITE") {
-      if (action === "BRIDGE_READY") {
-        console.log("SSO: 🟠 Ponte da extensão avisou que está pronta.");
-        if (auth.currentUser) syncWithExtension(auth.currentUser);
+    if (type === 'ATI_EXTENSION_TO_SITE') {
+      if (action === 'BRIDGE_READY') {
+        console.log('SSO: 🟠 Ponte da extensão avisou que está pronta.')
+        if (auth.currentUser) syncWithExtension(auth.currentUser)
       }
     }
-  });
+  })
 
   // Tenta sincronizar em intervalos estratégicos
-  [500, 2000, 5000].forEach(delay => {
+  ;[500, 2000, 5000].forEach((delay) => {
     setTimeout(() => {
       if (auth.currentUser) {
-         syncWithExtension(auth.currentUser);
+        syncWithExtension(auth.currentUser)
       }
-      window.postMessage({ type: "ATI_SITE_TO_EXTENSION", action: "GET_SSO_SESSION" }, "*");
-    }, delay);
-  });
+      window.postMessage({ type: 'ATI_SITE_TO_EXTENSION', action: 'GET_SSO_SESSION' }, '*')
+    }, delay)
+  })
 }
 
 export function onAuthChange(callback: (user: User | null) => void) {
   return onAuthStateChanged(auth, (user) => {
-    if (user) syncWithExtension(user);
-    callback(user);
-  });
+    if (user) syncWithExtension(user)
+    callback(user)
+  })
 }

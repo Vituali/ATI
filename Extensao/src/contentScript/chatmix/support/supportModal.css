@@ -1,0 +1,587 @@
+/* =================================================================== */
+/* == MODAL DE SUPORTE — Estilização Premium Glassmorphism            == */
+/* =================================================================== */
+
+.ati-support-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(8, 8, 10, 0.75);
+  z-index: 99998;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(10px);
+  animation: support-fade-in 0.25s ease-out;
+}
+
+.ati-support-modal {
+  background: linear-gradient(135deg, #121216 0%, #0d0d10 100%);
+  color: #f3f4f6;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  width: 92%;
+  max-width: 580px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  font-family: 'DM Sans', sans-serif;
+  overflow: hidden;
+  animation: support-scale-up 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes support-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes support-scale-up {
+  from {
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* --- Header --- */
+.ati-support-modal-header {
+  padding: 18px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ati-support-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ati-support-modal-title::before {
+  content: '🛠️';
+  font-size: 18px;
+}
+
+.ati-support-modal-close {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.ati-support-modal-close:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  transform: rotate(90deg);
+}
+
+/* --- Body --- */
+.ati-support-modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.ati-support-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ati-support-modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ati-support-modal-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
+}
+
+/* --- Seções --- */
+.ati-support-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ati-support-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #3b82f6;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+  padding-bottom: 6px;
+  font-family: 'Space Mono', monospace;
+}
+
+/* --- Grid de Informações do Cliente --- */
+.ati-support-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.ati-support-info-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 12px 14px;
+  transition: all 0.2s;
+}
+
+.ati-support-info-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.ati-support-info-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 4px;
+}
+
+.ati-support-info-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: #f3f4f6;
+  word-break: break-all;
+}
+
+/* --- OLT Info & Conexão --- */
+.ati-support-olt-box {
+  background: rgba(59, 130, 246, 0.04);
+  border: 1px solid rgba(59, 130, 246, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.ati-support-olt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+}
+
+.ati-support-olt-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #93c5fd;
+}
+
+.ati-support-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+.ati-support-status-badge--online {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.ati-support-status-badge--offline {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.status-dot-pulsing {
+  width: 7px;
+  height: 7px;
+  background-color: #22c55e;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+  animation: status-pulse 1.6s infinite;
+}
+
+.status-dot-offline {
+  width: 7px;
+  height: 7px;
+  background-color: #ef4444;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.ati-contract-item-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  padding: 14px 18px !important;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  width: 100%;
+}
+
+.ati-contract-item-btn:hover {
+  background: rgba(59, 130, 246, 0.08) !important;
+  border-color: rgba(59, 130, 246, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+}
+
+@keyframes status-pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+  }
+}
+
+.ati-support-olt-details {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.ati-support-olt-details span strong {
+  color: #f3f4f6;
+  font-family: 'Space Mono', monospace;
+}
+
+/* Optics grid */
+.ati-support-optics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.ati-support-optics-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+}
+
+.ati-support-optics-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 4px;
+}
+
+.ati-support-optics-value {
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'Space Mono', monospace;
+}
+
+.ati-support-optics-value--good {
+  color: #4ade80;
+}
+
+.ati-support-optics-value--info {
+  color: #60a5fa;
+}
+
+/* --- Ações Grid (Os 4 Botões) --- */
+.ati-support-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.ati-support-btn {
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: #e5e7eb;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.ati-support-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateY(-2px);
+}
+
+.ati-support-btn:active {
+  transform: translateY(0);
+}
+
+.ati-support-btn--reset {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.ati-support-btn--reset:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.35);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+}
+
+.ati-support-btn--command-send {
+  color: #facc15;
+  background: rgba(234, 179, 8, 0.08);
+  border-color: rgba(234, 179, 8, 0.2);
+}
+
+.ati-support-btn--command-send:hover {
+  background: rgba(234, 179, 8, 0.15);
+  border-color: rgba(234, 179, 8, 0.35);
+  box-shadow: 0 4px 12px rgba(234, 179, 8, 0.15);
+}
+
+.ati-support-btn--command-remove {
+  color: #a855f7;
+  background: rgba(168, 85, 247, 0.08);
+  border-color: rgba(168, 85, 247, 0.2);
+}
+
+.ati-support-btn--command-remove:hover {
+  background: rgba(168, 85, 247, 0.15);
+  border-color: rgba(168, 85, 247, 0.35);
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.15);
+}
+
+.ati-support-btn--sgp-contract {
+  color: #60a5fa;
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+.ati-support-btn--sgp-contract:hover {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.35);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+/* --- Footer --- */
+.ati-support-modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.ati-support-close-btn {
+  padding: 9px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.ati-support-close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+/* =================================================================== */
+/* == MODO CLARO (Compatibilidade)                                    == */
+/* =================================================================== */
+
+html:not(.dark) .ati-support-modal-overlay {
+  background: rgba(243, 244, 246, 0.65);
+}
+
+html:not(.dark) .ati-support-modal {
+  background: #ffffff;
+  color: #1f2937;
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.15);
+}
+
+html:not(.dark) .ati-support-modal-header {
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+  color: #111827;
+}
+
+html:not(.dark) .ati-support-modal-close {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+html:not(.dark) .ati-support-modal-close:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: black;
+}
+
+html:not(.dark) .ati-support-info-card {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.05);
+}
+
+html:not(.dark) .ati-support-info-card:hover {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+html:not(.dark) .ati-support-info-label {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+html:not(.dark) .ati-support-info-value {
+  color: #111827;
+}
+
+html:not(.dark) .ati-support-olt-box {
+  background: rgba(59, 130, 246, 0.03);
+  border-color: rgba(59, 130, 246, 0.15);
+}
+
+html:not(.dark) .ati-support-olt-header {
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+
+html:not(.dark) .ati-support-olt-title {
+  color: #1d4ed8;
+}
+
+html:not(.dark) .ati-support-olt-details {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+html:not(.dark) .ati-support-olt-details span strong {
+  color: #111827;
+}
+
+html:not(.dark) .ati-support-optics-card {
+  background: rgba(0, 0, 0, 0.01);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+
+html:not(.dark) .ati-support-optics-label {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+html:not(.dark) .ati-support-btn {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.08);
+  color: #374151;
+}
+
+html:not(.dark) .ati-support-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+html:not(.dark) .ati-support-btn--reset {
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.05);
+  border-color: rgba(220, 38, 38, 0.15);
+}
+
+html:not(.dark) .ati-support-btn--reset:hover {
+  background: rgba(220, 38, 38, 0.1);
+  border-color: rgba(220, 38, 38, 0.25);
+}
+
+html:not(.dark) .ati-support-btn--command-send {
+  color: #a16207;
+  background: rgba(202, 138, 4, 0.05);
+  border-color: rgba(202, 138, 4, 0.15);
+}
+
+html:not(.dark) .ati-support-btn--command-send:hover {
+  background: rgba(202, 138, 4, 0.1);
+  border-color: rgba(202, 138, 4, 0.25);
+}
+
+html:not(.dark) .ati-support-btn--command-remove {
+  color: #7e22ce;
+  background: rgba(126, 34, 206, 0.05);
+  border-color: rgba(126, 34, 206, 0.15);
+}
+
+html:not(.dark) .ati-support-btn--command-remove:hover {
+  background: rgba(126, 34, 206, 0.1);
+  border-color: rgba(126, 34, 206, 0.25);
+}
+
+html:not(.dark) .ati-support-btn--sgp-contract {
+  color: #1d4ed8;
+  background: rgba(29, 78, 216, 0.05);
+  border-color: rgba(29, 78, 216, 0.15);
+}
+
+html:not(.dark) .ati-support-btn--sgp-contract:hover {
+  background: rgba(29, 78, 216, 0.15);
+  border-color: rgba(29, 78, 216, 0.25);
+}
+
+html:not(.dark) .ati-support-modal-footer {
+  border-top-color: rgba(0, 0, 0, 0.06);
+}
+
+html:not(.dark) .ati-support-close-btn {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #4b5563;
+}
+
+html:not(.dark) .ati-support-close-btn:hover {
+  background: rgba(0, 0, 0, 0.07);
+  color: black;
+}
+
+html:not(.dark) .ati-contract-item-btn {
+  background: rgba(0, 0, 0, 0.02) !important;
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+html:not(.dark) .ati-contract-item-btn:hover {
+  background: rgba(59, 130, 246, 0.04) !important;
+  border-color: rgba(59, 130, 246, 0.3);
+}

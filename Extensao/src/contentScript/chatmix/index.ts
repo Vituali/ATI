@@ -9,6 +9,7 @@ import { formatPhoneNumber } from './helpers'
 import { setCachedContract, smartOpenSGP } from '../sgp/actions'
 import { getSession, ensureFreshToken, UserSession } from './auth/session'
 import { showOSModal } from './os/osModal'
+import { showSupportModal } from './support/supportModal'
 import { collectTextFromMessages, safeSendMessage } from './helpers'
 import { buildAIPrompt } from './buildAIPrompt'
 import { injectLoginBanner } from './auth/loginModal'
@@ -34,16 +35,45 @@ function injectButtons(): void {
 
   const container = document.createElement('div')
   container.id = 'actionsContainerV2'
-  const buttons = [
-    { id: 'ati-copy-contact', text: '👤 Contato' },
+
+  // 1. Criar o Dropdown de Contato / CPF
+  const dropdownContainer = document.createElement('div')
+  dropdownContainer.className = 'ati-dropdown-container'
+
+  const toggleBtn = document.createElement('button')
+  toggleBtn.className = 'action-btn ati-dropdown-toggle'
+  toggleBtn.id = 'ati-dropdown-toggle-btn'
+  toggleBtn.innerHTML = '📄 Copiar <span style="font-size: 10px; margin-left: 2px;">▼</span>'
+  dropdownContainer.appendChild(toggleBtn)
+
+  const dropdownMenu = document.createElement('div')
+  dropdownMenu.className = 'ati-dropdown-menu'
+
+  const contactBtn = document.createElement('button')
+  contactBtn.className = 'action-btn'
+  contactBtn.id = 'ati-copy-contact'
+  contactBtn.textContent = '👤 Contato'
+  dropdownMenu.appendChild(contactBtn)
+
+  const cpfBtn = document.createElement('button')
+  cpfBtn.className = 'action-btn'
+  cpfBtn.id = 'ati-copy-cpf'
+  cpfBtn.textContent = '📄 CPF'
+  dropdownMenu.appendChild(cpfBtn)
+
+  dropdownContainer.appendChild(dropdownMenu)
+  container.appendChild(dropdownContainer)
+
+  // 2. Outros botões individuais na sidebar
+  const otherButtons = [
     { id: 'ati-copy-prompt', text: '🤖 Chat' },
-    { id: 'ati-copy-cpf', text: '📄 CPF' },
+    { id: 'ati-open-support', text: '🛠️ Suporte' },
     { id: 'ati-open-os', text: '📝 O.S' },
     { id: 'ati-refresh', text: '🔄 Atualizar' },
     { id: 'ati-open-sgp', text: '↗️ SGP' },
   ]
 
-  buttons.forEach(({ id, text }) => {
+  otherButtons.forEach(({ id, text }) => {
     const btn = document.createElement('button')
     btn.className = 'action-btn'
     btn.id = id
@@ -111,6 +141,11 @@ const actions: Record<string, () => Promise<void>> = {
     log(`CPF copiado: ${data.cpfCnpj}`)
   },
 
+  'ati-open-support': async () => {
+    const data = await getClientData()
+    await showSupportModal(data)
+  },
+
   'ati-open-os': async () => {
     const data = await getClientData()
     log(`OS check — isIdentified: ${data.isIdentified}, phone: ${data.phoneNumber}, cpf: ${data.cpfCnpj}`)
@@ -128,7 +163,7 @@ const actions: Record<string, () => Promise<void>> = {
         username: session.username,
         idToken: session.idToken,
       }),
-      safeSendMessage({ action: 'refreshUserSession' }).catch(() => null)
+      safeSendMessage({ action: 'refreshUserSession' }).catch(() => null),
     ])
 
     const templates = templatesRes?.templates ?? []
@@ -241,6 +276,26 @@ function injectListeners(): void {
       await execAction(e.currentTarget as HTMLButtonElement, action)
     })
   })
+
+  // Controle do dropdown de Contato / CPF
+  const toggleBtn = document.getElementById('ati-dropdown-toggle-btn')
+  const dropdownMenu = document.querySelector('.ati-dropdown-menu')
+  if (toggleBtn && dropdownMenu) {
+    if (toggleBtn.dataset.listenerAdded !== 'true') {
+      toggleBtn.dataset.listenerAdded = 'true'
+      toggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation()
+        dropdownMenu.classList.toggle('show')
+      })
+      const dropdownItems = dropdownMenu.querySelectorAll('.action-btn')
+      dropdownItems.forEach((item) => {
+        item.addEventListener('click', () => {
+          dropdownMenu.classList.remove('show')
+        })
+      })
+    }
+  }
+
   log('Listeners injetados.')
 }
 
@@ -473,6 +528,13 @@ async function loadQuickReplies(session: UserSession, attempt = 0): Promise<void
 
 document.body.addEventListener('click', (event) => {
   const target = event.target as HTMLElement
+
+  // Fechar dropdown de Contato / CPF ao clicar fora dele
+  const menu = document.querySelector('.ati-dropdown-menu')
+  if (menu && !target.closest('.ati-dropdown-container')) {
+    menu.classList.remove('show')
+  }
+
   const btn = target.closest('button')
   if (btn && btn.textContent?.trim() === 'Encerrar atendimento') {
     const chatId = currentChatId
@@ -481,6 +543,14 @@ document.body.addEventListener('click', (event) => {
         action: 'clearSgpCache',
         cacheKey: chatId,
       })
+      chrome.storage.local
+        .remove(`ati_support_cache_${chatId}`)
+        .then(() => {
+          log(`Cache de suporte limpo ao encerrar atendimento ${chatId}`)
+        })
+        .catch((err) => {
+          console.warn('Erro ao limpar cache de suporte no encerramento:', err)
+        })
       log(`Cache SGP limpo ao encerrar atendimento ${chatId}`)
     }
 
@@ -508,14 +578,10 @@ const observer = new MutationObserver((mutations) => {
   let onlySelfMutations = true
   for (let i = 0; i < mutations.length; i++) {
     const m = mutations[i]
-    const target = m.target.nodeType === Node.ELEMENT_NODE 
-      ? (m.target as HTMLElement) 
-      : m.target.parentElement
-    
+    const target = m.target.nodeType === Node.ELEMENT_NODE ? (m.target as HTMLElement) : m.target.parentElement
+
     if (target) {
-      const isSelf = !!target.closest?.(
-        '#ati-floating-chat-root, #actionsContainerV2, #ati-login-banner, #ati-quick-reply-container, .ati-time-warning, .ati-time-overdue'
-      )
+      const isSelf = !!target.closest?.('#ati-floating-chat-root, #actionsContainerV2, #ati-login-banner, #ati-quick-reply-container, .ati-time-warning, .ati-time-overdue')
       if (!isSelf) {
         onlySelfMutations = false
         break
@@ -602,4 +668,3 @@ init()
 
 // Executa a verificação de tempos dos chats periodicamente a cada 1 minuto (60 segundos)
 setInterval(updateChatTimeWarnings, 60000)
-

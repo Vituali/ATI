@@ -50,12 +50,18 @@ export async function showClientSelectionModal(clients: { id: string; text: stri
 
     const getStatusScore = (status: string): number => {
       switch (status) {
-        case 'ativo':     return 4
-        case 'vel-red':   return 3
-        case 'suspenso':  return 2
-        case 'inativo':   return 1
-        case 'cancelado': return 0
-        default:          return 0
+        case 'ativo':
+          return 4
+        case 'vel-red':
+          return 3
+        case 'suspenso':
+          return 2
+        case 'inativo':
+          return 1
+        case 'cancelado':
+          return 0
+        default:
+          return 0
       }
     }
 
@@ -107,34 +113,35 @@ export async function showClientSelectionModal(clients: { id: string; text: stri
       const displayId = client.id.includes('|') ? client.id.split('|')[1] : client.id
 
       // Constrói as linhas de contrato em HTML
-      const contractRowsHtml = parts.map((part) => {
-        if (part.toLowerCase().includes('sem contratos') || part.trim() === '') {
-          return `
+      const contractRowsHtml = parts
+        .map((part) => {
+          if (part.toLowerCase().includes('sem contratos') || part.trim() === '') {
+            return `
             <div class="ati-client-contract-row ati-client-contract-row--empty">
               <span>${part}</span>
             </div>
           `
-        }
-
-        const partParts = part.split(' - ').map((s) => s.trim())
-        const contractId = partParts[0] || 'Sem ID'
-        let contractStatus = 'Inativo'
-        let contractVenc = ''
-        let contractPop = ''
-
-        for (const sp of partParts) {
-          if (sp.startsWith('Status:')) {
-            contractStatus = sp.replace('Status:', '').trim()
-          } else if (sp.startsWith('Venc:')) {
-            contractVenc = sp.replace('Venc:', '').trim()
-          } else if (sp.startsWith('Pop:')) {
-            contractPop = sp.replace('Pop:', '').trim()
           }
-        }
 
-        const statusClass = getStatus(part)
+          const partParts = part.split(' - ').map((s) => s.trim())
+          const contractId = partParts[0] || 'Sem ID'
+          let contractStatus = 'Inativo'
+          let contractVenc = ''
+          let contractPop = ''
 
-        return `
+          for (const sp of partParts) {
+            if (sp.startsWith('Status:')) {
+              contractStatus = sp.replace('Status:', '').trim()
+            } else if (sp.startsWith('Venc:')) {
+              contractVenc = sp.replace('Venc:', '').trim()
+            } else if (sp.startsWith('Pop:')) {
+              contractPop = sp.replace('Pop:', '').trim()
+            }
+          }
+
+          const statusClass = getStatus(part)
+
+          return `
           <div class="ati-client-contract-row">
             <span class="ati-contract-id">#${contractId}</span>
             ${contractPop ? `<span class="ati-contract-pop">${contractPop}</span>` : ''}
@@ -142,7 +149,8 @@ export async function showClientSelectionModal(clients: { id: string; text: stri
             <span class="ati-contract-status-badge ati-contract-status-badge--${statusClass}">${contractStatus}</span>
           </div>
         `
-      }).join('')
+        })
+        .join('')
 
       const btn = document.createElement('button')
       btn.className = `ati-client-modal-btn ati-client-modal-btn--${overallStatus}`

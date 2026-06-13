@@ -102,7 +102,6 @@
   box-shadow: 0 0 0 2px var(--accent-blue-hover);
 }
 
-
 .auth-dica {
   font-size: 11px;
   color: var(--text-muted);
@@ -175,4 +174,3 @@
   text-decoration: underline;
   color: #64a0ff;
 }
-

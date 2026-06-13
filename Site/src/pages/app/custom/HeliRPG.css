@@ -17,7 +17,7 @@
 
 /* Efeito Paranormal de névoa / glow */
 .heli-rpg-page::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   background: radial-gradient(circle at 80% 20%, rgba(255, 42, 42, 0.04) 0%, transparent 60%);

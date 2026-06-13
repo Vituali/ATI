@@ -196,11 +196,44 @@
   background: rgba(248, 113, 113, 0.1);
 }
 
+/* --- Grid do Modal --- */
+.modal-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: end;
+}
+
+/* --- Container dos campos adicionais de O.S. --- */
+.modal-os-fields-container {
+  display: none; /* Controlado via JS (style.display) */
+  margin-top: 16px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.03);
+}
+
+/* --- Container do campo Data Agendamento --- */
+.modal-date-container {
+  margin-top: 14px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.03);
+}
+
 /* --- Textarea e inputs --- */
-.modal-textarea {
+.modal-textarea,
+.modal-select,
+.modal-input-date {
   width: 100%;
   padding: 10px 12px;
-  border-radius: 8px;
+  border-radius: 8px !important;
   box-sizing: border-box;
   font-family: 'DM Sans', sans-serif;
   font-size: 13px;
@@ -208,24 +241,60 @@
   color: #f0f0f0;
   border: 1px solid rgba(255, 255, 255, 0.12);
   transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
   outline: none;
+}
+
+.modal-textarea:hover,
+.modal-select:hover,
+.modal-input-date:hover {
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.modal-select {
+  cursor: pointer;
+}
+
+.modal-select option {
+  background: #111111;
+  color: #f0f0f0;
+}
+
+.modal-input-date {
+  color-scheme: dark;
 }
 
 label.modal-textarea-label {
   color: rgb(100, 160, 255);
 }
 
-.ati-os-modal .modal-textarea {
+.ati-os-modal .modal-textarea,
+.ati-os-modal .modal-select,
+.ati-os-modal .modal-input-date {
   background: rgba(255, 255, 255, 0.06) !important;
   color: #f0f0f0 !important;
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 8px !important;
 }
 
-.modal-textarea:focus {
-  border-color: rgba(0, 100, 255, 0.6);
-  box-shadow: 0 0 0 3px rgba(0, 100, 255, 0.15);
+.ati-os-modal .modal-textarea:hover,
+.ati-os-modal .modal-select:hover,
+.ati-os-modal .modal-input-date:hover {
+  border-color: rgba(255, 255, 255, 0.22) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.modal-textarea:focus,
+.modal-select:focus,
+.modal-input-date:focus,
+.ati-os-modal .modal-textarea:focus,
+.ati-os-modal .modal-select:focus,
+.ati-os-modal .modal-input-date:focus {
+  border-color: rgba(83, 72, 199, 0.8) !important;
+  box-shadow: 0 0 0 3px rgba(83, 72, 199, 0.25) !important;
 }
 
 textarea.modal-textarea {
@@ -237,6 +306,62 @@ textarea.modal-textarea {
 input.modal-textarea {
   height: 40px;
   resize: none;
+}
+
+/* --- Múltiplos Técnicos --- */
+select.modal-select[multiple] {
+  height: 100px;
+  padding: 4px !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 8px;
+  overflow-y: auto;
+}
+
+select.modal-select[multiple] option {
+  padding: 6px 10px;
+  margin: 2px;
+  border-radius: 4px;
+  cursor: pointer;
+  background: transparent !important;
+  color: #f0f0f0 !important;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+select.modal-select[multiple] option:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+}
+
+select.modal-select[multiple] option:checked {
+  background: #5348c7 !important;
+  color: #ffffff !important;
+}
+
+select.modal-select[multiple]::-webkit-scrollbar {
+  width: 6px;
+}
+
+select.modal-select[multiple]::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+select.modal-select[multiple]::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+
+select.modal-select[multiple]::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.modal-help-text {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 4px;
+  display: block;
 }
 
 /* --- Label descrição --- */
@@ -557,6 +682,12 @@ html:not(.dark) .ati-os-modal {
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
 }
 
+html:not(.dark) .modal-date-container {
+  background: rgba(0, 0, 0, 0.015);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
 html:not(.dark) .ati-os-modal-header {
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   color: #111111;
@@ -611,15 +742,76 @@ html:not(.dark) .contract-status--offline {
   color: #dc2626;
 }
 
-html:not(.dark) .modal-textarea {
-  background: rgba(0, 0, 0, 0.02) !important;
+html:not(.dark) .modal-textarea,
+html:not(.dark) .modal-select,
+html:not(.dark) .modal-input-date,
+html:not(.dark) .ati-os-modal .modal-textarea,
+html:not(.dark) .ati-os-modal .modal-select,
+html:not(.dark) .ati-os-modal .modal-input-date {
+  background: rgba(0, 0, 0, 0.025) !important;
   color: #333333 !important;
   border: 1px solid rgba(0, 0, 0, 0.12) !important;
 }
 
-html:not(.dark) .modal-textarea:focus {
-  border-color: rgba(0, 100, 255, 0.6) !important;
-  box-shadow: 0 0 0 3px rgba(0, 100, 255, 0.15) !important;
+html:not(.dark) .modal-textarea:hover,
+html:not(.dark) .modal-select:hover,
+html:not(.dark) .modal-input-date:hover,
+html:not(.dark) .ati-os-modal .modal-textarea:hover,
+html:not(.dark) .ati-os-modal .modal-select:hover,
+html:not(.dark) .ati-os-modal .modal-input-date:hover {
+  border-color: rgba(0, 0, 0, 0.22) !important;
+  background: rgba(0, 0, 0, 0.04) !important;
+}
+
+html:not(.dark) .modal-select option {
+  background: #ffffff;
+  color: #333333;
+}
+
+html:not(.dark) .modal-input-date {
+  color-scheme: light;
+}
+
+html:not(.dark) .modal-textarea:focus,
+html:not(.dark) .modal-select:focus,
+html:not(.dark) .modal-input-date:focus,
+html:not(.dark) .ati-os-modal .modal-textarea:focus,
+html:not(.dark) .ati-os-modal .modal-select:focus,
+html:not(.dark) .ati-os-modal .modal-input-date:focus {
+  border-color: rgba(83, 72, 199, 0.8) !important;
+  box-shadow: 0 0 0 3px rgba(83, 72, 199, 0.25) !important;
+}
+
+/* --- Múltiplos Técnicos Modo Claro --- */
+html:not(.dark) select.modal-select[multiple] {
+  background: rgba(0, 0, 0, 0.02) !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+}
+
+html:not(.dark) select.modal-select[multiple] option {
+  color: #333333 !important;
+}
+
+html:not(.dark) select.modal-select[multiple] option:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+  color: #111111 !important;
+}
+
+html:not(.dark) select.modal-select[multiple] option:checked {
+  background: #5348c7 !important;
+  color: #ffffff !important;
+}
+
+html:not(.dark) select.modal-select[multiple]::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+html:not(.dark) select.modal-select[multiple]::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+html:not(.dark) .modal-help-text {
+  color: rgba(0, 0, 0, 0.5);
 }
 
 html:not(.dark) .modal-textarea-label {

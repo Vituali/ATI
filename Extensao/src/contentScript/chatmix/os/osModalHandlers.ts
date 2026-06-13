@@ -45,18 +45,27 @@ export function setupDraftSaving(chatId: string, osTextArea: HTMLTextAreaElement
 // CHECKBOX — Gerar O.S. trava Ocorrência Encerrada
 // =================================================================
 
-export function setupOsCheckbox(osCheckbox: HTMLInputElement, statusCheckbox: HTMLInputElement, statusLabel: HTMLElement): void {
-  osCheckbox.addEventListener('change', () => {
+export function setupOsCheckbox(osCheckbox: HTMLInputElement, statusCheckbox: HTMLInputElement, statusLabel: HTMLElement, modalElement: HTMLElement): void {
+  const osFieldsContainer = modalElement.querySelector<HTMLElement>('#modal-os-fields-container')
+
+  const updateVisibility = () => {
     if (osCheckbox.checked) {
       statusCheckbox.checked = false
       statusCheckbox.disabled = true
       statusLabel.classList.add('disabled')
+      if (osFieldsContainer) osFieldsContainer.style.display = 'flex'
     } else {
       statusCheckbox.disabled = false
       statusCheckbox.checked = true
       statusLabel.classList.remove('disabled')
+      if (osFieldsContainer) osFieldsContainer.style.display = 'none'
     }
-  })
+  }
+
+  // Executa imediatamente para garantir o estado inicial
+  updateVisibility()
+
+  osCheckbox.addEventListener('change', updateVisibility)
 }
 
 // =================================================================
@@ -119,4 +128,42 @@ export function setupTemplateButtons(modalElement: HTMLElement, osTextArea: HTML
       }
     })
   })
+}
+
+// =================================================================
+// PERÍODO DE AGENDAMENTO — Campo extra dinâmico
+// =================================================================
+
+export function setupPeriodoChangeListener(modalElement: HTMLElement): void {
+  const osPeriodoSelect = modalElement.querySelector<HTMLSelectElement>('#osPeriodo')
+  const osPeriodoExtraGroup = modalElement.querySelector<HTMLElement>('#osPeriodoExtraGroup')
+  const lblPeriodoExtra = modalElement.querySelector<HTMLElement>('#lblPeriodoExtra')
+  const osPeriodoExtraInput = modalElement.querySelector<HTMLInputElement>('#osPeriodoExtra')
+
+  if (!osPeriodoSelect || !osPeriodoExtraGroup || !lblPeriodoExtra || !osPeriodoExtraInput) return
+
+  const updatePeriodoExtraVisibility = () => {
+    const val = osPeriodoSelect.value
+    if (val === 'manha') {
+      osPeriodoExtraGroup.style.display = 'flex'
+      lblPeriodoExtra.textContent = 'Detalhes do Agendamento (Manhã)'
+      osPeriodoExtraInput.placeholder = 'Ex: até as 11, após 10, etc.'
+    } else if (val === 'tarde') {
+      osPeriodoExtraGroup.style.display = 'flex'
+      lblPeriodoExtra.textContent = 'Detalhes do Agendamento (Tarde)'
+      osPeriodoExtraInput.placeholder = 'Ex: até as 15, após 14, etc.'
+    } else if (val === 'outros') {
+      osPeriodoExtraGroup.style.display = 'flex'
+      lblPeriodoExtra.textContent = 'Detalhes do Agendamento'
+      osPeriodoExtraInput.placeholder = 'Descreva o agendamento personalizado...'
+    } else {
+      osPeriodoExtraGroup.style.display = 'none'
+      osPeriodoExtraInput.value = ''
+    }
+  }
+
+  // Executa imediatamente para garantir o estado inicial
+  updatePeriodoExtraVisibility()
+
+  osPeriodoSelect.addEventListener('change', updatePeriodoExtraVisibility)
 }

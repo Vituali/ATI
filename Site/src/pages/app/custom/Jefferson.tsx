@@ -79,7 +79,7 @@ export default function Jefferson() {
     const today = new Date()
     const p1Date = new Date(today.getTime() - 13 * 24 * 60 * 60 * 1000) // 13 days ago (Fertile window)
     const p2Date = new Date(today.getTime() - 22 * 24 * 60 * 60 * 1000) // 22 days ago (TPM window)
-    
+
     return [
       {
         id: '1',
@@ -148,16 +148,16 @@ export default function Jefferson() {
     const originalStart = new Date(lastPeriod + 'T00:00:00')
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-    
+
     const diffTime = today.getTime() - originalStart.getTime()
     if (diffTime < 0) {
       return originalStart
     }
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
     const completedCycles = Math.floor(diffDays / cycleDays)
-    
+
     const currentStart = new Date(originalStart.getTime())
-    currentStart.setDate(currentStart.getDate() + (completedCycles * cycleDays))
+    currentStart.setDate(currentStart.getDate() + completedCycles * cycleDays)
     return currentStart
   }
 
@@ -205,30 +205,30 @@ export default function Jefferson() {
   const getProfileStatus = (lastPeriod: string, cycleDays: number) => {
     const adjustedStart = getAdjustedLastPeriod(lastPeriod, cycleDays)
     if (!adjustedStart) return { name: 'Normal', class: 'normal', badge: '🌱 Normal' }
-    
+
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const todayTime = today.getTime()
-    
+
     const start = new Date(adjustedStart.getTime())
     const endMenstrual = new Date(adjustedStart.getTime())
     endMenstrual.setDate(endMenstrual.getDate() + 4)
-    
+
     const fertile = getFertileRange(lastPeriod, cycleDays)
     const tpm = getTpmRange(lastPeriod, cycleDays)
-    
+
     if (todayTime >= start.getTime() && todayTime <= endMenstrual.getTime()) {
       return { name: 'Menstruação', class: 'menstrual', badge: '🩸 Menstruação' }
     }
-    
+
     if (fertile && todayTime >= fertile.start.getTime() && todayTime <= fertile.end.getTime()) {
       return { name: 'Período Fértil', class: 'fertile', badge: '⚠️ Período Fértil' }
     }
-    
+
     if (tpm && todayTime >= tpm.start.getTime() && todayTime <= tpm.end.getTime()) {
       return { name: 'TPM', class: 'tpm', badge: '🍷 Período TPM' }
     }
-    
+
     return { name: 'Normal', class: 'normal', badge: '🌱 Normal' }
   }
 
@@ -252,7 +252,6 @@ export default function Jefferson() {
   const deleteProfile = (id: string) => {
     setProfiles((prev) => prev.filter((p) => p.id !== id))
   }
-
 
   return (
     <div className="jefferson-page">
@@ -377,36 +376,15 @@ export default function Jefferson() {
             <div className="jeff-form-row">
               <div className="jeff-form-group">
                 <label className="jeff-form-label">Nome:</label>
-                <input
-                  type="text"
-                  placeholder="Nome da Gótica..."
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  className="jeff-form-input"
-                  required
-                />
+                <input type="text" placeholder="Nome da Gótica..." value={newName} onChange={(e) => setNewName(e.target.value)} className="jeff-form-input" required />
               </div>
               <div className="jeff-form-group">
                 <label className="jeff-form-label">Última Menstruação:</label>
-                <input
-                  type="date"
-                  value={newLastPeriod}
-                  onChange={(e) => setNewLastPeriod(e.target.value)}
-                  className="jeff-form-input"
-                  required
-                />
+                <input type="date" value={newLastPeriod} onChange={(e) => setNewLastPeriod(e.target.value)} className="jeff-form-input" required />
               </div>
               <div className="jeff-form-group small">
                 <label className="jeff-form-label">Ciclo (Dias):</label>
-                <input
-                  type="number"
-                  min={20}
-                  max={45}
-                  value={newCycleDays}
-                  onChange={(e) => setNewCycleDays(Number(e.target.value) || 28)}
-                  className="jeff-form-input"
-                  required
-                />
+                <input type="number" min={20} max={45} value={newCycleDays} onChange={(e) => setNewCycleDays(Number(e.target.value) || 28)} className="jeff-form-input" required />
               </div>
               <button type="submit" className="jeff-btn-add">
                 ➕ Adicionar
@@ -439,9 +417,7 @@ export default function Jefferson() {
                     <div className="jeff-profile-left">
                       <div className="jeff-profile-header">
                         <span className="jeff-profile-name">{profile.name}</span>
-                        <span className={`jeff-profile-badge ${status.class}`}>
-                          {status.badge}
-                        </span>
+                        <span className={`jeff-profile-badge ${status.class}`}>{status.badge}</span>
                       </div>
                       <div className="jeff-profile-dates">
                         <span className="jeff-date-label">
@@ -449,32 +425,25 @@ export default function Jefferson() {
                         </span>
                         {fertile && (
                           <span className="jeff-date-label">
-                            Fértil: <strong>{formatDateShort(fertile.start)} a {formatDateShort(fertile.end)}</strong>
+                            Fértil:{' '}
+                            <strong>
+                              {formatDateShort(fertile.start)} a {formatDateShort(fertile.end)}
+                            </strong>
                           </span>
                         )}
                         {tpm && (
                           <span className="jeff-date-label">
-                            TPM: <strong>{formatDateShort(tpm.start)} a {formatDateShort(tpm.end)}</strong>
+                            TPM:{' '}
+                            <strong>
+                              {formatDateShort(tpm.start)} a {formatDateShort(tpm.end)}
+                            </strong>
                           </span>
                         )}
                       </div>
                     </div>
                     <div className="jeff-profile-right">
-                      <div className={`jeff-countdown ${countdownClass}`}>
-                        {remaining !== null && (
-                          remaining > 0
-                            ? `Faltam ${remaining} d`
-                            : remaining === 0
-                              ? 'É HOJE! 🩸'
-                              : `Atrasada ${Math.abs(remaining)} d`
-                        )}
-                      </div>
-                      <button
-                        className="jeff-btn-delete"
-                        onClick={() => deleteProfile(profile.id)}
-                        title="Remover Gótica"
-                        type="button"
-                      >
+                      <div className={`jeff-countdown ${countdownClass}`}>{remaining !== null && (remaining > 0 ? `Faltam ${remaining} d` : remaining === 0 ? 'É HOJE! 🩸' : `Atrasada ${Math.abs(remaining)} d`)}</div>
+                      <button className="jeff-btn-delete" onClick={() => deleteProfile(profile.id)} title="Remover Gótica" type="button">
                         🗑️
                       </button>
                     </div>
@@ -482,9 +451,7 @@ export default function Jefferson() {
                 )
               })
             ) : (
-              <div className="jeff-empty-state">
-                Nenhuma gótica sendo monitorada. Adicione uma no formulário acima.
-              </div>
+              <div className="jeff-empty-state">Nenhuma gótica sendo monitorada. Adicione uma no formulário acima.</div>
             )}
           </div>
         </div>

@@ -4,95 +4,90 @@
 // Recebe o erro como string e mapeia para um conteúdo rico.
 // ---------------------------------------------------------------
 
-import { logout } from "../../services/auth";
-import "./ErrorPage.css";
+import { logout } from '../../services/auth'
+import './ErrorPage.css'
 
 interface ErrorPageProps {
-  message: string;
+  message: string
 }
 
 // Tipos de erro conhecidos com conteúdo personalizado
 interface ErrorContent {
-  icon: string;
-  titulo: string;
-  descricao: string;
-  dica: string;
-  acao: "logout" | "reload";
-  acaoLabel: string;
+  icon: string
+  titulo: string
+  descricao: string
+  dica: string
+  acao: 'logout' | 'reload'
+  acaoLabel: string
 }
 
 // Mapeia fragmentos da mensagem de erro para conteúdo amigável
 function resolveErrorContent(message: string): ErrorContent {
-  const msg = message.toLowerCase();
+  const msg = message.toLowerCase()
 
-  if (msg.includes("inativa")) {
+  if (msg.includes('inativa')) {
     return {
-      icon: "🔒",
-      titulo: "Conta inativa",
-      descricao: "Sua conta foi desativada pelo administrador do sistema.",
-      dica: "Entre em contato com o administrador para reativar seu acesso.",
-      acao: "logout",
-      acaoLabel: "Voltar ao login",
-    };
+      icon: '🔒',
+      titulo: 'Conta inativa',
+      descricao: 'Sua conta foi desativada pelo administrador do sistema.',
+      dica: 'Entre em contato com o administrador para reativar seu acesso.',
+      acao: 'logout',
+      acaoLabel: 'Voltar ao login',
+    }
   }
 
-  if (msg.includes("perfil não encontrado") || msg.includes("banco de dados")) {
+  if (msg.includes('perfil não encontrado') || msg.includes('banco de dados')) {
     return {
-      icon: "👤",
-      titulo: "Perfil não encontrado",
-      descricao:
-        "Sua conta foi autenticada, mas os dados de perfil não estão no banco.",
-      dica: "Isso pode acontecer após um cadastro incompleto. Contate o administrador informando seu e-mail.",
-      acao: "logout",
-      acaoLabel: "Tentar novamente",
-    };
+      icon: '👤',
+      titulo: 'Perfil não encontrado',
+      descricao: 'Sua conta foi autenticada, mas os dados de perfil não estão no banco.',
+      dica: 'Isso pode acontecer após um cadastro incompleto. Contate o administrador informando seu e-mail.',
+      acao: 'logout',
+      acaoLabel: 'Tentar novamente',
+    }
   }
 
-  if (msg.includes("permiss") || msg.includes("403")) {
+  if (msg.includes('permiss') || msg.includes('403')) {
     return {
-      icon: "⛔",
-      titulo: "Sem permissão",
-      descricao: "Você não tem autorização para acessar este recurso.",
-      dica: "Solicite ao administrador que verifique sua role e setor.",
-      acao: "logout",
-      acaoLabel: "Voltar ao login",
-    };
+      icon: '⛔',
+      titulo: 'Sem permissão',
+      descricao: 'Você não tem autorização para acessar este recurso.',
+      dica: 'Solicite ao administrador que verifique sua role e setor.',
+      acao: 'logout',
+      acaoLabel: 'Voltar ao login',
+    }
   }
 
-  if (
-    msg.includes("rede") ||
-    msg.includes("network") ||
-    msg.includes("fetch")
-  ) {
+  if (msg.includes('rede') || msg.includes('network') || msg.includes('fetch')) {
     return {
-      icon: "📡",
-      titulo: "Erro de conexão",
-      descricao: "Não foi possível conectar ao servidor.",
-      dica: "Verifique sua conexão com a internet e tente novamente.",
-      acao: "reload",
-      acaoLabel: "Tentar novamente",
-    };
+      icon: '📡',
+      titulo: 'Erro de conexão',
+      descricao: 'Não foi possível conectar ao servidor.',
+      dica: 'Verifique sua conexão com a internet e tente novamente.',
+      acao: 'reload',
+      acaoLabel: 'Tentar novamente',
+    }
   }
 
   // Erro genérico
   return {
-    icon: "⚠️",
-    titulo: "Algo deu errado",
-    descricao: message || "Ocorreu um erro inesperado no sistema.",
-    dica: "Se o problema persistir, contate o administrador do sistema.",
-    acao: "logout",
-    acaoLabel: "Voltar ao login",
-  };
+    icon: '⚠️',
+    titulo: 'Algo deu errado',
+    descricao: message || 'Ocorreu um erro inesperado no sistema.',
+    dica: 'Se o problema persistir, contate o administrador do sistema.',
+    acao: 'logout',
+    acaoLabel: 'Voltar ao login',
+  }
 }
 
 export default function ErrorPage({ message }: ErrorPageProps) {
-  const content = resolveErrorContent(message);
+  const content = resolveErrorContent(message)
 
   function handleAcao() {
-    if (content.acao === "logout") {
-      logout();
+    if (content.acao === 'logout') {
+      logout()
     } else {
-      window.location.reload();
+      window.location.reload()
     }
   }
 
@@ -122,5 +117,5 @@ export default function ErrorPage({ message }: ErrorPageProps) {
         </button>
       </div>
     </div>
-  );
+  )
 }

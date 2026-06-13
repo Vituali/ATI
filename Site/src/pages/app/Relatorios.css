@@ -47,7 +47,9 @@
   box-shadow: var(--shadow-subtle);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  transition: transform 0.2s, border-color 0.2s;
+  transition:
+    transform 0.2s,
+    border-color 0.2s;
 }
 
 .rel-metrica-card:hover {
@@ -85,10 +87,18 @@
 }
 
 /* Variações de cor dos cards */
-.rel-metrica-card.excelente { border-left: 4px solid var(--color-success, #00e676); }
-.rel-metrica-card.atencao { border-left: 4px solid var(--color-warning, #ffca28); }
-.rel-metrica-card.critico { border-left: 4px solid var(--color-error, #ff5252); }
-.rel-metrica-card.media { border-left: 4px solid var(--accent-blue); }
+.rel-metrica-card.excelente {
+  border-left: 4px solid var(--color-success, #00e676);
+}
+.rel-metrica-card.atencao {
+  border-left: 4px solid var(--color-warning, #ffca28);
+}
+.rel-metrica-card.critico {
+  border-left: 4px solid var(--color-error, #ff5252);
+}
+.rel-metrica-card.media {
+  border-left: 4px solid var(--accent-blue);
+}
 
 /* --- BARRA DE FILTROS --- */
 .rel-filtros-bar {
@@ -253,7 +263,10 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: background 0.2s, border-color 0.2s, transform 0.1s;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    transform 0.1s;
 }
 
 .rel-btn-config:hover {
@@ -358,7 +371,9 @@
   font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.2s, transform 0.1s;
+  transition:
+    opacity 0.2s,
+    transform 0.1s;
 }
 
 .rel-btn-save:hover {
@@ -383,7 +398,9 @@
   font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
 }
 
 .rel-btn-cancel:hover {
@@ -418,7 +435,10 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  transition: background 0.2s, border-color 0.2s, transform 0.1s;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    transform 0.1s;
 }
 
 .rel-btn-loadmore:hover {
@@ -550,7 +570,10 @@
 /* Interatividade de Filtros */
 .rel-metrica-card.clickable {
   cursor: pointer;
-  transition: transform 0.2s, border-color 0.2s, background 0.2s;
+  transition:
+    transform 0.2s,
+    border-color 0.2s,
+    background 0.2s;
 }
 
 .rel-metrica-card.clickable:hover {
@@ -580,7 +603,9 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  transition: background 0.2s, border-color 0.2s;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
 }
 
 .rel-btn-limpar:hover {
@@ -633,7 +658,7 @@
   color: var(--text-white);
 }
 
-.rel-toggle-label input[type="checkbox"] {
+.rel-toggle-label input[type='checkbox'] {
   cursor: pointer;
   accent-color: var(--accent-blue);
   width: 14px;
@@ -647,4 +672,3 @@
     width: 100%;
   }
 }
-

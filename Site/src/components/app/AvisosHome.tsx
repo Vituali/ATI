@@ -4,74 +4,74 @@
 // Admins veem botão X para desativar/remover o aviso.
 // ---------------------------------------------------------------
 
-import { useEffect, useState } from "react";
-import { ref, onValue, update } from "firebase/database";
-import { db } from "../../services/firebase";
-import { UserProfile } from "../../hooks/useUser";
-import "./AvisosHome.css";
+import { useEffect, useState } from 'react'
+import { ref, onValue, update } from 'firebase/database'
+import { db } from '../../services/firebase'
+import { UserProfile } from '../../hooks/useUser'
+import './AvisosHome.css'
 
 interface Aviso {
-  id: string;
-  titulo: string;
-  corpo: string;
-  tipo: "info" | "warning" | "danger";
-  criadoPor: string;
-  timestamp: number;
-  ativo: boolean;
+  id: string
+  titulo: string
+  corpo: string
+  tipo: 'info' | 'warning' | 'danger'
+  criadoPor: string
+  timestamp: number
+  ativo: boolean
 }
 
 interface AvisosHomeProps {
-  user: UserProfile;
+  user: UserProfile
 }
 
 function formatarData(ts: number): string {
-  const d = new Date(ts);
-  return d.toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const d = new Date(ts)
+  return d.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
 
-const TIPO_ICON: Record<Aviso["tipo"], string> = {
-  info: "ℹ️",
-  warning: "⚠️",
-  danger: "🚨",
-};
+const TIPO_ICON: Record<Aviso['tipo'], string> = {
+  info: 'ℹ️',
+  warning: '⚠️',
+  danger: '🚨',
+}
 
 export default function AvisosHome({ user }: AvisosHomeProps) {
-  const [avisos, setAvisos] = useState<Aviso[]>([]);
-  const isAdmin = user.role === "admin";
+  const [avisos, setAvisos] = useState<Aviso[]>([])
+  const isAdmin = user.role === 'admin'
 
   useEffect(() => {
-    const r = ref(db, "avisos");
+    const r = ref(db, 'avisos')
     const unsub = onValue(r, (snap) => {
-      const lista: Aviso[] = [];
+      const lista: Aviso[] = []
       snap.forEach((child) => {
-        const val = child.val() as Omit<Aviso, "id">;
+        const val = child.val() as Omit<Aviso, 'id'>
         if (val.ativo) {
-          lista.push({ id: child.key!, ...val });
+          lista.push({ id: child.key!, ...val })
         }
-      });
+      })
       // Mais recentes primeiro
-      lista.sort((a, b) => b.timestamp - a.timestamp);
-      setAvisos(lista);
-    });
+      lista.sort((a, b) => b.timestamp - a.timestamp)
+      setAvisos(lista)
+    })
 
-    return () => unsub();
-  }, []);
+    return () => unsub()
+  }, [])
 
   async function desativar(id: string) {
     try {
-      await update(ref(db, `avisos/${id}`), { ativo: false });
+      await update(ref(db, `avisos/${id}`), { ativo: false })
     } catch (e) {
-      console.error("Erro ao desativar aviso:", e);
+      console.error('Erro ao desativar aviso:', e)
     }
   }
 
-  if (avisos.length === 0) return null;
+  if (avisos.length === 0) return null
 
   return (
     <div className="avisos-container">
@@ -88,17 +88,12 @@ export default function AvisosHome({ user }: AvisosHomeProps) {
             <p className="aviso-corpo">{aviso.corpo}</p>
           </div>
           {isAdmin && (
-            <button
-              className="aviso-btn-fechar"
-              onClick={() => desativar(aviso.id)}
-              title="Desativar aviso"
-              aria-label="Fechar aviso"
-            >
+            <button className="aviso-btn-fechar" onClick={() => desativar(aviso.id)} title="Desativar aviso" aria-label="Fechar aviso">
               ✕
             </button>
           )}
         </div>
       ))}
     </div>
-  );
+  )
 }

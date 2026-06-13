@@ -37,12 +37,18 @@ export function populateContracts(container: Element | null, contracts: SgpContr
 
   const getStatusScore = (status: string): number => {
     switch (status) {
-      case 'ativo':     return 4
-      case 'vel-red':   return 3
-      case 'suspenso':  return 2
-      case 'inativo':   return 1
-      case 'cancelado': return 0
-      default:          return 0
+      case 'ativo':
+        return 4
+      case 'vel-red':
+        return 3
+      case 'suspenso':
+        return 2
+      case 'inativo':
+        return 1
+      case 'cancelado':
+        return 0
+      default:
+        return 0
     }
   }
 
@@ -254,6 +260,73 @@ export function populateOccurrenceTypes(container: Element | null, occurrenceTyp
 }
 
 // =================================================================
+// POPULAR TÉCNICOS
+// =================================================================
+
+export function populateTechnicians(modalElement: HTMLElement, technicians: { id: string; username: string }[]): void {
+  const responsavelSelect = modalElement.querySelector<HTMLSelectElement>('#osResponsavel')
+  const tecnicosSelect = modalElement.querySelector<HTMLSelectElement>('#osTecnicos')
+  const tecnicosAuxGroup = modalElement.querySelector<HTMLElement>('#osTecnicosAuxiliaresGroup')
+
+  if (!responsavelSelect || !tecnicosSelect) return
+
+  // Limpa existentes
+  responsavelSelect.innerHTML = '<option value="">---------</option>'
+  tecnicosSelect.innerHTML = ''
+
+  const validTechs = Array.isArray(technicians) ? technicians.filter((t) => t?.id) : []
+
+  if (validTechs.length === 0) {
+    responsavelSelect.innerHTML = '<option value="">Nenhum técnico encontrado</option>'
+    return
+  }
+
+  // Ordena alfabeticamente
+  const sorted = [...validTechs].sort((a, b) => a.username.localeCompare(b.username))
+
+  // Preenche opções
+  let defaultVal = ''
+  sorted.forEach((tech) => {
+    const isPlantonista = tech.username.toUpperCase().includes('PLANTONISTA')
+    const optionText = tech.username.toUpperCase()
+
+    const opt = document.createElement('option')
+    opt.value = tech.id
+    opt.textContent = optionText
+    responsavelSelect.appendChild(opt)
+
+    if (isPlantonista && !defaultVal) {
+      defaultVal = tech.id
+    }
+
+    // Preenche auxiliares
+    const optAux = document.createElement('option')
+    optAux.value = tech.id
+    optAux.textContent = optionText
+    tecnicosSelect.appendChild(optAux)
+  })
+
+  // Define padrão para plantonista se encontrado
+  if (defaultVal) {
+    responsavelSelect.value = defaultVal
+  }
+
+  // Verifica visibilidade inicial do grupo de auxiliares
+  const isPlantonista = responsavelSelect.options[responsavelSelect.selectedIndex]?.text.toLowerCase().includes('plantonista')
+  if (tecnicosAuxGroup) {
+    tecnicosAuxGroup.style.display = isPlantonista ? 'none' : 'flex'
+  }
+
+  // Escuta alteração do responsável para alternar auxiliares
+  responsavelSelect.addEventListener('change', () => {
+    const isPlantonistaNow = responsavelSelect.options[responsavelSelect.selectedIndex]?.text.toLowerCase().includes('plantonista')
+    if (tecnicosAuxGroup) {
+      tecnicosAuxGroup.style.display = isPlantonistaNow ? 'none' : 'flex'
+    }
+  })
+}
+
+// =================================================================
 // CARREGAR DADOS DO SGP — cache ou busca completa
 // =================================================================
 
@@ -270,17 +343,15 @@ export interface LoadSgpDataParams {
 }
 
 export function loadSgpData({ clientData, chatId, idToken, uid, modalElement, sgpButton, signal, existingDraft, onSgpDataLoaded }: LoadSgpDataParams): void {
-  const isSgpPage = window.location.hostname.includes('sgp') || 
-                    window.location.hostname.includes('201.158.20.35') || 
-                    window.location.hostname.includes('201.158.20.53');
+  const isSgpPage = window.location.hostname.includes('sgp') || window.location.hostname.includes('201.158.20.35') || window.location.hostname.includes('201.158.20.53')
 
   if (isSgpPage) {
-    console.log('Extensão ATI: Extraindo contratos e tipos diretamente do formulário do SGP local...');
-    const contractSelect = document.querySelector('#id_clientecontrato') as HTMLSelectElement | null;
-    const occurrenceTypeSelect = document.querySelector('#id_tipo') as HTMLSelectElement | null;
-    const responsibleSelect = document.querySelector('#id_responsavel') as HTMLSelectElement | null;
+    console.log('Extensão ATI: Extraindo contratos e tipos diretamente do formulário do SGP local...')
+    const contractSelect = document.querySelector('#id_clientecontrato') as HTMLSelectElement | null
+    const occurrenceTypeSelect = document.querySelector('#id_tipo') as HTMLSelectElement | null
+    const responsibleSelect = document.querySelector('#id_responsavel') as HTMLSelectElement | null
 
-    const contracts: SgpContract[] = [];
+    const contracts: SgpContract[] = []
     if (contractSelect) {
       Array.from(contractSelect.options).forEach((opt) => {
         if (opt.value) {
@@ -290,33 +361,33 @@ export function loadSgpData({ clientData, chatId, idToken, uid, modalElement, sg
             clientId: clientData.clientSgpId || '',
             baseUrl: window.location.origin,
             online: null,
-          });
+          })
         }
-      });
+      })
     }
 
-    const occurrenceTypes: any[] = [];
+    const occurrenceTypes: any[] = []
     if (occurrenceTypeSelect) {
       Array.from(occurrenceTypeSelect.options).forEach((opt) => {
         if (opt.value) {
           occurrenceTypes.push({
             id: opt.value,
             text: opt.textContent?.trim() || '',
-          });
+          })
         }
-      });
+      })
     }
 
-    const responsibleUsers: any[] = [];
+    const responsibleUsers: any[] = []
     if (responsibleSelect) {
       Array.from(responsibleSelect.options).forEach((opt) => {
         if (opt.value) {
           responsibleUsers.push({
             id: opt.value,
             username: opt.textContent?.trim().toLowerCase() || '',
-          });
+          })
         }
-      });
+      })
     }
 
     const sgpData: SgpData = {
@@ -325,13 +396,13 @@ export function loadSgpData({ clientData, chatId, idToken, uid, modalElement, sg
       contracts,
       responsibleUsers,
       occurrenceTypes,
-    };
+    }
 
-    onSgpDataLoaded(sgpData);
-    populateContracts(modalElement.querySelector('#modal-sgp-contracts-container'), sgpData.contracts);
-    populateOccurrenceTypes(modalElement.querySelector('#modal-occurrence-types-container'), sgpData.occurrenceTypes, signal);
-    sgpButton.disabled = false;
-    return;
+    onSgpDataLoaded(sgpData)
+    populateContracts(modalElement.querySelector('#modal-sgp-contracts-container'), sgpData.contracts)
+    populateOccurrenceTypes(modalElement.querySelector('#modal-occurrence-types-container'), sgpData.occurrenceTypes, signal)
+    sgpButton.disabled = false
+    return
   }
 
   if (existingDraft?.sgpData) {
@@ -361,10 +432,10 @@ export function loadSgpData({ clientData, chatId, idToken, uid, modalElement, sg
 
     // Refresh silencioso do status online/offline
     safeSendMessage<RefreshSgpOnlineStatusesRequest>({
-        action: 'refreshSgpOnlineStatuses',
-        clientData,
-        chatId,
-      })
+      action: 'refreshSgpOnlineStatuses',
+      clientData,
+      chatId,
+    })
       .then((response: { success?: boolean; data?: unknown }) => {
         if (response?.success && response.data) {
           const freshData = response.data as SgpData
@@ -395,7 +466,7 @@ export function loadSgpData({ clientData, chatId, idToken, uid, modalElement, sg
           if (!occurrenceTypesPopulated) {
             occurrenceTypesPopulated = true
             console.log(`Extensão ATI: Tipos de ocorrência globais carregados via Fast-Path (${res.types.length} tipos).`)
-            
+
             // Expõe os tipos rápidos para o modal (por ex., habilita botões de template)
             onSgpDataLoaded({
               occurrenceTypes: res.types,
@@ -403,7 +474,7 @@ export function loadSgpData({ clientData, chatId, idToken, uid, modalElement, sg
               responsibleUsers: [],
               clientSgpId: '',
             })
-            
+
             const container = modalElement.querySelector('#modal-occurrence-types-container')
             populateOccurrenceTypes(container, res.types, signal)
 
@@ -424,12 +495,12 @@ export function loadSgpData({ clientData, chatId, idToken, uid, modalElement, sg
       })
 
     safeSendMessage<GetSgpFormParamsRequest>({
-        action: 'getSgpFormParams',
-        clientData,
-        chatId,
-        idToken,
-        uid,
-      })
+      action: 'getSgpFormParams',
+      clientData,
+      chatId,
+      idToken,
+      uid,
+    })
       .then((response: { success?: boolean; data?: unknown; message?: string }) => {
         const tEnd = performance.now()
         log(`⏱️ [ATI Perf] getSgpFormParams demorou ${(tEnd - tStart).toFixed(1)}ms.`)
@@ -437,14 +508,14 @@ export function loadSgpData({ clientData, chatId, idToken, uid, modalElement, sg
           const sgpData = response.data as SgpData
           onSgpDataLoaded(sgpData)
           populateContracts(modalElement.querySelector('#modal-sgp-contracts-container'), sgpData.contracts)
-          
+
           if (!occurrenceTypesPopulated) {
             occurrenceTypesPopulated = true
             populateOccurrenceTypes(modalElement.querySelector('#modal-occurrence-types-container'), sgpData.occurrenceTypes, signal)
           } else {
             console.log('Extensão ATI: Ignorando repopulação de tipos de ocorrência pois já foram carregados pelo Fast-Path.')
           }
-          
+
           sgpButton.disabled = false
         } else {
           throw new Error(response?.message ?? 'Falha ao buscar dados do SGP.')

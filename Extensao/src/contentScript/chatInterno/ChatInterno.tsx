@@ -124,6 +124,134 @@ function parseSgpFeasibilityHtml(htmlStr: string, systemName: string): Feasibili
   return results
 }
 
+interface OfflineClient {
+  id: string
+  name: string
+  address: string
+  status: string
+  system: string
+  cpfCnpj?: string
+  cadastro?: string
+  offlineSince?: string
+  pop?: string
+  plano?: string
+  nas?: string
+  mac?: string
+  ip?: string
+  login?: string
+  serviceId?: string
+}
+
+function parseSgpOfflineClientsHtml(htmlStr: string, systemName: string): OfflineClient[] {
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(htmlStr, 'text/html')
+
+  const rows = doc.querySelectorAll('table.tablelist tbody tr, #result_list tbody tr, table.contrato tbody tr, tr[role="row"]')
+  const results: OfflineClient[] = []
+
+  rows.forEach((row) => {
+    const cells = Array.from(row.querySelectorAll('td'))
+    if (cells.length < 3) return
+
+    // Cell 0: ID
+    const clientId = cells[0].textContent?.trim() || ''
+
+    // Cell 1: Name, CPF/CNPJ, address, phones
+    const cell1Text = cells[1].textContent || ''
+    const nameLink = cells[1].querySelector('a')
+    let clientName = nameLink ? nameLink.textContent?.trim() || '' : ''
+    clientName = clientName.replace(/\s+/g, ' ').trim()
+
+    if (!clientName) {
+      const tempDiv = document.createElement('div')
+      tempDiv.innerHTML = cells[1].innerHTML
+      tempDiv.querySelectorAll('br').forEach(br => br.replaceWith('\n'))
+      const lines = tempDiv.textContent?.split('\n').map(l => l.trim()).filter(Boolean) || []
+      if (lines.length > 0) {
+        clientName = lines[0]
+      }
+    }
+
+    const cpfCnpjMatch = cell1Text.match(/\d{3}\.\d{3}\.\d{3}-\d{2}|\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}/)
+    const cpfCnpj = cpfCnpjMatch ? cpfCnpjMatch[0].trim() : ''
+
+    const tempDiv = document.createElement('div')
+    tempDiv.innerHTML = cells[1].innerHTML
+    tempDiv.querySelectorAll('br').forEach(br => br.replaceWith('\n'))
+    const linesText = tempDiv.textContent || ''
+    const addressLines = linesText
+      .split('\n')
+      .map(l => l.trim())
+      .filter(Boolean)
+    
+    const address = addressLines.length > 0 ? addressLines[addressLines.length - 1] : ''
+
+    // Cell 2: Connection details
+    const cell2 = cells[2]
+    if (!cell2) return
+    
+    const cell2Text = cell2.textContent || ''
+    
+    // Extract "Offline Desde: ..."
+    const offlineSinceMatch = cell2Text.match(/Offline Desde:\s*([\d/: ]+)/i)
+    const offlineSince = offlineSinceMatch ? offlineSinceMatch[1].trim() : ''
+
+    // Extract Pop
+    const popMatch = cell2Text.match(/Pop:\s*([^\n\r]+)/i)
+    const pop = popMatch ? popMatch[1].split('Plano:')[0].trim() : ''
+
+    // Extract Plano
+    const planoMatch = cell2Text.match(/Plano:\s*([^\n\r]+)/i)
+    const plano = planoMatch ? planoMatch[1].split('Nas:')[0].trim() : ''
+
+    // Extract Nas, Mac, IP
+    const nasMatch = cell2Text.match(/Nas:\s*([^\n\r|-]+)/i)
+    const nas = nasMatch ? nasMatch[1].trim() : ''
+
+    const macMatch = cell2Text.match(/Mac:\s*([^\n\r|IP:]+)/i)
+    const mac = macMatch ? macMatch[1].replace(/\xa0/g, ' ').replace(/&nbsp;/g, ' ').trim() : ''
+
+    const ipMatch = cell2Text.match(/IP:\s*([^\n\r|Ativo|Inativo|Suspenso|Id:]+)/i)
+    const ip = ipMatch ? ipMatch[1].replace(/\xa0/g, ' ').replace(/&nbsp;/g, ' ').trim() : ''
+
+    // Extract status
+    const statusSpan = cell2.querySelector('span[class*="ss_bold"]')
+    const status = statusSpan ? statusSpan.textContent?.trim() || 'Sem status' : 'Sem status'
+
+    // Extract service login
+    const loginLink = cell2.querySelector('a.tbold')
+    const login = loginLink ? loginLink.textContent?.trim() || '' : ''
+
+    // Extract service ID
+    const idMatch = cell2Text.match(/Id:\s*(\d+)/i)
+    const serviceId = idMatch ? idMatch[1].trim() : ''
+
+    const cadastro = cells[3] ? cells[3].textContent?.trim() || '' : ''
+
+    if (clientName && clientName !== clientId && clientName !== 'Nome') {
+      results.push({
+        id: clientId,
+        name: clientName,
+        address,
+        status,
+        system: systemName,
+        cpfCnpj,
+        cadastro,
+        offlineSince,
+        pop,
+        plano,
+        nas,
+        mac,
+        ip,
+        login,
+        serviceId
+      })
+    }
+  })
+
+  return results
+}
+
 const ChatInterno: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [activeTool, setActiveTool] = useState('chat_interno')
@@ -139,6 +267,19 @@ const ChatInterno: React.FC = () => {
   const [feasibilityType, setFeasibilityType] = useState<'active' | 'inactive' | 'none'>('none')
   const [localFilter, setLocalFilter] = useState('')
 
+  // Verificar Quedas / Clientes Offline
+  const [outageLogradouroQuery, setOutageLogradouroQuery] = useState('')
+  const [outageNumeroQuery, setOutageNumeroQuery] = useState('')
+  const [outageBairroQuery, setOutageBairroQuery] = useState('')
+  const [outageOltQuery, setOutageOltQuery] = useState('') // OLT
+  const [outageOltslotQuery, setOutageOltslotQuery] = useState('') // Slot
+  const [outageOltponQuery, setOutageOltponQuery] = useState('') // PON
+  const [outageSgpTarget, setOutageSgpTarget] = useState('both')
+  const [outageLoading, setOutageLoading] = useState(false)
+  const [outageResults, setOutageResults] = useState<OfflineClient[]>([])
+  const [outageHasSearched, setOutageHasSearched] = useState(false)
+  const [outageLocalFilter, setOutageLocalFilter] = useState('')
+
   // Link do seu site com o modo embed ativado
   const embedUrl = 'https://vituali.github.io/ati/?mode=embed'
 
@@ -146,6 +287,7 @@ const ChatInterno: React.FC = () => {
     { id: 'chat_interno', label: 'Chat', icon: '💬' },
     { id: 'modelos_os', label: 'O.S.', icon: '📋' },
     { id: 'viabilidade', label: 'Viabilidade', icon: '🌐' },
+    { id: 'quedas', label: 'Quedas', icon: '🔌' },
     { id: 'senhas', label: 'Senhas', icon: '🔑' },
     { id: 'anotacoes', label: 'Notas', icon: '📝' },
     { id: 'conversor', label: 'Conversor', icon: '🔄' },
@@ -275,10 +417,86 @@ const ChatInterno: React.FC = () => {
     }
   }
 
+  const handleSearchOffline = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setOutageLoading(true)
+    setOutageResults([])
+    setOutageHasSearched(true)
+    setOutageLocalFilter('')
+
+    try {
+      const targets = []
+      if (outageSgpTarget === '35' || outageSgpTarget === 'both') {
+        targets.push({ url: 'http://201.158.20.35:8000', name: 'SGP Antigo' })
+      }
+      if (outageSgpTarget === '53' || outageSgpTarget === 'both') {
+        targets.push({ url: 'http://201.158.20.53:8000', name: 'SGP Novo' })
+      }
+
+      const searchPromises = targets.map(async (t) => {
+        try {
+          const res = await safeSendMessage({
+            action: 'searchSgpOfflineClients',
+            baseUrl: t.url,
+            filters: {
+              logradouro: outageLogradouroQuery.trim() || undefined,
+              numero: outageNumeroQuery.trim() || undefined,
+              bairro: outageBairroQuery.trim() || undefined,
+              olt: outageOltQuery.trim() || undefined,
+              oltslot: outageOltslotQuery.trim() || undefined,
+              oltpon: outageOltponQuery.trim() || undefined,
+            }
+          })
+          if (res?.success && res.html) {
+            return parseSgpOfflineClientsHtml(res.html, t.name)
+          }
+          return []
+        } catch (err) {
+          console.error(`Erro ao buscar quedas no ${t.name}:`, err)
+          return []
+        }
+      })
+
+      const allResultsArray = await Promise.all(searchPromises)
+      const combined = allResultsArray.flat()
+
+      const uniqMap = new Map<string, OfflineClient>()
+      combined.forEach((item) => {
+        const key = `${item.system}_${item.id}_${item.serviceId || item.login}`
+        uniqMap.set(key, item)
+      })
+
+      const deduplicated = Array.from(uniqMap.values())
+      setOutageResults(deduplicated)
+    } catch (error: any) {
+      console.error('Erro na consulta de quedas:', error)
+      showToast(`Erro na consulta: ${error.message || error}`, 'error')
+    } finally {
+      setOutageLoading(false)
+    }
+  }
+
   const filteredResults = feasibilityResults.filter((client) => {
     if (!localFilter.trim()) return true
     const filterLower = localFilter.toLowerCase().trim()
     return client.name.toLowerCase().includes(filterLower) || client.address.toLowerCase().includes(filterLower) || client.id.toLowerCase().includes(filterLower) || client.status.toLowerCase().includes(filterLower) || (client.cpfCnpj && client.cpfCnpj.toLowerCase().includes(filterLower))
+  })
+
+  const filteredOutages = outageResults.filter((client) => {
+    if (!outageLocalFilter.trim()) return true
+    const filterLower = outageLocalFilter.toLowerCase().trim()
+    return (
+      client.name.toLowerCase().includes(filterLower) ||
+      client.address.toLowerCase().includes(filterLower) ||
+      client.id.toLowerCase().includes(filterLower) ||
+      client.status.toLowerCase().includes(filterLower) ||
+      (client.cpfCnpj && client.cpfCnpj.toLowerCase().includes(filterLower)) ||
+      (client.login && client.login.toLowerCase().includes(filterLower)) ||
+      (client.nas && client.nas.toLowerCase().includes(filterLower)) ||
+      (client.pop && client.pop.toLowerCase().includes(filterLower)) ||
+      (client.plano && client.plano.toLowerCase().includes(filterLower)) ||
+      (client.offlineSince && client.offlineSince.toLowerCase().includes(filterLower))
+    )
   })
 
   return (
@@ -399,6 +617,171 @@ const ChatInterno: React.FC = () => {
                     <div className="ati-feasibility-empty">
                       <div className="ati-feasibility-empty-title">Nenhum cliente encontrado</div>
                       <div className="ati-feasibility-empty-desc">Nenhum cliente cadastrado foi encontrado nesta rua/número nos SGPs selecionados.</div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : isOpen && activeTool === 'quedas' ? (
+            <div className="ati-feasibility-container">
+              <div className="ati-feasibility-title">Verificar Quedas</div>
+              <div className="ati-feasibility-subtitle">Busque por clientes offline no SGP com filtros específicos para identificar quedas massivas.</div>
+
+              <form onSubmit={handleSearchOffline} className="ati-feasibility-form">
+                <div className="ati-feasibility-row">
+                  <div className="ati-feasibility-input-wrapper flex-3">
+                    <label className="ati-feasibility-label">Rua / Logradouro</label>
+                    <input type="text" className="ati-feasibility-input" placeholder="Ex: Rua Guaicurus" value={outageLogradouroQuery} onChange={(e) => setOutageLogradouroQuery(e.target.value)} />
+                  </div>
+
+                  <div className="ati-feasibility-input-wrapper flex-1">
+                    <label className="ati-feasibility-label">Número</label>
+                    <input type="text" className="ati-feasibility-input" placeholder="Ex: 525" value={outageNumeroQuery} onChange={(e) => setOutageNumeroQuery(e.target.value)} />
+                  </div>
+                </div>
+
+                <div className="ati-feasibility-row">
+                  <div className="ati-feasibility-input-wrapper flex-1">
+                    <label className="ati-feasibility-label">Bairro</label>
+                    <input type="text" className="ati-feasibility-input" placeholder="Ex: Caleme" value={outageBairroQuery} onChange={(e) => setOutageBairroQuery(e.target.value)} />
+                  </div>
+
+                  <div className="ati-feasibility-input-wrapper flex-1">
+                    <label className="ati-feasibility-label">OLT</label>
+                    <select className="ati-feasibility-select" value={outageOltQuery} onChange={(e) => setOutageOltQuery(e.target.value)}>
+                      <option value="">Todas</option>
+                      <option value="1">OLT NOKIA VARZEA - 192.168.140.7</option>
+                      <option value="2">OLT NOKIA SAO PEDRO - 192.168.140.9</option>
+                      <option value="3">OLT NOKIA ALTO - 192.168.140.10</option>
+                      <option value="4">OLT NOKIA BARRA - 192.168.140.13</option>
+                      <option value="5">OLT NOKIA PONTE IMBUI - 192.168.140.11</option>
+                      <option value="6">OLT NOKIA CASCATA - 192.168.140.12</option>
+                      <option value="7">OLT NOKIA FONTE SANTA - 192.168.140.8</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="ati-feasibility-row">
+                  <div className="ati-feasibility-input-wrapper flex-1">
+                    <label className="ati-feasibility-label">Slot</label>
+                    <input type="number" className="ati-feasibility-input" placeholder="Ex: 1" value={outageOltslotQuery} onChange={(e) => setOutageOltslotQuery(e.target.value)} />
+                  </div>
+
+                  <div className="ati-feasibility-input-wrapper flex-1">
+                    <label className="ati-feasibility-label">PON</label>
+                    <input type="number" className="ati-feasibility-input" placeholder="Ex: 8" value={outageOltponQuery} onChange={(e) => setOutageOltponQuery(e.target.value)} />
+                  </div>
+                </div>
+
+                <div className="ati-feasibility-input-wrapper">
+                  <label className="ati-feasibility-label">Buscar em qual SGP?</label>
+                  <select className="ati-feasibility-select" value={outageSgpTarget} onChange={(e) => setOutageSgpTarget(e.target.value)}>
+                    <option value="both">Ambos (Recomendado)</option>
+                    <option value="53">SGP Novo (.53)</option>
+                    <option value="35">SGP Antigo (.35)</option>
+                  </select>
+                </div>
+
+                <button type="submit" className="ati-feasibility-btn" disabled={outageLoading}>
+                  {outageLoading ? (
+                    <>
+                      <span className="ati-feasibility-spinner"></span>
+                      <span>Consultando Quedas...</span>
+                    </>
+                  ) : (
+                    <span>Consultar Clientes Offline</span>
+                  )}
+                </button>
+              </form>
+
+              {outageHasSearched && !outageLoading && (
+                <div className="ati-feasibility-results-list">
+                  {outageResults.length > 0 ? (
+                    <>
+                      <div className="ati-feasibility-local-search">
+                        <input type="text" className="ati-feasibility-input" placeholder="🔍 Filtrar nesta lista (nome, login, plano...)" value={outageLocalFilter} onChange={(e) => setOutageLocalFilter(e.target.value)} />
+                      </div>
+
+                      <div className="ati-feasibility-results-header ati-feasibility-results-header--inactive">
+                        <span>🔌 Outages / Quedas Detectadas</span>
+                        <span>
+                          Encontrado(s) {filteredOutages.length} de {outageResults.length} cliente(s) offline:
+                        </span>
+                      </div>
+
+                      {filteredOutages.map((client, idx) => {
+                        const baseUrl = client.system.includes('Novo') ? 'http://201.158.20.53:8000' : 'http://201.158.20.35:8000';
+                        return (
+                          <div key={idx} className="ati-feasibility-card ati-feasibility-card--inactive">
+                            <div className="ati-feasibility-card-header">
+                              <span className="ati-feasibility-client-name">
+                                <a href={`${baseUrl}/admin/cliente/${client.id}/contratos/`} target="_blank" rel="noopener noreferrer" className="ati-outage-link-client">
+                                  {client.name}
+                                </a>
+                              </span>
+                              <span className={`ati-feasibility-badge ${client.system.includes('Novo') ? 'ati-feasibility-badge--53' : 'ati-feasibility-badge--35'}`}>{client.system}</span>
+                            </div>
+                            
+                            <div className="ati-feasibility-card-meta" style={{ marginTop: '2px' }}>
+                              <span className="ati-feasibility-client-id">
+                                ID Cliente: <a href={`${baseUrl}/admin/cliente/${client.id}/edit/`} target="_blank" rel="noopener noreferrer" className="ati-outage-link-sub">{client.id}</a>
+                              </span>
+                              {client.cadastro && <span className="ati-feasibility-client-cadastro">Cad: {client.cadastro}</span>}
+                            </div>
+
+                            <div className="ati-feasibility-client-address" style={{ margin: '4px 0' }}>
+                              <strong>Rua:</strong> {client.address}
+                            </div>
+
+                            <div className="ati-outage-details-grid">
+                              {client.offlineSince && (
+                                <div className="ati-outage-detail-item">
+                                  <strong>Offline Desde:</strong> <span className="ati-outage-offline-time">{client.offlineSince}</span>
+                                </div>
+                              )}
+                              {client.pop && client.pop.trim().toUpperCase() !== 'TERESOPOLIS-RJ' && (
+                                <div className="ati-outage-detail-item">
+                                  <strong>POP:</strong> {client.pop}
+                                </div>
+                              )}
+                              {client.plano && (
+                                <div className="ati-outage-detail-item">
+                                  <strong>Plano:</strong> {client.plano}
+                                </div>
+                              )}
+                              {((client.nas && !['proxy', 'cisco'].includes(client.nas.trim().toLowerCase())) || client.mac || client.ip) && (
+                                <div className="ati-outage-detail-item">
+                                  <strong>Conexão:</strong> {[
+                                    client.nas && !['proxy', 'cisco'].includes(client.nas.trim().toLowerCase()) ? `NAS: ${client.nas}` : null,
+                                    client.mac ? `MAC: ${client.mac}` : null,
+                                    client.ip ? `IP: ${client.ip}` : null
+                                  ].filter(Boolean).join(' | ')}
+                                </div>
+                              )}
+                              {client.login && (
+                                <div className="ati-outage-detail-item">
+                                  <strong>Login:</strong>{' '}
+                                  <a href={`${baseUrl}/admin/servicos/internet/${client.serviceId}/`} target="_blank" rel="noopener noreferrer" className="ati-outage-link-login">
+                                    {client.login}
+                                  </a>{' '}
+                                  {client.serviceId && <span style={{ opacity: 0.6 }}>(ID Serv: {client.serviceId})</span>}
+                                </div>
+                              )}
+                            </div>
+
+                            <span className="ati-feasibility-client-status" style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '4px', marginTop: '4px', display: 'block' }}>
+                              Status Contrato: <span style={{ color: '#fbbf24', fontWeight: '500' }}>{client.status}</span>
+                            </span>
+                          </div>
+                        )
+                      })}
+
+                      {filteredOutages.length === 0 && <div className="ati-feasibility-empty-filter">Nenhum cliente offline corresponde ao filtro "{outageLocalFilter}".</div>}
+                    </>
+                  ) : (
+                    <div className="ati-feasibility-empty" style={{ background: 'rgba(74, 222, 128, 0.04)', borderColor: 'rgba(74, 222, 128, 0.2)', color: '#4ade80' }}>
+                      <div className="ati-feasibility-empty-title">Tudo online!</div>
+                      <div className="ati-feasibility-empty-desc">Nenhum cliente offline encontrado nos SGPs selecionados para os filtros informados.</div>
                     </div>
                   )}
                 </div>

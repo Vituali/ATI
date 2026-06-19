@@ -623,3 +623,275 @@ export async function searchSgpFeasibilityHtml(baseUrl: string, logradouro: stri
 
   return html
 }
+
+interface SgpFiltersCache {
+  olts: { value: string; text: string }[]
+  oltpons: { value: string; text: string }[]
+  timestamp: number
+}
+
+async function getSgpFiltersCache(baseUrl: string): Promise<SgpFiltersCache | null> {
+  const key = `sgp_filters_cache_${baseUrl}`
+  const result = await chrome.storage.local.get(key)
+  const cached = result[key]
+  if (!cached) return null
+  // 1 hora TTL
+  if (Date.now() - cached.timestamp > 3600000) {
+    return null
+  }
+  return cached
+}
+
+async function setSgpFiltersCache(baseUrl: string, cacheData: { olts: { value: string; text: string }[]; oltpons: { value: string; text: string }[] }) {
+  const key = `sgp_filters_cache_${baseUrl}`
+  await chrome.storage.local.set({ [key]: { ...cacheData, timestamp: Date.now() } })
+}
+
+function parseSgpFilters(html: string): { olts: { value: string; text: string }[]; oltpons: { value: string; text: string }[] } {
+  const olts: { value: string; text: string }[] = []
+  const oltpons: { value: string; text: string }[] = []
+
+  // Parse OLT select
+  const oltSelectRegex = /<select[^>]+name=['"]olt['"][^>]*>([\s\S]*?)<\/select>/i
+  const oltSelectMatch = html.match(oltSelectRegex)
+  if (oltSelectMatch) {
+    const optionRegex = /<option\s+value=['"]?([^'"]*)['"]?[^>]*>([\s\S]*?)<\/option>/gi
+    let optMatch
+    while ((optMatch = optionRegex.exec(oltSelectMatch[1])) !== null) {
+      if (optMatch[1]) {
+        olts.push({ value: optMatch[1], text: optMatch[2].trim() })
+      }
+    }
+  }
+
+  // Parse OLTPON select
+  const oltponSelectRegex = /<select[^>]+name=['"]oltpon['"][^>]*>([\s\S]*?)<\/select>/i
+  const oltponSelectMatch = html.match(oltponSelectRegex)
+  if (oltponSelectMatch) {
+    const optionRegex = /<option\s+value=['"]?([^'"]*)['"]?[^>]*>([\s\S]*?)<\/option>/gi
+    let optMatch
+    while ((optMatch = optionRegex.exec(oltponSelectMatch[1])) !== null) {
+      if (optMatch[1]) {
+        oltpons.push({ value: optMatch[1], text: optMatch[2].trim() })
+      }
+    }
+  }
+
+  return { olts, oltpons }
+}
+
+function resolveSgpFilters(
+  cache: { olts: { value: string; text: string }[]; oltpons: { value: string; text: string }[] },
+  filters: { olt?: string; oltslot?: string; oltpon?: string }
+): { olt?: string; oltpon?: string } {
+  const result: { olt?: string; oltpon?: string } = {}
+
+  const oltVal = filters.olt
+  const slotVal = filters.oltslot
+  const ponVal = filters.oltpon
+
+  // 1. Resolve OLT ID
+  if (oltVal) {
+    let keyword = ''
+    if (oltVal === '1') keyword = 'VARZEA'
+    else if (oltVal === '2') keyword = 'SAO PEDRO'
+    else if (oltVal === '3') keyword = 'ALTO'
+    else if (oltVal === '4') keyword = 'BARRA'
+    else if (oltVal === '5') keyword = 'PONTE'
+    else if (oltVal === '6') keyword = 'CASCATA'
+    else if (oltVal === '7') keyword = 'FONTE'
+
+    if (keyword) {
+      let bestOlt: { value: string; text: string } | null = null
+      let bestScore = -1
+
+      for (const olt of cache.olts) {
+        const textUpper = olt.text.toUpperCase()
+        if (textUpper.includes(keyword)) {
+          let score = 1
+          if (textUpper.includes('NOKIA')) score = 2
+          if (oltVal === '4' && textUpper.includes('192.168.140.13')) score = 3
+          if (score > bestScore) {
+            bestScore = score
+            bestOlt = olt
+          }
+        }
+      }
+
+      if (bestOlt) {
+        result.olt = bestOlt.value
+      }
+    }
+  }
+
+  // 2. Resolve OLTPON ID
+  if (oltVal && slotVal && ponVal) {
+    let keyword = ''
+    if (oltVal === '1') keyword = 'VARZEA'
+    else if (oltVal === '2') keyword = 'SAO PEDRO'
+    else if (oltVal === '3') keyword = 'ALTO'
+    else if (oltVal === '4') keyword = 'BARRA'
+    else if (oltVal === '5') keyword = 'PONTE'
+    else if (oltVal === '6') keyword = 'CASCATA'
+    else if (oltVal === '7') keyword = 'FONTE'
+
+    if (keyword) {
+      let bestOltPon: { value: string; text: string } | null = null
+      let bestScore = -1
+
+      for (const opt of cache.oltpons) {
+        const textUpper = opt.text.toUpperCase()
+
+        // Match Slot
+        const slotRegex = new RegExp(`Slot:\\s*0*${slotVal}\\b`, 'i')
+        if (!slotRegex.test(textUpper)) continue
+
+        // Match PON
+        const ponRegex = new RegExp(`PON:\\s*0*${ponVal}\\b`, 'i')
+        if (!ponRegex.test(textUpper)) continue
+
+        if (textUpper.includes(keyword)) {
+          let score = 1
+          if (textUpper.includes('NOKIA')) score = 2
+          if (oltVal === '4' && textUpper.includes('192.168.140.13')) score = 3
+
+          if (score > bestScore) {
+            bestScore = score
+            bestOltPon = opt
+          }
+        }
+      }
+
+      if (bestOltPon) {
+        result.oltpon = bestOltPon.value
+      }
+    }
+  }
+
+  return result
+}
+
+export async function searchSgpOfflineClientsHtml(
+  baseUrl: string,
+  filters?: {
+    logradouro?: string
+    numero?: string
+    bairro?: string
+    olt?: string
+    oltslot?: string
+    oltpon?: string
+  }
+): Promise<string> {
+  const isSessionOk = await ensureSgpSession(baseUrl)
+  if (!isSessionOk) {
+    await doubleCheckSgpLogins(true)
+    throw new Error('Por favor, faça login em ambos os SGPs (.35 e .53) para continuar. Abrindo as telas de login...')
+  }
+
+  let finalOlt = filters?.olt
+  let finalOltpon = filters?.oltpon
+  let needsResolution = !!(filters?.olt || filters?.oltpon)
+
+  if (needsResolution && filters) {
+    // Tenta carregar do cache
+    const cache = await getSgpFiltersCache(baseUrl)
+
+    if (cache) {
+      const resolved = resolveSgpFilters(cache, filters)
+      if (resolved.olt) finalOlt = resolved.olt
+      if (resolved.oltpon) finalOltpon = resolved.oltpon
+      needsResolution = false // Resolvido com sucesso via cache
+    }
+  }
+
+  const buildQuery = (oltVal?: string, oltponVal?: string) => {
+    let query = 'tipoq=cliente&tipo_endereco=cliente&statusconn=offline&conexaoexibir=on&status=1&status=7&botao_consulta=Consultar'
+    if (filters) {
+      if (filters.logradouro) query += `&logradouro=${encodeURIComponent(filters.logradouro)}`
+      if (filters.numero) query += `&numero=${encodeURIComponent(filters.numero)}`
+      if (filters.bairro) query += `&bairro=${encodeURIComponent(filters.bairro)}`
+      if (oltVal) query += `&olt=${encodeURIComponent(oltVal)}`
+      if (filters.oltslot) query += `&oltslot=${encodeURIComponent(filters.oltslot)}`
+      if (oltponVal) query += `&oltpon=${encodeURIComponent(oltponVal)}`
+    }
+    return query
+  }
+
+  // Se precisar de resolução por falta de cache
+  if (needsResolution && filters) {
+    const tempQuery = buildQuery(undefined, undefined)
+    const tempUrl = `${baseUrl}/admin/cliente/list/?${tempQuery}`
+    console.log(`Extensão ATI: Cache miss para filtros OLT/PON. Buscando página inicial para mapeamento: ${tempUrl}`)
+
+    const response = await fetch(tempUrl, {
+      credentials: 'include',
+      signal: AbortSignal.timeout(25000),
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status} ao acessar SGP`)
+    }
+
+    const html = await response.text()
+
+    const isLoginPage = html.includes('id_username') || html.includes('id_password') || html.includes('name="username"') || html.includes('name="password"') || html.includes('/accounts/login') || html.includes('login-container')
+    if (isLoginPage) {
+      await doubleCheckSgpLogins(true)
+      throw new Error('Sessão expirada no SGP. Por favor, faça login em ambos os SGPs (.35 e .53) para continuar. Abrindo as telas de login...')
+    }
+
+    // Extrai e armazena os filtros no cache
+    const cacheData = parseSgpFilters(html)
+    if (cacheData.olts.length > 0 || cacheData.oltpons.length > 0) {
+      console.log(`Extensão ATI: Filtros OLT/PON mapeados com sucesso (${cacheData.olts.length} OLTs, ${cacheData.oltpons.length} PONs). Gravando cache.`)
+      await setSgpFiltersCache(baseUrl, cacheData)
+
+      const resolved = resolveSgpFilters(cacheData, filters)
+      if (resolved.olt) finalOlt = resolved.olt
+      if (resolved.oltpon) finalOltpon = resolved.oltpon
+    }
+
+    // Faz a consulta definitiva com os filtros resolvidos
+    const finalQuery = buildQuery(finalOlt, finalOltpon)
+    const finalUrl = `${baseUrl}/admin/cliente/list/?${finalQuery}`
+    console.log(`Extensão ATI: Consultando quedas com filtros mapeados: ${finalQuery}`)
+
+    const secondResponse = await fetch(finalUrl, {
+      credentials: 'include',
+      signal: AbortSignal.timeout(25000),
+    })
+
+    if (!secondResponse.ok) {
+      throw new Error(`HTTP ${secondResponse.status} ao acessar SGP`)
+    }
+
+    const finalHtml = await secondResponse.text()
+    return finalHtml
+  }
+
+  // Com cache hit ou sem necessidade de resolução
+  const finalQuery = buildQuery(finalOlt, finalOltpon)
+  const url = `${baseUrl}/admin/cliente/list/?${finalQuery}`
+  console.log(`Extensão ATI: Consultando quedas no SGP (${baseUrl}) com query: ${finalQuery}`)
+
+  const response = await fetch(url, {
+    credentials: 'include',
+    signal: AbortSignal.timeout(25000),
+  })
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status} ao acessar SGP`)
+  }
+
+  const html = await response.text()
+
+  const isLoginPage = html.includes('id_username') || html.includes('id_password') || html.includes('name="username"') || html.includes('name="password"') || html.includes('/accounts/login') || html.includes('login-container')
+
+  if (isLoginPage) {
+    await doubleCheckSgpLogins(true)
+    throw new Error('Sessão expirada no SGP. Por favor, faça login em ambos os SGPs (.35 e .53) para continuar. Abrindo as telas de login...')
+  }
+
+  return html
+}
+

@@ -161,6 +161,22 @@ function getPowerColor(valStr: string): string {
   return '#4ade80' // Normal
 }
 
+function getPowerBadge(valStr: string): string {
+  if (!valStr || valStr === '--' || valStr.toLowerCase().includes('unknown') || valStr.toLowerCase().includes('invalid')) {
+    return ''
+  }
+  const val = parseFloat(valStr)
+  if (isNaN(val)) return ''
+
+  if (val >= -8.0 || val < -27.0) {
+    return ' <span style="font-size: 9px; font-weight: 800; padding: 2px 5px; border-radius: 4px; background: rgba(248, 113, 113, 0.2); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.4); margin-left: 6px;">CRÍTICO</span>'
+  }
+  if (val > -15.0 || val < -26.0) {
+    return ' <span style="font-size: 9px; font-weight: 800; padding: 2px 5px; border-radius: 4px; background: rgba(250, 204, 21, 0.2); color: #facc15; border: 1px solid rgba(250, 204, 21, 0.4); margin-left: 6px;">ALERTA</span>'
+  }
+  return ''
+}
+
 function renderSupportModal(clientData: ClientData, contract: SgpContract, supportData: SgpSupportData) {
   const modalId = 'ati-support-modal-root'
   document.getElementById(modalId)?.remove()
@@ -236,11 +252,17 @@ function renderSupportModal(clientData: ClientData, contract: SgpContract, suppo
               </div>
               <div class="ati-support-optics-card">
                 <div class="ati-support-optics-label">Potência RX ONU</div>
-                <div class="ati-support-optics-value" style="color: ${rxOnuColor};">${supportData.rxPowerOnu} ${supportData.rxPowerOnu === '--' ? '' : 'dBm'}</div>
+                <div class="ati-support-optics-value" style="color: ${rxOnuColor}; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                  <span>${supportData.rxPowerOnu} ${supportData.rxPowerOnu === '--' ? '' : 'dBm'}</span>
+                  ${getPowerBadge(supportData.rxPowerOnu)}
+                </div>
               </div>
               <div class="ati-support-optics-card">
                 <div class="ati-support-optics-label">Potência RX OLT</div>
-                <div class="ati-support-optics-value" style="color: ${rxOltColor};">${supportData.rxPowerOlt} ${supportData.rxPowerOlt === '--' ? '' : 'dBm'}</div>
+                <div class="ati-support-optics-value" style="color: ${rxOltColor}; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                  <span>${supportData.rxPowerOlt} ${supportData.rxPowerOlt === '--' ? '' : 'dBm'}</span>
+                  ${getPowerBadge(supportData.rxPowerOlt)}
+                </div>
               </div>
             </div>
 

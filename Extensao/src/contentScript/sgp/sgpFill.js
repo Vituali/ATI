@@ -212,13 +212,7 @@
       else if (data.periodo === '48h') hour = '09:00:00'
       else if (data.periodo === 'outros') hour = '09:00:00'
 
-      // Se for 48h, a data é hoje + 2 dias
-      if (data.periodo === '48h') {
-        const targetDate = new Date()
-        targetDate.setDate(targetDate.getDate() + 2)
-        const pad = function(n) { return String(n).padStart(2, '0') }
-        dateStr = pad(targetDate.getDate()) + '/' + pad(targetDate.getMonth()+1) + '/' + targetDate.getFullYear() + ' ' + hour
-      } else if (data.dataAgendamento) {
+      if (data.dataAgendamento) {
         const parts = data.dataAgendamento.split('-')
         if (parts.length === 3) {
           const yyyy = parts[0]

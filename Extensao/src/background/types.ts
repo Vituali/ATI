@@ -109,6 +109,19 @@ export interface SearchSgpFeasibilityRequest {
   numero?: string
 }
 
+export interface SearchSgpOfflineClientsRequest {
+  action: 'searchSgpOfflineClients'
+  baseUrl: string
+  filters?: {
+    logradouro?: string
+    numero?: string
+    bairro?: string
+    olt?: string
+    oltslot?: string
+    oltpon?: string
+  }
+}
+
 export interface FindClientOnSgpRequest {
   action: 'findClientOnSgp'
   baseUrl: string
@@ -130,4 +143,5 @@ export interface ExecuteOnuCommandRequest {
   command: 'reset' | 'tl1-add' | 'tl1-delete'
 }
 
-export type ExtensionRequest = FirebaseLoginRequest | OpenInSgpRequest | GetSgpFormParamsRequest | CreateOccurrenceVisuallyRequest | ClearSgpCacheRequest | ClearCpfCacheRequest | ClearCpfCacheByUidRequest | GetOsTemplatesRequest | GetQuickRepliesRequest | RefreshSgpOnlineStatusesRequest | GetGlobalOccurrenceTypesRequest | RefreshTokenRequest | FirebaseFetchRequest | FirebasePostRequest | FirebasePatchRequest | SsoLoginRequest | GetSsoSessionRequest | RefreshUserSessionRequest | ClearSessionCachesRequest | LogoutRequest | CheckVersionRequest | GetSgpClientContactsRequest | SearchSgpFeasibilityRequest | FindClientOnSgpRequest | FetchSupportDataRequest | ExecuteOnuCommandRequest
+export type ExtensionRequest = FirebaseLoginRequest | OpenInSgpRequest | GetSgpFormParamsRequest | CreateOccurrenceVisuallyRequest | ClearSgpCacheRequest | ClearCpfCacheRequest | ClearCpfCacheByUidRequest | GetOsTemplatesRequest | GetQuickRepliesRequest | RefreshSgpOnlineStatusesRequest | GetGlobalOccurrenceTypesRequest | RefreshTokenRequest | FirebaseFetchRequest | FirebasePostRequest | FirebasePatchRequest | SsoLoginRequest | GetSsoSessionRequest | RefreshUserSessionRequest | ClearSessionCachesRequest | LogoutRequest | CheckVersionRequest | GetSgpClientContactsRequest | SearchSgpFeasibilityRequest | SearchSgpOfflineClientsRequest | FindClientOnSgpRequest | FetchSupportDataRequest | ExecuteOnuCommandRequest
+

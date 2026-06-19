@@ -3,7 +3,7 @@
 // =================================================================
 
 import { handleFirebaseLogin, getOsTemplates, getQuickReplies, getOccurrenceTypes, refreshIdToken } from './firebase'
-import { handleOpenInSgp, getSgpFormParams, createOccurrenceVisually, refreshSgpOnlineStatuses, fetchSgpClientContacts, searchSgpFeasibilityHtml } from './sgp/occurrence'
+import { handleOpenInSgp, getSgpFormParams, createOccurrenceVisually, refreshSgpOnlineStatuses, fetchSgpClientContacts, searchSgpFeasibilityHtml, searchSgpOfflineClientsHtml } from './sgp/occurrence'
 import { performDailySgpCheck } from './sgp/auth'
 import { deleteSgpFormCache } from './sgp/cache'
 import { deleteCpfCacheEntry, deleteCpfCacheByUid } from './sgp/cpfCache'
@@ -109,6 +109,14 @@ chrome.runtime.onMessage.addListener((request: ExtensionRequest, _sender, sendRe
       .catch((error) => sendResponse({ success: false, error: error.message }))
     return true
   }
+
+  if (request.action === 'searchSgpOfflineClients') {
+    searchSgpOfflineClientsHtml(request.baseUrl, request.filters)
+      .then((html) => sendResponse({ success: true, html }))
+      .catch((error) => sendResponse({ success: false, error: error.message }))
+    return true
+  }
+
 
   if (request.action === 'findClientOnSgp') {
     findClientInSgp(request.baseUrl, request.clientData, request.uid)

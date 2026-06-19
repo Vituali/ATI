@@ -473,7 +473,7 @@ async function scrapeSupportDataInternal(baseUrl: string, contractId: string, cl
   }
 
   // 7. Gera explicação amigável baseado nos alarmes e down reason
-  const friendlyExplanation = buildFriendlyExplanation(alarms, downReason, status, motivoQueda, dataQueda)
+  const friendlyExplanation = buildFriendlyExplanation(alarms, downReason, status, motivoQueda, dataQueda, rxPowerOnu, rxPowerOlt)
 
   return {
     status,
@@ -505,7 +505,21 @@ async function scrapeSupportDataInternal(baseUrl: string, contractId: string, cl
   }
 }
 
-function buildFriendlyExplanation(alarms: Record<string, string>, downReason: string, status: 'online' | 'offline' | 'unknown', terminateCause?: string, endTime?: string): string {
+function getPowerStatus(valStr: string): 'normal' | 'alert_low' | 'alert_high' | 'critical_low' | 'critical_high' | 'unknown' {
+  if (!valStr || valStr === '--' || valStr.toLowerCase().includes('unknown') || valStr.toLowerCase().includes('invalid')) {
+    return 'unknown'
+  }
+  const val = parseFloat(valStr)
+  if (isNaN(val)) return 'unknown'
+
+  if (val >= -8.0) return 'critical_high'
+  if (val < -27.0) return 'critical_low'
+  if (val > -15.0) return 'alert_high'
+  if (val < -26.0) return 'alert_low'
+  return 'normal'
+}
+
+function buildFriendlyExplanation(alarms: Record<string, string>, downReason: string, status: 'online' | 'offline' | 'unknown', terminateCause?: string, endTime?: string, rxPowerOnu?: string, rxPowerOlt?: string): string {
   const reasons: string[] = []
 
   // Check alarm states
@@ -520,6 +534,33 @@ function buildFriendlyExplanation(alarms: Record<string, string>, downReason: st
       }
     } else if (alarms.dyingGasp === 'yes') {
       reasons.push('🔌 <strong>Alerta de Queda de Energia (Dying Gasp):</strong> O equipamento do cliente registrou uma perda de alimentação elétrica.')
+    }
+  }
+
+  // Check optical power levels
+  if (rxPowerOnu) {
+    const onuStatus = getPowerStatus(rxPowerOnu)
+    if (onuStatus === 'critical_low') {
+      reasons.push(`⚠️🔴 <strong>Sinal RX ONU Crítico (Muito Baixo):</strong> A potência recebida pela ONU está em <strong>${rxPowerOnu} dBm</strong> (faixa ideal: -15 a -26 dBm). Isso causa instabilidade extrema ou queda total da conexão. Verifique se há dobras na fibra ou conectores sujos/danificados.`)
+    } else if (onuStatus === 'critical_high') {
+      reasons.push(`⚠️🔴 <strong>Sinal RX ONU Crítico (Saturação):</strong> A potência recebida pela ONU está muito forte em <strong>${rxPowerOnu} dBm</strong> (acima de -8 dBm). Pode causar danos ao receptor óptico. É necessário adicionar atenuador óptico na fibra.`)
+    } else if (onuStatus === 'alert_low') {
+      reasons.push(`⚠️🟡 <strong>Sinal RX ONU em Alerta (Baixo):</strong> A potência recebida pela ONU está em <strong>${rxPowerOnu} dBm</strong>, levemente abaixo do ideal (-15 a -26 dBm). Indica atenuação que pode evoluir para queda.`)
+    } else if (onuStatus === 'alert_high') {
+      reasons.push(`⚠️🟡 <strong>Sinal RX ONU em Alerta (Alto):</strong> A potência recebida pela ONU está em <strong>${rxPowerOnu} dBm</strong>, acima do ideal (-15 a -26 dBm). A potência está um pouco forte.`)
+    }
+  }
+
+  if (rxPowerOlt) {
+    const oltStatus = getPowerStatus(rxPowerOlt)
+    if (oltStatus === 'critical_low') {
+      reasons.push(`⚠️🔴 <strong>Sinal RX OLT Crítico (Retorno Muito Baixo):</strong> A potência de retorno recebida na OLT está em <strong>${rxPowerOlt} dBm</strong> (abaixo de -27 dBm). Indica atenuação severa na fibra no sentido de upload.`)
+    } else if (oltStatus === 'critical_high') {
+      reasons.push(`⚠️🔴 <strong>Sinal RX OLT Crítico (Retorno Saturação):</strong> A potência de retorno recebida na OLT está excessivamente forte em <strong>${rxPowerOlt} dBm</strong>.`)
+    } else if (oltStatus === 'alert_low') {
+      reasons.push(`⚠️🟡 <strong>Sinal RX OLT em Alerta (Retorno Baixo):</strong> A potência de retorno recebida na OLT está em <strong>${rxPowerOlt} dBm</strong>, indicando sinal de subida levemente atenuado.`)
+    } else if (oltStatus === 'alert_high') {
+      reasons.push(`⚠️🟡 <strong>Sinal RX OLT em Alerta (Retorno Alto):</strong> A potência de retorno recebida na OLT está em <strong>${rxPowerOlt} dBm</strong>, acima da faixa ideal.`)
     }
   }
 

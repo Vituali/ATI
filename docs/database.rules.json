@@ -1,6 +1,17 @@
 {
   "rules": {
-
+    // ---------------------------------------------------------------
+    // Credenciais protegidas por senha (lidas somente via API Key ou Admin)
+    // ---------------------------------------------------------------
+    "credenciais": {
+      ".read": "auth != null", // Leitura permitida para admin logado
+      ".write": "auth != null && root.child('admins').child(auth.uid).exists()" // Somente admin pode escrever
+    },
+    "credenciais_api": {
+      ".read": "auth != null",
+      ".write": "auth != null && root.child('admins').child(auth.uid).exists()"
+    },
+    
     // ---------------------------------------------------------------
     // ATENDENTES
     // Cada atendente é salvo em /atendentes/$username

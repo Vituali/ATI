@@ -85,7 +85,7 @@ export function useUser(): UseUserReturn {
       try {
         const profile = await fetchProfileWithRetry(firebaseUser.uid)
 
-        if (profile.status === 'inativo') {
+        if (profile.status !== undefined && profile.status !== 'ativo') {
           await auth.signOut()
           throw new Error('Sua conta está inativa. Contate o administrador.')
         }

@@ -101,7 +101,12 @@ export async function performSSOLogin(session: any) {
   }
 }
 
-// Sincronização com a Extensão (SSO via Bridge)
+const EXTENSION_ORIGINS = ['https://vituali.github.io']
+
+function isExtensionOrigin(origin: string): boolean {
+  return EXTENSION_ORIGINS.some((allowed) => origin === allowed || origin.startsWith(allowed + '/'))
+}
+
 export async function syncWithExtension(user: User | null) {
   if (!user) {
     window.postMessage(
@@ -109,7 +114,7 @@ export async function syncWithExtension(user: User | null) {
         type: 'ATI_SITE_TO_EXTENSION',
         action: 'SSO_LOGOUT',
       },
-      '*',
+      'https://vituali.github.io',
     )
     console.log('SSO: 🔴 Mensagem de logout enviada para a ponte.')
     return
@@ -118,7 +123,6 @@ export async function syncWithExtension(user: User | null) {
   try {
     console.log('SSO: 🔍 Buscando perfil para sincronizar...')
 
-    // Busca apenas o nó do atendente correspondente ao UID (mais seguro e performático)
     const atendentesSnap = await get(ref(db, 'atendentes'))
     if (!atendentesSnap.exists()) return
 
@@ -126,7 +130,6 @@ export async function syncWithExtension(user: User | null) {
     let foundUsername = ''
     let foundData: AtendenteData | null = null
 
-    // Encontra o username pelo UID
     for (const [username, data] of Object.entries(atendentes) as [string, any][]) {
       if (data.uid === user.uid) {
         foundUsername = username
@@ -156,14 +159,13 @@ export async function syncWithExtension(user: User | null) {
       sgpUsername: foundData.sgpUsername,
     }
 
-    // Envia via postMessage
     window.postMessage(
       {
         type: 'ATI_SITE_TO_EXTENSION',
         action: 'SSO_LOGIN',
         session,
       },
-      '*',
+      'https://vituali.github.io',
     )
 
     console.log('SSO: 🟢 Mensagem de login enviada para a ponte.')
@@ -172,9 +174,10 @@ export async function syncWithExtension(user: User | null) {
   }
 }
 
-// Escuta a ponte e gerencia ciclos de vida
 if (typeof window !== 'undefined') {
   window.addEventListener('message', (event) => {
+    if (!isExtensionOrigin(event.origin)) return
+
     const { type, action } = event.data || {}
 
     if (type === 'ATI_EXTENSION_TO_SITE') {
@@ -185,13 +188,12 @@ if (typeof window !== 'undefined') {
     }
   })
 
-  // Tenta sincronizar em intervalos estratégicos
   ;[500, 2000, 5000].forEach((delay) => {
     setTimeout(() => {
       if (auth.currentUser) {
         syncWithExtension(auth.currentUser)
       }
-      window.postMessage({ type: 'ATI_SITE_TO_EXTENSION', action: 'GET_SSO_SESSION' }, '*')
+      window.postMessage({ type: 'ATI_SITE_TO_EXTENSION', action: 'GET_SSO_SESSION' }, 'https://vituali.github.io')
     }, delay)
   })
 }

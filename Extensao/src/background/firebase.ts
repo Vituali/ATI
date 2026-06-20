@@ -286,10 +286,16 @@ async function _fetchOccurrenceTypesInternal(baseUrl: string, idToken: string, c
 }
 
 export async function getOsTemplates(username: string, idToken: string): Promise<OsTemplate[]> {
-  const { cachedTemplates } = await chrome.storage.session.get('cachedTemplates')
-  if (cachedTemplates) {
-    console.log(`Extensão ATI: Retornando ${cachedTemplates.length} templates do cache de sessão.`)
-    return cachedTemplates
+  const cacheKey = `cachedTemplates_${username}`
+  const cached = await chrome.storage.session.get(cacheKey)
+  const cachedData = cached[cacheKey]
+  if (cachedData && Array.isArray(cachedData.data)) {
+    const cacheAge = Date.now() - (cachedData.timestamp || 0)
+    if (cacheAge < 5 * 60 * 1000) {
+      console.log(`Extensão ATI: Retornando ${cachedData.data.length} templates do cache de sessão para ${username}.`)
+      return cachedData.data
+    }
+    console.log(`Extensão ATI: Cache expirado para ${username}, recarregando...`)
   }
   try {
     // Busca templates, tipos 35 e tipos 53 em paralelo
@@ -336,7 +342,7 @@ export async function getOsTemplates(username: string, idToken: string): Promise
       }
     })
 
-    await chrome.storage.session.set({ cachedTemplates: templates })
+    await chrome.storage.session.set({ [cacheKey]: { data: templates, timestamp: Date.now() } })
     console.log(`Extensão ATI: ${templates.length} templates carregados e enriquecidos para ${username}`)
     return templates
   } catch (error) {

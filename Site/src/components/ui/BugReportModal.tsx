@@ -2,12 +2,13 @@ import { useState } from 'react'
 import { ref, push, serverTimestamp } from 'firebase/database'
 import { db } from '../../services/firebase'
 import Modal from './Modal'
+import { UserProfile } from '../../hooks/useUser'
 import './BugReportModal.css'
 
 interface BugReportModalProps {
   aberto: boolean
   onFechar: () => void
-  user: any // Opcional, para sabermos quem reportou
+  user: UserProfile | null
 }
 
 export default function BugReportModal({ aberto, onFechar, user }: BugReportModalProps) {

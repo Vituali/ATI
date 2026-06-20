@@ -9,14 +9,10 @@ import { initializeApp } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
 import { getDatabase, connectDatabaseEmulator } from 'firebase/database'
 
-// Cole aqui as chaves do seu projeto no Firebase Console
-// (Configurações do projeto > Seus apps > SDK)
-const isDev = import.meta.env.DEV
-
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  databaseURL: isDev ? 'https://site-ati-75d83.firebaseio.com/' : import.meta.env.VITE_FIREBASE_DATABASE_URL,
+  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,

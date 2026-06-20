@@ -13,6 +13,7 @@ import './Admin.css'
 import LoadingOverlay from '../../components/ui/LoadingOverlay'
 import PainelAvisos from '../../components/app/PainelAvisos'
 import { useUser } from '../../hooks/useUser'
+import type { UserProfile } from '../../hooks/useUser'
 import { useNotification } from '../../hooks/useNotification'
 
 // ---------------------------------------------------------------
@@ -53,7 +54,7 @@ export default function Admin() {
   const [atendentes, setAtendentes] = useState<Atendente[]>([])
   const [loading, setLoading] = useState(true)
 
-  const [salvando, setSalvando] = useState<string | null>(null) // username em edição
+  const [salvando, setSalvando] = useState<string | null>(null)
   const [busca, setBusca] = useState('')
   const [sortField, setSortField] = useState<SortField>('username')
   const [sortAsc, setSortAsc] = useState(true)
@@ -62,7 +63,7 @@ export default function Admin() {
   const [abaAdmin, setAbaAdmin] = useState<'usuarios' | 'avisos' | 'bugs'>('usuarios')
   const [bugs, setBugs] = useState<any[]>([])
   const [carregandoBugs, setCarregandoBugs] = useState(false)
-  const { user } = useUser()
+  const { user } = useUser() as { user: UserProfile | null }
 
   // Carrega atendentes e bugs ao montar
   useEffect(() => {

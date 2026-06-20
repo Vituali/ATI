@@ -76,6 +76,18 @@ const SECTION_META: Record<Section, { icon: string; label: string; desc: string;
     desc: 'Gerenciamento de usuários, roles e setores',
     color: '#0064ff',
   },
+  jefferson: {
+    icon: '🖤',
+    label: 'Goticas & Monster',
+    desc: 'Página pessoal do Jefferson',
+    color: '#9c27b0',
+  },
+  heli: {
+    icon: '🎲',
+    label: 'Ordem Paranormal',
+    desc: 'RPG de texto',
+    color: '#e91e63',
+  },
 }
 
 export default function Home({ user, onSelectSection }: HomeProps) {

@@ -26,17 +26,12 @@ function startSgpLinkFixer() {
     })
   }
 
-  // Executa de imediato
   fixLinks()
 
-  // Executa ao detectar mudanças no DOM
   const observer = new MutationObserver(() => {
     fixLinks()
   })
   observer.observe(document.body, { childList: true, subtree: true })
-
-  // Intervalo de segurança de fallback
-  setInterval(fixLinks, 1000)
 }
 
 // Inicializa a correção de links no SGP

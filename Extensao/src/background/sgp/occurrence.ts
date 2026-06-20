@@ -7,6 +7,9 @@ import { SgpData, SgpContract, SgpUser, SgpOccurrenceType } from '../../contentS
 
 const getTs = () => `[${new Date().toLocaleTimeString('pt-BR')}]`
 
+const SGP_SCRAPE_MAX_ENTRIES = 30
+const SGP_SCRAPE_TTL_MS = 120000
+
 const sgpScrapeMemoryCache = new Map<
   string,
   {
@@ -20,8 +23,7 @@ const sgpScrapeMemoryCache = new Map<
 function getScrapeCache(key: string) {
   const cached = sgpScrapeMemoryCache.get(key)
   if (!cached) return null
-  if (Date.now() - cached.timestamp > 120000) {
-    // 2 minutos TTL
+  if (Date.now() - cached.timestamp > SGP_SCRAPE_TTL_MS) {
     sgpScrapeMemoryCache.delete(key)
     return null
   }
@@ -29,8 +31,9 @@ function getScrapeCache(key: string) {
 }
 
 function setScrapeCache(key: string, data: { contracts: SgpContract[]; responsibleUsers: SgpUser[]; occurrenceTypes: SgpOccurrenceType[] }) {
-  if (sgpScrapeMemoryCache.size > 20) {
-    sgpScrapeMemoryCache.clear()
+  if (sgpScrapeMemoryCache.size >= SGP_SCRAPE_MAX_ENTRIES) {
+    const oldest = sgpScrapeMemoryCache.entries().next().value
+    if (oldest) sgpScrapeMemoryCache.delete(oldest[0])
   }
   sgpScrapeMemoryCache.set(key, { ...data, timestamp: Date.now() })
 }
@@ -155,7 +158,6 @@ async function searchAndEnrich(baseUrl: string, label: string, clientData: Clien
 
 export async function handleOpenInSgp(clientData: ClientData, cachedContract: string | null, forceClientId?: string, uid?: string, forceShowModal?: boolean): Promise<any> {
   const tTotalStart = performance.now()
-  // 1. Checagem rápida não-forçada da sessão (usa cache)
   const { isLoggedIn, baseUrl } = await getSgpStatus(false)
 
   if (!isLoggedIn) {
@@ -468,8 +470,7 @@ export async function refreshSgpOnlineStatuses(clientData: ClientData, chatId: s
 
   try {
     const needsOnlineStatus = cached.contracts.some((c: SgpContract) => {
-      // @ts-ignore
-      const textLower = (c.text || '').toLowerCase()
+      const textLower = (c?.text || '').toLowerCase()
       return !textLower.includes('cancelado') && !textLower.includes('inativo') && !textLower.includes('suspenso')
     })
 

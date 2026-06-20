@@ -4,7 +4,7 @@ import { RespostasRapidas, ModelosOS, Conversor, Senhas, Admin, ChatInterno, Ano
 import { Login, Register, Home, ErrorPage, ExtensionModal } from './pages'
 import { useUser, UserProfile } from './hooks'
 import { canAccess, Section, Setor, getSetorLabel, logout, db, auth, syncWithExtension, performSSOLogin } from './services'
-import { Sidebar, Footer, LoadingOverlay, ToastContainer, UserPanel, BugReportModal } from './components'
+import { Sidebar, Footer, LoadingOverlay, ToastContainer, UserPanel, BugReportModal, ErrorBoundary } from './components'
 import { ref, onValue, update } from 'firebase/database'
 import './App.css'
 import { useRegisterSW } from 'virtual:pwa-register/react'
@@ -283,7 +283,6 @@ export default function App() {
 
     return (
       <>
-        {/* Plano de fundo customizado no modo Embed */}
         {bgUrl && (
           <div className="app-custom-bg-container">
             {isVideoUrl(bgUrl) ? (
@@ -306,7 +305,9 @@ export default function App() {
         <div className={`layout-embed fade-in ${bgUrl ? 'has-custom-bg' : ''}`}>
           <div className="embed-panel-container">
             <div className="embed-section-content" style={{ padding: activeEmbedSection === 'chat_interno' ? 0 : '12px 10px' }}>
-              <Suspense fallback={<LoadingOverlay message="Carregando..." />}>{renderSection(activeEmbedSection, user)}</Suspense>
+              <ErrorBoundary key={activeEmbedSection}>
+                <Suspense fallback={<LoadingOverlay message="Carregando..." />}>{renderSection(activeEmbedSection, user)}</Suspense>
+              </ErrorBoundary>
             </div>
           </div>
           <ToastContainer />
@@ -354,7 +355,9 @@ export default function App() {
         <Sidebar role={user.role} setor={user.setor} activeSection={safeSection} onSelectSection={setCurrentSection} onOpenUserModal={() => setUserPanelAberto(true)} onOpenExtensionModal={() => setExtensaoModalAberto(true)} onOpenSettings={toggleTheme} theme={theme} userName={user.nomeCompleto.split(' ')[0]} avatarUrl={user.avatarUrl} hasUnreadChat={unreadRooms.length > 0} />
         <div className="main-wrapper">
           <main className={`main-content ${safeSection === 'chat_interno' ? 'compact-padding' : ''}`}>
-            <Suspense fallback={<LoadingOverlay message="Carregando seção..." />}>{renderSection(safeSection, user)}</Suspense>
+            <ErrorBoundary key={safeSection}>
+              <Suspense fallback={<LoadingOverlay message="Carregando seção..." />}>{renderSection(safeSection, user)}</Suspense>
+            </ErrorBoundary>
           </main>
           <Footer />
         </div>

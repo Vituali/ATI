@@ -1,20 +1,11 @@
-// pages/Senhas.tsx
-// ---------------------------------------------------------------
-// Senhas e acessos rápidos — dados estáticos do site original.
-// Clique em qualquer valor para copiar para a área de transferência.
-// ---------------------------------------------------------------
-
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './Senhas.css'
-
-// ---------------------------------------------------------------
-// TIPOS
-// ---------------------------------------------------------------
+import { getCredentials, isAdminUser } from '../../services/credentials'
 
 interface Credencial {
   label: string
   valor: string
-  link?: string // se tiver link, o label vira âncora
+  link?: string
 }
 
 interface GrupoSenha {
@@ -22,69 +13,6 @@ interface GrupoSenha {
   icon: string
   credenciais: Credencial[]
 }
-
-// ---------------------------------------------------------------
-// DADOS — extraídos do site original
-// ---------------------------------------------------------------
-
-const GRUPOS: GrupoSenha[] = [
-  {
-    titulo: 'ALCL OLT NOKIA',
-    icon: '🔴',
-    credenciais: [
-      { label: 'LOGIN', valor: 'ATI-GPON' },
-      { label: 'SENHA', valor: '@adminATI26422001' },
-    ],
-  },
-  {
-    titulo: 'ALCL OLT FIBER',
-    icon: '🟠',
-    credenciais: [
-      { label: 'LOGIN', valor: 'AdminGPON' },
-      { label: 'SENHA', valor: 'adminati2001' },
-      { label: 'LOGIN (fábrica)', valor: 'AdminGPON' },
-      { label: 'SENHA (fábrica)', valor: 'ALC#FGU' },
-    ],
-  },
-  {
-    titulo: 'NBEL',
-    icon: '🟡',
-    credenciais: [
-      { label: 'ENDEREÇO', valor: 'IP/login.cgi' },
-      { label: 'LOGIN', valor: 'atiinternet' },
-      { label: 'SENHA', valor: '@dminati2001' },
-      { label: 'LOGIN (alt)', valor: 'telecomadmin' },
-      { label: 'SENHA (alt)', valor: 'admintelecom' },
-    ],
-  },
-  {
-    titulo: 'HUAWEI & TP LINK',
-    icon: '🔵',
-    credenciais: [
-      { label: 'IP HUAWEI', valor: '192.168.3.1' },
-      { label: 'IP TP LINK', valor: '192.168.0.1' },
-      { label: 'SENHA', valor: 'atiadmin258963' },
-      { label: 'SENHA (alt)', valor: 'ATIADMIN258963' },
-    ],
-  },
-  {
-    titulo: 'URA',
-    icon: '📞',
-    credenciais: [
-      { label: 'ACESSO', valor: 'http://201.158.20.39:8022/login', link: 'http://201.158.20.39:8022/login' },
-      { label: 'LOGIN', valor: 'christian' },
-      { label: 'SENHA', valor: '@Ati26422001!10547580770' },
-    ],
-  },
-]
-
-const SITES: Credencial[] = [
-  { label: 'Autentique', valor: 'https://painel.autentique.com.br/documentos/todos', link: 'https://painel.autentique.com.br/documentos/todos' },
-  { label: 'ACS', valor: 'http://201.158.20.46:3000/', link: 'http://201.158.20.46:3000/' },
-  { label: 'Curso', valor: 'https://atiinternet.cademi.com.br/area/vitrine', link: 'https://atiinternet.cademi.com.br/area/vitrine' },
-  { label: 'SGP interno', valor: 'http://201.158.20.35:8000/', link: 'http://201.158.20.35:8000/' },
-  { label: 'SGP externo', valor: 'https://sgp.atiinternet.com.br/admin/', link: 'https://sgp.atiinternet.com.br/admin/' },
-]
 
 // ---------------------------------------------------------------
 // COMPONENTE DE ITEM COPIÁVEL
@@ -137,6 +65,53 @@ function ItemCopiavel({ label, valor, link }: ItemCopiavel) {
 // ---------------------------------------------------------------
 
 export default function Senhas() {
+  const [grupos, setGrupos] = useState<GrupoSenha[]>([])
+  const [sites, setSites] = useState<Credencial[]>([])
+  const [loading, setLoading] = useState(true)
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  useEffect(() => {
+    Promise.all([getCredentials(), isAdminUser()]).then(([data, admin]) => {
+      setGrupos(data.grupos)
+      setSites(data.sites)
+      setIsAdmin(admin)
+      setLoading(false)
+    })
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="senhas-page">
+        <div className="senhas-header">
+          <h1 className="senhas-titulo">🔑 Senhas de Equipamentos</h1>
+          <p className="senhas-subtitulo">Acesso rápido aos logins e senhas. Clique para copiar.</p>
+        </div>
+        <div style={{ textAlign: 'center', padding: '2rem', opacity: 0.6 }}>Carregando credenciais...</div>
+      </div>
+    )
+  }
+
+  if (grupos.length === 0 && sites.length === 0) {
+    return (
+      <div className="senhas-page">
+        <div className="senhas-header">
+          <h1 className="senhas-titulo">🔑 Senhas de Equipamentos</h1>
+          <p className="senhas-subtitulo">Acesso rápido aos logins e senhas. Clique para copiar.</p>
+        </div>
+        <div className="senhas-grid">
+          <div className="senhas-card" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem' }}>
+            <p style={{ opacity: 0.6 }}>Nenhuma credencial configurada no momento.</p>
+            {isAdmin && (
+              <p style={{ marginTop: '1rem', fontSize: '0.85rem', opacity: 0.5 }}>
+                ⚙️ Configure as credenciais no nó <code>credenciais</code> do Firebase Realtime Database.
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="senhas-page">
       <div className="senhas-header">
@@ -144,9 +119,8 @@ export default function Senhas() {
         <p className="senhas-subtitulo">Acesso rápido aos logins e senhas. Clique para copiar.</p>
       </div>
 
-      {/* Grid de equipamentos */}
       <div className="senhas-grid">
-        {GRUPOS.map((grupo) => (
+        {grupos.map((grupo) => (
           <div key={grupo.titulo} className="senhas-card">
             <h3 className="senhas-card-titulo">
               <span>{grupo.icon}</span> {grupo.titulo}
@@ -159,21 +133,22 @@ export default function Senhas() {
           </div>
         ))}
 
-        {/* Card de sites importantes */}
-        <div className="senhas-card">
-          <h3 className="senhas-card-titulo">
-            <span>🌐</span> Sites Importantes
-          </h3>
-          <div className="senhas-lista">
-            {SITES.map((site, i) => (
-              <div key={i} className="senha-item">
-                <a href={site.link} target="_blank" rel="noopener noreferrer" className="senha-site-link">
-                  {site.label} ↗
-                </a>
-              </div>
-            ))}
+        {sites.length > 0 && (
+          <div className="senhas-card">
+            <h3 className="senhas-card-titulo">
+              <span>🌐</span> Sites Importantes
+            </h3>
+            <div className="senhas-lista">
+              {sites.map((site, i) => (
+                <div key={i} className="senha-item">
+                  <a href={site.link} target="_blank" rel="noopener noreferrer" className="senha-site-link">
+                    {site.label} ↗
+                  </a>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   )

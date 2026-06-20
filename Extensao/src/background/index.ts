@@ -455,10 +455,13 @@ async function checkExtensionVersion() {
   }
 }
 
-// Compara versões (ex: "2.1.0" vs "2.2.0")
+function parseVersion(v: string): number[] {
+  return v.replace(/[^0-9.]/g, '').split('.').map(Number)
+}
+
 function isVersionLower(current: string, min: string) {
-  const c = current.split('.').map(Number)
-  const m = min.split('.').map(Number)
+  const c = parseVersion(current)
+  const m = parseVersion(min)
   for (let i = 0; i < Math.max(c.length, m.length); i++) {
     const v1 = c[i] || 0
     const v2 = m[i] || 0

@@ -150,9 +150,10 @@ async function findInternetServiceIdFromContractsTab(baseUrl: string, clientId: 
     // Divide o HTML por tr para analisar cada linha
     const rows = html.split(/<tr[^>]*>/i)
     const numPattern = new RegExp(`(?:^|[^\\d])${contractId}(?:$|[^\\d])`)
+    const exactPattern = new RegExp(`^\\s*(${contractId})\\s*$`)
 
     for (const row of rows) {
-      if (numPattern.test(row)) {
+      if (numPattern.test(row) || exactPattern.test(row)) {
         const serviceMatch = row.match(/\/admin\/servicos\/internet\/(\d+)/i)
         if (serviceMatch?.[1]) {
           console.log(`Extensão ATI: Encontrado ServicoInternet ID ${serviceMatch[1]} para contrato ${contractId} no tab de contratos`)

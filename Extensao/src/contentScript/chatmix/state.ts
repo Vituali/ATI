@@ -5,9 +5,8 @@
 import { ClientData } from '../sgp/types'
 
 // --- Debug Mode ---
-// true  = logs completos no console
-// false = apenas logs essenciais
-export const DEBUG_MODE = true
+// Ativo em `npm run build` (--mode development), desativo em `npm run zip` (--mode production)
+export const DEBUG_MODE = import.meta.env.DEV
 
 const getTs = () => `[${new Date().toLocaleTimeString('pt-BR')}]`
 

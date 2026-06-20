@@ -2,7 +2,8 @@
 // SGP — BUSCA DE CLIENTES
 // =================================================================
 
-import { ClientData, SgpClient } from './constants'
+import { SgpClient } from './constants'
+import type { ClientData } from '../../contentScript/sgp/types'
 import { performSilentLogin, doubleCheckSgpLogins } from './auth'
 import { getCpfCache, setCpfCache } from './cpfCache'
 

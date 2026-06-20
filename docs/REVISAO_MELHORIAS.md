@@ -30,17 +30,13 @@
 
 ---
 
-### 2. DEBUG_MODE ativado em produção — Risco: Médio
+### 2. DEBUG_MODE ativado em produção — Risco: Médio ✅ ~~Corrigido~~
 
-**Arquivo:** `Extensao/src/contentScript/chatmix/state.ts`
+~~**Arquivo:** `Extensao/src/contentScript/chatmix/state.ts`~~
 
-**Problema:** `DEBUG_MODE = true` está fixo, gerando extensos `console.log` no console do usuário final. Além de poluição visual, pode vazar informações internas (estrutura de dados, nomes de variáveis, fluxo de lógica).
+~~**Problema:** `DEBUG_MODE = true` estava fixo, gerando extensos `console.log` no console do usuário final.~~
 
-**Sugestão:** Usar variável de ambiente do Vite (`import.meta.env.VITE_DEBUG`) ou controle por build:
-
-```ts
-export const DEBUG_MODE = import.meta.env.VITE_DEBUG === 'true';
-```
+~~**Solução:** Substituído por `import.meta.env.VITE_DEBUG === 'true'`. Desativado por padrão; ativar com `VITE_DEBUG=true` no `.env`.~~
 
 ---
 
@@ -59,25 +55,13 @@ export const DEBUG_MODE = import.meta.env.VITE_DEBUG === 'true';
 
 ---
 
-### 4. Ponte SSO via postMessage sem validação de origem — Risco: Médio
+### 4. Ponte SSO via postMessage sem validação de origem — Risco: Médio ✅ ~~Corrigido~~
 
-**Arquivo:** `Extensao/src/contentScript/sso/bridge.ts`
+~~**Arquivo:** `Extensao/src/contentScript/sso/bridge.ts`~~
 
-**Problema:** A comunicação entre o site e a extensão via `window.postMessage` precisa validar a `origin` das mensagens recebidas para evitar clickjacking ou injeção de mensagens maliciosas de outras abas.
+~~**Problema:** A comunicação entre o site e a extensão via `window.postMessage` não validava a `origin`.~~
 
-**Sugestão:** Validar `event.origin` contra uma lista de origens permitidas:
-
-```ts
-const ORIGENS_PERMITIDAS = [
-  'https://vituali.github.io',
-  'https://site-ati-75d83.web.app',
-  'https://site-ati-75d83.firebaseapp.com',
-];
-window.addEventListener('message', (event) => {
-  if (!ORIGENS_PERMITIDAS.includes(event.origin)) return;
-  // ...
-});
-```
+~~**Solução:** Já existia `ALLOWED_ORIGINS` + `isValidOrigin()`. Adicionado `currentAllowedOrigin()` para substituir origins fixas nos `postMessage` de saída.~~
 
 ---
 
@@ -91,19 +75,13 @@ window.addEventListener('message', (event) => {
 
 ---
 
-### 6. Cloud Function varreduraDiariaPotencias vazia — Risco: Baixo
+### 6. Cloud Function varreduraDiariaPotencias vazia — Risco: Baixo ✅ ~~Removido~~
 
-**Arquivo:** `functions/index.js`
+~~**Arquivo:** `functions/index.js`~~
 
-**Problema:** A função `varreduraDiariaPotencias` executa diariamente às 3 AM mas tem apenas um TODO comentado:
+~~**Problema:** A função `varreduraDiariaPotencias` executava diariamente às 3 AM mas tinha apenas um TODO comentado. Consumia recursos sem produzir resultado.~~
 
-```js
-// Escrever logica automática...
-```
-
-Ela consome recursos (execução gratuita do Firebase) sem produzir resultado.
-
-**Sugestão:** Implementar a lógica ou remover a função. Se for planejamento futuro, ao menos adicionar um log informativo e tracking.
+~~**Solução:** Função removida. O usuário pretende implementar a lógica de outra forma.~~
 
 ---
 
@@ -148,19 +126,17 @@ Ela consome recursos (execução gratuita do Firebase) sem produzir resultado.
 
 ## Melhorias de Código
 
-### Tipagem e TypeScript
+### Tipagem e TypeScript ✅ ~~Concluído~~
 
-- **Unificar `ClientData`**: A interface é definida em dois lugares:
-  - `Extensao/src/background/sgp/constants.ts`
-  - `Extensao/src/contentScript/sgp/types.ts`
+~~- **Unificar `ClientData`**: A interface era definida em dois lugares:~~
+  ~~- `Extensao/src/background/sgp/constants.ts`~~
+  ~~- `Extensao/src/contentScript/sgp/types.ts`~~
   
-  Mover para um arquivo compartilhado (`Extensao/src/types/clientData.ts`).
+  ~~**Resolvido:** Removida a duplicata de `constants.ts`. `search.ts` e `occurrence.ts` agora importam `ClientData` de `contentScript/sgp/types.ts`.~~
 
-- **Tipar `payload: any`** em `background/types.ts`:
-  - `FirebasePostRequest.payload`
-  - `FirebasePatchRequest.payload`
+~~- **Tipar `payload: any`**: `FirebasePostRequest.payload` e `FirebasePatchRequest.payload` alterados de `any` para `unknown`.~~
 
-- **Remover `chrome: any` global** de `Site/src/vite-env.d.ts` — polui o escopo global.
+~~- Nota: `chrome: any` global em `Site/src/vite-env.d.ts` — removido. Era dead code (zero referências em qualquer .ts/.tsx do Site).~~
 
 ### Unificação de Versões ✅ ~~Concluído~~
 
@@ -179,15 +155,51 @@ Ela consome recursos (execução gratuita do Firebase) sem produzir resultado.
 
 ### @types/chrome — Nota sobre versão
 
-- **Extensão**: `0.0.332` (instalado)
+- **Versão atual**: `0.0.332`
 - **Versão mais recente**: `0.1.43`
-- A versão `0.1.x` introduziu o tipo `NoInferX` nos métodos `StorageArea.get()`, impedindo a inferência de tipo nas chamadas `chrome.storage.local.get()`. Isso quebrou ~80 locais no código da extensão que acessam propriedades do resultado sem tipagem explícita. Foi mantido `0.0.332` propositalmente. Uma correção futura seria tipar cada chamada com `chrome.storage.local.get<{key: Type}>('key')`.
+- Upgrade testado para `0.1.43` → **88 erros TS**. O `NoInferX` no `StorageArea.get()` fez o retorno virar `Promise<{}>`, quebrando todo acesso a propriedades.
+- **Decisão:** Mantido `0.0.332`. Criado `src/utils/storage.ts` com wrappers tipados (`storageGet<T>()`, `storageSessionGet<T>()`).
+- **Plano de migração futuro:**
+
+  ```bash
+  # 1. Instalar a nova versão
+  npm install @types/chrome@latest --save-dev
+  ```
+
+  ```typescript
+  // 2. Para cada arquivo com erro TS, substituir chamadas diretas pelo wrapper
+  // ANTES:
+  const result = await chrome.storage.local.get('minhaChave')
+  const valor = result.minhaChave
+
+  // DEPOIS:
+  import { storageGet } from '../../utils/storage'
+  const { minhaChave } = await storageGet<{ minhaChave: Tipo }>('minhaChave')
+  ```
+
+  **3. Scripts de busca para encontrar callsites pendentes:**
+  ```bash
+  # Encontrar chamadas diretas a chrome.storage que precisam ser migradas
+  rg "chrome\.storage\.(local|session)\.get\(" --include="*.ts" --include="*.tsx" src/
+  ```
+
+  **4. Prioridade:**
+  - Fazer em lotes por pasta (ex: `background/`, `contentScript/`, `popup/`)
+  - Manter `0.0.332` até TODOS os callsites estarem migrados
+  - Quando não houver mais chamadas diretas, remover o wrapper e subir a versão
 
 ### pdfjs-dist
 
 - Versão atual: `3.11.174`
 - Versão mais recente: `4.x`
-- Verificar breaking changes e atualizar. O `vite.config.ts` tem um `onwarn` específico para suprimir warnings de `eval` do pdfjs — pode ser que a v4 resolva isso.
+- **Onde é usado:** `Site/src/pages/app/Conversor.tsx` — extrai texto da página 1 do PDF de **Aditivo de Mudança de Endereço** (`ADTITIVO_mudançaendereço.pdf`). Lê contrato, nome, endereço antigo e novo via regex no texto extraído.
+- **CDN worker:** O worker (`pdf.worker.min.js`) é carregado da CDN (`cdnjs.cloudflare.com`), não é bundlado — o pacote npm serve só como lib de parsing.
+- **`vite.config.ts` do Site:** Tem `onwarn` suprimindo `EVAL` warnings do pdfjs-dist, e `manualChunks` separando em chunk `pdf-vendor`.
+- **Dá pra remover?** O Conversor depende 100% dele para extrair dados do PDF. Daria para substituir por:
+  1. Backend (Cloud Function) que recebe o PDF e retorna JSON — eliminaria a dependência do frontend
+  2. Biblioteca mais leve tipo `pdf-parse` (Node) no backend
+  3. Manter como está — o impacto é baixo (só carrega quando o usuário acessa a página Conversor)
+- **Atualizar para v4:** Verificar breaking changes na API `getDocument`/`getTextContent`.
 
 ---
 
@@ -305,28 +317,28 @@ const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
 
 | Item | Descrição | Prioridade |
 |---|---|---|
-| **Limpar `htmlusados/`** | Páginas HTML baixadas do SGP para referência — poluem o repositório | Média |
-| **Atualizar `.env.example`** | Pode estar desatualizado vs o que o código realmente usa | Alta |
-| **Adicionar `noUnusedLocals`/`noUnusedParameters` no tsconfig da Extensão** | Já existem no Site, faltam na Extensão | Média |
-| **@types/chrome 0.0.x vs 0.1.x** | Versão 0.1.x quebrou tipagem do storage. Mantido 0.0.332 — futuramente tipar chamadas manualmente | Média |
-| **Remover `build/` do versionamento** | `Extensao/build/` parece ser resíduo de build anterior, verificar `.gitignore` | Baixa |
-| **Revisar arquivos ignorados no ESLint da Extensão** | `find_service_links.cjs`, `test_match.cjs` — existem ou são resíduo? | Baixa |
+| **`htmlusados/`** | **Apenas local** (não versionado). Páginas HTML baixadas do SGP e ChatMix + PDF de aditivo (`ADTITIVO_mudançaendereço.pdf`). Servem como referência visual para extrair seletores CSS e entender a estrutura do SGP durante o desenvolvimento. Fica só na máquina do dev. | — |
+| **Atualizar `.env.example`** | ✅ **Concluído.** `.env.example` atualizado com comentários sobre `envDir: '../'` e formato do `VITE_FIREBASE_APP_ID`. | Alta |
+| **`noUnusedLocals`/`noUnusedParameters` no tsconfig da Extensão** | ✅ **Já existem** no `tsconfig.json` da Extensão. Nada a fazer. | — |
+| **@types/chrome 0.0.x vs 0.1.x** | Testado upgrade para `0.1.43` → **88 erros TS**. `NoInferX` no `StorageArea.get()` quebra acesso a propriedades. Mantido `0.0.332`. Foi criado `src/utils/storage.ts` com wrappers tipados (`storageGet<T>()`) para uso em código novo. | Média |
+| **`build/`** | Já no `.gitignore`. Mantido local para testes + zip da Chrome Web Store. | — |
+| **Revisar arquivos ignorados no ESLint** | `find_service_links.cjs` e `test_match.cjs` **existem** — são scripts Node que leem HTMLs do `htmlusados/`. Ignorados corretamente no ESLint. Nada a fazer. | — |
 | **Criar `.github/workflows/`** | Pipeline de CI/CD | Alta |
 
 ---
 
 ## Checklist de Ação Imediata
 
-- [ ] Corrigir `DEBUG_MODE` para false em produção (ou usar env var)
-- [ ] Validar `event.origin` no SSO bridge
+- [x] Corrigir `DEBUG_MODE` para false em produção (ou usar env var) ✅ ~~Concluído~~
+- [x] Validar `event.origin` no SSO bridge ✅ ~~Concluído~~
 - [x] Adicionar ESLint TypeScript no Site ✅ ~~Concluído~~
-- [ ] Tipar `payload: any` no background
-- [ ] Unificar `ClientData` em arquivo compartilhado
+- [x] Tipar `payload: any` no background ✅ ~~Concluído~~
+- [x] Unificar `ClientData` em arquivo compartilhado ✅ ~~Concluído~~
 - [x] Mover IPs do SGP para Firebase RTDB ✅ ~~Concluído~~
 - [ ] Configurar GitHub Actions com lint + typecheck
 - [ ] Escrever primeiros testes unitários (Vitest)
-- [ ] Atualizar `.env.example`
-- [ ] Implementar ou remover `varreduraDiariaPotencias`
+- [x] Atualizar `.env.example` ✅ ~~Concluído~~
+- [x] Implementar ou remover `varreduraDiariaPotencias` ✅ ~~Removido~~
 - [x] Atualizar CRXJS 2.0.0-beta.26 → 2.7.0 ✅ ~~Concluído~~
 - [x] Atualizar ESLint 9/10 → 10.5.0 (ambos) ✅ ~~Concluído~~
 - [x] Unificar versões React, Vite, TS, Firebase entre Extensão e Site ✅ ~~Concluído~~

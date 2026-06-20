@@ -1,4 +1,5 @@
-import { ClientData, SGP_DEFAULT_HOSTS } from './constants'
+import { SGP_DEFAULT_HOSTS } from './constants'
+import type { ClientData } from '../../contentScript/sgp/types'
 import { getSgpHosts } from './config'
 import { getSgpStatus, updateSgpStatusCache, ensureSgpSession, doubleCheckSgpLogins } from './auth'
 import { findClientInSgp } from './search'

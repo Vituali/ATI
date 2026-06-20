@@ -4,10 +4,17 @@ function isValidOrigin(origin: string): boolean {
   return ALLOWED_ORIGINS.some((allowed) => origin === allowed || origin.startsWith(allowed + '/'))
 }
 
+function currentAllowedOrigin(): string | null {
+  return ALLOWED_ORIGINS.find((o) => window.location.origin.startsWith(o)) ?? null
+}
+
 console.log('[Extensão ATI] Ponte de SSO ativa e aguardando...')
 
 function pingSite() {
-  window.postMessage({ type: 'ATI_EXTENSION_TO_SITE', action: 'BRIDGE_READY' }, 'https://vituali.github.io')
+  const origin = currentAllowedOrigin()
+  if (origin) {
+    window.postMessage({ type: 'ATI_EXTENSION_TO_SITE', action: 'BRIDGE_READY' }, origin)
+  }
 }
 
 window.addEventListener('message', (event) => {
@@ -52,7 +59,10 @@ window.addEventListener('message', (event) => {
         return
       }
       console.log('[Extensão ATI] Enviando sessão atual para o site:', !!response?.session)
-      window.postMessage({ type: 'ATI_EXTENSION_TO_SITE', action: 'SSO_SESSION_DATA', session: response?.session }, 'https://vituali.github.io')
+      const origin = currentAllowedOrigin()
+      if (origin) {
+        window.postMessage({ type: 'ATI_EXTENSION_TO_SITE', action: 'SSO_SESSION_DATA', session: response?.session }, origin)
+      }
     })
   }
 })

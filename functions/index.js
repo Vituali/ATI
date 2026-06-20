@@ -26,37 +26,6 @@ exports.olaMundo = onRequest({ cors: true }, (req, res) => {
 });
 
 /**
- * 2. Função Agendada (Cron Job) de Varredura Diária
- * Roda de forma automática todos os dias às 03:00 da manhã.
- * No Firebase Emulator, você pode acionar essa função manualmente com o botão 'Trigger'.
- */
-exports.varreduraDiariaPotencias = onSchedule("0 3 * * *", async (event) => {
-  logger.info("Iniciando varredura agendada de potências de rede...");
-
-  const db = admin.database();
-
-  try {
-    // Busca os dados das potências salvas no banco
-    const snapshot = await db.ref("historico_potencias").get();
-
-    if (!snapshot.exists()) {
-      logger.info("Nenhum histórico de potências encontrado para analisar.");
-      return;
-    }
-
-    const potencias = snapshot.val();
-    logger.info(`Processando ${Object.keys(potencias).length} registros de potência...`);
-
-    // TODO: Adicionar lógica para identificar quedas bruscas de sinal
-    // Exemplo: se o sinal médio de um setor caiu mais de 3dB de ontem para hoje.
-
-    logger.info("Varredura de rede finalizada sem anomalias críticas encontradas.");
-  } catch (error) {
-    logger.error("Erro durante a varredura diária de potências:", error);
-  }
-});
-
-/**
  * 3. Rota para Receber Dados de Potência (POST)
  * Recebe a lista extraída pela extensão (ou script de teste) e salva no Firebase
  * Local URL: http://127.0.0.1:5001/site-ati-75d83/us-central1/receberDadosPotencia

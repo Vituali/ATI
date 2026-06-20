@@ -66,12 +66,12 @@ export interface FirebaseFetchRequest {
 export interface FirebasePostRequest {
   action: 'firebasePost'
   url: string
-  payload: any
+  payload: unknown
 }
 export interface FirebasePatchRequest {
   action: 'firebasePatch'
   url: string
-  payload: any
+  payload: unknown
 }
 
 export interface SsoLoginRequest {

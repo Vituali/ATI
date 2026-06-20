@@ -15,8 +15,7 @@ export default tseslint.config(
       'find_service_links.cjs',
       'test_match.cjs',
       'clean-extension.cjs',
-      'eslint.config.js'
-    ]
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
@@ -28,8 +27,8 @@ export default tseslint.config(
       globals: {
         ...globals.browser,
         ...globals.webextensions,
-        chrome: 'readonly'
-      }
+        chrome: 'readonly',
+      },
     },
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
@@ -40,7 +39,7 @@ export default tseslint.config(
       'no-unused-vars': 'off',
       'prefer-const': 'off',
       'no-useless-escape': 'off',
-      'no-useless-assignment': 'off'
-    }
-  }
+      'no-useless-assignment': 'off',
+    },
+  },
 )

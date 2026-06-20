@@ -1,4 +1,5 @@
-import { ClientData, SGP_IP_35, SGP_IP_53 } from './constants'
+import { ClientData, SGP_DEFAULT_HOSTS } from './constants'
+import { getSgpHosts } from './config'
 import { getSgpStatus, updateSgpStatusCache, ensureSgpSession, doubleCheckSgpLogins } from './auth'
 import { findClientInSgp } from './search'
 import { fetchContractOnlineStatus, buildContracts, extractOptions } from './contracts'
@@ -206,13 +207,16 @@ export async function handleOpenInSgp(clientData: ClientData, cachedContract: st
   }
 
   // 1. Garante autenticação rápida em ambos (usa cache)
-  await Promise.all([ensureSgpSession(SGP_IP_35).catch(() => null), ensureSgpSession(SGP_IP_53).catch(() => null)])
+  const hosts = await getSgpHosts()
+  const sgp35 = hosts.find(h => h.key === 'sgp_35')?.url ?? SGP_DEFAULT_HOSTS[0].url
+  const sgp53 = hosts.find(h => h.key === 'sgp_53')?.url ?? SGP_DEFAULT_HOSTS[1].url
+  await Promise.all([ensureSgpSession(sgp35).catch(() => null), ensureSgpSession(sgp53).catch(() => null)])
 
   // 2. Realiza a busca autocomplete simples em paralelo nos dois sistemas (ultra-rápido!)
-  const [clientsPrincipal, clientsReserva] = await Promise.all([findClientInSgp(SGP_IP_35, clientData, uid).catch(() => null), findClientInSgp(SGP_IP_53, clientData, uid).catch(() => null)])
+  const [clientsPrincipal, clientsReserva] = await Promise.all([findClientInSgp(sgp35, clientData, uid).catch(() => null), findClientInSgp(sgp53, clientData, uid).catch(() => null)])
 
-  const foundPrincipal = (clientsPrincipal || []).map((c) => ({ ...c, baseUrl: SGP_IP_35, systemLabel: 'SGP Antigo' }))
-  const foundReserva = (clientsReserva || []).map((c) => ({ ...c, baseUrl: SGP_IP_53, systemLabel: 'SGP Novo' }))
+  const foundPrincipal = (clientsPrincipal || []).map((c) => ({ ...c, baseUrl: sgp35, systemLabel: 'SGP Antigo' }))
+  const foundReserva = (clientsReserva || []).map((c) => ({ ...c, baseUrl: sgp53, systemLabel: 'SGP Novo' }))
   const allFound = [...foundPrincipal, ...foundReserva]
 
   if (allFound.length === 0) {
@@ -264,17 +268,20 @@ export async function getSgpFormParams(clientData: ClientData, chatId: string, _
   const forcedSgp = forceResult[`ati_manual_sgp_force_${chatId}`]
 
   // 2. Busca rápida no cache local (evita qualquer requisição aos dois SGPs se já foi carregado para este cliente nesta sessão)
+  const hosts = await getSgpHosts()
+  const sgp35 = hosts.find(h => h.key === 'sgp_35')?.url ?? SGP_DEFAULT_HOSTS[0].url
+  const sgp53 = hosts.find(h => h.key === 'sgp_53')?.url ?? SGP_DEFAULT_HOSTS[1].url
   const clientKey = clientData.clientSgpId || clientData.cpfCnpj || clientData.phoneNumber || clientData.fullName || chatId
-  const check35 = !forcedSgp || forcedSgp === SGP_IP_35
-  const check53 = !forcedSgp || forcedSgp === SGP_IP_53
-  const cacheKey35 = `${SGP_IP_35}_${clientKey}`
-  const cacheKey53 = `${SGP_IP_53}_${clientKey}`
+  const check35 = !forcedSgp || forcedSgp === sgp35
+  const check53 = !forcedSgp || forcedSgp === sgp53
+  const cacheKey35 = `${sgp35}_${clientKey}`
+  const cacheKey53 = `${sgp53}_${clientKey}`
 
   const [has35, has53] = await Promise.all([check35 ? hasSgpFormCache(cacheKey35) : Promise.resolve(false), check53 ? hasSgpFormCache(cacheKey53) : Promise.resolve(false)])
 
   if (has35 || has53) {
     const activeCacheKey = has53 ? cacheKey53 : cacheKey35
-    const activeBaseUrl = has53 ? SGP_IP_53 : SGP_IP_35
+    const activeBaseUrl = has53 ? sgp53 : sgp35
 
     console.log(`Extensão ATI: Cache SGP encontrado imediatamente no início (cacheKey: ${activeCacheKey})`)
 
@@ -296,7 +303,7 @@ export async function getSgpFormParams(clientData: ClientData, chatId: string, _
       const tBuscaStart = performance.now()
 
       // Realiza a busca e o enriquecimento rápido em paralelo nos dois sistemas
-      const [clientsPrincipal, clientsReserva] = await Promise.all([searchAndEnrich(SGP_IP_35, 'SGP Antigo', clientData, uid, true), searchAndEnrich(SGP_IP_53, 'SGP Novo', clientData, uid, true)])
+      const [clientsPrincipal, clientsReserva] = await Promise.all([searchAndEnrich(sgp35, 'SGP Antigo', clientData, uid, true), searchAndEnrich(sgp53, 'SGP Novo', clientData, uid, true)])
 
       const allClients = [...clientsPrincipal, ...clientsReserva]
 
@@ -528,16 +535,19 @@ export async function fetchSgpClientContacts(clientUrl?: string, baseUrl?: strin
     console.log('Extensão ATI: Buscando cliente em ambos os SGPs em paralelo...')
 
     // Garante autenticação em ambos em paralelo
-    await Promise.all([ensureSgpSession(SGP_IP_35).catch(() => null), ensureSgpSession(SGP_IP_53).catch(() => null)])
+    const hosts = await getSgpHosts()
+    const sgp35 = hosts.find(h => h.key === 'sgp_35')?.url ?? SGP_DEFAULT_HOSTS[0].url
+    const sgp53 = hosts.find(h => h.key === 'sgp_53')?.url ?? SGP_DEFAULT_HOSTS[1].url
+    await Promise.all([ensureSgpSession(sgp35).catch(() => null), ensureSgpSession(sgp53).catch(() => null)])
 
-    const [resPrincipal, resReserva] = await Promise.all([findClientInSgp(SGP_IP_35, clientData, uid).catch(() => null), findClientInSgp(SGP_IP_53, clientData, uid).catch(() => null)])
+    const [resPrincipal, resReserva] = await Promise.all([findClientInSgp(sgp35, clientData, uid).catch(() => null), findClientInSgp(sgp53, clientData, uid).catch(() => null)])
 
     if (resPrincipal && resPrincipal.length > 0) {
-      targetBaseUrl = SGP_IP_35
+      targetBaseUrl = sgp35
       targetClientId = resPrincipal[0].id
       console.log(`Extensão ATI: Cliente encontrado no SGP Antigo (ID: ${targetClientId})`)
     } else if (resReserva && resReserva.length > 0) {
-      targetBaseUrl = SGP_IP_53
+      targetBaseUrl = sgp53
       targetClientId = resReserva[0].id
       console.log(`Extensão ATI: Cliente encontrado no SGP Novo (ID: ${targetClientId})`)
     }
@@ -681,10 +691,7 @@ function parseSgpFilters(html: string): { olts: { value: string; text: string }[
   return { olts, oltpons }
 }
 
-function resolveSgpFilters(
-  cache: { olts: { value: string; text: string }[]; oltpons: { value: string; text: string }[] },
-  filters: { olt?: string; oltslot?: string; oltpon?: string }
-): { olt?: string; oltpon?: string } {
+function resolveSgpFilters(cache: { olts: { value: string; text: string }[]; oltpons: { value: string; text: string }[] }, filters: { olt?: string; oltslot?: string; oltpon?: string }): { olt?: string; oltpon?: string } {
   const result: { olt?: string; oltpon?: string } = {}
 
   const oltVal = filters.olt
@@ -781,7 +788,7 @@ export async function searchSgpOfflineClientsHtml(
     olt?: string
     oltslot?: string
     oltpon?: string
-  }
+  },
 ): Promise<string> {
   const isSessionOk = await ensureSgpSession(baseUrl)
   if (!isSessionOk) {
@@ -895,4 +902,3 @@ export async function searchSgpOfflineClientsHtml(
 
   return html
 }
-

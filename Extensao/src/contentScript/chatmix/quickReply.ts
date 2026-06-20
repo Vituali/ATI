@@ -225,7 +225,7 @@ async function handleValidarContatos(btn: HTMLButtonElement, textarea: HTMLTextA
           if (cells.length >= 3) {
             const obsInput = cells[2].querySelector<HTMLInputElement | HTMLTextAreaElement>('input, textarea')
             const obsParagraph = cells[2].querySelector('p')
-            obsVal = obsInput ? obsInput.value : (obsParagraph ? obsParagraph.textContent : cells[2].textContent) ?? ''
+            obsVal = obsInput ? obsInput.value : ((obsParagraph ? obsParagraph.textContent : cells[2].textContent) ?? '')
           }
 
           const cleanTipo = (tipoVal ?? '').trim()

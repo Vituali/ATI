@@ -103,60 +103,62 @@ export default function ModelosOS() {
   // CARREGAR
   // ---------------------------------------------------------------
 
-  const carregarTudo = useCallback(async () => {
-    if (!user) return
-    setLoading(true)
-    try {
-      const [snapModelos, snapCache35, snapCache53] = await Promise.all([get(ref(db, `modelos_os/${user.username}`)), get(ref(db, 'sgp_cache/occurrenceTypes')), get(ref(db, 'sgp_cache_53/occurrenceTypes'))])
-
-      setModelos(parseModelosFirebase(snapModelos.val()))
-
-      const raw35 = snapCache35.exists() ? snapCache35.val() : []
-      const list35 = (Array.isArray(raw35) ? raw35.filter(Boolean) : Object.values(raw35)) as OccurrenceType[]
-
-      const raw53 = snapCache53.exists() ? snapCache53.val() : []
-      const list53 = (Array.isArray(raw53) ? raw53.filter(Boolean) : Object.values(raw53)) as OccurrenceType[]
-
-      // Agrupa pelo nome exato (case-insensitive, trimmed)
-      const mergedMap = new Map<string, UnifiedOccurrenceType>()
-
-      list35.forEach((item) => {
-        if (!item || !item.text) return
-        const key = normalizarChave(item.text)
-        mergedMap.set(key, {
-          text: item.text,
-          id35: item.id,
-        })
-      })
-
-      list53.forEach((item) => {
-        if (!item || !item.text) return
-        const key = normalizarChave(item.text)
-        const existing = mergedMap.get(key)
-        if (existing) {
-          existing.id53 = item.id
-          existing.text = item.text // Prefere a formatação de nome da nova base SGP 53
-        } else {
-          mergedMap.set(key, {
-            text: item.text,
-            id53: item.id,
-          })
-        }
-      })
-
-      const unifiedList = Array.from(mergedMap.values())
-      setOccurrenceTypes(unifiedList as any)
-    } catch (e) {
-      console.error('Erro ao carregar:', e)
-    } finally {
-      setLoading(false)
-    }
-  }, [user])
-
   useEffect(() => {
     if (!user) return
-    carregarTudo()
-  }, [user, carregarTudo])
+    let cancelled = false
+
+    ;(async () => {
+      try {
+        const [snapModelos, snapCache35, snapCache53] = await Promise.all([get(ref(db, `modelos_os/${user.username}`)), get(ref(db, 'sgp_cache/occurrenceTypes')), get(ref(db, 'sgp_cache_53/occurrenceTypes'))])
+        if (cancelled) return
+
+        setModelos(parseModelosFirebase(snapModelos.val()))
+
+        const raw35 = snapCache35.exists() ? snapCache35.val() : []
+        const list35 = (Array.isArray(raw35) ? raw35.filter(Boolean) : Object.values(raw35)) as OccurrenceType[]
+
+        const raw53 = snapCache53.exists() ? snapCache53.val() : []
+        const list53 = (Array.isArray(raw53) ? raw53.filter(Boolean) : Object.values(raw53)) as OccurrenceType[]
+
+        const mergedMap = new Map<string, UnifiedOccurrenceType>()
+
+        list35.forEach((item) => {
+          if (!item || !item.text) return
+          const key = normalizarChave(item.text)
+          mergedMap.set(key, {
+            text: item.text,
+            id35: item.id,
+          })
+        })
+
+        list53.forEach((item) => {
+          if (!item || !item.text) return
+          const key = normalizarChave(item.text)
+          const existing = mergedMap.get(key)
+          if (existing) {
+            existing.id53 = item.id
+            existing.text = item.text
+          } else {
+            mergedMap.set(key, {
+              text: item.text,
+              id53: item.id,
+            })
+          }
+        })
+
+        const unifiedList = Array.from(mergedMap.values())
+        setOccurrenceTypes(unifiedList as any)
+      } catch (e) {
+        console.error('Erro ao carregar:', e)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [user])
 
   // Fecha dropdown de occurrence ao clicar fora
   useEffect(() => {

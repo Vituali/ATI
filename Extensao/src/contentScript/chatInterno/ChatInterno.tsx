@@ -165,8 +165,12 @@ function parseSgpOfflineClientsHtml(htmlStr: string, systemName: string): Offlin
     if (!clientName) {
       const tempDiv = document.createElement('div')
       tempDiv.innerHTML = cells[1].innerHTML
-      tempDiv.querySelectorAll('br').forEach(br => br.replaceWith('\n'))
-      const lines = tempDiv.textContent?.split('\n').map(l => l.trim()).filter(Boolean) || []
+      tempDiv.querySelectorAll('br').forEach((br) => br.replaceWith('\n'))
+      const lines =
+        tempDiv.textContent
+          ?.split('\n')
+          .map((l) => l.trim())
+          .filter(Boolean) || []
       if (lines.length > 0) {
         clientName = lines[0]
       }
@@ -177,21 +181,21 @@ function parseSgpOfflineClientsHtml(htmlStr: string, systemName: string): Offlin
 
     const tempDiv = document.createElement('div')
     tempDiv.innerHTML = cells[1].innerHTML
-    tempDiv.querySelectorAll('br').forEach(br => br.replaceWith('\n'))
+    tempDiv.querySelectorAll('br').forEach((br) => br.replaceWith('\n'))
     const linesText = tempDiv.textContent || ''
     const addressLines = linesText
       .split('\n')
-      .map(l => l.trim())
+      .map((l) => l.trim())
       .filter(Boolean)
-    
+
     const address = addressLines.length > 0 ? addressLines[addressLines.length - 1] : ''
 
     // Cell 2: Connection details
     const cell2 = cells[2]
     if (!cell2) return
-    
+
     const cell2Text = cell2.textContent || ''
-    
+
     // Extract "Offline Desde: ..."
     const offlineSinceMatch = cell2Text.match(/Offline Desde:\s*([\d/: ]+)/i)
     const offlineSince = offlineSinceMatch ? offlineSinceMatch[1].trim() : ''
@@ -209,10 +213,20 @@ function parseSgpOfflineClientsHtml(htmlStr: string, systemName: string): Offlin
     const nas = nasMatch ? nasMatch[1].trim() : ''
 
     const macMatch = cell2Text.match(/Mac:\s*([^\n\r|IP:]+)/i)
-    const mac = macMatch ? macMatch[1].replace(/\xa0/g, ' ').replace(/&nbsp;/g, ' ').trim() : ''
+    const mac = macMatch
+      ? macMatch[1]
+          .replace(/\xa0/g, ' ')
+          .replace(/&nbsp;/g, ' ')
+          .trim()
+      : ''
 
     const ipMatch = cell2Text.match(/IP:\s*([^\n\r|Ativo|Inativo|Suspenso|Id:]+)/i)
-    const ip = ipMatch ? ipMatch[1].replace(/\xa0/g, ' ').replace(/&nbsp;/g, ' ').trim() : ''
+    const ip = ipMatch
+      ? ipMatch[1]
+          .replace(/\xa0/g, ' ')
+          .replace(/&nbsp;/g, ' ')
+          .trim()
+      : ''
 
     // Extract status
     const statusSpan = cell2.querySelector('span[class*="ss_bold"]')
@@ -244,7 +258,7 @@ function parseSgpOfflineClientsHtml(htmlStr: string, systemName: string): Offlin
         mac,
         ip,
         login,
-        serviceId
+        serviceId,
       })
     }
   })
@@ -445,7 +459,7 @@ const ChatInterno: React.FC = () => {
               olt: outageOltQuery.trim() || undefined,
               oltslot: outageOltslotQuery.trim() || undefined,
               oltpon: outageOltponQuery.trim() || undefined,
-            }
+            },
           })
           if (res?.success && res.html) {
             return parseSgpOfflineClientsHtml(res.html, t.name)
@@ -485,18 +499,7 @@ const ChatInterno: React.FC = () => {
   const filteredOutages = outageResults.filter((client) => {
     if (!outageLocalFilter.trim()) return true
     const filterLower = outageLocalFilter.toLowerCase().trim()
-    return (
-      client.name.toLowerCase().includes(filterLower) ||
-      client.address.toLowerCase().includes(filterLower) ||
-      client.id.toLowerCase().includes(filterLower) ||
-      client.status.toLowerCase().includes(filterLower) ||
-      (client.cpfCnpj && client.cpfCnpj.toLowerCase().includes(filterLower)) ||
-      (client.login && client.login.toLowerCase().includes(filterLower)) ||
-      (client.nas && client.nas.toLowerCase().includes(filterLower)) ||
-      (client.pop && client.pop.toLowerCase().includes(filterLower)) ||
-      (client.plano && client.plano.toLowerCase().includes(filterLower)) ||
-      (client.offlineSince && client.offlineSince.toLowerCase().includes(filterLower))
-    )
+    return client.name.toLowerCase().includes(filterLower) || client.address.toLowerCase().includes(filterLower) || client.id.toLowerCase().includes(filterLower) || client.status.toLowerCase().includes(filterLower) || (client.cpfCnpj && client.cpfCnpj.toLowerCase().includes(filterLower)) || (client.login && client.login.toLowerCase().includes(filterLower)) || (client.nas && client.nas.toLowerCase().includes(filterLower)) || (client.pop && client.pop.toLowerCase().includes(filterLower)) || (client.plano && client.plano.toLowerCase().includes(filterLower)) || (client.offlineSince && client.offlineSince.toLowerCase().includes(filterLower))
   })
 
   return (
@@ -710,7 +713,7 @@ const ChatInterno: React.FC = () => {
                       </div>
 
                       {filteredOutages.map((client, idx) => {
-                        const baseUrl = client.system.includes('Novo') ? 'http://201.158.20.53:8000' : 'http://201.158.20.35:8000';
+                        const baseUrl = client.system.includes('Novo') ? 'http://201.158.20.53:8000' : 'http://201.158.20.35:8000'
                         return (
                           <div key={idx} className="ati-feasibility-card ati-feasibility-card--inactive">
                             <div className="ati-feasibility-card-header">
@@ -721,10 +724,13 @@ const ChatInterno: React.FC = () => {
                               </span>
                               <span className={`ati-feasibility-badge ${client.system.includes('Novo') ? 'ati-feasibility-badge--53' : 'ati-feasibility-badge--35'}`}>{client.system}</span>
                             </div>
-                            
+
                             <div className="ati-feasibility-card-meta" style={{ marginTop: '2px' }}>
                               <span className="ati-feasibility-client-id">
-                                ID Cliente: <a href={`${baseUrl}/admin/cliente/${client.id}/edit/`} target="_blank" rel="noopener noreferrer" className="ati-outage-link-sub">{client.id}</a>
+                                ID Cliente:{' '}
+                                <a href={`${baseUrl}/admin/cliente/${client.id}/edit/`} target="_blank" rel="noopener noreferrer" className="ati-outage-link-sub">
+                                  {client.id}
+                                </a>
                               </span>
                               {client.cadastro && <span className="ati-feasibility-client-cadastro">Cad: {client.cadastro}</span>}
                             </div>
@@ -751,11 +757,7 @@ const ChatInterno: React.FC = () => {
                               )}
                               {((client.nas && !['proxy', 'cisco'].includes(client.nas.trim().toLowerCase())) || client.mac || client.ip) && (
                                 <div className="ati-outage-detail-item">
-                                  <strong>Conexão:</strong> {[
-                                    client.nas && !['proxy', 'cisco'].includes(client.nas.trim().toLowerCase()) ? `NAS: ${client.nas}` : null,
-                                    client.mac ? `MAC: ${client.mac}` : null,
-                                    client.ip ? `IP: ${client.ip}` : null
-                                  ].filter(Boolean).join(' | ')}
+                                  <strong>Conexão:</strong> {[client.nas && !['proxy', 'cisco'].includes(client.nas.trim().toLowerCase()) ? `NAS: ${client.nas}` : null, client.mac ? `MAC: ${client.mac}` : null, client.ip ? `IP: ${client.ip}` : null].filter(Boolean).join(' | ')}
                                 </div>
                               )}
                               {client.login && (

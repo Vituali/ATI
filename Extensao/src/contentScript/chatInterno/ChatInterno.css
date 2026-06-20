@@ -249,7 +249,7 @@
   margin: 0 !important;
 }
 
-.ati-feasibility-input[type="number"] {
+.ati-feasibility-input[type='number'] {
   -moz-appearance: textfield !important;
 }
 
@@ -565,4 +565,3 @@
   color: #ef4444;
   font-weight: 600;
 }
-

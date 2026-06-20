@@ -144,4 +144,3 @@ export interface ExecuteOnuCommandRequest {
 }
 
 export type ExtensionRequest = FirebaseLoginRequest | OpenInSgpRequest | GetSgpFormParamsRequest | CreateOccurrenceVisuallyRequest | ClearSgpCacheRequest | ClearCpfCacheRequest | ClearCpfCacheByUidRequest | GetOsTemplatesRequest | GetQuickRepliesRequest | RefreshSgpOnlineStatusesRequest | GetGlobalOccurrenceTypesRequest | RefreshTokenRequest | FirebaseFetchRequest | FirebasePostRequest | FirebasePatchRequest | SsoLoginRequest | GetSsoSessionRequest | RefreshUserSessionRequest | ClearSessionCachesRequest | LogoutRequest | CheckVersionRequest | GetSgpClientContactsRequest | SearchSgpFeasibilityRequest | SearchSgpOfflineClientsRequest | FindClientOnSgpRequest | FetchSupportDataRequest | ExecuteOnuCommandRequest
-

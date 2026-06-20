@@ -24,11 +24,10 @@ const emit = () => {
  * Registra ouvintes para manter o estado sincronizado entre todos os componentes.
  */
 export function useNotification() {
-  const [localNotifications, setLocalNotifications] = useState<Notification[]>(notificationsStore)
+  const [localNotifications, setLocalNotifications] = useState<Notification[]>(() => [...notificationsStore])
 
   useEffect(() => {
     listeners.push(setLocalNotifications)
-    setLocalNotifications([...notificationsStore])
     return () => {
       listeners = listeners.filter((l) => l !== setLocalNotifications)
     }
@@ -58,7 +57,6 @@ export function useNotification() {
 
     if (duration > 0) {
       setTimeout(() => {
-        // Remove silenciosamente se não for clicado
         notificationsStore = notificationsStore.filter((n) => n.id !== id)
         emit()
       }, duration)

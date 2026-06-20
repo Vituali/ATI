@@ -152,6 +152,7 @@ export async function refreshIdToken(refreshToken: string): Promise<{ idToken: s
 
 import { OsTemplate, SgpOccurrenceType } from '../contentScript/sgp/types'
 import { extractOptions } from './sgp/contracts'
+import { matchSgpKey, getAlternateSgpUrl } from './sgp/config'
 
 // =================================================================
 // TIPOS DE OCORRÊNCIA — Cache em memória + Firebase (1x/dia) + SGP fallback
@@ -188,9 +189,9 @@ async function _revalidateOccurrenceTypes(baseUrl: string, idToken: string, cach
 }
 
 async function _fetchOccurrenceTypesInternal(baseUrl: string, idToken: string, cacheKey: string, isSilent = false): Promise<SgpOccurrenceType[]> {
-  const today = new Date().toISOString().slice(0, 10) // "YYYY-MM-DD"
-  const is53 = baseUrl.includes('201.158.20.53')
-  const dbNode = is53 ? 'sgp_cache_53' : 'sgp_cache'
+  const today = new Date().toISOString().slice(0, 10)
+  const isSecondary = matchSgpKey(baseUrl) === 'sgp_53'
+  const dbNode = isSecondary ? 'sgp_cache_53' : 'sgp_cache'
 
   try {
     // Camada 2: Firebase (agora seguro com auth != null)
@@ -237,8 +238,8 @@ async function _fetchOccurrenceTypesInternal(baseUrl: string, idToken: string, c
         })
 
       // Sincronização secundária em background para a outra base se possível
-      const otherUrl = is53 ? 'http://201.158.20.35:8000' : 'http://201.158.20.53:8000'
-      const otherDbNode = is53 ? 'sgp_cache' : 'sgp_cache_53'
+      const otherUrl = getAlternateSgpUrl(baseUrl)
+      const otherDbNode = isSecondary ? 'sgp_cache' : 'sgp_cache_53'
 
       fetch(`${otherUrl}/admin/atendimento/cliente/1/ocorrencia/add/`, {
         credentials: 'include',

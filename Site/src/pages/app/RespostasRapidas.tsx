@@ -93,35 +93,33 @@ export default function RespostasRapidas() {
 
   useEffect(() => {
     if (!user) return
-    carregarTudo()
-  }, [user])
+    let cancelled = false
 
-  const carregarTudo = useCallback(async () => {
-    if (!user) return
-    setLoading(true)
-    try {
-      const [snapRespostas, snapOrdem] = await Promise.all([get(ref(db, `respostas/${user.username}`)), get(ref(db, `categorias_ordem/${user.username}`))])
+    ;(async () => {
+      setLoading(true)
+      try {
+        const [snapRespostas, snapOrdem] = await Promise.all([get(ref(db, `respostas/${user.username}`)), get(ref(db, `categorias_ordem/${user.username}`))])
+        if (cancelled) return
 
-      const lista = parseArrayFirebase(snapRespostas.val())
-      setRespostas(lista)
+        const lista = parseArrayFirebase(snapRespostas.val())
+        setRespostas(lista)
 
-      // Se já tem ordem salva, usa ela; senão deriva das respostas
-      if (snapOrdem.exists()) {
-        setOrdemCats(snapOrdem.val() as string[])
-      } else {
-        setOrdemCats([...new Set(lista.map((r) => r.subCategory))])
+        if (snapOrdem.exists()) {
+          setOrdemCats(snapOrdem.val() as string[])
+        } else {
+          setOrdemCats([...new Set(lista.map((r) => r.subCategory))])
+        }
+      } catch (e) {
+        console.error('Erro ao carregar:', e)
+      } finally {
+        if (!cancelled) setLoading(false)
       }
-    } catch (e) {
-      console.error('Erro ao carregar:', e)
-    } finally {
-      setLoading(false)
+    })()
+
+    return () => {
+      cancelled = true
     }
   }, [user])
-
-  useEffect(() => {
-    if (!user) return
-    carregarTudo()
-  }, [user, carregarTudo])
 
   // ---------------------------------------------------------------
   // SALVAR

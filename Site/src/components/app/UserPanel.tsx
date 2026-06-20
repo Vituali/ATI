@@ -80,8 +80,8 @@ export default function UserPanel({ user, aberto, onFechar, onLogout, bgUrl, onB
         customBg: tempBg.trim() || null,
       })
       showFeedback(setFeedbackPerfil, 'Perfil atualizado com sucesso!', 'ok')
-    } catch (e: any) {
-      showFeedback(setFeedbackPerfil, 'Erro: ' + e.message, 'erro')
+    } catch (err: any) {
+      showFeedback(setFeedbackPerfil, 'Erro: ' + err.message, 'erro')
     } finally {
       setSalvandoPerfil(false)
     }
@@ -145,7 +145,7 @@ export default function UserPanel({ user, aberto, onFechar, onLogout, bgUrl, onB
           await verifyBeforeUpdateEmail(firebaseUser, emailTrimmed)
           emailPendente = true
           showFeedback(setFeedbackConta, '📨 Link enviado! A troca será concluída assim que você confirmar no novo e-mail (Cheque o Spam).', 'ok')
-        } catch (e: any) {
+        } catch {
           // Fallback para updateEmail se as regras de negócio permitirem (raro hoje em dia)
           try {
             await updateEmail(firebaseUser, emailTrimmed)

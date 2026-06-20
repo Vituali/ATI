@@ -32,9 +32,7 @@ export default class ErrorBoundary extends Component<Props, State> {
       return (
         <div style={{ padding: '2rem', textAlign: 'center' }}>
           <h2 style={{ marginBottom: '1rem' }}>Algo deu errado</h2>
-          <p style={{ opacity: 0.7, marginBottom: '1rem' }}>
-            {this.state.error?.message || 'Ocorreu um erro inesperado ao carregar esta seção.'}
-          </p>
+          <p style={{ opacity: 0.7, marginBottom: '1rem' }}>{this.state.error?.message || 'Ocorreu um erro inesperado ao carregar esta seção.'}</p>
           <button
             onClick={() => {
               this.setState({ hasError: false, error: null })

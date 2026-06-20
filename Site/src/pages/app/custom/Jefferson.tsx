@@ -51,7 +51,15 @@ export default function Jefferson() {
     return Number(localStorage.getItem('jefferson-monster-count') || 0)
   })
   const [frase, setFrase] = useState(FRASES_GOTICAS[0])
-  const [bats, setBats] = useState<{ id: number; left: number; top: number; delay: number; duration: number }[]>([])
+  const [bats] = useState<{ id: number; left: number; top: number; delay: number; duration: number }[]>(() =>
+    Array.from({ length: 8 }).map((_, i) => ({
+      id: i,
+      left: Math.random() * 90 + 5,
+      top: Math.random() * 80 + 10,
+      delay: Math.random() * 5,
+      duration: 6 + Math.random() * 6,
+    })),
+  )
 
   // Calculadora Gótica
   const [calcItems, setCalcItems] = useState({
@@ -108,18 +116,6 @@ export default function Jefferson() {
   useEffect(() => {
     localStorage.setItem('jefferson-cycle-profiles', JSON.stringify(profiles))
   }, [profiles])
-
-  // Inicializa morcegos com posições aleatórias
-  useEffect(() => {
-    const newBats = Array.from({ length: 8 }).map((_, i) => ({
-      id: i,
-      left: Math.random() * 90 + 5, // 5% a 95%
-      top: Math.random() * 80 + 10,
-      delay: Math.random() * 5,
-      duration: 6 + Math.random() * 6, // 6s a 12s
-    }))
-    setBats(newBats)
-  }, [])
 
   const gerarNovaFrase = () => {
     const disponiveis = FRASES_GOTICAS.filter((f) => f !== frase)

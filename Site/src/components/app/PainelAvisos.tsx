@@ -36,6 +36,7 @@ export default function PainelAvisos({ user }: PainelAvisosProps) {
 
   useEffect(() => {
     carregarAvisos()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   async function carregarAvisos() {

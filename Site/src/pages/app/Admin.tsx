@@ -69,6 +69,7 @@ export default function Admin() {
   useEffect(() => {
     carregarAtendentes()
     carregarBugs()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   async function carregarAtendentes() {

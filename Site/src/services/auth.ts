@@ -187,7 +187,6 @@ if (typeof window !== 'undefined') {
       }
     }
   })
-
   ;[500, 2000, 5000].forEach((delay) => {
     setTimeout(() => {
       if (auth.currentUser) {

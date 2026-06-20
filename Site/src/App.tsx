@@ -5,7 +5,7 @@ import { Login, Register, Home, ErrorPage, ExtensionModal } from './pages'
 import { useUser, UserProfile } from './hooks'
 import { canAccess, Section, Setor, getSetorLabel, logout, db, auth, syncWithExtension, performSSOLogin } from './services'
 import { Sidebar, Footer, LoadingOverlay, ToastContainer, UserPanel, BugReportModal, ErrorBoundary } from './components'
-import { ref, onValue, update } from 'firebase/database'
+import { ref, onValue } from 'firebase/database'
 import './App.css'
 import { useRegisterSW } from 'virtual:pwa-register/react'
 
@@ -57,9 +57,14 @@ export default function App() {
   const [userPanelAberto, setUserPanelAberto] = useState(false)
   const [extensaoModalAberto, setExtensaoModalAberto] = useState(false)
   const [bugModalAberto, setBugModalAberto] = useState(false)
-  const [bgUrl, setBgUrl] = useState(() => {
-    return localStorage.getItem('ati-custom-bg') || ''
-  })
+  const [localBg, setLocalBg] = useState(() => localStorage.getItem('ati-custom-bg') || '')
+  const bgUrl = user?.customBg !== undefined ? user.customBg : localBg
+
+  const handleBgChange = useCallback((url: string) => {
+    setLocalBg(url)
+    if (url) localStorage.setItem('ati-custom-bg', url)
+    else localStorage.removeItem('ati-custom-bg')
+  }, [])
 
   const lastSeenRef = useRef(Number(localStorage.getItem('lastSeenChat') || 0))
 
@@ -93,36 +98,30 @@ export default function App() {
           return <HeliRPG />
       }
     },
-    [setCurrentSection],
+    [setCurrentSection, unreadRooms],
   )
 
-  // Sincroniza plano de fundo do Firebase
+  // Notificações em real-time + limpa ao entrar no chat
   useEffect(() => {
-    if (user && user.customBg !== undefined) {
-      setBgUrl(user.customBg)
-      if (user.customBg) {
-        localStorage.setItem('ati-custom-bg', user.customBg)
-      } else {
-        localStorage.removeItem('ati-custom-bg')
-      }
-    }
-  }, [user])
+    if (!user) return
 
-  // Notificações em real-time (Escutando apenas o nó meta leve)
-  useEffect(() => {
-    if (!user || currentSection === 'chat_interno') return
+    if (currentSection === 'chat_interno') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setUnreadRooms([])
+      lastSeenRef.current = Date.now()
+      localStorage.setItem('lastSeenChat', lastSeenRef.current.toString())
+      return
+    }
 
     const q = ref(db, 'chat/meta')
     const unsubscribe = onValue(q, (snap) => {
       if (!snap.exists()) return
 
       const salasComNovasMsgs: Setor[] = []
-      // Percorre todos os setores no nó meta
       snap.forEach((roomMetaSnap) => {
         const meta = roomMetaSnap.child('ultimaMensagem').val()
         const room = roomMetaSnap.key as Setor
 
-        // Se a mensagem existir, não for minha, e for posterior ao meu último visto
         if (meta && meta.autor !== user.username && meta.timestamp > lastSeenRef.current) {
           salasComNovasMsgs.push(room)
         }
@@ -133,15 +132,6 @@ export default function App() {
 
     return () => unsubscribe()
   }, [user, currentSection])
-
-  // Limpa notificação ao entrar no chat
-  useEffect(() => {
-    if (currentSection === 'chat_interno') {
-      setUnreadRooms([])
-      lastSeenRef.current = Date.now()
-      localStorage.setItem('lastSeenChat', lastSeenRef.current.toString())
-    }
-  }, [currentSection])
 
   // Document Title, Favicon e Badge PWA para mensagens do chat
   useEffect(() => {
@@ -189,14 +179,15 @@ export default function App() {
     localStorage.setItem('ati-active-embed-section', embedSection)
   }, [embedSection])
 
-  // Sincroniza a aba ativa em modo embed quando o iframe src muda de section
+  // Inicializa/atualiza a aba embed via URL (requer setState pois URL é externo ao React)
   useEffect(() => {
     if (!isEmbed) return
     const sec = new URLSearchParams(window.location.search).get('section') as Section
     if (sec && ['chat_interno', 'modelos_os', 'senhas', 'anotacoes', 'conversor', 'respostas_rapidas'].includes(sec)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setEmbedSection(sec)
     }
-  }, [window.location.search, isEmbed])
+  }, [isEmbed])
 
   // SSO: Ouvinte de Mensagens da Extensão
   useEffect(() => {
@@ -226,20 +217,6 @@ export default function App() {
 
   const toggleTheme = () => {
     setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))
-  }
-
-  const handleBgChange = (url: string) => {
-    setBgUrl(url)
-    if (url) {
-      localStorage.setItem('ati-custom-bg', url)
-    } else {
-      localStorage.removeItem('ati-custom-bg')
-    }
-    if (user) {
-      update(ref(db, `atendentes/${user.username}`), {
-        customBg: url || null,
-      }).catch((err) => console.error('Erro ao salvar customBg no Firebase:', err))
-    }
   }
 
   // Carregando sessão

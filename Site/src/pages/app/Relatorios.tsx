@@ -64,9 +64,12 @@ export default function Relatorios() {
   const [exibirDataColeta, setExibirDataColeta] = useState(false)
 
   // Reseta paginação quando o filtro ou busca muda
-  useEffect(() => {
+  const filterKey = `${busca}|${filtroSinal}|${filtroStatus}`
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey)
+  if (filterKey !== prevFilterKey) {
+    setPrevFilterKey(filterKey)
     setItensExibidos(50)
-  }, [busca, filtroSinal, filtroStatus])
+  }
 
   // Configurações de Limites de Sinais (Thresholds)
   const [thresholds, setThresholds] = useState({
@@ -174,11 +177,11 @@ export default function Relatorios() {
   }
 
   // Atualiza status do cliente e salva data de retorno se necessário
-  const atualizarStatus = async (id: string, novoStatus: string, dataRetorno?: string) => {
-    try {
-      const statusUpdatedAt = Date.now()
-      const retornoData = novoStatus === 'Ausente (Retorno)' ? dataRetorno || '' : ''
+  const atualizarStatus = useCallback(async (id: string, novoStatus: string, dataRetorno?: string) => {
+    const statusUpdatedAt = Date.now()
+    const retornoData = novoStatus === 'Ausente (Retorno)' ? dataRetorno || '' : ''
 
+    try {
       await set(ref(db, `historico_potencias/${id}/status`), novoStatus)
       await set(ref(db, `historico_potencias/${id}/statusUpdatedAt`), statusUpdatedAt)
       await set(ref(db, `historico_potencias/${id}/retornoData`), retornoData)
@@ -186,7 +189,7 @@ export default function Relatorios() {
       console.error('Erro ao atualizar status:', e)
       alert('Erro ao atualizar status.')
     }
-  }
+  }, [])
 
   // Helper para classificar o sinal (RX) baseado nos thresholds
   const classificarSinal = useCallback(

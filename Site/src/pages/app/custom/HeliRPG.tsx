@@ -152,19 +152,17 @@ export default function HeliRPG() {
     const now = new Date()
     const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`
 
-    let resultadoFinal = 0
-    let details = ''
-    let formula = ''
+    let resultadoFinal: number
+    let details: string
+    let formula: string
 
     if (valor <= 0) {
-      // Atributo 0: rola 2d20 e pega o PIOR resultado
       const d1 = Math.floor(Math.random() * 20) + 1
       const d2 = Math.floor(Math.random() * 20) + 1
       resultadoFinal = Math.min(d1, d2)
       formula = '2d20 (Desvantagem - Atributo 0)'
       details = `Rolagens: [${d1}, ${d2}] | Pegou o MENOR`
     } else {
-      // Atributo > 0: rola Nd20 e pega o MELHOR resultado
       for (let i = 0; i < valor; i++) {
         rolls.push(Math.floor(Math.random() * 20) + 1)
       }

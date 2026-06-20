@@ -3,7 +3,7 @@
 // =================================================================
 
 import { ensureSgpSession } from './auth'
-import { SGP_IP_35, SGP_IP_53 } from './constants'
+import { getAlternateSgpUrl } from './config'
 
 export interface SgpSupportData {
   status: 'online' | 'offline' | 'unknown'
@@ -611,12 +611,7 @@ export async function scrapeSupportData(baseUrl: string, contractId: string, cli
   } catch (err: any) {
     console.warn(`Extensão ATI: Falha ao buscar dados de suporte no SGP principal (${baseUrl}):`, err)
 
-    let alternateUrl: string | null = null
-    if (baseUrl.includes('201.158.20.53')) {
-      alternateUrl = SGP_IP_35
-    } else if (baseUrl.includes('201.158.20.35')) {
-      alternateUrl = SGP_IP_53
-    }
+    let alternateUrl = getAlternateSgpUrl(baseUrl)
 
     if (alternateUrl) {
       console.log(`Extensão ATI: Tentando fallback para o SGP alternativo: ${alternateUrl}`)

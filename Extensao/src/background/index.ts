@@ -8,7 +8,7 @@ import { performDailySgpCheck } from './sgp/auth'
 import { deleteSgpFormCache } from './sgp/cache'
 import { deleteCpfCacheEntry, deleteCpfCacheByUid } from './sgp/cpfCache'
 import { setupChatNotifications } from './notifications'
-import { SGP_IP_35, SGP_IP_53 } from './sgp/constants'
+import { initSgpConfig, getSgpHosts } from './sgp/config'
 import { findClientInSgp } from './sgp/search'
 import { scrapeSupportData, executeOnuCommand } from './sgp/support'
 import type { ExtensionRequest } from './types'
@@ -17,7 +17,7 @@ const getTs = () => `[${new Date().toLocaleTimeString('pt-BR')}]`
 
 // Configuração local para evitar imports que dependem de 'window'
 const fbConfig = {
-  databaseURL: (import.meta.env.VITE_FIREBASE_DATABASE_URL ?? '').endsWith('/') ? import.meta.env.VITE_FIREBASE_DATABASE_URL ?? '' : (import.meta.env.VITE_FIREBASE_DATABASE_URL ?? '') + '/',
+  databaseURL: (import.meta.env.VITE_FIREBASE_DATABASE_URL ?? '').endsWith('/') ? (import.meta.env.VITE_FIREBASE_DATABASE_URL ?? '') : (import.meta.env.VITE_FIREBASE_DATABASE_URL ?? '') + '/',
 }
 
 console.log(`${getTs()} Extensão ATI: Background iniciado.`)
@@ -30,8 +30,9 @@ performDailySgpCheck()
 chrome.runtime.onMessage.addListener((request: ExtensionRequest, _sender, sendResponse) => {
   if (request.action === 'firebaseLogin') {
     handleFirebaseLogin(request.email, request.password)
-      .then((result) => {
-        if (result.success) {
+      .then(async (result) => {
+        if (result.success && result.session) {
+          initSgpConfig(result.session.idToken).catch(() => {})
           checkExtensionVersion()
         }
         sendResponse(result)
@@ -117,7 +118,6 @@ chrome.runtime.onMessage.addListener((request: ExtensionRequest, _sender, sendRe
     return true
   }
 
-
   if (request.action === 'findClientOnSgp') {
     findClientInSgp(request.baseUrl, request.clientData, request.uid)
       .then((clients) => sendResponse({ success: true, clients }))
@@ -147,7 +147,10 @@ chrome.runtime.onMessage.addListener((request: ExtensionRequest, _sender, sendRe
   }
 
   if (request.action === 'getGlobalOccurrenceTypes') {
-    Promise.all([getOccurrenceTypes(SGP_IP_35, request.idToken).catch(() => []), getOccurrenceTypes(SGP_IP_53, request.idToken).catch(() => [])])
+    getSgpHosts().then((hosts) => {
+      const h35 = hosts.find(h => h.key === 'sgp_35')?.url ?? ''
+      const h53 = hosts.find(h => h.key === 'sgp_53')?.url ?? ''
+      return Promise.all([getOccurrenceTypes(h35, request.idToken).catch(() => []), getOccurrenceTypes(h53, request.idToken).catch(() => [])])
       .then(([types35, types53]) => {
         const mergedMap = new Map<string, { id: string; text: string; id_35?: string; id_53?: string }>()
 
@@ -182,6 +185,7 @@ chrome.runtime.onMessage.addListener((request: ExtensionRequest, _sender, sendRe
         sendResponse({ success: true, types: mergedTypes })
       })
       .catch((error) => sendResponse({ success: false, types: [], error: error.message }))
+    })
     return true
   }
 
@@ -456,7 +460,10 @@ async function checkExtensionVersion() {
 }
 
 function parseVersion(v: string): number[] {
-  return v.replace(/[^0-9.]/g, '').split('.').map(Number)
+  return v
+    .replace(/[^0-9.]/g, '')
+    .split('.')
+    .map(Number)
 }
 
 function isVersionLower(current: string, min: string) {

@@ -96,7 +96,7 @@ export default function Conversor() {
       try {
         const parsed = JSON.parse(saved)
         return parsed[key] !== undefined ? parsed[key] : defaultValue
-      } catch (e) {
+      } catch {
         return defaultValue
       }
     }
@@ -294,16 +294,13 @@ export default function Conversor() {
     const sigText = assinatura === 'digital' ? 'ASSINATURA DIGITAL PENDENTE' : 'TITULAR NO LOCAL PARA ASSINATURA'
 
     let scheduleLines = ''
-    let withdrawalText = ''
 
     const novaOsData: OsTextData = { withdrawal: '', installation: '', os: '' }
+    const withdrawalText = !clienteRetira ? `RETIRAR EM ${oldAddress} DIA ${retDia} ${retPer}` : 'CLIENTE FEZ A RETIRADA'
 
     if (!clienteRetira) {
       novaOsData.withdrawal = `${retDia} - ${pdfData.contrato} - ${pdfData.primeiroNome} - ${oldAddress} - MUD ENDEREÇO - ${retPer} - ${tecnico}`
       scheduleLines += novaOsData.withdrawal + '\n'
-      withdrawalText = `RETIRAR EM ${oldAddress} DIA ${retDia} ${retPer}`
-    } else {
-      withdrawalText = 'CLIENTE FEZ A RETIRADA'
     }
 
     novaOsData.installation = `${instDia} - ${pdfData.contrato} - ${pdfData.primeiroNome} - ${newAddress} - MUD ENDEREÇO - ${instPer} - ${tecnico}`

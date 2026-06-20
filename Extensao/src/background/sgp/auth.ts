@@ -2,7 +2,8 @@
 // SGP — AUTENTICAÇÃO
 // =================================================================
 
-import { SGP_IP_35, SGP_IP_53, LOGIN_CACHE_TTL_MS } from './constants'
+import { LOGIN_CACHE_TTL_MS, SGP_DEFAULT_HOSTS } from './constants'
+import { getSgpHosts, matchSgpKey } from './config'
 
 export async function performLoginCheck(baseUrl: string): Promise<{ isLoggedIn: boolean; baseUrl: string }> {
   try {
@@ -30,14 +31,14 @@ export async function performSilentLogin(baseUrl: string): Promise<boolean> {
     console.log(`Extensão ATI: Tentando login silencioso em ${baseUrl}...`)
 
     // 1. Pega as credenciais
-    const isSpecialIp = baseUrl.includes('201.158.20.53')
-    const storageKeys = isSpecialIp ? ['sgp_credentials_alt', 'sgp_credentials'] : ['sgp_credentials']
+    const isSecondarySgp = matchSgpKey(baseUrl) === 'sgp_53'
+    const storageKeys = isSecondarySgp ? ['sgp_credentials_alt', 'sgp_credentials'] : ['sgp_credentials']
     const result = await chrome.storage.local.get(storageKeys)
 
     let creds = result.sgp_credentials
-    if (isSpecialIp && result.sgp_credentials_alt?.login) {
+    if (isSecondarySgp && result.sgp_credentials_alt?.login) {
       creds = result.sgp_credentials_alt
-      console.log('Extensão ATI: Usando credenciais alternativas para login silencioso no IP 53')
+      console.log('Extensão ATI: Usando credenciais alternativas para login silencioso no IP alternativo')
     }
 
     if (!creds?.login || !creds?.pass) {
@@ -110,11 +111,11 @@ export async function performSilentLogin(baseUrl: string): Promise<boolean> {
 }
 
 export async function getSgpStatus(forceCheck = false): Promise<{ isLoggedIn: boolean; baseUrl: string }> {
-  // Obtém o SGP preferencial salvo pelo usuário (fallback para SGP_IP_53 se não existir)
+  const hosts = await getSgpHosts()
+  const defaultSgp53 = hosts.find(h => h.key === 'sgp_53')?.url ?? SGP_DEFAULT_HOSTS[1].url
   const result = await chrome.storage.local.get('ati_preferred_sgp')
-  const defaultBaseUrl = result.ati_preferred_sgp || SGP_IP_53
+  const defaultBaseUrl = result.ati_preferred_sgp || defaultSgp53
 
-  // Realiza a verificação dupla
   const bothLogged = await doubleCheckSgpLogins(forceCheck)
 
   if (!bothLogged) {
@@ -164,21 +165,25 @@ export async function ensureSgpSession(baseUrl: string, forceCheck = false): Pro
   return false
 }
 
-export async function redirectUserToSgpLogins(is35Ok: boolean, is53Ok: boolean) {
+export async function redirectUserToSgpLogins(is35Ok: boolean, is53Ok: boolean, hosts?: import('./constants').SgpHost[]) {
+  const h = hosts ?? await getSgpHosts()
+  const h35 = h.find(host => host.key === 'sgp_35')
+  const h53 = h.find(host => host.key === 'sgp_53')
+  if (!h35 || !h53) return
   try {
     const tabs = await chrome.tabs.query({})
 
     if (!is35Ok) {
-      const has35Tab = tabs.some((t) => t.url && (t.url.includes('201.158.20.35') || t.url.includes('sgp.atiinternet.com.br')))
+      const has35Tab = tabs.some((t) => t.url && (t.url.includes(extractIp(h35.url)) || t.url.includes('sgp.atiinternet.com.br')))
       if (!has35Tab) {
-        await chrome.tabs.create({ url: `${SGP_IP_35}/admin/` })
+        await chrome.tabs.create({ url: `${h35.url}/admin/` })
       }
     }
 
     if (!is53Ok) {
-      const has53Tab = tabs.some((t) => t.url && t.url.includes('201.158.20.53'))
+      const has53Tab = tabs.some((t) => t.url && t.url.includes(extractIp(h53.url)))
       if (!has53Tab) {
-        await chrome.tabs.create({ url: `${SGP_IP_53}/admin/` })
+        await chrome.tabs.create({ url: `${h53.url}/admin/` })
       }
     }
   } catch (err) {
@@ -186,12 +191,20 @@ export async function redirectUserToSgpLogins(is35Ok: boolean, is53Ok: boolean) 
   }
 }
 
+function extractIp(url: string): string {
+  const m = url.match(/https?:\/\/([\d.]+)/)
+  return m ? m[1] : ''
+}
+
 export async function doubleCheckSgpLogins(forceCheck = false): Promise<boolean> {
-  const is35Logged = await ensureSgpSession(SGP_IP_35, forceCheck).catch(() => false)
-  const is53Logged = await ensureSgpSession(SGP_IP_53, forceCheck).catch(() => false)
+  const hosts = await getSgpHosts()
+  const h35 = hosts.find(h => h.key === 'sgp_35')?.url ?? SGP_DEFAULT_HOSTS[0].url
+  const h53 = hosts.find(h => h.key === 'sgp_53')?.url ?? SGP_DEFAULT_HOSTS[1].url
+  const is35Logged = await ensureSgpSession(h35, forceCheck).catch(() => false)
+  const is53Logged = await ensureSgpSession(h53, forceCheck).catch(() => false)
 
   if (!is35Logged || !is53Logged) {
-    await redirectUserToSgpLogins(is35Logged, is53Logged)
+    await redirectUserToSgpLogins(is35Logged, is53Logged, hosts)
     return false
   }
   return true
@@ -207,13 +220,17 @@ export async function performDailySgpCheck() {
       return
     }
 
+    const hosts = await getSgpHosts()
+    const h35 = hosts.find(h => h.key === 'sgp_35')?.url ?? SGP_DEFAULT_HOSTS[0].url
+    const h53 = hosts.find(h => h.key === 'sgp_53')?.url ?? SGP_DEFAULT_HOSTS[1].url
+
     console.log('Extensão ATI: Iniciando verificação diária de login nos dois SGPs...')
-    const is35Logged = await ensureSgpSession(SGP_IP_35).catch(() => false)
-    const is53Logged = await ensureSgpSession(SGP_IP_53).catch(() => false)
+    const is35Logged = await ensureSgpSession(h35).catch(() => false)
+    const is53Logged = await ensureSgpSession(h53).catch(() => false)
 
     if (!is35Logged || !is53Logged) {
       console.log(`Extensão ATI: Login pendente no início do dia. .35: ${is35Logged}, .53: ${is53Logged}. Abrindo abas de login...`)
-      await redirectUserToSgpLogins(is35Logged, is53Logged)
+      await redirectUserToSgpLogins(is35Logged, is53Logged, hosts)
     }
 
     await chrome.storage.local.set({ sgp_last_daily_check_date: today })

@@ -110,7 +110,7 @@ export default function Anotacoes() {
       await remove(ref(db, `anotacoes/${user.username}/${editando.id}`))
       notify('Nota excluída.', 'info')
       fecharModal()
-    } catch (e) {
+    } catch {
       notify('Erro ao excluir.', 'error')
     }
   }

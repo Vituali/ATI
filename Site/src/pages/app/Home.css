@@ -200,7 +200,7 @@
 }
 
 .home-card-sgp::before {
-  background: linear-gradient(90deg, transparent, #00e5ff 50%, transparent);
+  background: linear-gradient(90deg, transparent, var(--color-cyan) 50%, transparent);
 }
 
 .home-card-header {

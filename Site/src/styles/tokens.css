@@ -154,6 +154,7 @@
   --border-subtle: rgba(0, 0, 0, 0.05);
   --shadow-subtle: 0 8px 24px rgba(0, 0, 0, 0.04);
   --text-on-accent: #ffffff;
+  --gradient-text: linear-gradient(135deg, hsl(222, 47%, 12%) 0%, hsl(215, 25%, 35%) 100%);
 
   /* Glassmorphism Tokens */
   --bg-glass: hsla(210, 20%, 99%, 0.7);

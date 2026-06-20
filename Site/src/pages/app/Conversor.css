@@ -41,7 +41,7 @@
   letter-spacing: -0.75px;
   color: var(--text-white);
   margin: 0;
-  background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
+  background: var(--gradient-text);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -64,7 +64,7 @@
 }
 
 .conv-btn-voltar {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bg-overlay-subtle);
   color: var(--text-grey);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
@@ -76,16 +76,16 @@
 }
 
 .conv-btn-voltar:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--bg-overlay-hover);
   color: var(--text-white);
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: var(--border-subtle);
   transform: translateX(-2px);
 }
 
 .conv-erro {
-  color: #f87171;
-  background: rgba(248, 113, 113, 0.06);
-  border: 1px solid rgba(248, 113, 113, 0.15);
+  color: var(--color-danger);
+  background: var(--bg-danger-subtle);
+  border: 1px solid var(--border-danger-subtle);
   border-radius: var(--radius-md);
   padding: 12px 16px;
   font-size: 13px;
@@ -95,7 +95,7 @@
 }
 
 .conv-campo-erro {
-  color: #f87171;
+  color: var(--color-danger);
   font-size: 11px;
   margin-top: 4px;
   font-weight: 500;
@@ -185,7 +185,7 @@
 }
 
 .conv-btn-escolher {
-  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  background: var(--gradient-primary);
   color: white;
   border: none;
   border-radius: var(--radius-md);
@@ -194,12 +194,12 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35);
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
 }
 
 .conv-btn-escolher:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.45);
 }
 
 .conv-btn-escolher:active {
@@ -461,8 +461,8 @@
 }
 
 .conv-checkbox input:checked ~ .checkbox-box {
-  background-color: #4f46e5;
-  border-color: #6366f1;
+  background-color: var(--accent-blue);
+  border-color: var(--accent-blue);
 }
 
 .checkbox-box:after {
@@ -540,7 +540,7 @@
 
 /* GERAR O.S. BUTTON */
 .conv-btn-gerar {
-  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  background: var(--gradient-primary);
   color: white;
   border: none;
   border-radius: var(--radius-md);
@@ -551,13 +551,13 @@
   font-size: 16px;
   letter-spacing: -0.2px;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
 }
 
 .conv-btn-gerar:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.5);
-  background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.45);
+  background: var(--gradient-hover);
 }
 
 .conv-btn-gerar:active {
@@ -709,15 +709,15 @@
 }
 
 .conv-btn-action-copy.principal {
-  background: #4f46e5;
+  background: var(--gradient-primary);
   color: white;
   border: none;
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
 }
 
 .conv-btn-action-copy.principal:hover {
-  background: #6366f1;
-  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+  background: var(--gradient-hover);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
 }
 
 .conv-btn-action-copy.success {

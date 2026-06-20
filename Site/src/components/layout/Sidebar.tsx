@@ -80,14 +80,30 @@ const NAV_ITEMS: NavGroup[] = [
 ]
 
 export default function Sidebar({ role, setor, activeSection, onSelectSection, onOpenUserModal, onOpenExtensionModal, onOpenSettings, theme, userName, avatarUrl, hasUnreadChat }: SidebarProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [openGroups, setOpenGroups] = useState<string[]>(['ferramentas']) // Ferramentas aberto por padrão
+  const [isOpen, setIsOpen] = useState(() => {
+    return localStorage.getItem('ati-sidebar-expanded') === 'true'
+  })
+  const [openGroups, setOpenGroups] = useState<string[]>(() => {
+    const saved = localStorage.getItem('ati-sidebar-open-groups')
+    if (saved) {
+      try {
+        return JSON.parse(saved)
+      } catch {
+        return ['ferramentas']
+      }
+    }
+    return ['ferramentas']
+  })
   const [debugMode, setDebugMode] = useState(() => {
     return localStorage.getItem('ati-debug-jefferson') === 'true'
   })
 
   const toggleGroup = (id: string) => {
-    setOpenGroups((prev) => (prev.includes(id) ? prev.filter((g) => g !== id) : [...prev, id]))
+    setOpenGroups((prev) => {
+      const nextVal = prev.includes(id) ? prev.filter((g) => g !== id) : [...prev, id]
+      localStorage.setItem('ati-sidebar-open-groups', JSON.stringify(nextVal))
+      return nextVal
+    })
   }
 
   const isJefferson = userName.toLowerCase().includes('jefferson') || (role === 'admin' && debugMode)
@@ -119,7 +135,13 @@ export default function Sidebar({ role, setor, activeSection, onSelectSection, o
   return (
     <aside className={`sidebar ${isOpen ? 'expanded' : ''}`}>
       <div className="sidebar-nav">
-        <button className="toggle-sidebar" aria-label="Abrir ou fechar menu lateral" onClick={() => setIsOpen((prev) => !prev)}>
+        <button className="toggle-sidebar" aria-label="Abrir ou fechar menu lateral" onClick={() => {
+          setIsOpen((prev) => {
+            const nextVal = !prev
+            localStorage.setItem('ati-sidebar-expanded', nextVal ? 'true' : 'false')
+            return nextVal
+          })
+        }}>
           ☰
         </button>
 

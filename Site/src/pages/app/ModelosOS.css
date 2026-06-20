@@ -1,6 +1,7 @@
 /* ============================================================
-   OS.CSS — Design System Dark/Minimalista (Modelos de O.S.)
+   OS.CSS — Modelos de O.S. Pro Max
    ============================================================ */
+
 .modelos-os-page {
   display: flex;
   flex-direction: column;
@@ -8,6 +9,7 @@
   max-width: 960px;
   margin: 0 auto;
   width: 100%;
+  animation: fade-in-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .modelos-os-header {
@@ -21,7 +23,7 @@
 
 .modelos-os-titulo {
   font-size: 1.8rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-white);
   margin: 0;
   letter-spacing: -0.5px;
@@ -47,21 +49,26 @@
 }
 
 .modelos-os-btn-novo {
-  background: var(--accent-blue);
+  background: var(--gradient-primary);
   color: white;
   border: none;
   border-radius: var(--radius-md);
   padding: 10px 18px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(0, 100, 255, 0.25);
+  font-family: var(--font-main);
 }
 
 .modelos-os-btn-novo:hover {
-  background: rgb(0, 110, 255);
-  box-shadow: 0 4px 15px rgba(0, 100, 255, 0.4);
-  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0, 100, 255, 0.35);
+  transform: translateY(-1.5px);
+}
+
+.modelos-os-btn-novo:active {
+  transform: translateY(0);
 }
 
 .modelos-os-toolbar {
@@ -83,7 +90,8 @@
   padding: 10px 14px;
   font-size: 14px;
   font-family: var(--font-main);
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
 }
 
 .modelos-os-busca option,
@@ -98,8 +106,8 @@
 
 .modelos-os-busca:focus,
 .modelos-os-filtro-cat:focus {
-  outline: none;
   border-color: var(--accent-blue);
+  background: var(--bg-card);
   box-shadow: 0 0 0 2px var(--accent-blue-hover);
 }
 
@@ -115,7 +123,7 @@
 .modelos-os-vazio {
   text-align: center;
   color: var(--text-muted);
-  padding: 3rem;
+  padding: 4rem 2rem;
   font-size: 14px;
   font-style: italic;
 }
@@ -123,15 +131,15 @@
 .modelos-os-grupo {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .modelos-os-grupo-titulo {
   font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 750;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 1.2px;
   color: var(--text-muted);
   display: flex;
   flex-direction: row;
@@ -144,30 +152,33 @@
   color: var(--text-grey);
   border-radius: 99px;
   padding: 2px 8px;
-  font-size: 11px;
+  font-size: 10px;
+  border: 1px solid var(--border-glass);
 }
 
 .modelos-os-lista {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .modelos-os-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
   border-radius: var(--radius-lg);
-  padding: 16px 20px;
+  padding: 18px 22px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  transition: all 0.2s ease;
+  gap: 11px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--shadow-glass-glow);
 }
 
 .modelos-os-card:hover {
-  border-color: rgba(255, 255, 255, 0.15);
-  transform: translateY(-2px);
+  border-color: var(--accent-blue-border);
+  transform: translateY(-3px);
   background: var(--bg-panel);
+  box-shadow: 0 8px 24px rgba(0, 100, 255, 0.03), var(--shadow-glass-glow);
 }
 
 .modelos-os-card-header {
@@ -180,10 +191,11 @@
 
 .modelos-os-card-titulo {
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 750;
   color: var(--text-white);
   flex: 1;
   margin: 0;
+  letter-spacing: -0.2px;
 }
 
 .modelos-os-card-acoes {
@@ -198,23 +210,23 @@
   background: transparent;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  padding: 6px 10px;
+  padding: 6px 11px;
   font-size: 13px;
   color: var(--text-muted);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .modelos-os-btn-editar:hover {
-  border-color: var(--text-grey);
+  border-color: var(--text-muted);
   color: var(--text-white);
-  background: var(--bg-card);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .modelos-os-btn-apagar:hover {
-  background: rgba(248, 113, 113, 0.1);
-  border-color: rgba(248, 113, 113, 0.3);
-  color: #f87171;
+  background: var(--bg-danger-subtle-hover);
+  border-color: var(--border-danger-subtle);
+  color: var(--color-danger);
 }
 
 .modelos-os-card-texto {
@@ -239,8 +251,8 @@
   gap: 6px;
   font-size: 11px;
   color: var(--text-muted);
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
+  background: var(--bg-overlay-subtle);
+  border: 1px solid var(--border-glass);
   border-radius: 99px;
   padding: 4px 10px;
   width: fit-content;
@@ -256,7 +268,7 @@
 .modelos-os-keyword {
   font-family: var(--font-mono);
   font-size: 11px;
-  background: rgba(0, 100, 255, 0.1);
+  background: var(--accent-blue-hover);
   color: var(--accent-blue);
   border: 1px solid var(--accent-blue-border);
   border-radius: 99px;
@@ -300,7 +312,8 @@
   padding: 12px 14px;
   font-size: 14px;
   font-family: var(--font-main);
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
 }
 
 .modelos-os-grupo-form select option {
@@ -311,27 +324,29 @@
 .modelos-os-grupo-form input:focus,
 .modelos-os-grupo-form select:focus,
 .modelos-os-grupo-form textarea:focus {
-  outline: none;
   border-color: var(--accent-blue);
+  background: var(--bg-card);
   box-shadow: 0 0 0 2px var(--accent-blue-hover);
 }
 
 .modelos-os-btn-nova-cat {
   flex-shrink: 0;
   background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-glass);
   color: var(--text-grey);
   border-radius: var(--radius-md);
   padding: 10px 14px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
+  font-family: var(--font-main);
 }
 
 .modelos-os-btn-nova-cat:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--bg-input);
   color: var(--text-white);
+  border-color: var(--text-muted);
 }
 
 /* Occurrence Select Custom styles */
@@ -345,7 +360,7 @@
 
 .modelos-os-occ-clear {
   position: absolute;
-  right: 10px;
+  right: 12px;
   top: 50%;
   transform: translateY(-50%);
   background: transparent;
@@ -366,7 +381,7 @@
   left: 0;
   right: 0;
   background: var(--bg-panel);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-glass);
   border-radius: var(--radius-md);
   max-height: 220px;
   overflow-y: auto;
@@ -374,7 +389,7 @@
   list-style: none;
   padding: 4px;
   margin: 0;
-  box-shadow: var(--shadow-subtle);
+  box-shadow: var(--shadow-glass-glow);
 }
 
 .modelos-os-occ-item {
@@ -387,7 +402,7 @@
   align-items: center;
   gap: 10px;
   color: var(--text-grey);
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .modelos-os-occ-item:hover {
@@ -396,7 +411,7 @@
 }
 
 .modelos-os-occ-item.ativo {
-  background: rgba(0, 100, 255, 0.1);
+  background: var(--accent-blue-hover);
   color: var(--accent-blue);
 }
 
@@ -416,17 +431,23 @@
 }
 
 .modelos-os-btn-add-kw {
-  /* Shares styles with modelos-os-btn-nova-cat */
   flex-shrink: 0;
   background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-glass);
   color: var(--text-grey);
   border-radius: var(--radius-md);
   padding: 10px 14px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 750;
+  font-family: var(--font-main);
+}
+
+.modelos-os-btn-add-kw:hover {
+  background: var(--bg-input);
+  color: var(--text-white);
+  border-color: var(--text-muted);
 }
 
 .modelos-os-keywords-edit {
@@ -444,7 +465,7 @@
   gap: 6px;
   font-family: var(--font-mono);
   font-size: 11px;
-  background: rgba(0, 100, 255, 0.1);
+  background: var(--accent-blue-hover);
   color: var(--accent-blue);
   border: 1px solid var(--accent-blue-border);
   border-radius: 99px;
@@ -459,52 +480,64 @@
   font-size: 14px;
   display: flex;
   padding: 0;
+  outline: none;
 }
 
 .modelos-os-keyword-edit button:hover {
-  color: #f87171;
+  color: var(--color-danger);
 }
 
 .modelos-os-btn-salvar {
-  background: var(--accent-blue);
+  background: var(--gradient-primary);
   color: white;
   flex: 1;
   border: none;
   border-radius: var(--radius-md);
   padding: 12px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(0, 100, 255, 0.25);
+  font-family: var(--font-main);
 }
 
 .modelos-os-btn-salvar:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .modelos-os-btn-salvar:hover:not(:disabled) {
-  background: rgb(0, 110, 255);
+  box-shadow: 0 6px 18px rgba(0, 100, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+.modelos-os-btn-salvar:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .modelos-os-btn-cancelar {
-  background: var(--bg-card);
+  background: var(--bg-input);
   border: 1px solid var(--border-subtle);
-  color: var(--text-muted);
+  color: var(--text-grey);
   border-radius: var(--radius-md);
   padding: 12px;
   font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: var(--font-main);
 }
 
 .modelos-os-btn-cancelar:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--bg-card);
   color: var(--text-white);
+  border-color: var(--text-muted);
 }
 
 /* Adaptations for Light Theme */
 .light-theme .modelos-os-card:hover {
   background: var(--bg-card);
-  border-color: var(--accent-blue);
+  border-color: var(--accent-blue-border);
 }

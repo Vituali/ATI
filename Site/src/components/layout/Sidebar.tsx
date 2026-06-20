@@ -2,6 +2,28 @@
 import { useState } from 'react'
 import './Sidebar.css'
 import { Role, Setor, Section, canAccess } from '../../services/permissions'
+import {
+  Wrench,
+  Sliders,
+  ClipboardList,
+  MessageSquare,
+  FileText,
+  RefreshCw,
+  Key,
+  BarChart3,
+  Shield,
+  MessageCircle,
+  Globe,
+  Sun,
+  Moon,
+  Eye,
+  EyeOff,
+  Skull,
+  CupSoda,
+  Ghost,
+  Dices,
+  Folder
+} from 'lucide-react'
 
 export type { Section }
 
@@ -21,14 +43,14 @@ interface SidebarProps {
 
 interface NavItem {
   section: Section
-  icon: string
+  icon: React.ReactNode
   label: string
 }
 
 interface NavGroup {
   id: string
   label?: string
-  icon?: string
+  icon?: React.ReactNode
   highlight?: boolean
   items: NavItem[]
 }
@@ -37,22 +59,22 @@ const NAV_ITEMS: NavGroup[] = [
   {
     id: 'ferramentas',
     label: 'Ferramentas',
-    icon: '🛠️',
+    icon: <Wrench size={20} strokeWidth={2.2} />,
     items: [
-      { section: 'anotacoes', icon: '📋', label: 'Anotações' },
-      { section: 'respostas_rapidas', icon: '🗨️', label: 'Respostas Rápidas' },
-      { section: 'modelos_os', icon: '📝', label: 'Modelos O.S.' },
-      { section: 'conversor', icon: '📄', label: 'Conversor' },
-      { section: 'senhas', icon: '🔑', label: 'Senhas' },
+      { section: 'anotacoes', icon: <ClipboardList size={20} strokeWidth={2.2} />, label: 'Anotações' },
+      { section: 'respostas_rapidas', icon: <MessageSquare size={20} strokeWidth={2.2} />, label: 'Respostas Rápidas' },
+      { section: 'modelos_os', icon: <FileText size={20} strokeWidth={2.2} />, label: 'Modelos O.S.' },
+      { section: 'conversor', icon: <RefreshCw size={20} strokeWidth={2.2} />, label: 'Conversor' },
+      { section: 'senhas', icon: <Key size={20} strokeWidth={2.2} />, label: 'Senhas' },
     ],
   },
   {
     id: 'controle',
     label: 'Controle',
-    icon: '⚙️',
+    icon: <Sliders size={20} strokeWidth={2.2} />,
     items: [
-      { section: 'relatorios', icon: '📊', label: 'Relatórios' },
-      { section: 'admin', icon: '🛡️', label: 'Admin' },
+      { section: 'relatorios', icon: <BarChart3 size={20} strokeWidth={2.2} />, label: 'Relatórios' },
+      { section: 'admin', icon: <Shield size={20} strokeWidth={2.2} />, label: 'Admin' },
     ],
   },
 ]
@@ -80,8 +102,8 @@ export default function Sidebar({ role, setor, activeSection, onSelectSection, o
     groups.push({
       id: 'jefferson',
       label: 'Área Secreta',
-      icon: '🦇',
-      items: [{ section: 'jefferson', icon: '🥤', label: 'Goticas & Monster' }],
+      icon: <Skull size={20} strokeWidth={2.2} />,
+      items: [{ section: 'jefferson', icon: <CupSoda size={20} strokeWidth={2.2} />, label: 'Goticas & Monster' }],
     })
   }
 
@@ -89,8 +111,8 @@ export default function Sidebar({ role, setor, activeSection, onSelectSection, o
     groups.push({
       id: 'heli',
       label: 'Área de RPG',
-      icon: '🔮',
-      items: [{ section: 'heli', icon: '🎲', label: 'Ordem Paranormal' }],
+      icon: <Ghost size={20} strokeWidth={2.2} />,
+      items: [{ section: 'heli', icon: <Dices size={20} strokeWidth={2.2} />, label: 'Ordem Paranormal' }],
     })
   }
 
@@ -104,7 +126,7 @@ export default function Sidebar({ role, setor, activeSection, onSelectSection, o
         {canAccess(role, setor, 'chat_interno') && (
           <button className={`sidebar-button chat-highlight ${activeSection === 'chat_interno' ? 'active' : ''}`} onClick={() => onSelectSection('chat_interno')} title="Chat Interno">
             <span className="icon">
-              💬
+              <MessageCircle size={20} strokeWidth={2.2} />
               {hasUnreadChat && <span className="notification-dot" />}
             </span>
             <span className="text">Chat Interno</span>
@@ -117,7 +139,7 @@ export default function Sidebar({ role, setor, activeSection, onSelectSection, o
             <div key={group.id} className={`sidebar-group ${group.highlight ? 'highlight' : ''} ${isGroupOpen ? 'open' : ''}`}>
               <button className="sidebar-group-label" onClick={() => toggleGroup(group.id)} title={group.label}>
                 <div className="group-label-content">
-                  <span className="icon">{group.icon || '📁'}</span>
+                  <span className="icon">{group.icon || <Folder size={20} strokeWidth={2.2} />}</span>
                   {group.label && <span className="group-text text">{group.label}</span>}
                 </div>
                 <span className={`chevron-icon text ${isGroupOpen ? 'open' : ''}`}>{isGroupOpen ? '▾' : '▹'}</span>
@@ -139,7 +161,7 @@ export default function Sidebar({ role, setor, activeSection, onSelectSection, o
         })}
 
         <button className="sidebar-button" onClick={onOpenExtensionModal} title="Extensão">
-          <span className="icon">🌐</span>
+          <span className="icon"><Globe size={20} strokeWidth={2.2} /></span>
           <span className="text">Extensão</span>
         </button>
       </div>
@@ -159,12 +181,12 @@ export default function Sidebar({ role, setor, activeSection, onSelectSection, o
             }}
             title={debugMode ? 'Ocultar abas secretas' : 'Exibir abas secretas'}
           >
-            <span className="icon">{debugMode ? '👁️' : '👁️‍🗨️'}</span>
+            <span className="icon">{debugMode ? <EyeOff size={20} strokeWidth={2.2} /> : <Eye size={20} strokeWidth={2.2} />}</span>
             <span className="text">{debugMode ? 'Ocultar Secretas' : 'Ver Secretas'}</span>
           </button>
         )}
         <button className="bottom-toggle theme-toggle" onClick={onOpenSettings} title={theme === 'dark' ? 'Ativar Modo Claro' : 'Ativar Modo Escuro'}>
-          <span className="icon">{theme === 'dark' ? '☀️' : '🌙'}</span>
+          <span className="icon">{theme === 'dark' ? <Sun size={20} strokeWidth={2.2} /> : <Moon size={20} strokeWidth={2.2} />}</span>
           <span className="text">{theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}</span>
         </button>
       </div>

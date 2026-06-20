@@ -31,18 +31,18 @@
 
 /* ── Variantes de tipo ── */
 .aviso-info {
-  background: rgba(0, 100, 255, 0.07);
-  border-color: var(--accent-blue);
+  background: var(--bg-info-subtle);
+  border-color: var(--color-info);
 }
 
 .aviso-warning {
-  background: rgba(251, 191, 36, 0.08);
-  border-color: #fbbf24;
+  background: var(--bg-warning-subtle);
+  border-color: var(--color-warning);
 }
 
 .aviso-danger {
-  background: rgba(255, 82, 82, 0.08);
-  border-color: #ff5252;
+  background: var(--bg-danger-subtle);
+  border-color: var(--color-danger);
 }
 
 /* ── Ícone ── */
@@ -101,7 +101,7 @@
 }
 
 .aviso-btn-fechar:hover {
-  background: rgba(255, 82, 82, 0.15);
-  color: #ff5252;
+  background: var(--bg-danger-subtle-hover);
+  color: var(--color-danger);
   opacity: 1;
 }

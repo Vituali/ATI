@@ -11,10 +11,10 @@ import './Conversor.css'
 import LoadingOverlay from '../../components/ui/LoadingOverlay'
 
 // ---------------------------------------------------------------
-// INSTALA: npm install pdfjs-dist
+// pdfjs-dist v4 + worker CDN (jsdelivr)
 // ---------------------------------------------------------------
-import * as pdfjsLib from 'pdfjs-dist'
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`
+import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist'
+GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.mjs`
 
 // ---------------------------------------------------------------
 // TIPOS
@@ -46,13 +46,36 @@ type Portador = 'none' | 'ITAU AGT' | 'GERENCIANET AGT' | 'ITAU ATI' | 'GERENCIA
 
 function formatAddress(fullAddress: string): string {
   if (!fullAddress) return 'N/A'
-  // Mantém o endereço completo removendo apenas quebras de linha, espaços duplos e a terminação '/ RJ.' de forma segura
-  return fullAddress
+  
+  // Limpa quebras de linha, espaços duplos e a terminação '/ RJ.' de forma segura
+  let clean = fullAddress
     .replace(/\r?\n/g, ' ')
     .replace(/\s+/g, ' ')
     .replace(/\s*\/?\s*RJ\.?$/i, '')
-    .replace(/,\s*$/, '')
     .trim()
+    
+  // Remove CEP (ex: 25956-360 ou 25956360)
+  clean = clean.replace(/\b\d{5}-?\d{3}\b/g, '')
+  
+  // Divide por vírgulas, remove vazios e espaços
+  const parts = clean
+    .split(',')
+    .map(p => p.trim())
+    .filter(p => p && p.toUpperCase() !== 'RJ')
+    
+  if (parts.length >= 3) {
+    const street = parts[0]
+    const number = parts[1]
+    const rest = parts.slice(2) // Bairro, Cidade, etc.
+    
+    // Une a rua e o número por vírgula
+    const mainAddr = `${street}, ${number}`
+    
+    // Junta os demais com " - "
+    return [mainAddr, ...rest].join(' - ').replace(/\s+-\s+-\s+/g, ' - ').trim()
+  }
+  
+  return clean.replace(/,\s*/g, ' - ')
 }
 
 function formatPhone(phone: string): { formatted: string; isValid: boolean } {
@@ -205,11 +228,11 @@ export default function Conversor() {
     setErro(null)
 
     try {
-      const buffer = await file.arrayBuffer()
-      const pdf = await pdfjsLib.getDocument(buffer).promise
+      const buffer = new Uint8Array(await file.arrayBuffer())
+      const pdf = await getDocument(buffer).promise
       const page = await pdf.getPage(1)
       const content = await page.getTextContent()
-      const text = content.items.map((i: any) => i.str).join(' ')
+      const text = content.items.map((i) => ('str' in i ? i.str : '')).join(' ')
 
       const normalizedText = text.replace(/\r?\n/g, ' ').replace(/\s+/g, ' ')
       const contrato = normalizedText.match(/Aditivo do Contrato (\d+)/)?.[1] ?? 'N/A'
@@ -366,10 +389,10 @@ export default function Conversor() {
 
   if (etapa === 'upload') {
     return (
-      <div className="conv-page">
+      <div className="conv-page fade-in">
         <div className="conv-header">
           <h1 className="conv-titulo">📄 Conversor de Aditivo</h1>
-          <p className="conv-subtitulo">Arraste e solte o PDF do aditivo para extrair os dados automaticamente.</p>
+          <p className="conv-subtitulo">Importe o documento PDF para gerar o agendamento da O.S.</p>
         </div>
 
         <div
@@ -383,25 +406,29 @@ export default function Conversor() {
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
         >
+          <div className="conv-drop-card-glow"></div>
           {processando ? (
-            <LoadingOverlay small message="Lendo o PDF..." />
+            <div className="conv-loader-wrapper">
+              <LoadingOverlay small message="Lendo o PDF do aditivo..." />
+            </div>
           ) : (
-            <>
-              <span className="conv-drop-icon">📂</span>
-              <p className="conv-drop-texto">Arraste e solte o arquivo PDF aqui</p>
-            </>
-          )}
-          {!processando && <span className="conv-drop-ou">ou</span>}
-          {!processando && (
-            <button
-              className="conv-btn-escolher"
-              onClick={(e) => {
-                e.stopPropagation()
-                fileInputRef.current?.click()
-              }}
-            >
-              Escolher Arquivo
-            </button>
+            <div className="conv-drop-inner">
+              <div className="conv-drop-icon-wrapper">
+                <span className="conv-drop-icon">📂</span>
+              </div>
+              <p className="conv-drop-texto">Arraste o PDF do aditivo para cá</p>
+              <span className="conv-drop-ou">ou</span>
+              <button
+                type="button"
+                className="conv-btn-escolher"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  fileInputRef.current?.click()
+                }}
+              >
+                Procurar no Computador
+              </button>
+            </div>
           )}
           <input ref={fileInputRef} type="file" accept="application/pdf" className="conv-input-hidden" onChange={handleFileChange} />
         </div>
@@ -416,59 +443,63 @@ export default function Conversor() {
   // ---------------------------------------------------------------
 
   return (
-    <div className="conv-page">
+    <div className="conv-page fade-in">
       <div className="conv-header">
         <div>
           <h1 className="conv-titulo">📄 Conversor de Aditivo</h1>
           <p className="conv-subtitulo">
-            Agendamento para Contrato — <strong>{pdfData?.contrato}</strong>
+            Contrato em edição: <span className="highlight-tag">{pdfData?.contrato}</span>
           </p>
         </div>
         <button className="conv-btn-voltar" onClick={resetar}>
-          ← Novo PDF
+          ← Carregar outro PDF
         </button>
       </div>
 
       {erro && <p className="conv-erro">{erro}</p>}
 
       <div className="conv-grid">
-        {/* DADOS GERAIS */}
+        {/* CARD 1: DADOS GERAIS */}
         <div className="conv-card conv-card-full">
-          <h2 className="conv-card-titulo">Dados Gerais</h2>
-
-          <div className="conv-inline">
-            <div className="conv-info-row" style={{ border: 'none', padding: 0 }}>
-              <span className="conv-info-label">Contrato</span>
-              <span className="conv-info-valor">{pdfData?.contrato}</span>
+          <h2 className="conv-card-titulo">👤 Informações do Assinante</h2>
+          
+          <div className="conv-client-hero">
+            <div className="conv-hero-item">
+              <span className="conv-hero-label">Nome Completo</span>
+              <span className="conv-hero-value">{pdfData?.nomeCompleto}</span>
             </div>
-            <div className="conv-info-row" style={{ border: 'none', padding: 0 }}>
-              <span className="conv-info-label">Nome</span>
-              <span className="conv-info-valor">{pdfData?.nomeCompleto}</span>
-            </div>
-          </div>
-
-          <hr
-            style={{
-              border: 'none',
-              borderTop: '1px solid var(--border-subtle)',
-              margin: '0',
-            }}
-          />
-
-          <div className="conv-inline">
-            <div className="conv-grupo">
-              <label htmlFor="conv-old-address">Endereço Antigo (Origem)</label>
-              <input id="conv-old-address" name="oldAddress" type="text" value={oldAddress} onChange={(e) => setOldAddress(e.target.value)} />
-            </div>
-            <div className="conv-grupo">
-              <label htmlFor="conv-new-address">Endereço Novo (Destino)</label>
-              <input id="conv-new-address" name="newAddress" type="text" value={newAddress} onChange={(e) => setNewAddress(e.target.value)} />
+            <div className="conv-hero-item flex-sh">
+              <span className="conv-hero-label">Contrato</span>
+              <span className="conv-hero-value highlight">{pdfData?.contrato}</span>
             </div>
           </div>
 
           <div className="conv-inline">
             <div className="conv-grupo">
-              <label htmlFor="conv-phone">Telefone</label>
+              <label htmlFor="conv-old-address">📍 Endereço Antigo (Origem)</label>
+              <input 
+                id="conv-old-address" 
+                name="oldAddress" 
+                type="text" 
+                value={oldAddress} 
+                onChange={(e) => setOldAddress(e.target.value)} 
+              />
+            </div>
+            <div className="conv-grupo">
+              <label htmlFor="conv-new-address">🏁 Endereço Novo (Destino)</label>
+              <input 
+                id="conv-new-address" 
+                name="newAddress" 
+                type="text" 
+                value={newAddress} 
+                onChange={(e) => setNewAddress(e.target.value)} 
+              />
+            </div>
+          </div>
+
+          <div className="conv-inline">
+            <div className="conv-grupo">
+              <label htmlFor="conv-phone">📞 Telefone de Contato</label>
               <input
                 id="conv-phone"
                 name="phone"
@@ -483,43 +514,76 @@ export default function Conversor() {
               />
               {phoneErro && <span className="conv-campo-erro">{phoneErro}</span>}
             </div>
+            
             <div className="conv-grupo">
-              <label htmlFor="conv-equipamento">Comodato</label>
-              <select id="conv-equipamento" name="equipamento" value={equipamento} onChange={(e) => setEquipamento(e.target.value as Equipamento)}>
-                <option value="alcl">ALCL</option>
-                <option value="nbel">NBEL</option>
-                <option value="proprio">FIBERHOME + PROPRIO</option>
-                <option value="huawei">FIBERHOME + HUAWEI</option>
-                <option value="tp link">FIBERHOME + TP LINK</option>
-              </select>
+              <label>📦 Modelo do Comodato</label>
+              <div className="conv-chips-group">
+                {([
+                  { val: 'alcl', label: 'ALCL' },
+                  { val: 'nbel', label: 'NBEL' },
+                  { val: 'proprio', label: 'Próprio' },
+                  { val: 'huawei', label: 'Huawei' },
+                  { val: 'tp link', label: 'TP-Link' }
+                ]).map((item) => (
+                  <button
+                    type="button"
+                    key={item.val}
+                    className={`conv-chip-btn ${equipamento === item.val ? 'active' : ''}`}
+                    onClick={() => setEquipamento(item.val as Equipamento)}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* DETALHES DO CONTRATO */}
+        {/* CARD 2: CONDIÇÕES COMERCIAIS */}
         <div className="conv-card">
-          <h2 className="conv-card-titulo">Detalhes do Contrato</h2>
+          <h2 className="conv-card-titulo">💳 Condições Comerciais</h2>
 
           <div className="conv-checkboxes">
             <label className="conv-checkbox">
-              <input id="conv-renovacao" name="renovacao" type="checkbox" checked={renovacao} onChange={(e) => handleRenovacao(e.target.checked)} disabled={migracao} />
-              <span>É Renovação? (Isento)</span>
+              <input 
+                id="conv-renovacao" 
+                name="renovacao" 
+                type="checkbox" 
+                checked={renovacao} 
+                onChange={(e) => handleRenovacao(e.target.checked)} 
+                disabled={migracao} 
+              />
+              <span className="checkbox-box"></span>
+              <span>É Renovação? <small>(Isento de taxa)</small></span>
             </label>
             <label className="conv-checkbox">
-              <input id="conv-migracao" name="migracao" type="checkbox" checked={migracao} onChange={(e) => handleMigracao(e.target.checked)} disabled={renovacao} />
-              <span>É Migração? (Isento)</span>
+              <input 
+                id="conv-migracao" 
+                name="migracao" 
+                type="checkbox" 
+                checked={migracao} 
+                onChange={(e) => handleMigracao(e.target.checked)} 
+                disabled={renovacao} 
+              />
+              <span className="checkbox-box"></span>
+              <span>É Migração? <small>(Isento de taxa)</small></span>
             </label>
           </div>
 
-          {renovacao && <p className="conv-aviso-isento">✅ Taxa isenta por renovação.</p>}
-          {migracao && <p className="conv-aviso-isento">✅ Taxa isenta por migração.</p>}
+          {renovacao && <p className="conv-aviso-isento">🎉 Taxa isenta por renovação contratual.</p>}
+          {migracao && <p className="conv-aviso-isento">🎉 Taxa isenta por migração de tecnologia.</p>}
 
           {migracao && (
             <div className="conv-grupo">
-              <label htmlFor="conv-portador">Antigo Portador</label>
-              <select id="conv-portador" name="portador" value={portador} onChange={(e) => setPortador(e.target.value as Portador)}>
+              <label htmlFor="conv-portador">🏦 Antigo Portador</label>
+              <select 
+                id="conv-portador" 
+                name="portador" 
+                value={portador} 
+                onChange={(e) => setPortador(e.target.value as Portador)}
+              >
                 <option value="none">Nenhum</option>
-                <option value="ITAU AGT">BANCO ITAÚ - AGANTANGELO</option>
+                <option value="ITAU AGT">BANCO ITAÚ - AGATANGELO</option>
                 <option value="GERENCIANET AGT">GERENCIANET - AGATANGELO</option>
                 <option value="ITAU ATI">BANCO ITAU - ATI</option>
                 <option value="GERENCIANET - BANDA LARGA">GERENCIANET - ATI BANDA LARGA</option>
@@ -527,118 +591,225 @@ export default function Conversor() {
             </div>
           )}
 
-          <div className="conv-inline">
-            <div className="conv-grupo">
-              <label htmlFor="conv-taxa">Valor da Taxa</label>
-              <select id="conv-taxa" name="taxa" value={taxa} onChange={(e) => setTaxa(e.target.value as Taxa)} disabled={isento}>
-                <option value="100">R$ 100</option>
-                <option value="65">R$ 65</option>
-                <option value="50">R$ 50</option>
-                <option value="isento">Isento</option>
-              </select>
+          <div className="conv-grupo">
+            <label>💵 Valor da Taxa</label>
+            <div className="conv-chips-group">
+              {([
+                { val: '100', label: 'R$ 100' },
+                { val: '65', label: 'R$ 65' },
+                { val: '50', label: 'R$ 50' },
+                { val: 'isento', label: 'Isento' }
+              ]).map((item) => (
+                <button
+                  type="button"
+                  key={item.val}
+                  className={`conv-chip-btn ${taxa === item.val ? 'active' : ''}`}
+                  onClick={() => setTaxa(item.val as Taxa)}
+                  disabled={isento}
+                >
+                  {item.label}
+                </button>
+              ))}
             </div>
-            <div className="conv-grupo">
-              <label htmlFor="conv-assinatura">Assinatura</label>
-              <select id="conv-assinatura" name="assinatura" value={assinatura} onChange={(e) => setAssinatura(e.target.value as Assinatura)}>
-                <option value="digital">Assinatura Digital</option>
-                <option value="local">Assinatura no Local</option>
-              </select>
+          </div>
+
+          <div className="conv-grupo">
+            <label>✍️ Assinatura do Contrato</label>
+            <div className="conv-segment-control">
+              <button 
+                type="button"
+                className={`conv-segment-btn ${assinatura === 'digital' ? 'active' : ''}`}
+                onClick={() => setAssinatura('digital')}
+              >
+                🖥️ Digital (Pendente)
+              </button>
+              <button 
+                type="button"
+                className={`conv-segment-btn ${assinatura === 'local' ? 'active' : ''}`}
+                onClick={() => setAssinatura('local')}
+              >
+                🏠 No Local (Física)
+              </button>
             </div>
           </div>
         </div>
 
-        {/* RETIRADA E INSTALAÇÃO */}
+        {/* CARD 3: AGENDAMENTO DE ROTA */}
         <div className="conv-card">
-          <h2 className="conv-card-titulo">Retirada & Instalação</h2>
+          <h2 className="conv-card-titulo">📅 Agendamento de Rota</h2>
 
-          <h3
-            style={{
-              fontSize: '14px',
-              color: 'var(--text-white)',
-              margin: '4px 0 0 0',
-              fontWeight: 600,
-            }}
-          >
-            Retirada
-          </h3>
-          <label className="conv-checkbox">
-            <input id="conv-cliente-retira" name="clienteRetira" type="checkbox" checked={clienteRetira} onChange={(e) => setClienteRetira(e.target.checked)} />
-            <span>Cliente faz a retirada</span>
-          </label>
+          <div className="conv-section-subtitle">
+            <h3>🚚 Retirada do Equipamento</h3>
+            <label className="conv-checkbox inline-check">
+              <input 
+                id="conv-cliente-retira" 
+                name="clienteRetira" 
+                type="checkbox" 
+                checked={clienteRetira} 
+                onChange={(e) => setClienteRetira(e.target.checked)} 
+              />
+              <span className="checkbox-box"></span>
+              <span>Cliente leva para o local!</span>
+            </label>
+          </div>
 
-          {!clienteRetira && (
+          {!clienteRetira ? (
             <div className="conv-inline">
               <div className="conv-grupo">
                 <label htmlFor="conv-retirada-data">Data</label>
-                <input id="conv-retirada-data" name="retiradaData" type="date" value={retiradaData} min={getTomorrow()} onChange={(e) => setRetiradaData(e.target.value)} />
+                <input 
+                  id="conv-retirada-data" 
+                  name="retiradaData" 
+                  type="date" 
+                  value={retiradaData} 
+                  min={getTomorrow()} 
+                  onChange={(e) => setRetiradaData(e.target.value)} 
+                />
               </div>
               <div className="conv-grupo">
-                <label htmlFor="conv-retirada-periodo">Período</label>
-                <select id="conv-retirada-periodo" name="retiradaPeriodo" value={retiradaPeriodo} onChange={(e) => setRetiradaPeriodo(e.target.value as Periodo)}>
-                  <option value="Manhã">Manhã</option>
-                  <option value="Tarde">Tarde</option>
-                </select>
+                <label>Período</label>
+                <div className="conv-segment-control">
+                  <button
+                    type="button"
+                    className={`conv-segment-btn ${retiradaPeriodo === 'Manhã' ? 'active' : ''}`}
+                    onClick={() => setRetiradaPeriodo('Manhã')}
+                  >
+                    ☀️ Manhã
+                  </button>
+                  <button
+                    type="button"
+                    className={`conv-segment-btn ${retiradaPeriodo === 'Tarde' ? 'active' : ''}`}
+                    onClick={() => setRetiradaPeriodo('Tarde')}
+                  >
+                    🌤️ Tarde
+                  </button>
+                </div>
               </div>
+            </div>
+          ) : (
+            <div className="conv-retirada-loja-aviso">
+              ℹ️ O cliente se comprometeu a levar o equipamento antigo para o local!
             </div>
           )}
 
-          <hr
-            style={{
-              border: 'none',
-              borderTop: '1px solid var(--border-subtle)',
-              margin: '4px 0',
-            }}
-          />
+          <div className="conv-section-subtitle margin-top">
+            <h3>🔌 Instalação no Novo Endereço</h3>
+          </div>
 
-          <h3
-            style={{
-              fontSize: '14px',
-              color: 'var(--text-white)',
-              margin: '0',
-              fontWeight: 600,
-            }}
-          >
-            Instalação
-          </h3>
           <div className="conv-inline">
             <div className="conv-grupo">
               <label htmlFor="conv-instalacao-data">Data</label>
-              <input id="conv-instalacao-data" name="instalacaoData" type="date" value={instalacaoData} min={minInstalacao} onChange={(e) => setInstalacaoData(e.target.value)} />
+              <input 
+                id="conv-instalacao-data" 
+                name="instalacaoData" 
+                type="date" 
+                value={instalacaoData} 
+                min={minInstalacao} 
+                onChange={(e) => setInstalacaoData(e.target.value)} 
+              />
             </div>
             <div className="conv-grupo">
-              <label htmlFor="conv-instalacao-periodo">Período</label>
-              <select id="conv-instalacao-periodo" name="instalacaoPeriodo" value={instalacaoPeriodo} onChange={(e) => setInstalacaoPeriodo(e.target.value as Periodo)}>
-                <option value="Manhã">Manhã</option>
-                <option value="Tarde">Tarde</option>
-              </select>
+              <label>Período</label>
+              <div className="conv-segment-control">
+                <button
+                  type="button"
+                  className={`conv-segment-btn ${instalacaoPeriodo === 'Manhã' ? 'active' : ''}`}
+                  onClick={() => setInstalacaoPeriodo('Manhã')}
+                >
+                  ☀️ Manhã
+                </button>
+                <button
+                  type="button"
+                  className={`conv-segment-btn ${instalacaoPeriodo === 'Tarde' ? 'active' : ''}`}
+                  onClick={() => setInstalacaoPeriodo('Tarde')}
+                >
+                  🌤️ Tarde
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       {/* GERAR O.S. */}
-      <div className="conv-card conv-card-full">
+      <div className="conv-card conv-card-full conv-result-area">
         <button className="conv-btn-gerar" onClick={handleGerarOS}>
-          ⚙️ Gerar O.S.
+          ⚡ Gerar Ordem de Serviço
         </button>
 
         {osGerada && (
-          <>
-            <textarea id="conv-output" name="osGerada" className="conv-output" value={osGerada} onChange={(e) => setOsGerada(e.target.value)} rows={10} />
-            <div className="conv-copiar-acoes">
-              {osData?.withdrawal && (
-                <button className="conv-btn-copiar" onClick={() => handleCopiar('retirada')}>
-                  {copiado === 'retirada' ? '✅ Copiado!' : '📋 Copiar Retirada'}
-                </button>
-              )}
-              <button className="conv-btn-copiar" onClick={() => handleCopiar('instalacao')}>
-                {copiado === 'instalacao' ? '✅ Copiado!' : '📋 Copiar Instalação'}
-              </button>
-              <button className="conv-btn-copiar principal" onClick={() => handleCopiar('os')}>
-                {copiado === 'os' ? '✅ Copiado!' : '📋 Copiar O.S.'}
-              </button>
+          <div className="conv-result-section fade-in">
+            <div className="conv-output-window">
+              <div className="conv-output-window-header">
+                <div className="conv-window-dots">
+                  <span className="dot red"></span>
+                  <span className="dot yellow"></span>
+                  <span className="dot green"></span>
+                </div>
+                <span className="conv-window-title">📝 TEXTO DA O.S. (REALTIME DATABASE / SGP)</span>
+              </div>
+              <div className="conv-output-body">
+                <textarea 
+                  id="conv-output" 
+                  name="osGerada" 
+                  className="conv-output-textarea" 
+                  value={osGerada} 
+                  onChange={(e) => setOsGerada(e.target.value)} 
+                  rows={8} 
+                />
+              </div>
             </div>
-          </>
+
+            <div className="conv-action-cards-grid">
+              {osData?.withdrawal && (
+                <div className="conv-action-card">
+                  <div className="conv-action-info">
+                    <h4>Retirada</h4>
+                    <p className="truncated-code">{osData.withdrawal}</p>
+                  </div>
+                  <button 
+                    type="button"
+                    className={`conv-btn-action-copy ${copiado === 'retirada' ? 'success' : ''}`} 
+                    onClick={() => handleCopiar('retirada')}
+                  >
+                    {copiado === 'retirada' ? 'Copiar ✅' : 'Copiar 📋'}
+                  </button>
+                </div>
+              )}
+
+              {osData?.installation && (
+                <div className="conv-action-card">
+                  <div className="conv-action-info">
+                    <h4>Instalação</h4>
+                    <p className="truncated-code">{osData.installation}</p>
+                  </div>
+                  <button 
+                    type="button"
+                    className={`conv-btn-action-copy ${copiado === 'instalacao' ? 'success' : ''}`} 
+                    onClick={() => handleCopiar('instalacao')}
+                  >
+                    {copiado === 'instalacao' ? 'Copiar ✅' : 'Copiar 📋'}
+                  </button>
+                </div>
+              )}
+
+              {osData?.os && (
+                <div className="conv-action-card highlight-card">
+                  <div className="conv-action-info">
+                    <h4>Texto da O.S.</h4>
+                    <p className="truncated-code">{osData.os.substring(0, 50)}...</p>
+                  </div>
+                  <button 
+                    type="button"
+                    className={`conv-btn-action-copy principal ${copiado === 'os' ? 'success' : ''}`} 
+                    onClick={() => handleCopiar('os')}
+                  >
+                    {copiado === 'os' ? 'Copiado! ✅' : 'Copiar Tudo 📋'}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         )}
       </div>
     </div>

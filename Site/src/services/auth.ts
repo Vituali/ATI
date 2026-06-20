@@ -58,6 +58,12 @@ export async function register(details: RegisterDetails): Promise<void> {
     setor: 'geral', // ← sempre geral no cadastro
     status: 'ativo',
   })
+
+  // Popula índice uid → username+role para verificação em regras do RTDB
+  await set(ref(db, `uid_index/${user.uid}`), {
+    username: sanitizedUsername,
+    role: 'usuario',
+  })
 }
 
 export async function loginWithEmail(email: string, password: string): Promise<User> {
@@ -101,7 +107,7 @@ export async function performSSOLogin(session: any) {
   }
 }
 
-const EXTENSION_ORIGINS = ['https://vituali.github.io']
+const EXTENSION_ORIGINS = ['https://vituali.github.io', 'https://site-ati-75d83.web.app', 'https://site-ati-75d83.firebaseapp.com', 'http://localhost:5173']
 
 function isExtensionOrigin(origin: string): boolean {
   return EXTENSION_ORIGINS.some((allowed) => origin === allowed || origin.startsWith(allowed + '/'))
@@ -114,7 +120,7 @@ export async function syncWithExtension(user: User | null) {
         type: 'ATI_SITE_TO_EXTENSION',
         action: 'SSO_LOGOUT',
       },
-      'https://vituali.github.io',
+      window.location.origin,
     )
     console.log('SSO: 🔴 Mensagem de logout enviada para a ponte.')
     return
@@ -165,7 +171,7 @@ export async function syncWithExtension(user: User | null) {
         action: 'SSO_LOGIN',
         session,
       },
-      'https://vituali.github.io',
+      window.location.origin,
     )
 
     console.log('SSO: 🟢 Mensagem de login enviada para a ponte.')
@@ -192,7 +198,7 @@ if (typeof window !== 'undefined') {
       if (auth.currentUser) {
         syncWithExtension(auth.currentUser)
       }
-      window.postMessage({ type: 'ATI_SITE_TO_EXTENSION', action: 'GET_SSO_SESSION' }, 'https://vituali.github.io')
+      window.postMessage({ type: 'ATI_SITE_TO_EXTENSION', action: 'GET_SSO_SESSION' }, window.location.origin)
     }, delay)
   })
 }

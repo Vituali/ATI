@@ -157,6 +157,8 @@ export default function Admin() {
         status: atendente.status,
         sgpUsername: atendente.sgpUsername || null,
       })
+      // Mantém uid_index sincronizado com a role
+      await set(ref(db, `uid_index/${atendente.uid}/role`), atendente.role)
       notify('Usuário atualizado com sucesso!', 'success')
     } catch (e: any) {
       notify('Erro ao salvar: ' + e.message, 'error')
@@ -187,6 +189,7 @@ export default function Admin() {
           status: atendente.status,
           sgpUsername: atendente.sgpUsername || null,
         })
+        await set(ref(db, `uid_index/${atendente.uid}/role`), atendente.role)
       } catch {
         erros++
       }

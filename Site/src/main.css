@@ -1,48 +1,7 @@
-:root {
-  /* DARK THEME (Default HSL Space-Gray & Electric Blue) */
-  --bg-dark: hsl(224, 25%, 10%);
-  --bg-panel: hsl(223, 22%, 14%);
-  --bg-black: hsl(224, 25%, 7%);
-  --bg-card: hsla(223, 22%, 14%, 0.6);
-  --bg-input: hsla(224, 25%, 8%, 0.8);
-  --text-main: hsl(210, 40%, 96%);
-  --text-white: #ffffff;
-  --text-grey: hsl(215, 20%, 75%);
-  --text-muted: hsl(215, 15%, 52%);
-  --accent-blue: hsl(217, 91%, 60%);
-  --accent-blue-hover: hsla(217, 91%, 60%, 0.22);
-  --accent-blue-border: hsla(217, 91%, 60%, 0.25);
-  --sidebar-bg: hsl(224, 25%, 7%);
-  --footer-bg: hsl(224, 25%, 7%);
-  --border-subtle: hsla(215, 20%, 80%, 0.08);
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --font-main: 'Outfit', 'DM Sans', sans-serif;
-  --font-mono: 'Space Mono', monospace;
-  --shadow-subtle: 0 10px 30px rgba(0, 0, 0, 0.45);
-  --text-on-accent: #ffffff;
-}
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Outfit:wght@100..900&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
-/* LIGHT THEME Overrides */
-.light-theme {
-  --bg-dark: #eaedf0;
-  --bg-panel: #ffffff;
-  --bg-black: #f1f3f5;
-  --bg-card: #ffffff;
-  --bg-input: #f1f3f5;
-  --text-main: #212529;
-  --text-white: #212529;
-  --text-grey: #495057;
-  --text-muted: #868e96;
-  --accent-blue: #0061e0;
-  --accent-blue-hover: rgba(0, 97, 224, 0.1);
-  --accent-blue-border: rgba(0, 97, 224, 0.15);
-  --sidebar-bg: #f8f9fa;
-  --footer-bg: #f8f9fa;
-  --border-subtle: rgba(0, 0, 0, 0.08);
-  --shadow-subtle: 0 4px 12px rgba(0, 0, 0, 0.05);
-  --text-on-accent: #ffffff;
-}
+@import "./styles/tokens.css";
+
 
 * {
   box-sizing: border-box;
@@ -74,12 +33,13 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-dark);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--border-subtle);
-  border-radius: 4px;
+  border-radius: 99px;
+  transition: background 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -89,7 +49,7 @@ body {
 /* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--border-subtle) var(--bg-dark);
+  scrollbar-color: var(--border-subtle) transparent;
 }
 
 /* --- REUSABLE LOADING COMPONENT --- */
@@ -116,23 +76,23 @@ body {
 .loading-spinner {
   width: 50px;
   height: 50px;
-  border: 4px solid var(--border-subtle);
-  border-top: 4px solid var(--accent-blue);
+  border: 3px solid var(--border-subtle);
+  border-top: 3px solid var(--accent-blue);
   border-radius: 50%;
   animation: spin 1s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-  box-shadow: 0 0 20px rgba(0, 100, 255, 0.15);
+  box-shadow: 0 0 25px rgba(0, 100, 255, 0.2);
 }
 
 .loading-spinner.small {
-  width: 30px;
-  height: 30px;
-  border-width: 3px;
+  width: 24px;
+  height: 24px;
+  border-width: 2px;
 }
 
 .loading-text {
   font-family: var(--font-mono);
-  font-size: 0.9rem;
-  letter-spacing: 0.15em;
+  font-size: 0.85rem;
+  letter-spacing: 0.2em;
   color: var(--text-muted);
   text-transform: uppercase;
   animation: pulse-text 2s ease-in-out infinite;
@@ -159,8 +119,19 @@ body {
 
 @keyframes fade-in {
   from {
-    opacity: 0.8;
-    transform: translateY(4px);
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
   }
   to {
     opacity: 1;
@@ -169,5 +140,9 @@ body {
 }
 
 .fade-in {
-  animation: fade-in 0.3s ease-out forwards;
+  animation: fade-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.fade-in-up {
+  animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

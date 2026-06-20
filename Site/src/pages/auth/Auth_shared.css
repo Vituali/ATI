@@ -1,5 +1,5 @@
 /* ============================================================
-   AUTH.CSS — Estilo Extensão V2
+   AUTH_SHARED.CSS — Telas de Login/Registro Pro Max
    ============================================================ */
 
 .auth-page {
@@ -10,12 +10,40 @@
   background: var(--bg-dark);
   padding: 1.5rem;
   box-sizing: border-box;
+  position: relative;
+  transition: background-color 0.4s ease;
+}
+
+/* Subtle glow nodes behind the auth card */
+.auth-page::before {
+  content: '';
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(0, 100, 255, 0.1) 0%, transparent 70%);
+  top: 15%;
+  left: 20%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.auth-page::after {
+  content: '';
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, transparent 70%);
+  bottom: 15%;
+  right: 20%;
+  z-index: 0;
+  pointer-events: none;
 }
 
 .auth-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  backdrop-filter: blur(10px);
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  backdrop-filter: var(--blur-intensity);
+  -webkit-backdrop-filter: var(--blur-intensity);
   border-radius: var(--radius-lg);
   padding: 2.5rem;
   width: 100%;
@@ -24,16 +52,29 @@
   flex-direction: column;
   gap: 1.2rem;
   box-sizing: border-box;
-  box-shadow: var(--shadow-subtle);
+  box-shadow: var(--shadow-glass-glow);
+  z-index: 2;
+  animation: auth-scale-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes auth-scale-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .auth-titulo {
-  font-size: 1.75rem;
-  font-weight: 600;
+  font-size: 1.8rem;
+  font-weight: 850;
   color: var(--text-white);
   margin: 0;
   text-align: center;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.8px;
 }
 
 .auth-subtitulo {
@@ -58,10 +99,10 @@
 
 .auth-grupo label {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 750;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 1.2px;
   font-family: var(--font-mono);
 }
 
@@ -75,9 +116,10 @@
   font-size: 14px;
   width: 100%;
   box-sizing: border-box;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   font-family: var(--font-main);
-  appearance: none; /* Remove default styling */
+  appearance: none;
+  outline: none;
 }
 
 .auth-grupo select {
@@ -89,6 +131,10 @@
   padding-right: 40px;
 }
 
+.light-theme .auth-grupo select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='rgba(0,0,0,0.5)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+}
+
 .auth-grupo select option {
   background: var(--bg-panel);
   color: var(--text-main);
@@ -96,10 +142,9 @@
 
 .auth-grupo input:focus,
 .auth-grupo select:focus {
-  outline: none;
   border-color: var(--accent-blue);
-  background: var(--bg-input);
-  box-shadow: 0 0 0 2px var(--accent-blue-hover);
+  background: var(--bg-card);
+  box-shadow: 0 0 0 2px var(--accent-blue-hover), 0 0 10px rgba(0, 100, 255, 0.1);
 }
 
 .auth-dica {
@@ -110,35 +155,36 @@
 }
 
 .auth-erro {
-  font-size: 13px;
-  color: #ff646e;
-  background: rgba(220, 53, 69, 0.1);
-  border: 1px solid rgba(220, 53, 69, 0.2);
+  font-size: 13.5px;
+  color: var(--color-danger);
+  background: var(--bg-danger-subtle);
+  border: 1px solid var(--border-danger-subtle);
   border-radius: var(--radius-md);
   padding: 10px 14px;
   margin: 0;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .auth-btn {
   width: 100%;
   padding: 13px;
-  background: var(--accent-blue);
+  background: var(--gradient-primary);
   color: var(--text-on-accent);
   border: none;
   border-radius: var(--radius-md);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   font-family: var(--font-main);
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   margin-top: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0, 100, 255, 0.25);
+  outline: none;
 }
 
 .auth-btn:hover:not(:disabled) {
-  background: rgb(0, 110, 255);
+  box-shadow: 0 6px 18px rgba(0, 100, 255, 0.35);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 100, 255, 0.3);
 }
 
 .auth-btn:active:not(:disabled) {
@@ -146,8 +192,9 @@
 }
 
 .auth-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .auth-link {
@@ -165,12 +212,12 @@
   font-size: 13px;
   font-family: var(--font-main);
   padding: 0 4px;
-  font-weight: 600;
+  font-weight: 700;
   text-decoration: none;
-  transition: color 0.2s;
+  transition: all 0.2s;
 }
 
 .auth-link-btn:hover {
   text-decoration: underline;
-  color: #64a0ff;
+  color: hsl(217, 91%, 65%);
 }

@@ -183,6 +183,9 @@ export default function UserPanel({ user, aberto, onFechar, onLogout, bgUrl, onB
           migradoEm: Date.now(),
         })
 
+        // Atualiza uid_index com o novo username
+        await set(ref(db, `uid_index/${currentData.uid}/username`), usernameTrimmed)
+
         // Delay para propagação de regras do Firebase RTDB (ajuda a evitar Permission Denied imediato)
         await new Promise((resolve) => setTimeout(resolve, 800))
 

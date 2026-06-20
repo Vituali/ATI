@@ -17,6 +17,7 @@
     // Cada atendente é salvo em /atendentes/$username
     // ---------------------------------------------------------------
     "atendentes": {
+      ".indexOn": ["uid"],
       // Leitura pública — necessária para o login por username,
       // que precisa buscar o email correspondente antes de autenticar.
       ".read": true,
@@ -66,6 +67,20 @@
     },
 
     // ---------------------------------------------------------------
+    // UID INDEX
+    // Índice uid → username + role para verificação em regras de paths
+    // que não contêm o username (ex: /historico_potencias).
+    // Populado por auth.ts (register), Admin.tsx (role change),
+    // UserPanel.tsx (username migration).
+    // ---------------------------------------------------------------
+    "uid_index": {
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null && root.child('admins').child(auth.uid).exists()"
+      }
+    },
+
+    // ---------------------------------------------------------------
     // RESPOSTAS E MODELOS
     // ---------------------------------------------------------------
     "respostas": {
@@ -110,11 +125,11 @@
     },
     "historico_potencias": {
       ".read": "auth != null",
-      ".write": "auth != null"
+      ".write": "auth != null && root.child('uid_index').child(auth.uid).child('role').val() !== 'usuario'"
     },
     "clientes_cadastro": {
       ".read": "auth != null",
-      ".write": "auth != null"
+      ".write": "auth != null && root.child('uid_index').child(auth.uid).child('role').val() !== 'usuario'"
     },
 
     // ---------------------------------------------------------------
@@ -170,7 +185,7 @@
         ".read": "auth != null && root.child('atendentes').child($username).child('uid').val() === auth.uid",
         ".write": "auth != null && root.child('atendentes').child($username).child('uid').val() === auth.uid",
         "$notaId": {
-          ".validate": "newData.hasChildren(['titulo', 'timestamp'])"
+          ".validate": "newData.hasChildren(['titulo', 'timestamp']) && (!newData.hasChild('status') || newData.child('status').val() === 'pendente' || newData.child('status').val() === 'em andamento' || newData.child('status').val() === 'concluido')"
         }
       }
     },

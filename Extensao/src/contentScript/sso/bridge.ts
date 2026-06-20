@@ -1,4 +1,9 @@
-const ALLOWED_ORIGINS = ['https://vituali.github.io', 'https://site-ati-75d83.web.app', 'https://site-ati-75d83.firebaseapp.com']
+const ALLOWED_ORIGINS = [
+  'https://vituali.github.io',
+  'https://site-ati-75d83.web.app',
+  'https://site-ati-75d83.firebaseapp.com',
+  'http://localhost:5173'
+]
 
 function isValidOrigin(origin: string): boolean {
   return ALLOWED_ORIGINS.some((allowed) => origin === allowed || origin.startsWith(allowed + '/'))

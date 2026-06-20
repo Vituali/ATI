@@ -1,25 +1,34 @@
 /* ============================================================
-   MODAL.CSS — Componente reutilizável
+   MODAL.CSS — Componente Reutilizável Pro Max
    ============================================================ */
 
 /* Overlay escuro com blur */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(4px);
+  background: var(--bg-modal-overlay);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   padding: 1rem;
   box-sizing: border-box;
+  animation: modal-overlay-fade 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes modal-overlay-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* Card central */
 .modal-content {
-  background: var(--bg-panel);
-  border: 1px solid var(--border-subtle);
+  background: var(--bg-glass);
+  backdrop-filter: var(--blur-intensity);
+  -webkit-backdrop-filter: var(--blur-intensity);
+  border: 1px solid var(--border-glass);
   border-radius: var(--radius-lg);
   color: var(--text-main);
   width: 100%;
@@ -28,15 +37,14 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  box-shadow: var(--shadow-subtle);
-  /* Animação de entrada */
-  animation: modal-enter 0.15s ease;
+  box-shadow: var(--shadow-glass-glow);
+  animation: modal-enter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes modal-enter {
   from {
     opacity: 0;
-    transform: translateY(8px) scale(0.98);
+    transform: translateY(24px) scale(0.96);
   }
   to {
     opacity: 1;
@@ -49,36 +57,40 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.5rem 1.5rem 0;
+  padding: 1.5rem 1.5rem 0.5rem;
   gap: 12px;
   flex-shrink: 0;
+  border-bottom: 1px solid var(--border-glass);
 }
 
 .modal-titulo {
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 1.1rem;
+  font-weight: 750;
   color: var(--text-white);
   margin: 0;
+  letter-spacing: -0.2px;
 }
 
 .modal-fechar {
   background: transparent;
   border: none;
   color: var(--text-muted);
-  font-size: 16px;
+  font-size: 18px;
   cursor: pointer;
-  padding: 4px 8px;
+  width: 28px;
+  height: 28px;
   border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   line-height: 1;
-  transition:
-    color 0.2s,
-    background 0.2s;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   flex-shrink: 0;
 }
 
 .modal-fechar:hover {
   color: var(--text-white);
-  background: var(--bg-input);
+  background: var(--bg-overlay-hover);
 }
 
 /* Body: área de conteúdo com scroll */
@@ -86,7 +98,7 @@
   padding: 1.25rem 1.5rem 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 1.1rem;
+  gap: 1.25rem;
   overflow-y: auto;
 }
 
@@ -95,8 +107,8 @@
   display: flex;
   flex-direction: row;
   gap: 10px;
-  padding-top: 1rem;
-  border-top: 1px solid var(--border-subtle);
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border-glass);
   margin-top: 0.5rem;
 }
 

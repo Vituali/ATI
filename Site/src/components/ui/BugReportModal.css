@@ -1,4 +1,6 @@
-/* BugReportModal interno */
+/* ============================================================
+   BUGREPORTMODAL.CSS — Estilo Premium Pro Max
+   ============================================================ */
 
 .bug-modal-form {
   display: flex;
@@ -13,27 +15,33 @@
 }
 
 .bug-modal-field label {
-  font-size: 0.9rem;
-  color: var(--text-muted, #ccc);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
 }
 
 .bug-modal-field input,
 .bug-modal-field textarea {
-  background-color: var(--bg-dark, #121316);
-  border: 1px solid var(--border-color, #333);
-  color: var(--text-white, #fff);
-  padding: 12px;
-  border-radius: 6px;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
   font-size: 0.95rem;
+  font-family: var(--font-main);
   outline: none;
-  transition: border-color 0.2s;
-  font-family: inherit;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   resize: vertical;
 }
 
 .bug-modal-field input:focus,
 .bug-modal-field textarea:focus {
-  border-color: var(--primary-color, #ff4757);
+  border-color: var(--color-danger);
+  background-color: var(--bg-card);
+  box-shadow: 0 0 0 2px var(--bg-danger-subtle-hover), 0 0 10px rgba(255, 71, 87, 0.1);
 }
 
 .bug-modal-acoes {
@@ -44,55 +52,81 @@
 }
 
 .bug-btn-cancelar {
-  background: transparent;
-  border: 1px solid var(--border-color, #333);
-  color: var(--text-muted, #ccc);
-  padding: 10px 16px;
-  border-radius: 6px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-grey);
+  padding: 10px 18px;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s;
+  font-weight: 600;
+  font-family: var(--font-main);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .bug-btn-cancelar:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
+  background: var(--bg-card);
+  color: var(--text-white);
+  border-color: var(--text-muted);
 }
 
 .bug-btn-enviar {
-  background: var(--primary-color, #ff4757);
+  background: var(--color-danger);
   border: none;
-  color: white;
+  color: var(--text-white);
   padding: 10px 20px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  font-weight: bold;
-  transition: opacity 0.2s;
+  font-weight: 700;
+  font-family: var(--font-main);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(255, 71, 87, 0.25);
 }
 
 .bug-btn-enviar:hover:not(:disabled) {
-  opacity: 0.9;
+  background: var(--color-danger-hover);
+  box-shadow: 0 6px 18px rgba(255, 71, 87, 0.35);
+  transform: translateY(-1px);
+}
+
+.bug-btn-enviar:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .bug-btn-enviar:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .bug-modal-sucesso {
   text-align: center;
-  padding: 30px 10px;
-  color: var(--success-text, #4ade80);
-  background: rgba(74, 222, 128, 0.1);
-  border-radius: 8px;
-  font-weight: bold;
+  padding: 30px 16px;
+  color: var(--color-success);
+  background: var(--bg-success-subtle);
+  border: 1px solid var(--border-success-subtle);
+  border-radius: var(--radius-lg);
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.2px;
+  animation: pulse-sucesso 2s infinite ease-in-out;
+}
+
+@keyframes pulse-sucesso {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(0, 230, 118, 0.05);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(0, 230, 118, 0.15);
+  }
 }
 
 .bug-modal-erro {
-  color: var(--primary-color, #ff4757);
-  background: rgba(255, 71, 87, 0.1);
-  padding: 10px;
-  border-radius: 6px;
+  color: var(--color-danger);
+  background: var(--bg-danger-subtle);
+  border: 1px solid var(--border-danger-subtle);
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
   font-size: 0.9rem;
+  font-weight: 500;
   margin: 0;
 }

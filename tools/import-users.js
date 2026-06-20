@@ -17,6 +17,16 @@ https.get(prodUrl, (res) => {
       
       console.log(`Carregados ${Object.keys(atendentes).length} atendentes de produção. Gravando no emulador local...`);
       
+      // Constrói uid_index a partir dos atendentes
+      const uidIndex = {}
+      for (const [username, data] of Object.entries(atendentes)) {
+        if (data.uid) {
+          uidIndex[data.uid] = { username, role: data.role || 'usuario' }
+        }
+      }
+      
+      const localUrlIndex = 'http://127.0.0.1:9000/uid_index.json?ns=site-ati-75d83';
+      
       const req = http.request(localUrl, {
         method: 'PUT',
         headers: {
@@ -27,8 +37,25 @@ https.get(prodUrl, (res) => {
         localRes.on('data', (chunk) => { localData += chunk; });
         localRes.on('end', () => {
           if (localRes.statusCode === 200) {
-            console.log('✅ Atendentes importados com sucesso para o emulador local!');
-            process.exit(0);
+            // Agora grava uid_index
+            const reqIndex = http.request(localUrlIndex, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' }
+            }, (indexRes) => {
+              let indexData = '';
+              indexRes.on('data', (chunk) => { indexData += chunk; });
+              indexRes.on('end', () => {
+                if (indexRes.statusCode === 200) {
+                  console.log('✅ Atendentes e uid_index importados com sucesso para o emulador local!');
+                  process.exit(0);
+                } else {
+                  console.error('❌ Falha ao gravar uid_index. Status:', indexRes.statusCode, indexData);
+                  process.exit(1);
+                }
+              });
+            });
+            reqIndex.write(JSON.stringify(uidIndex));
+            reqIndex.end();
           } else {
             console.error('❌ Falha ao gravar no emulador local. Status:', localRes.statusCode, localData);
             process.exit(1);

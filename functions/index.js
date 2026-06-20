@@ -16,7 +16,15 @@ admin.initializeApp({
  * Pode ser acessada via URL no navegador ou pelo fetch() no Site/Extensão.
  * Local URL: http://127.0.0.1:5001/site-ati-75d83/us-central1/olaMundo
  */
-exports.olaMundo = onRequest({ cors: true }, (req, res) => {
+const ALLOWED_ORIGINS = [
+  "https://vituali.github.io",
+  "https://site-ati-75d83.web.app",
+  "https://site-ati-75d83.firebaseapp.com",
+  "http://201.158.20.35:8000",
+  "http://201.158.20.53:8000",
+];
+
+exports.olaMundo = onRequest({ cors: ALLOWED_ORIGINS }, (req, res) => {
   logger.info("A API olaMundo foi chamada com sucesso!", { structuredData: true });
   res.json({
     ok: true,
@@ -30,7 +38,7 @@ exports.olaMundo = onRequest({ cors: true }, (req, res) => {
  * Recebe a lista extraída pela extensão (ou script de teste) e salva no Firebase
  * Local URL: http://127.0.0.1:5001/site-ati-75d83/us-central1/receberDadosPotencia
  */
-exports.receberDadosPotencia = onRequest({ cors: true }, async (req, res) => {
+exports.receberDadosPotencia = onRequest({ cors: ALLOWED_ORIGINS }, async (req, res) => {
   if (req.method !== "POST") {
     return res.status(405).send("Método não permitido");
   }

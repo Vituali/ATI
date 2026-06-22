@@ -7,6 +7,8 @@ import { safeSendMessage, showToast } from '../chatmix/helpers'
 import { ClientData } from './types'
 import type { GetOsTemplatesRequest } from '../../background/types'
 import { SGP_IP_35, SGP_IP_53 } from '../../background/sgp/constants'
+import { ClipboardList, Handshake, RefreshCw } from 'lucide-react'
+import { icon } from '../../utils/iconSvgs'
 
 export function getSgpClientData(): ClientData {
   const title = document.title || ''
@@ -117,7 +119,7 @@ export function getSgpClientData(): ClientData {
 export async function handleOpenOS() {
   const isOccurrencePage = window.location.pathname.includes('/ocorrencia/add/')
   if (!isOccurrencePage) {
-    showToast('⚠️ Para usar a O.S. (Auxiliar), acesse a página de "Adicionar ocorrência" do cliente no SGP.', 'error', 7000)
+    showToast(`${icon.alertTriangle} Para usar a O.S. (Auxiliar), acesse a página de "Adicionar ocorrência" do cliente no SGP.`, 'error', 7000)
     return
   }
 
@@ -163,7 +165,7 @@ const SgpMenu: React.FC = () => {
     const clientData = getSgpClientData()
 
     if (!clientData.clientSgpId) {
-      showToast('⚠️ Não foi possível identificar o ID do cliente nesta página para abrir a promessa de pagamento.', 'error', 7000)
+      showToast(`${icon.alertTriangle} Não foi possível identificar o ID do cliente nesta página para abrir a promessa de pagamento.`, 'error', 7000)
       return
     }
 
@@ -241,7 +243,7 @@ const SgpMenu: React.FC = () => {
       showToast(`Redirecionando para SGP ${is53 ? '.35 (Antigo)' : '.53 (Novo)'}...`, 'success', 3000)
       window.location.href = targetUrl
     } else {
-      showToast('⚠️ Não foi possível identificar o cliente nesta página. Acesse a página inicial do cliente no SGP ou tente novamente.', 'error', 7000)
+      showToast(`${icon.alertTriangle} Não foi possível identificar o cliente nesta página. Acesse a página inicial do cliente no SGP ou tente novamente.`, 'error', 7000)
     }
   }
 
@@ -269,15 +271,15 @@ const SgpMenu: React.FC = () => {
           <span>Painel ATI SGP</span>
         </div>
         <button className="ati-sgp-menu-item" onClick={onOpenOS}>
-          <span className="ati-sgp-menu-icon">📋</span>
+          <span className="ati-sgp-menu-icon"><ClipboardList size={16} /></span>
           <span className="ati-sgp-menu-text">O.S. (Auxiliar)</span>
         </button>
         <button className="ati-sgp-menu-item" onClick={handlePromessaPagamento}>
-          <span className="ati-sgp-menu-icon">🤝</span>
+          <span className="ati-sgp-menu-icon"><Handshake size={16} /></span>
           <span className="ati-sgp-menu-text">Promessa de Pagamento</span>
         </button>
         <button className="ati-sgp-menu-item" onClick={handleToggleServer}>
-          <span className="ati-sgp-menu-icon">🔄</span>
+          <span className="ati-sgp-menu-icon"><RefreshCw size={16} /></span>
           <span className="ati-sgp-menu-text">{is53 ? 'Abrir no .35' : 'Abrir no .53'}</span>
         </button>
       </div>

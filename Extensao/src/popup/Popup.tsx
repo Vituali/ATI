@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import './Popup.css'
 import { UserSession } from '../contentScript/chatmix/auth/session'
+import { Check, X, Rocket, Sparkles, Lock, Star, Award, Shield, User, Eye, RefreshCw } from 'lucide-react'
 
 export const Popup = () => {
   const [session, setSession] = useState<UserSession | null>(null)
@@ -15,7 +16,7 @@ export const Popup = () => {
   const [showSgpPass, setShowSgpPass] = useState(false)
   const [showSgpPassAlt, setShowSgpPassAlt] = useState(false)
   const [sgpSettingsOpen, setSgpSettingsOpen] = useState(false)
-  const [toast, setToast] = useState<string | null>(null)
+  const [toast, setToast] = useState<React.ReactNode | null>(null)
   const [updateRequired, setUpdateRequired] = useState(false)
   const [latestVersion, setLatestVersion] = useState('')
   const [confirmModal, setConfirmModal] = useState<{
@@ -171,16 +172,16 @@ export const Popup = () => {
       })
 
       if (response.ok) {
-        setToast('✅ Versão lançada com sucesso!')
+        setToast(<><Check size={20} /> Versão lançada com sucesso!</>)
         setUpdateRequired(false)
       } else {
         const error = await response.json()
         console.error('Erro no release:', error)
-        setToast('❌ Erro ao lançar versão.')
+        setToast(<><X size={20} /> Erro ao lançar versão.</>)
       }
     } catch (err) {
       console.error('Erro de conexão:', err)
-      setToast('❌ Erro de conexão.')
+        setToast(<><X size={20} /> Erro de conexão.</>)
     } finally {
       setLoading(false)
     }
@@ -195,9 +196,9 @@ export const Popup = () => {
         setUpdateRequired(hasUpdate)
         setLatestVersion(result.ati_latest_version || '')
         if (hasUpdate) {
-          setToast(`🚀 Nova versão disponível: ${result.ati_latest_version}`)
+          setToast(<><Rocket size={20} /> Nova versão disponível: {result.ati_latest_version}</>)
         } else {
-          setToast('✨ Sua extensão está atualizada!')
+          setToast(<><Sparkles size={20} /> Sua extensão está atualizada!</>)
         }
       })
     })
@@ -224,7 +225,7 @@ export const Popup = () => {
           <span className="popup-title">Extensão ATI</span>
         </div>
         <div className="popup-not-logged">
-          <div className="popup-lock">🔒</div>
+          <div className="popup-lock"><Lock size={20} /></div>
           <p>Nenhuma sessão ativa</p>
           <span>Acesse o ChatMix para fazer login</span>
         </div>
@@ -244,7 +245,7 @@ export const Popup = () => {
 
       {updateRequired && (
         <div className="popup-update-banner">
-          <div className="update-icon">🚀</div>
+          <div className="update-icon"><Rocket size={20} /></div>
           <div className="update-content">
             <strong>Nova Versão Disponível ({latestVersion})</strong>
             <p>Sua extensão está desatualizada. O Chrome tentará atualizar automaticamente em breve.</p>
@@ -255,7 +256,7 @@ export const Popup = () => {
       {canRelease && (
         <div className="popup-admin-release">
           <button className="popup-btn popup-btn--release" onClick={handleReleaseVersion} disabled={loading}>
-            🚀 Lançar Versão {currentManifestVersion}
+            <Rocket size={20} /> Lançar Versão {currentManifestVersion}
           </button>
           <small>Sincroniza a versão mínima do Firebase com a sua versão atual.</small>
         </div>
@@ -267,7 +268,7 @@ export const Popup = () => {
           <strong>{session.nomeCompleto}</strong>
           <span>@{session.username}</span>
         </div>
-        <div className={`popup-role popup-role--${session.role}`}>{session.role === 'admin' ? '⭐ Admin' : session.role === 'supervisor' ? '🎖️ Superv.' : session.role === 'moderador' ? '🛡️ Moder.' : '👤 Usuário'}</div>
+        <div className={`popup-role popup-role--${session.role}`}>{session.role === 'admin' ? <><Star size={20} /> Admin</> : session.role === 'supervisor' ? <><Award size={20} /> Superv.</> : session.role === 'moderador' ? <><Shield size={20} /> Moder.</> : <><User size={20} /> Usuário</>}</div>
       </div>
 
       {/* Opções da Extensão */}
@@ -340,7 +341,7 @@ export const Popup = () => {
               <div className="popup-pass-wrapper">
                 <input type={showSgpPass ? 'text' : 'password'} value={sgpPass} onChange={(e) => setSgpPass(e.target.value)} placeholder="Sua senha do SGP" />
                 <button className="popup-btn-icon" onClick={() => setShowSgpPass(!showSgpPass)}>
-                  {showSgpPass ? '👁️' : '🔒'}
+                  {showSgpPass ? <Eye size={20} /> : <Lock size={20} />}
                 </button>
               </div>
             </div>
@@ -357,7 +358,7 @@ export const Popup = () => {
               <div className="popup-pass-wrapper">
                 <input type={showSgpPassAlt ? 'text' : 'password'} value={sgpPassAlt} onChange={(e) => setSgpPassAlt(e.target.value)} placeholder="Senha diferente?" />
                 <button className="popup-btn-icon" onClick={() => setShowSgpPassAlt(!showSgpPassAlt)}>
-                  {showSgpPassAlt ? '👁️' : '🔒'}
+                  {showSgpPassAlt ? <Eye size={20} /> : <Lock size={20} />}
                 </button>
               </div>
             </div>
@@ -381,7 +382,7 @@ export const Popup = () => {
 
       <div className="popup-actions">
         <button className="popup-btn popup-btn--check-updates" onClick={handleCheckUpdates} disabled={loading}>
-          🔄 Verificar Atualizações
+          <RefreshCw size={20} /> Verificar Atualizações
         </button>
         <button className="popup-btn popup-btn--site" onClick={handleOpenSite}>
           ↗ Abrir Site ATI

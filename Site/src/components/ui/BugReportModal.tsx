@@ -3,6 +3,7 @@ import { ref, push, serverTimestamp } from 'firebase/database'
 import { db } from '../../services/firebase'
 import Modal from './Modal'
 import { UserProfile } from '../../hooks/useUser'
+import { CheckCircle } from 'lucide-react'
 import './BugReportModal.css'
 
 interface BugReportModalProps {
@@ -51,10 +52,10 @@ export default function BugReportModal({ aberto, onFechar, user }: BugReportModa
   }
 
   return (
-    <Modal aberto={aberto} onFechar={onFechar} titulo="🐛 Relatar um Bug">
+    <Modal aberto={aberto} onFechar={onFechar} titulo="Relatar um Bug">
       {sucesso ? (
         <div className="bug-modal-sucesso">
-          <p>✅ Bug relatado com sucesso! Obrigado por ajudar.</p>
+          <p><CheckCircle size={20} strokeWidth={2} /> Bug relatado com sucesso! Obrigado por ajudar.</p>
         </div>
       ) : (
         <form onSubmit={handleEnviar} className="bug-modal-form">

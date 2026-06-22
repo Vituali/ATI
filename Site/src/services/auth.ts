@@ -92,18 +92,18 @@ export async function logout(): Promise<void> {
 // Realiza o login no site usando dados da extensão (SSO Reverso)
 export async function performSSOLogin(session: any) {
   if (!session.email || !session.password) {
-    console.warn('SSO: ⚠️ Sensão da extensão incompleta para login automático.')
+    console.warn('SSO: [ATENCAO] Sensão da extensão incompleta para login automático.')
     return
   }
 
   if (auth.currentUser) return // Já logado
 
   try {
-    console.log('SSO: 🚀 Tentando login automático com dados da extensão...')
+    console.log('SSO: [INICIO] Tentando login automático com dados da extensão...')
     await signInWithEmailAndPassword(auth, session.email, session.password)
-    console.log('SSO: ✅ Login automático realizado com sucesso!')
+    console.log('SSO: [OK] Login automático realizado com sucesso!')
   } catch (error) {
-    console.error('SSO: ❌ Falha no login automático:', error)
+    console.error('SSO: [ERRO] Falha no login automático:', error)
   }
 }
 
@@ -122,12 +122,12 @@ export async function syncWithExtension(user: User | null) {
       },
       window.location.origin,
     )
-    console.log('SSO: 🔴 Mensagem de logout enviada para a ponte.')
+    console.log('SSO: [VERMELHO] Mensagem de logout enviada para a ponte.')
     return
   }
 
   try {
-    console.log('SSO: 🔍 Buscando perfil para sincronizar...')
+    console.log('SSO: [BUSCA] Buscando perfil para sincronizar...')
 
     const atendentesSnap = await get(ref(db, 'atendentes'))
     if (!atendentesSnap.exists()) return
@@ -145,7 +145,7 @@ export async function syncWithExtension(user: User | null) {
     }
 
     if (!foundData) {
-      console.warn('SSO: ⚠️ Perfil não encontrado no banco para este UID.')
+      console.warn('SSO: [ATENCAO] Perfil não encontrado no banco para este UID.')
       return
     }
 
@@ -174,9 +174,9 @@ export async function syncWithExtension(user: User | null) {
       window.location.origin,
     )
 
-    console.log('SSO: 🟢 Mensagem de login enviada para a ponte.')
+    console.log('SSO: [VERDE] Mensagem de login enviada para a ponte.')
   } catch (error) {
-    console.error('SSO: ❌ Erro durante sincronização:', error)
+    console.error('SSO: [ERRO] Erro durante sincronização:', error)
   }
 }
 
@@ -188,7 +188,7 @@ if (typeof window !== 'undefined') {
 
     if (type === 'ATI_EXTENSION_TO_SITE') {
       if (action === 'BRIDGE_READY') {
-        console.log('SSO: 🟠 Ponte da extensão avisou que está pronta.')
+        console.log('SSO: [LARANJA] Ponte da extensão avisou que está pronta.')
         if (auth.currentUser) syncWithExtension(auth.currentUser)
       }
     }

@@ -12,6 +12,7 @@ import { auth, db } from '../../services/firebase'
 import Modal from '../ui/Modal'
 import { UserProfile } from '../../hooks/useUser'
 import { getRoleLabel, getSetorLabel } from '../../services/permissions'
+import { Pencil, Key, Lock, Palette, Check, X, Save, AlertTriangle, EyeOff, Eye, Sparkles, Clapperboard, Gamepad2, Rainbow, DoorOpen } from 'lucide-react'
 import './UserPanel.css'
 
 interface UserPanelProps {
@@ -144,7 +145,7 @@ export default function UserPanel({ user, aberto, onFechar, onLogout, bgUrl, onB
           // Prioriza o método de verificação, que é o padrão atual do Firebase e mais seguro
           await verifyBeforeUpdateEmail(firebaseUser, emailTrimmed)
           emailPendente = true
-          showFeedback(setFeedbackConta, '📨 Link enviado! A troca será concluída assim que você confirmar no novo e-mail (Cheque o Spam).', 'ok')
+          showFeedback(setFeedbackConta, '[EMAIL] Link enviado! A troca será concluída assim que você confirmar no novo e-mail (Cheque o Spam).', 'ok')
         } catch {
           // Fallback para updateEmail se as regras de negócio permitirem (raro hoje em dia)
           try {
@@ -210,7 +211,7 @@ export default function UserPanel({ user, aberto, onFechar, onLogout, bgUrl, onB
 
       let msgSucesso = 'Conta atualizada com sucesso!'
       if (usernameChanged) msgSucesso = 'Username alterado! Prepare-se para o logout.'
-      if (emailPendente) msgSucesso = `📨 ${msgSucesso} IMPORTANTE: Link enviado ao novo e-mail. A troca só valerá após confirmar (cheque o SPAM).`
+      if (emailPendente) msgSucesso = `[EMAIL] ${msgSucesso} IMPORTANTE: Link enviado ao novo e-mail. A troca só valerá após confirmar (cheque o SPAM).`
       else if (emailChanged) msgSucesso = 'E-mail e conta atualizados! Prepare-se para o logout.'
 
       showFeedback(setFeedbackConta, msgSucesso, 'ok')
@@ -271,7 +272,7 @@ export default function UserPanel({ user, aberto, onFechar, onLogout, bgUrl, onB
   const contaAlterada = novoUsername.trim().toLowerCase() !== user.username || novoEmail.trim() !== user.email
 
   return (
-    <Modal aberto={aberto} onFechar={onFechar} titulo="👤 Meu Perfil" largura="480px">
+    <Modal aberto={aberto} onFechar={onFechar} titulo="Meu Perfil" largura="480px">
       {/* Cabeçalho com avatar e info base */}
       <div className="up-header">
         <div className="up-avatar">{user.avatarUrl ? <img src={user.avatarUrl} alt="Avatar" crossOrigin="anonymous" referrerPolicy="no-referrer" className="up-avatar-img" /> : user.nomeCompleto.charAt(0).toUpperCase()}</div>
@@ -288,16 +289,16 @@ export default function UserPanel({ user, aberto, onFechar, onLogout, bgUrl, onB
       {/* Abas */}
       <div className="up-tabs">
         <button className={`up-tab ${aba === 'perfil' ? 'ativo' : ''}`} onClick={() => setAba('perfil')}>
-          ✏️ Perfil
+          <Pencil size={16} strokeWidth={2} /> Perfil
         </button>
         <button className={`up-tab ${aba === 'conta' ? 'ativo' : ''}`} onClick={() => setAba('conta')}>
-          🔑 Conta
+          <Key size={16} strokeWidth={2} /> Conta
         </button>
         <button className={`up-tab ${aba === 'senha' ? 'ativo' : ''}`} onClick={() => setAba('senha')}>
-          🔒 Senha
+          <Lock size={16} strokeWidth={2} /> Senha
         </button>
         <button className={`up-tab ${aba === 'personalizar' ? 'ativo' : ''}`} onClick={() => setAba('personalizar')}>
-          🎨 Estilo
+          <Palette size={16} strokeWidth={2} /> Estilo
         </button>
       </div>
 
@@ -319,12 +320,12 @@ export default function UserPanel({ user, aberto, onFechar, onLogout, bgUrl, onB
 
           {feedbackPerfil && (
             <div className={`up-feedback ${feedbackPerfil.tipo}`}>
-              {feedbackPerfil.tipo === 'ok' ? '✅' : '❌'} {feedbackPerfil.msg}
+              {feedbackPerfil.tipo === 'ok' ? <Check size={16} strokeWidth={2} /> : <X size={16} strokeWidth={2} />} {feedbackPerfil.msg}
             </div>
           )}
 
           <button className="up-btn-salvar" onClick={handleSalvarPerfil} disabled={!perfilAlterado || salvandoPerfil}>
-            {salvandoPerfil ? 'Salvando...' : '💾 Salvar Perfil'}
+            {salvandoPerfil ? 'Salvando...' : <><Save size={16} strokeWidth={2} /> Salvar Perfil</>}
           </button>
         </div>
       )}
@@ -332,7 +333,7 @@ export default function UserPanel({ user, aberto, onFechar, onLogout, bgUrl, onB
       {/* ABA: CONTA — Username + Email */}
       {aba === 'conta' && (
         <div className="up-section">
-          <div className="up-aviso-conta">⚠️ Alterar username ou e-mail requer confirmação de senha e causará logout automático.</div>
+          <div className="up-aviso-conta"><AlertTriangle size={16} strokeWidth={2} /> Alterar username ou e-mail requer confirmação de senha e causará logout automático.</div>
 
           <div className="up-grupo">
             <label htmlFor="up-username-input">Username</label>
@@ -351,19 +352,19 @@ export default function UserPanel({ user, aberto, onFechar, onLogout, bgUrl, onB
             <div className="up-senha-wrapper">
               <input id="up-senha-confirm" type={mostrarSenhaConfirm ? 'text' : 'password'} value={senhaConfirm} onChange={(e) => setSenhaConfirm(e.target.value)} placeholder="Confirme sua senha atual" autoComplete="current-password" />
               <button className="up-olho" type="button" onClick={() => setMostrarSenhaConfirm((v) => !v)}>
-                {mostrarSenhaConfirm ? '🙈' : '👁️'}
+                {mostrarSenhaConfirm ? <EyeOff size={16} strokeWidth={2} /> : <Eye size={16} strokeWidth={2} />}
               </button>
             </div>
           </div>
 
           {feedbackConta && (
             <div className={`up-feedback ${feedbackConta.tipo}`}>
-              {feedbackConta.tipo === 'ok' ? '✅' : '❌'} {feedbackConta.msg}
+              {feedbackConta.tipo === 'ok' ? <Check size={16} strokeWidth={2} /> : <X size={16} strokeWidth={2} />} {feedbackConta.msg}
             </div>
           )}
 
           <button className="up-btn-salvar" onClick={handleSalvarConta} disabled={!contaAlterada || !senhaConfirm || salvandoConta}>
-            {salvandoConta ? 'Salvando...' : '💾 Salvar Conta'}
+            {salvandoConta ? 'Salvando...' : <><Save size={16} strokeWidth={2} /> Salvar Conta</>}
           </button>
         </div>
       )}
@@ -376,7 +377,7 @@ export default function UserPanel({ user, aberto, onFechar, onLogout, bgUrl, onB
             <div className="up-senha-wrapper">
               <input id="up-senha-atual" type={mostrarSenhaAtual ? 'text' : 'password'} value={senhaAtual} onChange={(e) => setSenhaAtual(e.target.value)} placeholder="••••••••" autoComplete="current-password" />
               <button className="up-olho" type="button" onClick={() => setMostrarSenhaAtual((v) => !v)}>
-                {mostrarSenhaAtual ? '🙈' : '👁️'}
+                {mostrarSenhaAtual ? <EyeOff size={16} strokeWidth={2} /> : <Eye size={16} strokeWidth={2} />}
               </button>
             </div>
           </div>
@@ -386,7 +387,7 @@ export default function UserPanel({ user, aberto, onFechar, onLogout, bgUrl, onB
             <div className="up-senha-wrapper">
               <input id="up-nova-senha" type={mostrarNovaSenha ? 'text' : 'password'} value={novaSenha} onChange={(e) => setNovaSenha(e.target.value)} placeholder="Mínimo 8 caracteres" autoComplete="new-password" />
               <button className="up-olho" type="button" onClick={() => setMostrarNovaSenha((v) => !v)}>
-                {mostrarNovaSenha ? '🙈' : '👁️'}
+                {mostrarNovaSenha ? <EyeOff size={16} strokeWidth={2} /> : <Eye size={16} strokeWidth={2} />}
               </button>
             </div>
           </div>
@@ -396,19 +397,19 @@ export default function UserPanel({ user, aberto, onFechar, onLogout, bgUrl, onB
             <div className="up-senha-wrapper">
               <input id="up-confirmar-senha" type={mostrarConfirmarSenha ? 'text' : 'password'} value={confirmarSenha} onChange={(e) => setConfirmarSenha(e.target.value)} placeholder="Repita a nova senha" autoComplete="new-password" />
               <button className="up-olho" type="button" onClick={() => setMostrarConfirmarSenha((v) => !v)}>
-                {mostrarConfirmarSenha ? '🙈' : '👁️'}
+                {mostrarConfirmarSenha ? <EyeOff size={16} strokeWidth={2} /> : <Eye size={16} strokeWidth={2} />}
               </button>
             </div>
           </div>
 
           {feedbackSenha && (
             <div className={`up-feedback ${feedbackSenha.tipo}`}>
-              {feedbackSenha.tipo === 'ok' ? '✅' : '❌'} {feedbackSenha.msg}
+              {feedbackSenha.tipo === 'ok' ? <Check size={16} strokeWidth={2} /> : <X size={16} strokeWidth={2} />} {feedbackSenha.msg}
             </div>
           )}
 
           <button className="up-btn-salvar" onClick={handleSalvarSenha} disabled={salvandoSenha}>
-            {salvandoSenha ? 'Alterando...' : '🔒 Alterar Senha'}
+            {salvandoSenha ? 'Alterando...' : <><Lock size={16} strokeWidth={2} /> Alterar Senha</>}
           </button>
         </div>
       )}
@@ -417,16 +418,16 @@ export default function UserPanel({ user, aberto, onFechar, onLogout, bgUrl, onB
       {aba === 'personalizar' && (
         <div className="up-section">
           <div className="up-aviso-custom">
-            ✨ Dê um toque pessoal à sua área de trabalho! Use links diretos de imagens, GIFs ou vídeos.
+            <Sparkles size={16} strokeWidth={2} /> Dê um toque pessoal à sua área de trabalho! Use links diretos de imagens, GIFs ou vídeos.
             <div className="up-bg-links">
               <a href="https://tenor.com" target="_blank" rel="noreferrer">
-                🎬 Tenor
+                <Clapperboard size={16} strokeWidth={2} /> Tenor
               </a>
               <a href="https://giphy.com" target="_blank" rel="noreferrer">
-                👾 Giphy
+                <Gamepad2 size={16} strokeWidth={2} /> Giphy
               </a>
               <a href="https://motionbgs.com" target="_blank" rel="noreferrer" className="up-link-destaque">
-                🌈 MotionBGs
+                <Rainbow size={16} strokeWidth={2} /> MotionBGs
               </a>
             </div>
           </div>
@@ -444,7 +445,7 @@ export default function UserPanel({ user, aberto, onFechar, onLogout, bgUrl, onB
                   }}
                   title="Remover fundo"
                 >
-                  ✕
+                  <X size={16} strokeWidth={2} />
                 </button>
               )}
             </div>
@@ -492,7 +493,7 @@ export default function UserPanel({ user, aberto, onFechar, onLogout, bgUrl, onB
             }}
             disabled={(!perfilAlterado && tempBg.trim() === bgUrl) || salvandoPerfil}
           >
-            {salvandoPerfil ? 'Salvando Estilo...' : '💾 Salvar Estilo'}
+            {salvandoPerfil ? 'Salvando Estilo...' : <><Save size={16} strokeWidth={2} /> Salvar Estilo</>}
           </button>
         </div>
       )}
@@ -500,7 +501,7 @@ export default function UserPanel({ user, aberto, onFechar, onLogout, bgUrl, onB
       {/* Rodapé — Logout */}
       <div className="up-footer">
         <button className="up-btn-logout" onClick={onLogout}>
-          🚪 Sair da conta
+          <DoorOpen size={16} strokeWidth={2} /> Sair da conta
         </button>
       </div>
     </Modal>

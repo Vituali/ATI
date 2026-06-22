@@ -5,6 +5,7 @@
 
 import { injectSgpMenu, handleOpenOS } from './SgpMenu'
 import { showToast } from '../chatmix/helpers'
+import { icon } from '../../utils/iconSvgs'
 
 console.log('Extensão ATI: SGP content script carregado.')
 
@@ -126,14 +127,14 @@ function showPaymentPromiseMenuModal(clientId: string, contractId?: string | nul
 
   overlay.innerHTML = `
     <div class="ati-sgp-modal-card">
-      <div class="ati-sgp-modal-title">🤝 Promessa de Pagamento</div>
+      <div class="ati-sgp-modal-title">${icon.handshake} Promessa de Pagamento</div>
       <div class="ati-sgp-modal-body">
         Identificamos que você acabou de registrar uma ocorrência de pagamento. Como deseja prosseguir com a liberação temporária?
       </div>
       
       <div class="ati-sgp-option-group">
         <button class="ati-sgp-option-btn" id="ati-btn-comprovante">
-          <span class="option-icon">📄</span>
+          <span class="option-icon">${icon.fileText}</span>
           <div class="option-details">
             <span class="option-title">Liberar por Comprovante</span>
             <span class="option-subtitle">Até 2 dias úteis (${comprovanteDateStr})</span>
@@ -141,7 +142,7 @@ function showPaymentPromiseMenuModal(clientId: string, contractId?: string | nul
         </button>
         
         <button class="ati-sgp-option-btn" id="ati-btn-promessa">
-          <span class="option-icon">📅</span>
+          <span class="option-icon">${icon.calendar}</span>
           <div class="option-details">
             <span class="option-title">Liberar por Promessa</span>
             <span class="option-subtitle">Escolher data personalizada</span>
@@ -195,7 +196,7 @@ function showPaymentPromiseMenuModal(clientId: string, contractId?: string | nul
   btnConfirmDate.addEventListener('click', () => {
     const rawValue = dateInput.value
     if (!rawValue) {
-      showToast('⚠️ Selecione uma data antes de prosseguir.', 'error')
+      showToast(`${icon.alertTriangle} Selecione uma data antes de prosseguir.`, 'error')
       return
     }
 
@@ -240,7 +241,7 @@ if (isPromessaPage) {
           if ((window as any).jQuery) {
             ;(window as any).jQuery(input).trigger('change')
           }
-          showToast('📅 Data da promessa preenchida automaticamente!', 'success')
+          showToast(`${icon.calendar} Data da promessa preenchida automaticamente!`, 'success')
         } else if (attempts < 30) {
           setTimeout(() => waitAndFillDate(attempts + 1), 300)
         }
@@ -296,7 +297,7 @@ if (isPromessaPage) {
             if ((window as any).jQuery) {
               ;(window as any).jQuery(select).trigger('change')
             }
-            showToast('📄 Contrato preenchido automaticamente!', 'success')
+            showToast(`${icon.fileText} Contrato preenchido automaticamente!`, 'success')
           } else {
             console.warn(`Extensão ATI: Contrato ${promessaContract} não encontrado no select.`)
           }
@@ -417,7 +418,7 @@ if (isOccurrencePage) {
       console.log('Extensão ATI: Sem dados pendentes para esta requisição.')
       // Sugerir usar o O.S. (Auxiliar) via Popup Modal se não estiver oculto
       if (!hideOsPrompt) {
-        showSgpPromptModal('📋 O.S. (Auxiliar)', 'Você está na tela de adicionar ocorrência. Deseja utilizar o auxiliador de O.S. para selecionar templates e preencher os dados automaticamente?', 'Sim, abrir auxiliador', 'Não, preencher manualmente', () => {
+        showSgpPromptModal(`${icon.clipboardList} O.S. (Auxiliar)`, 'Você está na tela de adicionar ocorrência. Deseja utilizar o auxiliador de O.S. para selecionar templates e preencher os dados automaticamente?', 'Sim, abrir auxiliador', 'Não, preencher manualmente', () => {
           handleOpenOS()
         })
       }
@@ -474,7 +475,7 @@ if (isOsAddPage) {
         window.location.origin,
       )
       script.remove()
-      showToast('📋 Ordem de Serviço preenchida automaticamente!', 'success')
+      showToast(`${icon.clipboardList} Ordem de Serviço preenchida automaticamente!`, 'success')
     }
 
     document.documentElement.appendChild(script)
@@ -518,7 +519,7 @@ if (isOpticalListPage) {
     btn.style.cursor = 'pointer'
     btn.style.boxShadow = '0 4px 15px rgba(0, 100, 255, 0.4)'
     btn.style.transition = 'all 0.2s ease'
-    btn.innerText = '📊 Enviar Sinais ao Painel ATI'
+    btn.innerHTML = `${icon.barChart3} Enviar Sinais ao Painel ATI`
 
     btn.onmouseover = () => {
       btn.style.transform = 'scale(1.05)'
@@ -722,9 +723,9 @@ if (isOpticalListPage) {
         })
 
         if (dados.length === 0) {
-          showToast('⚠️ Nenhuma linha de potência encontrada na tabela.', 'error')
+          showToast(`${icon.alertTriangle} Nenhuma linha de potência encontrada na tabela.`, 'error')
           btn.disabled = false
-          btn.innerText = '📊 Enviar Sinais ao Painel ATI'
+          btn.innerHTML = `${icon.barChart3} Enviar Sinais ao Painel ATI`
           return
         }
 
@@ -818,15 +819,15 @@ if (isOpticalListPage) {
         const resData = await response.json()
 
         if (resData.ok) {
-          showToast(`🚀 ${dados.length} sinais enviados com sucesso ao Painel!`, 'success')
+          showToast(`${icon.rocket} ${dados.length} sinais enviados com sucesso ao Painel!`, 'success')
         } else {
-          showToast(`❌ Falha ao processar sinais: ${resData.error || 'Erro desconhecido'}`, 'error')
+          showToast(`${icon.x} Falha ao processar sinais: ${resData.error || 'Erro desconhecido'}`, 'error')
         }
       } catch (err: any) {
-        showToast(`❌ Erro de conexão: ${err.message}`, 'error')
+        showToast(`${icon.x} Erro de conexão: ${err.message}`, 'error')
       } finally {
         btn.disabled = false
-        btn.innerText = '📊 Enviar Sinais ao Painel ATI'
+        btn.innerHTML = `${icon.barChart3} Enviar Sinais ao Painel ATI`
       }
     }
 

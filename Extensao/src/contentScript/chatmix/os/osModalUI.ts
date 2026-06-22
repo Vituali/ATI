@@ -4,6 +4,7 @@
 
 import { ModalResult } from '../../sgp/types'
 import { ModalConfig } from './osModalTypes'
+import { icon } from '../../../utils/iconSvgs'
 
 export function createModal(config: ModalConfig): {
   promise: Promise<ModalResult>
@@ -30,7 +31,7 @@ export function createModal(config: ModalConfig): {
     const buttonsHTML = config.footerButtons.map((btn) => `<button class="main-btn ${btn.className}" value="${btn.value}" ${btn.disabled ? 'disabled' : ''}>${btn.text}</button>`).join('')
 
     modal.innerHTML = `
-      <div class="ati-os-modal-header">${config.title}</div>
+      <div class="ati-os-modal-header"><span class="os-header-icon">${icon.fileText}</span> ${config.title}</div>
       <div class="ati-os-modal-body">${config.bodyHTML}</div>
       <div class="ati-os-modal-footer">${buttonsHTML}</div>
     `

@@ -10,6 +10,57 @@ import { currentChatId, setLastExtractedData } from '../state'
 import { ensureFreshToken } from '../auth/session'
 import type { SgpSupportData } from '../../../background/sgp/support'
 import type { GetSgpFormParamsRequest, FetchSupportDataRequest } from '../../../background/types'
+import { icon } from '../../../utils/iconSvgs'
+
+function parseFriendlyExplanation(text: string): string {
+  if (!text) return ''
+  return text
+    .split('<br>')
+    .map((line) => {
+      let iconSvg = ''
+      let colorClass = ''
+
+      if (line.includes('[WARN]')) {
+        iconSvg = icon.alertTriangle
+        colorClass = 'ati-diag-warn'
+        line = line.replace('[WARN]', '')
+      } else if (line.includes('[ALERT]')) {
+        iconSvg = icon.alertTriangle
+        colorClass = 'ati-diag-alert'
+        line = line.replace('[ALERT]', '')
+      } else if (line.includes('[ENERGIA]')) {
+        iconSvg = icon.zap
+        colorClass = 'ati-diag-energy'
+        line = line.replace('[ENERGIA]', '')
+      } else if (line.includes('[OFF]')) {
+        iconSvg = icon.x
+        colorClass = 'ati-diag-offline'
+        line = line.replace('[OFF]', '')
+      } else if (line.includes('[SLEEP]') || line.includes('[DORM]')) {
+        iconSvg = icon.lock
+        colorClass = 'ati-diag-dormant'
+        line = line.replace(/\[SLEEP\]|\[DORM\]/, '')
+      } else if (line.includes('[OK]')) {
+        iconSvg = icon.check
+        colorClass = 'ati-diag-ok'
+        line = line.replace('[OK]', '')
+      } else if (line.includes('[INFO]')) {
+        iconSvg = icon.fileText
+        colorClass = 'ati-diag-info'
+        line = line.replace('[INFO]', '')
+      } else {
+        return `<div class="ati-diag-line">${line}</div>`
+      }
+
+      return `
+        <div class="ati-diag-line ${colorClass}">
+          <span class="ati-diag-icon">${iconSvg}</span>
+          <span class="ati-diag-text">${line.trim()}</span>
+        </div>
+      `
+    })
+    .join('')
+}
 
 function showLoadingOverlay(message: string): HTMLElement {
   const loadingId = 'ati-support-loading-overlay'
@@ -21,8 +72,8 @@ function showLoadingOverlay(message: string): HTMLElement {
   overlay.innerHTML = `
     <div class="ati-support-modal" style="max-width: 380px; padding: 24px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;">
       <div class="status-dot-pulsing" style="width: 20px; height: 20px;"></div>
-      <div style="font-weight: 600; font-size: 15px; color: white;">${message}</div>
-      <div style="font-size: 12px; color: rgba(255,255,255,0.5);">Aguarde alguns instantes...</div>
+      <div style="font-weight: 600; font-size: 15px; color: var(--text-white);">${message}</div>
+      <div style="font-size: 12px; color: var(--text-muted);">Aguarde alguns instantes...</div>
     </div>
   `
   document.body.appendChild(overlay)
@@ -73,13 +124,13 @@ function showContractSelectionModal(contracts: SgpContract[], onSelect: (contrac
       return `
         <button class="ati-contract-item-btn" data-contract-id="${c.id}">
           <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 6px;">
-            <span style="font-weight: 600; font-size: 13px; color: white;">Contrato #${c.id}</span>
+            <span style="font-weight: 600; font-size: 13px; color: var(--text-white);">Contrato #${c.id}</span>
             <span class="ati-support-status-badge ${statusClass}">
               <span class="${dotClass}"></span>
               <span>${statusText}</span>
             </span>
           </div>
-          <div style="font-size: 11px; color: rgba(255,255,255,0.5); width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${c.text}">
+          <div style="font-size: 11px; color: var(--text-muted); width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${c.text}">
             ${c.text}
           </div>
         </button>
@@ -90,11 +141,11 @@ function showContractSelectionModal(contracts: SgpContract[], onSelect: (contrac
   overlay.innerHTML = `
     <div class="ati-support-modal" style="max-width: 460px;">
       <div class="ati-support-modal-header">
-        <div class="ati-support-modal-title">Selecione o Contrato</div>
+        <div class="ati-support-modal-title"><span class="support-header-icon">${icon.clipboardList}</span> Selecione o Contrato</div>
         <button class="ati-support-modal-close" id="ati-support-select-close-x">&times;</button>
       </div>
       <div class="ati-support-modal-body">
-        <p style="margin: 0 0 16px; font-size: 13px; color: rgba(255,255,255,0.6);">
+        <p style="margin: 0 0 16px; font-size: 13px; color: var(--text-grey);">
           Este cliente possui múltiplos contratos. Selecione qual deseja verificar no painel de suporte:
         </p>
         <div class="ati-support-contracts-list" style="display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto; padding-right: 4px;">
@@ -200,7 +251,7 @@ function renderSupportModal(clientData: ClientData, contract: SgpContract, suppo
   overlay.innerHTML = `
     <div class="ati-support-modal">
       <div class="ati-support-modal-header">
-        <div class="ati-support-modal-title">Painel de Suporte - Contrato #${contract.id}</div>
+        <div class="ati-support-modal-title"><span class="support-header-icon">${icon.settings}</span> Painel de Suporte - Contrato #${contract.id}</div>
         <button class="ati-support-modal-close" id="ati-support-close-x">&times;</button>
       </div>
       
@@ -294,8 +345,8 @@ function renderSupportModal(clientData: ClientData, contract: SgpContract, suppo
         <!-- Análise da Conexão -->
         <div class="ati-support-section">
           <div class="ati-support-section-title">Análise da OLT</div>
-          <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 12px 16px; font-size: 12px; line-height: 1.5; color: rgba(255,255,255,0.8);">
-            ${supportData.friendlyExplanation}
+          <div style="background: var(--bg-overlay-subtle); border: 1px solid var(--border-glass); border-radius: 10px; padding: 16px; font-size: 12.5px; line-height: 1.5; color: var(--text-main); display: flex; flex-direction: column; gap: 10px; max-height: 180px; overflow-y: auto;" class="ati-diag-container">
+            ${parseFriendlyExplanation(supportData.friendlyExplanation)}
           </div>
         </div>
 
@@ -304,16 +355,16 @@ function renderSupportModal(clientData: ClientData, contract: SgpContract, suppo
           <div class="ati-support-section-title">Ações Rápidas</div>
           <div class="ati-support-actions-grid">
             <button class="ati-support-btn ati-support-btn--reset" id="ati-support-btn-reset">
-              🔄 Reset ONU
+              ${icon.refresh} Reset ONU
             </button>
             <button class="ati-support-btn ati-support-btn--command-send" id="ati-support-btn-tl1-send">
-              ⚡ TL1 Enviar Comandos
+              ${icon.zap} TL1 Enviar Comandos
             </button>
             <button class="ati-support-btn ati-support-btn--command-remove" id="ati-support-btn-tl1-remove">
-              ❌ TL1 Remover Comandos
+              ${icon.x} TL1 Remover Comandos
             </button>
             <button class="ati-support-btn ati-support-btn--sgp-contract" id="ati-support-btn-sgp-open">
-              ↗️ Abrir Contrato no SGP
+              ${icon.globe} Abrir Contrato no SGP
             </button>
           </div>
         </div>
@@ -321,7 +372,7 @@ function renderSupportModal(clientData: ClientData, contract: SgpContract, suppo
 
       <div class="ati-support-modal-footer" style="display:flex; justify-content:space-between; align-items:center;">
         <button class="ati-support-close-btn" id="ati-support-btn-refresh" style="background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.2); color: #93c5fd; padding: 9px 16px;">
-          🔄 Refazer Busca
+          ${icon.refresh} Refazer Busca
         </button>
         <button class="ati-support-close-btn" id="ati-support-close-footer">Fechar</button>
       </div>

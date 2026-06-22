@@ -525,16 +525,16 @@ function buildFriendlyExplanation(alarms: Record<string, string>, downReason: st
 
   // Check alarm states
   if (alarms.lossOfSignal === 'yes') {
-    reasons.push('🔴 <strong>Perda de Sinal Óptico (Loss of Signal):</strong> A fibra que chega ao cliente está sem sinal. A ONU pode estar ligada ou desligada (a OLT não consegue ler). Indica um possível rompimento de cabo externo, fibra rompida ou conector desconectado.')
+    reasons.push('[OFF] <strong>Perda de Sinal Óptico (Loss of Signal):</strong> A fibra que chega ao cliente está sem sinal. A ONU pode estar ligada ou desligada (a OLT não consegue ler). Indica um possível rompimento de cabo externo, fibra rompida ou conector desconectado.')
   } else {
     if (alarms.inactive === 'yes') {
       if (alarms.dyingGasp === 'yes') {
-        reasons.push('🔌💤 <strong>ONU Inativa (Dying Gasp):</strong> O equipamento está inativo devido a queda de energia ou desligamento da tomada (indicação forte).')
+        reasons.push('[SLEEP] <strong>ONU Inativa (Dying Gasp):</strong> O equipamento está inativo devido a queda de energia ou desligamento da tomada (indicação forte).')
       } else {
-        reasons.push('💤 <strong>ONU Inativa (Ploam Inactive):</strong> A OLT perdeu a conexão com o equipamento. Pode indicar falha de link (link loss), ONU travada (firmware travado ou crashado) ou problema na fonte de alimentação. Solicite ao cliente para reiniciar o equipamento (desligar e ligar da tomada) ou tente um recadastramento/reautorização.')
+        reasons.push('[DORM] <strong>ONU Inativa (Ploam Inactive):</strong> A OLT perdeu a conexão com o equipamento. Pode indicar falha de link (link loss), ONU travada (firmware travado ou crashado) ou problema na fonte de alimentação. Solicite ao cliente para reiniciar o equipamento (desligar e ligar da tomada) ou tente um recadastramento/reautorização.')
       }
     } else if (alarms.dyingGasp === 'yes') {
-      reasons.push('🔌 <strong>Alerta de Queda de Energia (Dying Gasp):</strong> O equipamento do cliente registrou uma perda de alimentação elétrica.')
+      reasons.push('[ENERGIA] <strong>Alerta de Queda de Energia (Dying Gasp):</strong> O equipamento do cliente registrou uma perda de alimentação elétrica.')
     }
   }
 
@@ -542,55 +542,55 @@ function buildFriendlyExplanation(alarms: Record<string, string>, downReason: st
   if (rxPowerOnu) {
     const onuStatus = getPowerStatus(rxPowerOnu)
     if (onuStatus === 'critical_low') {
-      reasons.push(`⚠️🔴 <strong>Sinal RX ONU Crítico (Muito Baixo):</strong> A potência recebida pela ONU está em <strong>${rxPowerOnu} dBm</strong> (faixa ideal: -15 a -26 dBm). Isso causa instabilidade extrema ou queda total da conexão. Verifique se há dobras na fibra ou conectores sujos/danificados.`)
+      reasons.push(`[ALERT] <strong>Sinal RX ONU Crítico (Muito Baixo):</strong> A potência recebida pela ONU está em <strong>${rxPowerOnu} dBm</strong> (faixa ideal: -15 a -26 dBm). Isso causa instabilidade extrema ou queda total da conexão. Verifique se há dobras na fibra ou conectores sujos/danificados.`)
     } else if (onuStatus === 'critical_high') {
-      reasons.push(`⚠️🔴 <strong>Sinal RX ONU Crítico (Saturação):</strong> A potência recebida pela ONU está muito forte em <strong>${rxPowerOnu} dBm</strong> (acima de -8 dBm). Pode causar danos ao receptor óptico. É necessário adicionar atenuador óptico na fibra.`)
+      reasons.push(`[ALERT] <strong>Sinal RX ONU Crítico (Saturação):</strong> A potência recebida pela ONU está muito forte em <strong>${rxPowerOnu} dBm</strong> (acima de -8 dBm). Pode causar danos ao receptor óptico. É necessário adicionar atenuador óptico na fibra.`)
     } else if (onuStatus === 'alert_low') {
-      reasons.push(`⚠️🟡 <strong>Sinal RX ONU em Alerta (Baixo):</strong> A potência recebida pela ONU está em <strong>${rxPowerOnu} dBm</strong>, levemente abaixo do ideal (-15 a -26 dBm). Indica atenuação que pode evoluir para queda.`)
+      reasons.push(`[WARN] <strong>Sinal RX ONU em Alerta (Baixo):</strong> A potência recebida pela ONU está em <strong>${rxPowerOnu} dBm</strong>, levemente abaixo do ideal (-15 a -26 dBm). Indica atenuação que pode evoluir para queda.`)
     } else if (onuStatus === 'alert_high') {
-      reasons.push(`⚠️🟡 <strong>Sinal RX ONU em Alerta (Alto):</strong> A potência recebida pela ONU está em <strong>${rxPowerOnu} dBm</strong>, acima do ideal (-15 a -26 dBm). A potência está um pouco forte.`)
+      reasons.push(`[WARN] <strong>Sinal RX ONU em Alerta (Alto):</strong> A potência recebida pela ONU está em <strong>${rxPowerOnu} dBm</strong>, acima do ideal (-15 a -26 dBm). A potência está um pouco forte.`)
     }
   }
 
   if (rxPowerOlt) {
     const oltStatus = getPowerStatus(rxPowerOlt)
     if (oltStatus === 'critical_low') {
-      reasons.push(`⚠️🔴 <strong>Sinal RX OLT Crítico (Retorno Muito Baixo):</strong> A potência de retorno recebida na OLT está em <strong>${rxPowerOlt} dBm</strong> (abaixo de -27 dBm). Indica atenuação severa na fibra no sentido de upload.`)
+      reasons.push(`[ALERT] <strong>Sinal RX OLT Crítico (Retorno Muito Baixo):</strong> A potência de retorno recebida na OLT está em <strong>${rxPowerOlt} dBm</strong> (abaixo de -27 dBm). Indica atenuação severa na fibra no sentido de upload.`)
     } else if (oltStatus === 'critical_high') {
-      reasons.push(`⚠️🔴 <strong>Sinal RX OLT Crítico (Retorno Saturação):</strong> A potência de retorno recebida na OLT está excessivamente forte em <strong>${rxPowerOlt} dBm</strong>.`)
+      reasons.push(`[ALERT] <strong>Sinal RX OLT Crítico (Retorno Saturação):</strong> A potência de retorno recebida na OLT está excessivamente forte em <strong>${rxPowerOlt} dBm</strong>.`)
     } else if (oltStatus === 'alert_low') {
-      reasons.push(`⚠️🟡 <strong>Sinal RX OLT em Alerta (Retorno Baixo):</strong> A potência de retorno recebida na OLT está em <strong>${rxPowerOlt} dBm</strong>, indicando sinal de subida levemente atenuado.`)
+      reasons.push(`[WARN] <strong>Sinal RX OLT em Alerta (Retorno Baixo):</strong> A potência de retorno recebida na OLT está em <strong>${rxPowerOlt} dBm</strong>, indicando sinal de subida levemente atenuado.`)
     } else if (oltStatus === 'alert_high') {
-      reasons.push(`⚠️🟡 <strong>Sinal RX OLT em Alerta (Retorno Alto):</strong> A potência de retorno recebida na OLT está em <strong>${rxPowerOlt} dBm</strong>, acima da faixa ideal.`)
+      reasons.push(`[WARN] <strong>Sinal RX OLT em Alerta (Retorno Alto):</strong> A potência de retorno recebida na OLT está em <strong>${rxPowerOlt} dBm</strong>, acima da faixa ideal.`)
     }
   }
 
   if (alarms.lossOfAck === 'yes') {
-    reasons.push('⚠️ <strong>Falha de Confirmação (Loss of Ack):</strong> A OLT perdeu contato intermitente com a ONU. Indica atenuação severa na fibra ou conector mal encaixado.')
+    reasons.push('[WARN] <strong>Falha de Confirmação (Loss of Ack):</strong> A OLT perdeu contato intermitente com a ONU. Indica atenuação severa na fibra ou conector mal encaixado.')
   }
   if (alarms.ontDisabled === 'yes') {
-    reasons.push('🚫 <strong>ONU Desativada (ONT Disabled):</strong> Este equipamento está desabilitado na porta da OLT, possivelmente devido a alguma ação administrativa.')
+    reasons.push('[BLOQ] <strong>ONU Desativada (ONT Disabled):</strong> Este equipamento está desabilitado na porta da OLT, possivelmente devido a alguma ação administrativa.')
   }
   if (alarms.lossOfGem === 'yes') {
-    reasons.push('⚡ <strong>Falha na Porta GEM (Loss of GEM):</strong> Erro de encapsulamento ou sincronismo de rede entre a ONU e a OLT.')
+    reasons.push('[PWR] <strong>Falha na Porta GEM (Loss of GEM):</strong> Erro de encapsulamento ou sincronismo de rede entre a ONU e a OLT.')
   }
 
   // Check down reason
   const dr = downReason.toLowerCase().trim()
   if (dr.includes('signal-degrade')) {
-    reasons.push('📉 <strong>Sinal Degradado (Signal Degrade):</strong> A OLT detectou que a potência do sinal está muito fraca ou instável. Sugere fibra atenuada/dobrada, sujeira no conector óptico ou fusão com problema.')
+    reasons.push('[SINAL] <strong>Sinal Degradado (Signal Degrade):</strong> A OLT detectou que a potência do sinal está muito fraca ou instável. Sugere fibra atenuada/dobrada, sujeira no conector óptico ou fusão com problema.')
   } else if (dr.includes('power-off') || dr.includes('poweroff')) {
-    reasons.push('🔌 <strong>Equipamento Desligado (Power Off):</strong> A ONU foi desconectada da tomada.')
+    reasons.push('[ENERGIA] <strong>Equipamento Desligado (Power Off):</strong> A ONU foi desconectada da tomada.')
   } else if (dr.includes('deactivation')) {
-    reasons.push('❌ <strong>Desautorizado/Desativado:</strong> A ONU foi desativada pela OLT.')
+    reasons.push('[FAIL] <strong>Desautorizado/Desativado:</strong> A ONU foi desativada pela OLT.')
   } else if (dr.includes('dying-gasp') || dr.includes('dyinggasp')) {
-    reasons.push('🔌 <strong>Queda de Energia (Dying Gasp):</strong> A OLT registrou que a última queda foi por falta de energia ou desligamento manual do equipamento do cliente.')
+    reasons.push('[ENERGIA] <strong>Queda de Energia (Dying Gasp):</strong> A OLT registrou que a última queda foi por falta de energia ou desligamento manual do equipamento do cliente.')
   } else if (dr.includes('loss-of-signal') || dr.includes('los')) {
-    reasons.push('🔴 <strong>Perda de Sinal (Loss of Signal):</strong> A OLT registrou que a última queda foi por perda física de sinal óptico (fibra rompida, desconectada ou atenuada).')
+    reasons.push('[OFF] <strong>Perda de Sinal (Loss of Signal):</strong> A OLT registrou que a última queda foi por perda física de sinal óptico (fibra rompida, desconectada ou atenuada).')
   }
 
   if (status === 'offline' && terminateCause) {
-    reasons.push(`ℹ️ <strong>Causa de Desconexão Radius:</strong> O servidor Radius registrou a desconexão como <strong>${terminateCause}</strong> em <strong>${endTime || 'Desconhecido'}</strong>.`)
+    reasons.push(`[INFO] <strong>Causa de Desconexão Radius:</strong> O servidor Radius registrou a desconexão como <strong>${terminateCause}</strong> em <strong>${endTime || 'Desconhecido'}</strong>.`)
   }
 
   if (reasons.length > 0) {
@@ -598,10 +598,10 @@ function buildFriendlyExplanation(alarms: Record<string, string>, downReason: st
   }
 
   if (status === 'offline') {
-    return '🔌 O cliente está Offline. Nenhuma causa de queda específica foi registrada na OLT ainda. Verifique se o roteador do cliente está ligado na energia elétrica.'
+    return '[ENERGIA] O cliente está Offline. Nenhuma causa de queda específica foi registrada na OLT ainda. Verifique se o roteador do cliente está ligado na energia elétrica.'
   }
 
-  return '✅ Conexão operando normalmente. Sem alarmes ou degradações de sinal identificadas na OLT.'
+  return '[OK] Conexão operando normalmente. Sem alarmes ou degradações de sinal identificadas na OLT.'
 }
 
 export async function scrapeSupportData(baseUrl: string, contractId: string, clientId?: string): Promise<SgpSupportData> {

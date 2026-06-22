@@ -3,6 +3,7 @@
 // =================================================================
 
 import { SELECTORS, log } from './state'
+import { icon } from '../../utils/iconSvgs'
 
 // --- Validação de CPF ---
 export function isValidCPF(cpf: string): boolean {
@@ -227,7 +228,7 @@ function handleInvalidatedContext() {
 
   const notifIcon = document.createElement('span')
   notifIcon.className = 'ati-notification-icon'
-  notifIcon.textContent = '⚠️'
+  notifIcon.innerHTML = icon.alertTriangle
 
   const notifContent = document.createElement('div')
   notifContent.className = 'ati-notification-content'
@@ -273,15 +274,15 @@ export function showToast(message: string, type: 'error' | 'success' | 'info' = 
   const toast = document.createElement('div')
   toast.className = `ati-toast ati-toast--${type}`
 
-  const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️'
+  const iconSvg = type === 'error' ? icon.x : type === 'success' ? icon.check : 'ℹ️'
 
   const iconSpan = document.createElement('span')
   iconSpan.className = 'ati-toast-icon'
-  iconSpan.textContent = icon
+  iconSpan.innerHTML = iconSvg
 
   const contentDiv = document.createElement('div')
   contentDiv.className = 'ati-toast-content'
-  contentDiv.textContent = message
+  contentDiv.innerHTML = message
 
   toast.appendChild(iconSpan)
   toast.appendChild(contentDiv)

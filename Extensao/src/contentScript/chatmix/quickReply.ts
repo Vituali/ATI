@@ -6,6 +6,7 @@ import { processDynamicPlaceholders } from './os/osModal'
 import { setNativeValue, safeSendMessage, showToast } from './helpers'
 import { log, logError, SELECTORS, currentChatId } from './state'
 import { getClientData } from './getClientData'
+import { icon } from '../../utils/iconSvgs'
 
 interface QuickReply {
   title: string
@@ -117,7 +118,7 @@ export function injectQuickReply(replies: QuickReply[], categoriesOrder?: string
 
     const backBtn = document.createElement('button')
     backBtn.className = 'ati-qr-tab ati-qr-tab--active'
-    backBtn.innerHTML = '← ' + cat
+    backBtn.innerHTML = `${icon.arrowLeft} ${cat}`
     backBtn.addEventListener('click', showCategories)
     header.appendChild(backBtn)
 
@@ -306,7 +307,7 @@ async function handleValidarContatos(btn: HTMLButtonElement, textarea: HTMLTextA
 
     setNativeValue(textarea, finalMsg)
     textarea.focus()
-    showToast('📞 Contatos do cliente importados com sucesso!', 'success')
+    showToast(`${icon.phone} Contatos do cliente importados com sucesso!`, 'success')
   } catch (error: any) {
     logError('Erro ao puxar contatos do SGP:', error)
     showToast(error.message || 'Erro ao puxar contatos do SGP.', 'error')

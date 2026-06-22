@@ -445,7 +445,7 @@ async function checkExtensionVersion() {
           chrome.notifications.create('ati-update-alert', {
             type: 'basic',
             iconUrl: 'img/logo-128.png',
-            title: '✨ Nova Atualização Disponível!',
+            title: '[SPARKLES] Nova Atualização Disponível!',
             message: `A versão ${config.minVersion} da Extensão ATI já está disponível com novas funcionalidades e correções.`,
             priority: 1,
           })

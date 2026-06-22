@@ -1,0 +1,262 @@
+/* ============================================================
+   TOKENS.CSS — Master CSS Design Tokens (Dark & Light Themes)
+   ============================================================ */
+
+:root {
+  /* ==========================================
+     DARK THEME (Default HSL Cyber Space-Gray)
+     ========================================== */
+  --bg-dark: hsl(222, 47%, 9%);
+  --bg-panel: hsla(223, 33%, 13%, 0.8);
+  --bg-black: hsl(222, 47%, 6%);
+  --bg-card: hsla(223, 33%, 15%, 0.55);
+  --bg-input: hsla(222, 47%, 5%, 0.6);
+  --text-main: hsl(210, 40%, 98%);
+  --text-white: #ffffff;
+  --text-grey: hsl(215, 20%, 78%);
+  --text-muted: hsl(215, 16%, 58%);
+  
+  /* Accent Colors */
+  --accent-blue: hsl(217, 91%, 60%);
+  --accent-blue-hover: hsla(217, 91%, 60%, 0.15);
+  --accent-blue-border: hsla(217, 91%, 60%, 0.25);
+  
+  /* Core Layout Components */
+  --sidebar-bg: hsla(222, 47%, 6%, 0.85);
+  --footer-bg: hsla(222, 47%, 6%, 0.85);
+  --border-subtle: hsla(215, 20%, 80%, 0.06);
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-sm: 8px;
+  
+  /* Fonts & Shadows */
+  --font-main: 'Outfit', 'DM Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Space Mono', monospace;
+  --shadow-subtle: 0 10px 30px rgba(0, 0, 0, 0.45);
+  --text-on-accent: #ffffff;
+
+  /* Glassmorphism Tokens */
+  --bg-glass: hsla(223, 33%, 13%, 0.65);
+  --border-glass: hsla(215, 20%, 80%, 0.08);
+  --blur-intensity: blur(20px);
+  --shadow-glass-glow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
+
+  /* Neon Glassmorphic Button Tokens (Dark Mode) */
+  --btn-glass-bg: linear-gradient(135deg, rgba(22, 22, 28, 0.9) 0%, rgba(30, 30, 38, 0.9) 100%);
+  --btn-glass-border-neon: rgba(0, 229, 255, 0.35);
+  --btn-glass-border-neon-hover: rgba(0, 229, 255, 0.85);
+  --btn-glass-bg-hover: linear-gradient(135deg, rgba(0, 110, 255, 0.4) 0%, rgba(0, 85, 200, 0.3) 100%);
+  --btn-glass-glow: 0 8px 22px rgba(0, 229, 255, 0.3), 0 0 10px rgba(0, 229, 255, 0.2);
+  --btn-glass-text: var(--text-grey);
+  --btn-glass-text-hover: #ffffff;
+  
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, hsl(217, 91%, 60%) 0%, hsl(230, 90%, 65%) 100%);
+  --gradient-text: linear-gradient(135deg, #ffffff 0%, hsl(215, 30%, 85%) 100%);
+  --gradient-hover: linear-gradient(135deg, hsl(217, 91%, 65%) 0%, hsl(230, 90%, 70%) 100%);
+
+  /* ==========================================
+     COMPONENT-SPECIFIC TOKENS (Dark Mode)
+     ========================================== */
+  /* Code / Text Output Windows */
+  --bg-code-window: #090d16;
+  --bg-code-header: #0f172a;
+  --border-code-window: #1e293b;
+  --text-code-output: #cbd5e1;
+  
+  /* File Upload / Dropzone */
+  --bg-dropzone: radial-gradient(circle at top left, rgba(30, 41, 59, 0.3) 0%, rgba(15, 23, 42, 0.35) 100%);
+  --bg-dropzone-hover: rgba(99, 102, 241, 0.02);
+  --border-dropzone: rgba(255, 255, 255, 0.1);
+  --border-dropzone-hover: rgba(99, 102, 241, 0.4);
+  --bg-drop-icon: rgba(255, 255, 255, 0.02);
+  --border-drop-icon: rgba(255, 255, 255, 0.05);
+
+  /* Action Cards (copy panels) */
+  --bg-action-card: rgba(30, 41, 59, 0.2);
+  --bg-action-card-hover: rgba(30, 41, 59, 0.35);
+  --bg-btn-copy: rgba(255, 255, 255, 0.04);
+  --bg-btn-copy-hover: rgba(255, 255, 255, 0.1);
+
+  /* Segmented Controls & Chips */
+  --bg-segment-control: rgba(0, 0, 0, 0.25);
+  --bg-segment-btn-hover: rgba(255, 255, 255, 0.02);
+  --bg-chip-btn: rgba(0, 0, 0, 0.2);
+  --bg-chip-btn-hover: rgba(255, 255, 255, 0.02);
+
+  /* Status Colors (Dark Theme) */
+  --color-success: #00e676;
+  --color-success-hover: #00ff88;
+  --bg-success-subtle: rgba(0, 230, 118, 0.08);
+  --border-success-subtle: rgba(0, 230, 118, 0.2);
+  
+  --color-danger: #ff5252;
+  --color-danger-hover: #ff6b6b;
+  --bg-danger-subtle: rgba(255, 82, 82, 0.08);
+  --bg-danger-subtle-hover: rgba(255, 82, 82, 0.16);
+  --border-danger-subtle: rgba(255, 82, 82, 0.2);
+
+  --color-warning: #ffd600;
+  --bg-warning-subtle: rgba(255, 214, 0, 0.08);
+  --border-warning-subtle: rgba(255, 214, 0, 0.2);
+
+  --color-info: hsl(217, 91%, 60%);
+  --bg-info-subtle: rgba(0, 100, 255, 0.08);
+  --border-info-subtle: rgba(0, 100, 255, 0.15);
+
+  --color-purple: #d8b4fe;
+  --color-purple-hover: #c084fc;
+  --bg-purple-subtle: rgba(168, 85, 247, 0.12);
+  --bg-purple-subtle-hover: rgba(168, 85, 247, 0.22);
+  --border-purple-subtle: rgba(168, 85, 247, 0.3);
+
+  --color-orange: #fb923c;
+  --color-orange-hover: #f97316;
+  --bg-orange-subtle: rgba(251, 146, 60, 0.12);
+  --border-orange-subtle: rgba(251, 146, 60, 0.25);
+
+  --color-cyan: #00e5ff;
+  --color-cyan-hover: #80f3ff;
+  --bg-cyan-subtle: rgba(0, 229, 255, 0.08);
+
+  /* Transparent / Neutral Overlays */
+  --bg-overlay-subtle: rgba(255, 255, 255, 0.02);
+  --bg-overlay-hover: rgba(255, 255, 255, 0.05);
+  --bg-overlay-active: rgba(255, 255, 255, 0.1);
+  --gradient-bg-overlay: radial-gradient(circle at 50% 30%, rgba(15, 23, 42, 0.1) 0%, rgba(15, 23, 42, 0.6) 80%, var(--bg-dark) 100%);
+  --bg-table-header: rgba(0, 0, 0, 0.15);
+  --bg-table-header-hover: rgba(0, 0, 0, 0.25);
+  --bg-modal-overlay: rgba(10, 15, 30, 0.65);
+
+  /* Segmented Controls & Chips (Dark Theme) */
+  --text-segment-active: #818cf8;
+  --bg-segment-active: rgba(99, 102, 241, 0.12);
+  --border-segment-active: rgba(99, 102, 241, 0.2);
+
+  --text-chip-active: #a5b4fc;
+  --bg-chip-active: linear-gradient(135deg, rgba(79, 70, 229, 0.2) 0%, rgba(99, 102, 241, 0.2) 100%);
+  --border-chip-active: rgba(99, 102, 241, 0.45);
+}
+
+/* ==========================================
+   LIGHT THEME Overrides
+   ========================================== */
+html:not(.dark) {
+  --bg-dark: hsl(210, 25%, 95%);
+  --bg-panel: hsla(210, 20%, 99%, 0.85);
+  --bg-black: hsl(210, 25%, 90%);
+  --bg-card: hsla(0, 0%, 100%, 0.65);
+  --bg-input: hsla(0, 0%, 100%, 0.85);
+  --text-main: hsl(222, 47%, 12%);
+  --text-white: hsl(222, 47%, 10%);
+  --text-grey: hsl(215, 18%, 34%);
+  --text-muted: hsl(215, 16%, 50%);
+  
+  /* Accents */
+  --accent-blue: hsl(217, 91%, 55%);
+  --accent-blue-hover: rgba(37, 99, 235, 0.08);
+  --accent-blue-border: rgba(37, 99, 235, 0.15);
+  
+  /* Core Layout Components */
+  --sidebar-bg: hsla(210, 20%, 99%, 0.85);
+  --footer-bg: hsla(210, 20%, 99%, 0.85);
+  --border-subtle: rgba(0, 0, 0, 0.05);
+  --shadow-subtle: 0 8px 24px rgba(0, 0, 0, 0.04);
+  --text-on-accent: #ffffff;
+  --gradient-text: linear-gradient(135deg, hsl(222, 47%, 12%) 0%, hsl(215, 25%, 35%) 100%);
+
+  /* Glassmorphism Tokens */
+  --bg-glass: hsla(210, 20%, 99%, 0.7);
+  --border-glass: rgba(0, 0, 0, 0.06);
+  --shadow-glass-glow: 0 8px 32px 0 rgba(31, 38, 135, 0.04);
+
+  /* Neon Glassmorphic Button Tokens (Light Mode Overrides) */
+  --btn-glass-bg: var(--gradient-primary);
+  --btn-glass-border-neon: var(--border-glass);
+  --btn-glass-border-neon-hover: transparent;
+  --btn-glass-bg-hover: var(--gradient-hover);
+  --btn-glass-glow: 0 8px 18px rgba(0, 60, 255, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --btn-glass-text: var(--text-on-accent);
+  --btn-glass-text-hover: var(--text-on-accent);
+
+  /* ==========================================
+     COMPONENT-SPECIFIC TOKENS (Light Mode)
+     ========================================== */
+  /* Code / Text Output Windows */
+  --bg-code-window: hsl(210, 20%, 96%);
+  --bg-code-header: hsl(210, 18%, 91%);
+  --border-code-window: rgba(0, 0, 0, 0.08);
+  --text-code-output: hsl(222, 47%, 15%);
+  
+  /* File Upload / Dropzone */
+  --bg-dropzone: radial-gradient(circle at top left, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.85) 100%);
+  --bg-dropzone-hover: rgba(99, 102, 241, 0.05);
+  --border-dropzone: rgba(0, 0, 0, 0.12);
+  --border-dropzone-hover: rgba(99, 102, 241, 0.5);
+  --bg-drop-icon: rgba(0, 0, 0, 0.03);
+  --border-drop-icon: rgba(0, 0, 0, 0.05);
+
+  /* Action Cards (copy panels) */
+  --bg-action-card: rgba(255, 255, 255, 0.7);
+  --bg-action-card-hover: rgba(255, 255, 255, 0.95);
+  --bg-btn-copy: rgba(0, 0, 0, 0.04);
+  --bg-btn-copy-hover: rgba(0, 0, 0, 0.08);
+
+  /* Segmented Controls & Chips */
+  --bg-segment-control: rgba(0, 0, 0, 0.05);
+  --bg-segment-btn-hover: rgba(255, 255, 255, 0.4);
+  --bg-chip-btn: rgba(0, 0, 0, 0.03);
+  --bg-chip-btn-hover: rgba(0, 0, 0, 0.06);
+
+  /* Status Colors (Light Theme overrides) */
+  --color-success: hsl(142, 76%, 36%);
+  --color-success-hover: hsl(142, 76%, 30%);
+  --bg-success-subtle: hsla(142, 76%, 36%, 0.08);
+  --border-success-subtle: hsla(142, 76%, 36%, 0.18);
+
+  --color-danger: hsl(346, 84%, 48%);
+  --color-danger-hover: hsl(346, 84%, 42%);
+  --bg-danger-subtle: hsla(346, 84%, 48%, 0.08);
+  --bg-danger-subtle-hover: hsla(346, 84%, 48%, 0.16);
+  --border-danger-subtle: hsla(346, 84%, 48%, 0.18);
+
+  --color-warning: hsl(38, 92%, 40%);
+  --bg-warning-subtle: hsla(38, 92%, 40%, 0.08);
+  --border-warning-subtle: hsla(38, 92%, 40%, 0.18);
+
+  --color-info: hsl(217, 91%, 50%);
+  --bg-info-subtle: hsla(217, 91%, 50%, 0.08);
+  --border-info-subtle: hsla(217, 91%, 50%, 0.18);
+
+  --color-purple: hsl(271, 81%, 55%);
+  --color-purple-hover: hsl(271, 81%, 45%);
+  --bg-purple-subtle: hsla(271, 81%, 55%, 0.08);
+  --bg-purple-subtle-hover: hsla(271, 81%, 55%, 0.16);
+  --border-purple-subtle: hsla(271, 81%, 55%, 0.18);
+
+  --color-orange: hsl(27, 96%, 47%);
+  --color-orange-hover: hsl(27, 96%, 37%);
+  --bg-orange-subtle: hsla(27, 96%, 47%, 0.08);
+  --border-orange-subtle: hsla(27, 96%, 47%, 0.18);
+
+  --color-cyan: hsl(187, 100%, 38%);
+  --color-cyan-hover: hsl(187, 100%, 30%);
+  --bg-cyan-subtle: hsla(187, 100%, 38%, 0.08);
+
+  --bg-overlay-subtle: rgba(0, 0, 0, 0.03);
+  --bg-overlay-hover: rgba(0, 0, 0, 0.06);
+  --bg-overlay-active: rgba(0, 0, 0, 0.09);
+  --gradient-bg-overlay: radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0.85) 80%, var(--bg-dark) 100%);
+  --bg-table-header: rgba(0, 0, 0, 0.05);
+  --bg-table-header-hover: rgba(0, 0, 0, 0.09);
+  --bg-modal-overlay: rgba(10, 15, 30, 0.4);
+
+  /* Segmented Controls & Chips (Light Theme overrides) */
+  --text-segment-active: hsl(243, 75%, 45%);
+  --bg-segment-active: hsla(243, 75%, 45%, 0.08);
+  --border-segment-active: hsla(243, 75%, 45%, 0.15);
+
+  --text-chip-active: hsl(243, 75%, 45%);
+  --bg-chip-active: hsla(243, 75%, 45%, 0.08);
+  --border-chip-active: hsla(243, 75%, 45%, 0.25);
+}

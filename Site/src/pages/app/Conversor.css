@@ -285,7 +285,7 @@
 }
 
 .conv-hero-value.highlight {
-  color: #818cf8;
+  color: var(--text-segment-active);
   font-family: var(--font-mono);
 }
 

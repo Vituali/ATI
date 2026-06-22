@@ -49,7 +49,7 @@ export async function fetchContractOnlineStatus(baseUrl: string, clientId: strin
 
       if (isOnline || isOffline) {
         statusMap.set(contratoId, isOnline)
-        console.log(`Extensão ATI: Contrato ${contratoId} — ${isOnline ? '🟢 Online' : '🔴 Offline'}`)
+        console.log(`Extensão ATI: Contrato ${contratoId} — ${isOnline ? '[ONLINE]' : '[OFFLINE]'}`)
       }
     }
   } catch (error) {

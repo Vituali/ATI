@@ -9,6 +9,7 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import { useUser } from '../../hooks/useUser'
 import './Conversor.css'
 import LoadingOverlay from '../../components/ui/LoadingOverlay'
+import { FileText, FolderOpen, User, MapPin, Flag, Phone, Package, CreditCard, PartyPopper, Landmark, DollarSign, Pen, ArrowLeft, Check, ClipboardList } from 'lucide-react'
 
 // ---------------------------------------------------------------
 // pdfjs-dist v4 + worker CDN (jsdelivr)
@@ -391,7 +392,7 @@ export default function Conversor() {
     return (
       <div className="conv-page fade-in">
         <div className="conv-header">
-          <h1 className="conv-titulo">📄 Conversor de Aditivo</h1>
+          <h1 className="conv-titulo"><FileText size={20} strokeWidth={2} /> Conversor de Aditivo</h1>
           <p className="conv-subtitulo">Importe o documento PDF para gerar o agendamento da O.S.</p>
         </div>
 
@@ -414,7 +415,7 @@ export default function Conversor() {
           ) : (
             <div className="conv-drop-inner">
               <div className="conv-drop-icon-wrapper">
-                <span className="conv-drop-icon">📂</span>
+                <FolderOpen size={48} strokeWidth={1.5} />
               </div>
               <p className="conv-drop-texto">Arraste o PDF do aditivo para cá</p>
               <span className="conv-drop-ou">ou</span>
@@ -446,13 +447,13 @@ export default function Conversor() {
     <div className="conv-page fade-in">
       <div className="conv-header">
         <div>
-          <h1 className="conv-titulo">📄 Conversor de Aditivo</h1>
+          <h1 className="conv-titulo"><FileText size={20} strokeWidth={2} /> Conversor de Aditivo</h1>
           <p className="conv-subtitulo">
             Contrato em edição: <span className="highlight-tag">{pdfData?.contrato}</span>
           </p>
         </div>
         <button className="conv-btn-voltar" onClick={resetar}>
-          ← Carregar outro PDF
+          <ArrowLeft size={16} strokeWidth={2} /> Carregar outro PDF
         </button>
       </div>
 
@@ -461,7 +462,7 @@ export default function Conversor() {
       <div className="conv-grid">
         {/* CARD 1: DADOS GERAIS */}
         <div className="conv-card conv-card-full">
-          <h2 className="conv-card-titulo">👤 Informações do Assinante</h2>
+          <h2 className="conv-card-titulo"><User size={18} strokeWidth={2} /> Informações do Assinante</h2>
           
           <div className="conv-client-hero">
             <div className="conv-hero-item">
@@ -476,7 +477,7 @@ export default function Conversor() {
 
           <div className="conv-inline">
             <div className="conv-grupo">
-              <label htmlFor="conv-old-address">📍 Endereço Antigo (Origem)</label>
+              <label htmlFor="conv-old-address"><MapPin size={16} strokeWidth={2} /> Endereço Antigo (Origem)</label>
               <input 
                 id="conv-old-address" 
                 name="oldAddress" 
@@ -486,7 +487,7 @@ export default function Conversor() {
               />
             </div>
             <div className="conv-grupo">
-              <label htmlFor="conv-new-address">🏁 Endereço Novo (Destino)</label>
+              <label htmlFor="conv-new-address"><Flag size={16} strokeWidth={2} /> Endereço Novo (Destino)</label>
               <input 
                 id="conv-new-address" 
                 name="newAddress" 
@@ -499,7 +500,7 @@ export default function Conversor() {
 
           <div className="conv-inline">
             <div className="conv-grupo">
-              <label htmlFor="conv-phone">📞 Telefone de Contato</label>
+              <label htmlFor="conv-phone"><Phone size={16} strokeWidth={2} /> Telefone de Contato</label>
               <input
                 id="conv-phone"
                 name="phone"
@@ -516,7 +517,7 @@ export default function Conversor() {
             </div>
             
             <div className="conv-grupo">
-              <label>📦 Modelo do Comodato</label>
+              <label><Package size={16} strokeWidth={2} /> Modelo do Comodato</label>
               <div className="conv-chips-group">
                 {([
                   { val: 'alcl', label: 'ALCL' },
@@ -541,7 +542,7 @@ export default function Conversor() {
 
         {/* CARD 2: CONDIÇÕES COMERCIAIS */}
         <div className="conv-card">
-          <h2 className="conv-card-titulo">💳 Condições Comerciais</h2>
+          <h2 className="conv-card-titulo"><CreditCard size={18} strokeWidth={2} /> Condições Comerciais</h2>
 
           <div className="conv-checkboxes">
             <label className="conv-checkbox">
@@ -570,12 +571,12 @@ export default function Conversor() {
             </label>
           </div>
 
-          {renovacao && <p className="conv-aviso-isento">🎉 Taxa isenta por renovação contratual.</p>}
-          {migracao && <p className="conv-aviso-isento">🎉 Taxa isenta por migração de tecnologia.</p>}
+          {renovacao && <p className="conv-aviso-isento"><PartyPopper size={16} strokeWidth={2} /> Taxa isenta por renovação contratual.</p>}
+          {migracao && <p className="conv-aviso-isento"><PartyPopper size={16} strokeWidth={2} /> Taxa isenta por migração de tecnologia.</p>}
 
           {migracao && (
             <div className="conv-grupo">
-              <label htmlFor="conv-portador">🏦 Antigo Portador</label>
+              <label htmlFor="conv-portador"><Landmark size={16} strokeWidth={2} /> Antigo Portador</label>
               <select 
                 id="conv-portador" 
                 name="portador" 
@@ -592,7 +593,7 @@ export default function Conversor() {
           )}
 
           <div className="conv-grupo">
-            <label>💵 Valor da Taxa</label>
+            <label><DollarSign size={16} strokeWidth={2} /> Valor da Taxa</label>
             <div className="conv-chips-group">
               {([
                 { val: '100', label: 'R$ 100' },
@@ -614,21 +615,21 @@ export default function Conversor() {
           </div>
 
           <div className="conv-grupo">
-            <label>✍️ Assinatura do Contrato</label>
+            <label><Pen size={16} strokeWidth={2} /> Assinatura do Contrato</label>
             <div className="conv-segment-control">
               <button 
                 type="button"
                 className={`conv-segment-btn ${assinatura === 'digital' ? 'active' : ''}`}
                 onClick={() => setAssinatura('digital')}
               >
-                🖥️ Digital (Pendente)
+                Digital (Pendente)
               </button>
               <button 
                 type="button"
                 className={`conv-segment-btn ${assinatura === 'local' ? 'active' : ''}`}
                 onClick={() => setAssinatura('local')}
               >
-                🏠 No Local (Física)
+                No Local (Física)
               </button>
             </div>
           </div>
@@ -636,10 +637,10 @@ export default function Conversor() {
 
         {/* CARD 3: AGENDAMENTO DE ROTA */}
         <div className="conv-card">
-          <h2 className="conv-card-titulo">📅 Agendamento de Rota</h2>
+          <h2 className="conv-card-titulo">Agendamento de Rota</h2>
 
           <div className="conv-section-subtitle">
-            <h3>🚚 Retirada do Equipamento</h3>
+            <h3>Retirada do Equipamento</h3>
             <label className="conv-checkbox inline-check">
               <input 
                 id="conv-cliente-retira" 
@@ -674,26 +675,26 @@ export default function Conversor() {
                     className={`conv-segment-btn ${retiradaPeriodo === 'Manhã' ? 'active' : ''}`}
                     onClick={() => setRetiradaPeriodo('Manhã')}
                   >
-                    ☀️ Manhã
+                    Manhã
                   </button>
                   <button
                     type="button"
                     className={`conv-segment-btn ${retiradaPeriodo === 'Tarde' ? 'active' : ''}`}
                     onClick={() => setRetiradaPeriodo('Tarde')}
                   >
-                    🌤️ Tarde
+                    Tarde
                   </button>
                 </div>
               </div>
             </div>
           ) : (
             <div className="conv-retirada-loja-aviso">
-              ℹ️ O cliente se comprometeu a levar o equipamento antigo para o local!
+              O cliente se comprometeu a levar o equipamento antigo para o local!
             </div>
           )}
 
           <div className="conv-section-subtitle margin-top">
-            <h3>🔌 Instalação no Novo Endereço</h3>
+            <h3>Instalação no Novo Endereço</h3>
           </div>
 
           <div className="conv-inline">
@@ -716,14 +717,14 @@ export default function Conversor() {
                   className={`conv-segment-btn ${instalacaoPeriodo === 'Manhã' ? 'active' : ''}`}
                   onClick={() => setInstalacaoPeriodo('Manhã')}
                 >
-                  ☀️ Manhã
-                </button>
-                <button
-                  type="button"
-                  className={`conv-segment-btn ${instalacaoPeriodo === 'Tarde' ? 'active' : ''}`}
-                  onClick={() => setInstalacaoPeriodo('Tarde')}
-                >
-                  🌤️ Tarde
+                    Manhã
+                  </button>
+                  <button
+                    type="button"
+                    className={`conv-segment-btn ${instalacaoPeriodo === 'Tarde' ? 'active' : ''}`}
+                    onClick={() => setInstalacaoPeriodo('Tarde')}
+                  >
+                    Tarde
                 </button>
               </div>
             </div>
@@ -734,7 +735,7 @@ export default function Conversor() {
       {/* GERAR O.S. */}
       <div className="conv-card conv-card-full conv-result-area">
         <button className="conv-btn-gerar" onClick={handleGerarOS}>
-          ⚡ Gerar Ordem de Serviço
+          Gerar Ordem de Serviço
         </button>
 
         {osGerada && (
@@ -746,7 +747,7 @@ export default function Conversor() {
                   <span className="dot yellow"></span>
                   <span className="dot green"></span>
                 </div>
-                <span className="conv-window-title">📝 TEXTO DA O.S. (REALTIME DATABASE / SGP)</span>
+                <span className="conv-window-title">TEXTO DA O.S. (REALTIME DATABASE / SGP)</span>
               </div>
               <div className="conv-output-body">
                 <textarea 
@@ -772,7 +773,7 @@ export default function Conversor() {
                     className={`conv-btn-action-copy ${copiado === 'retirada' ? 'success' : ''}`} 
                     onClick={() => handleCopiar('retirada')}
                   >
-                    {copiado === 'retirada' ? 'Copiar ✅' : 'Copiar 📋'}
+                    {copiado === 'retirada' ? <><Check size={14} strokeWidth={2} /> Copiar</> : <><ClipboardList size={14} strokeWidth={2} /> Copiar</>}
                   </button>
                 </div>
               )}
@@ -788,7 +789,7 @@ export default function Conversor() {
                     className={`conv-btn-action-copy ${copiado === 'instalacao' ? 'success' : ''}`} 
                     onClick={() => handleCopiar('instalacao')}
                   >
-                    {copiado === 'instalacao' ? 'Copiar ✅' : 'Copiar 📋'}
+                    {copiado === 'instalacao' ? <><Check size={14} strokeWidth={2} /> Copiar</> : <><ClipboardList size={14} strokeWidth={2} /> Copiar</>}
                   </button>
                 </div>
               )}
@@ -804,7 +805,7 @@ export default function Conversor() {
                     className={`conv-btn-action-copy principal ${copiado === 'os' ? 'success' : ''}`} 
                     onClick={() => handleCopiar('os')}
                   >
-                    {copiado === 'os' ? 'Copiado! ✅' : 'Copiar Tudo 📋'}
+                    {copiado === 'os' ? <><Check size={14} strokeWidth={2} /> Copiado!</> : <><ClipboardList size={14} strokeWidth={2} /> Copiar Tudo</>}
                   </button>
                 </div>
               )}

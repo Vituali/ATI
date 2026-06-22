@@ -5,6 +5,7 @@ import { db } from '../../services/firebase'
 import { UserProfile } from '../../hooks/useUser'
 import LoadingOverlay from '../ui/LoadingOverlay'
 import { useNotification } from '../../hooks/useNotification'
+import { Megaphone, X, Plus, Pencil, FileEdit, Save, Rocket, RefreshCw } from 'lucide-react'
 
 interface Aviso {
   id: string
@@ -134,13 +135,13 @@ export default function PainelAvisos({ user }: PainelAvisosProps) {
       <div className="admin-header" style={{ borderBottom: 'none', marginBottom: '0' }}>
         <div>
           <h2 className="admin-titulo" style={{ fontSize: '1.3rem' }}>
-            📢 Gerenciar Avisos
+            <Megaphone size={20} strokeWidth={2} /> Gerenciar Avisos
           </h2>
           <p className="admin-subtitulo">Publique avisos globais para todos os usuários</p>
         </div>
         <div className="admin-header-acoes">
           <button className="admin-btn-refresh" onClick={carregarAvisos}>
-            ↻ Atualizar
+            <RefreshCw size={16} strokeWidth={2} /> Atualizar
           </button>
           <button
             className="admin-btn-salvar-todos"
@@ -151,7 +152,7 @@ export default function PainelAvisos({ user }: PainelAvisosProps) {
               setForm({ titulo: '', corpo: '', tipo: 'info' })
             }}
           >
-            {mostrandoForm ? '✕ Fechar' : '➕ Novo Aviso'}
+            {mostrandoForm ? <><X size={16} strokeWidth={2} /> Fechar</> : <><Plus size={16} strokeWidth={2} /> Novo Aviso</>}
           </button>
         </div>
       </div>
@@ -165,7 +166,7 @@ export default function PainelAvisos({ user }: PainelAvisosProps) {
             border: '1px solid var(--accent-blue-border)',
           }}
         >
-          <h3 className="admin-secao-titulo">{editandoId ? '✏️ Editar Aviso' : '📝 Novo Aviso'}</h3>
+          <h3 className="admin-secao-titulo">{editandoId ? <><Pencil size={16} strokeWidth={2} /> Editar Aviso</> : <><FileEdit size={16} strokeWidth={2} /> Novo Aviso</>}</h3>
           <div className="up-section" style={{ padding: '0' }}>
             <div className="up-grupo">
               <label>Título do Aviso</label>
@@ -178,14 +179,14 @@ export default function PainelAvisos({ user }: PainelAvisosProps) {
             <div className="up-grupo">
               <label>Tipo / Gravidade</label>
               <select className="admin-select" value={form.tipo} onChange={(e) => setForm({ ...form, tipo: e.target.value as Aviso['tipo'] })}>
-                <option value="info">ℹ️ Info (Azul)</option>
-                <option value="warning">⚠️ Warning (Amarelo)</option>
-                <option value="danger">🚨 Danger (Vermelho)</option>
+                <option value="info">Info (Azul)</option>
+                <option value="warning">Warning (Amarelo)</option>
+                <option value="danger">Danger (Vermelho)</option>
               </select>
             </div>
             <div className="chat-acoes" style={{ marginTop: '1rem' }}>
               <button className="admin-btn-salvar" onClick={handleSalvar} style={{ width: 'auto', padding: '10px 25px' }}>
-                {editandoId ? '💾 Salvar Alterações' : '🚀 Publicar Aviso'}
+                {editandoId ? <><Save size={16} strokeWidth={2} /> Salvar Alterações</> : <><Rocket size={16} strokeWidth={2} /> Publicar Aviso</>}
               </button>
               <button className="btn-limpar" onClick={() => setMostrandoForm(false)}>
                 Cancelar

@@ -131,7 +131,7 @@
   width: 100%;
   padding: 14px;
   background: var(--gradient-primary);
-  color: #ffffff;
+  color: var(--text-on-accent);
   border: none;
   border-radius: var(--radius-md);
   font-size: 14px;

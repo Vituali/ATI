@@ -11,6 +11,7 @@
 
 import { useEffect } from 'react'
 import './Modal.css'
+import { X } from 'lucide-react'
 
 interface ModalProps {
   aberto: boolean
@@ -48,7 +49,7 @@ export default function Modal({ aberto, onFechar, titulo, children, largura }: M
         <div className="modal-header">
           <h2 className="modal-titulo">{titulo}</h2>
           <button className="modal-fechar" onClick={onFechar} aria-label="Fechar modal">
-            ✕
+            <X size={20} strokeWidth={2} />
           </button>
         </div>
 

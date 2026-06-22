@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react'
 import { ref, onValue, update } from 'firebase/database'
 import { db } from '../../services/firebase'
 import { UserProfile } from '../../hooks/useUser'
+import { AlertTriangle, TriangleAlert, X, Info } from 'lucide-react'
 import './AvisosHome.css'
 
 interface Aviso {
@@ -35,10 +36,10 @@ function formatarData(ts: number): string {
   })
 }
 
-const TIPO_ICON: Record<Aviso['tipo'], string> = {
-  info: 'ℹ️',
-  warning: '⚠️',
-  danger: '🚨',
+const TIPO_ICON: Record<Aviso['tipo'], React.ReactNode> = {
+  info: <Info size={20} strokeWidth={2} />,
+  warning: <AlertTriangle size={20} strokeWidth={2} />,
+  danger: <TriangleAlert size={20} strokeWidth={2} />,
 }
 
 export default function AvisosHome({ user }: AvisosHomeProps) {
@@ -89,7 +90,7 @@ export default function AvisosHome({ user }: AvisosHomeProps) {
           </div>
           {isAdmin && (
             <button className="aviso-btn-fechar" onClick={() => desativar(aviso.id)} title="Desativar aviso" aria-label="Fechar aviso">
-              ✕
+              <X size={16} strokeWidth={2} />
             </button>
           )}
         </div>

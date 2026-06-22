@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react'
 import './ChatInterno.css'
 import { safeSendMessage, showToast } from '../chatmix/helpers'
+import { MessageSquare, ClipboardList, Globe, Plug, Key, FileEdit, RefreshCw, MessageCircle, X, Check, AlertTriangle } from 'lucide-react'
 
 interface FeasibilityResult {
   id: string
@@ -298,14 +299,14 @@ const ChatInterno: React.FC = () => {
   const embedUrl = 'https://vituali.github.io/ati/?mode=embed'
 
   const tools = [
-    { id: 'chat_interno', label: 'Chat', icon: '💬' },
-    { id: 'modelos_os', label: 'O.S.', icon: '📋' },
-    { id: 'viabilidade', label: 'Viabilidade', icon: '🌐' },
-    { id: 'quedas', label: 'Quedas', icon: '🔌' },
-    { id: 'senhas', label: 'Senhas', icon: '🔑' },
-    { id: 'anotacoes', label: 'Notas', icon: '📝' },
-    { id: 'conversor', label: 'Conversor', icon: '🔄' },
-    { id: 'respostas_rapidas', label: 'Respostas', icon: '🗨️' },
+    { id: 'chat_interno', label: 'Chat', icon: <MessageSquare size={16} /> },
+    { id: 'modelos_os', label: 'O.S.', icon: <ClipboardList size={16} /> },
+    { id: 'viabilidade', label: 'Viabilidade', icon: <Globe size={16} /> },
+    { id: 'quedas', label: 'Quedas', icon: <Plug size={16} /> },
+    { id: 'senhas', label: 'Senhas', icon: <Key size={16} /> },
+    { id: 'anotacoes', label: 'Notas', icon: <FileEdit size={16} /> },
+    { id: 'conversor', label: 'Conversor', icon: <RefreshCw size={16} /> },
+    { id: 'respostas_rapidas', label: 'Respostas', icon: <MessageCircle size={16} /> },
   ]
 
   const handleSearchFeasibility = async (e: React.FormEvent) => {
@@ -524,7 +525,7 @@ const ChatInterno: React.FC = () => {
       <div className={`ati-chat-window ${isOpen ? 'show' : ''}`}>
         <div className="ati-chat-header">
           <span>Painel Auxiliar ATI</span>
-          <button onClick={() => setIsOpen(false)}>×</button>
+          <button onClick={() => setIsOpen(false)}><X size={20} /></button>
         </div>
 
         {/* Barra de Navegação Nativa no Painel da Extensão */}
@@ -582,19 +583,19 @@ const ChatInterno: React.FC = () => {
                   {feasibilityResults.length > 0 ? (
                     <>
                       <div className="ati-feasibility-local-search">
-                        <input type="text" className="ati-feasibility-input" placeholder="🔍 Filtrar resultados (nome, apto, nº...)" value={localFilter} onChange={(e) => setLocalFilter(e.target.value)} />
+                        <input type="text" className="ati-feasibility-input" placeholder="Filtrar resultados (nome, apto, nº...)" value={localFilter} onChange={(e) => setLocalFilter(e.target.value)} />
                       </div>
 
                       {feasibilityType === 'active' ? (
                         <div className="ati-feasibility-results-header ati-feasibility-results-header--active">
-                          <span>✅ Viabilidade confirmada!</span>
+                          <span><Check size={20} /> Viabilidade confirmada!</span>
                           <span>
                             ({filteredResults.length} de {feasibilityResults.length} cliente(s) ativo(s) encontrado(s))
                           </span>
                         </div>
                       ) : (
                         <div className="ati-feasibility-results-header ati-feasibility-results-header--inactive">
-                          <span>⚠️ Atenção: Nenhum cliente ativo no local.</span>
+                          <span><AlertTriangle size={20} /> Atenção: Nenhum cliente ativo no local.</span>
                           <span>
                             Encontrado(s) {filteredResults.length} de {feasibilityResults.length} cadastro(s) com outro status:
                           </span>
@@ -702,11 +703,11 @@ const ChatInterno: React.FC = () => {
                   {outageResults.length > 0 ? (
                     <>
                       <div className="ati-feasibility-local-search">
-                        <input type="text" className="ati-feasibility-input" placeholder="🔍 Filtrar nesta lista (nome, login, plano...)" value={outageLocalFilter} onChange={(e) => setOutageLocalFilter(e.target.value)} />
+                        <input type="text" className="ati-feasibility-input" placeholder="Filtrar nesta lista (nome, login, plano...)" value={outageLocalFilter} onChange={(e) => setOutageLocalFilter(e.target.value)} />
                       </div>
 
                       <div className="ati-feasibility-results-header ati-feasibility-results-header--inactive">
-                        <span>🔌 Outages / Quedas Detectadas</span>
+                        <span><Plug size={20} /> Outages / Quedas Detectadas</span>
                         <span>
                           Encontrado(s) {filteredOutages.length} de {outageResults.length} cliente(s) offline:
                         </span>

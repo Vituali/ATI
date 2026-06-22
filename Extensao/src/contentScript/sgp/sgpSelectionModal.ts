@@ -5,6 +5,7 @@
 
 import { SGP_IP_35, SGP_IP_53 } from '../../background/sgp/constants'
 import { safeSendMessage } from '../chatmix/helpers'
+import { icon } from '../../utils/iconSvgs'
 
 export async function showSgpSelectionModal(): Promise<string | null> {
   return new Promise((resolve) => {
@@ -20,7 +21,7 @@ export async function showSgpSelectionModal(): Promise<string | null> {
 
     const header = document.createElement('div')
     header.className = 'ati-sgp-selector-header'
-    header.textContent = '⚙️ Selecionar Servidor SGP'
+    header.innerHTML = `${icon.settings} Selecionar Servidor SGP`
 
     const body = document.createElement('div')
     body.className = 'ati-sgp-selector-body'

@@ -17,6 +17,7 @@ import { injectQuickReply, injectQuickReplyLoading, removeQuickReply } from './q
 import { showToast } from './helpers'
 import '../sgp/sgpSelectionModal.css'
 import type { GetOsTemplatesRequest, OpenInSgpRequest, GetQuickRepliesRequest, ClearSgpCacheRequest, ClearCpfCacheRequest } from '../../background/types'
+import { icon } from '../../utils/iconSvgs'
 import { injectFloatingChat } from '../chatInterno'
 import { initNotificationHider, checkAndHideWaitingNotifications } from './notifications'
 import { updateChatTimeWarnings } from './timeWarnings'
@@ -43,7 +44,7 @@ function injectButtons(): void {
   const toggleBtn = document.createElement('button')
   toggleBtn.className = 'action-btn ati-dropdown-toggle'
   toggleBtn.id = 'ati-dropdown-toggle-btn'
-  toggleBtn.innerHTML = '📄 Copiar <span style="font-size: 10px; margin-left: 2px;">▼</span>'
+  toggleBtn.innerHTML = `${icon.fileText} Copiar <span style="font-size: 10px; margin-left: 2px;">▼</span>`
   dropdownContainer.appendChild(toggleBtn)
 
   const dropdownMenu = document.createElement('div')
@@ -52,13 +53,13 @@ function injectButtons(): void {
   const contactBtn = document.createElement('button')
   contactBtn.className = 'action-btn'
   contactBtn.id = 'ati-copy-contact'
-  contactBtn.textContent = '👤 Contato'
+  contactBtn.innerHTML = `${icon.users} Contato`
   dropdownMenu.appendChild(contactBtn)
 
   const cpfBtn = document.createElement('button')
   cpfBtn.className = 'action-btn'
   cpfBtn.id = 'ati-copy-cpf'
-  cpfBtn.textContent = '📄 CPF'
+  cpfBtn.innerHTML = `${icon.fileText} CPF`
   dropdownMenu.appendChild(cpfBtn)
 
   dropdownContainer.appendChild(dropdownMenu)
@@ -66,18 +67,18 @@ function injectButtons(): void {
 
   // 2. Outros botões individuais na sidebar
   const otherButtons = [
-    { id: 'ati-copy-prompt', text: '🤖 Chat' },
-    { id: 'ati-open-support', text: '🛠️ Suporte' },
-    { id: 'ati-open-os', text: '📝 O.S' },
-    { id: 'ati-refresh', text: '🔄 Atualizar' },
-    { id: 'ati-open-sgp', text: '↗️ SGP' },
+    { id: 'ati-copy-prompt', text: `${icon.settings} Chat` },
+    { id: 'ati-open-support', text: `${icon.settings} Suporte` },
+    { id: 'ati-open-os', text: `${icon.fileText} O.S` },
+    { id: 'ati-refresh', text: `${icon.refresh} Atualizar` },
+    { id: 'ati-open-sgp', text: `${icon.globe} SGP` },
   ]
 
   otherButtons.forEach(({ id, text }) => {
     const btn = document.createElement('button')
     btn.className = 'action-btn'
     btn.id = id
-    btn.textContent = text
+    btn.innerHTML = text
     container.appendChild(btn)
   })
 
@@ -90,8 +91,8 @@ function injectButtons(): void {
 // =================================================================
 
 async function execAction(btn: HTMLButtonElement, action: () => Promise<void>): Promise<void> {
-  const originalText = btn.textContent || ''
-  btn.textContent = ''
+  const originalHTML = btn.innerHTML
+  btn.innerHTML = ''
   const spinner = document.createElement('span')
   spinner.className = 'spinner'
   btn.appendChild(spinner)
@@ -99,16 +100,16 @@ async function execAction(btn: HTMLButtonElement, action: () => Promise<void>): 
 
   try {
     await action()
-    btn.textContent = '✅'
+    btn.innerHTML = `${icon.check}`
     btn.classList.add('action-btn--success')
   } catch (error: any) {
     logError('Erro na ação do botão:', error)
     showToast(`Extensão ATI: Erro na ação do botão: ${error.message || error}`, 'error')
-    btn.textContent = '❌'
+    btn.innerHTML = `${icon.x}`
     btn.classList.add('action-btn--error')
   } finally {
     await new Promise((r) => setTimeout(r, 1200))
-    btn.textContent = originalText
+    btn.innerHTML = originalHTML
     btn.classList.remove('action-btn--success', 'action-btn--error')
     btn.disabled = false
   }
@@ -193,7 +194,7 @@ const actions: Record<string, () => Promise<void>> = {
 
     const data = await getClientData()
     log('Dados atualizados:', data)
-    showToast('✨ Todo o sistema atualizado com sucesso!', 'success')
+    showToast(`${icon.sparkles} Todo o sistema atualizado com sucesso!`, 'success')
   },
 
   'ati-open-sgp': async () => {
@@ -507,7 +508,7 @@ async function loadQuickReplies(session: UserSession, attempt = 0): Promise<void
     })
     const replies = [...(response?.replies ?? [])]
     replies.push({
-      title: '📞 Validar Contatos (SGP)',
+      title: `${icon.phone} Validar Contatos (SGP)`,
       text: 'VALIDAR_CONTATOS_DYNAMIC',
       category: 'quick_reply',
       subCategory: 'Cadastro',

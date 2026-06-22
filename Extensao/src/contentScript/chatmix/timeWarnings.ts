@@ -1,3 +1,5 @@
+import { icon } from '../../utils/iconSvgs'
+
 function isChatOlderThanOneHour(timeText: string): boolean {
   timeText = timeText.trim().toLowerCase()
   if (!timeText) return false
@@ -60,7 +62,7 @@ export function updateChatTimeWarnings(): void {
     // Atualizamos nosso dataset com este valor limpo.
     if (!warningSpan) {
       timeEl.classList.remove('ati-time-overdue')
-      const cleanTime = currentRawText.replace(/⚠️/g, '').trim()
+      const cleanTime = currentRawText.replace(/<span[^>]*>.*?<\/span>|⚠️/g, '').trim()
       if (cleanTime) {
         timeEl.dataset.atiOriginalTime = cleanTime
       }
@@ -81,7 +83,7 @@ export function updateChatTimeWarnings(): void {
 
           const newWarningSpan = document.createElement('span')
           newWarningSpan.className = 'ati-time-warning'
-          newWarningSpan.textContent = '⚠️'
+          newWarningSpan.innerHTML = icon.alertTriangle
           timeEl.appendChild(newWarningSpan)
 
           const textNode = document.createTextNode(timeText)

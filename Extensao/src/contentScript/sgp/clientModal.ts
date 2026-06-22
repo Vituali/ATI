@@ -4,6 +4,7 @@
 // =================================================================
 
 import './clientModal.css'
+import { icon } from '../../utils/iconSvgs'
 
 export async function showClientSelectionModal(clients: { id: string; text: string }[]): Promise<string | null> {
   return new Promise((resolve) => {
@@ -19,7 +20,7 @@ export async function showClientSelectionModal(clients: { id: string; text: stri
 
     const header = document.createElement('div')
     header.className = 'ati-client-modal-header'
-    header.innerHTML = '👥 Selecionar Cadastro (SGP)'
+    header.innerHTML = `${icon.users} Selecionar Cadastro (SGP)`
 
     const body = document.createElement('div')
     body.className = 'ati-client-modal-body'

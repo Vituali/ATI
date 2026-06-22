@@ -6,6 +6,7 @@ import { useUser } from '../../hooks/useUser'
 import './ModelosOS.css'
 import Modal from '../../components/ui/Modal'
 import LoadingOverlay from '../../components/ui/LoadingOverlay'
+import { FileEdit, Save, Plus, Trash2, ArrowLeft, X, Pencil } from 'lucide-react'
 
 // ---------------------------------------------------------------
 // TIPOS
@@ -336,13 +337,13 @@ export default function ModelosOS() {
       {/* Cabeçalho */}
       <div className="modelos-os-header">
         <div>
-          <h1 className="modelos-os-titulo">📝 Modelos de O.S.</h1>
+          <h1 className="modelos-os-titulo"><FileEdit size={20} strokeWidth={2} /> Modelos de O.S.</h1>
           <p className="modelos-os-subtitulo">Gerencie seus templates de ordens de serviço</p>
         </div>
         <div className="modelos-os-header-acoes">
-          {salvando && <span className="modelos-os-salvando">💾 Salvando...</span>}
+          {salvando && <span className="modelos-os-salvando"><Save size={16} strokeWidth={2} /> Salvando...</span>}
           <button className="modelos-os-btn-novo" onClick={abrirNovo}>
-            ➕ Novo modelo
+            <Plus size={16} strokeWidth={2} /> Novo modelo
           </button>
         </div>
       </div>
@@ -380,10 +381,10 @@ export default function ModelosOS() {
                       <h3 className="modelos-os-card-titulo">{modelo.title}</h3>
                       <div className="modelos-os-card-acoes">
                         <button className="modelos-os-btn-editar" onClick={() => abrirEditar(modelo)}>
-                          ✏️
+                          <Pencil size={16} strokeWidth={2} />
                         </button>
                         <button className="modelos-os-btn-apagar" onClick={() => apagarModelo(modelo.id)}>
-                          🗑️
+                          <Trash2 size={16} strokeWidth={2} />
                         </button>
                       </div>
                     </div>
@@ -393,7 +394,7 @@ export default function ModelosOS() {
                     <div className="modelos-os-card-meta">
                       {tipoNome && (
                         <span className="modelos-os-badge tipo" title="Tipo de ocorrência SGP">
-                          🏷️ {tipoNome}
+                          {tipoNome}
                         </span>
                       )}
                       {modelo.keywords && modelo.keywords.length > 0 && (
@@ -415,7 +416,7 @@ export default function ModelosOS() {
       )}
 
       {/* MODAL */}
-      <Modal aberto={modalAberto} onFechar={() => setModalAberto(false)} titulo={modalModo === 'novo' ? '➕ Novo Modelo' : '✏️ Editar Modelo'} largura="560px">
+      <Modal aberto={modalAberto} onFechar={() => setModalAberto(false)} titulo={modalModo === 'novo' ? 'Novo Modelo' : 'Editar Modelo'} largura="560px">
         {/* Título */}
         <div className="modelos-os-grupo-form">
           <label htmlFor="modelos-os-modal-title">Título</label>
@@ -449,7 +450,7 @@ export default function ModelosOS() {
             <div className="modal-row">
               <input id="modelos-os-modal-new-category" name="category" type="text" placeholder="Nome da nova categoria" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} autoFocus />
               <button className="modelos-os-btn-nova-cat" onClick={() => setNovaCat(false)}>
-                ← Voltar
+                <ArrowLeft size={16} strokeWidth={2} /> Voltar
               </button>
             </div>
           )}
@@ -486,7 +487,7 @@ export default function ModelosOS() {
                 }}
                 title="Limpar"
               >
-                ✕
+                <X size={16} strokeWidth={2} />
               </button>
             )}
             {occAberto && occFiltrados.length > 0 && (
@@ -542,7 +543,7 @@ export default function ModelosOS() {
               {form.keywords!.map((k) => (
                 <span key={k} className="modelos-os-keyword-edit">
                   {k}
-                  <button onClick={() => removerKeyword(k)}>✕</button>
+                  <button onClick={() => removerKeyword(k)}><X size={12} strokeWidth={2} /></button>
                 </span>
               ))}
             </div>
@@ -552,7 +553,7 @@ export default function ModelosOS() {
         {/* Ações */}
         <div className="modal-acoes">
           <button className="modelos-os-btn-salvar" onClick={handleSalvar} disabled={!form.title || !form.text || !form.category}>
-            💾 Salvar
+            <Save size={16} strokeWidth={2} /> Salvar
           </button>
           <button className="modelos-os-btn-cancelar" onClick={() => setModalAberto(false)}>
             Cancelar

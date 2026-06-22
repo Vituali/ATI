@@ -219,5 +219,5 @@
 
 .auth-link-btn:hover {
   text-decoration: underline;
-  color: hsl(217, 91%, 65%);
+  color: var(--accent-blue);
 }

@@ -1,6 +1,4 @@
-/* =================================================================== */
-/* == BANNER E MODAL DE LOGIN                                       == */
-/* =================================================================== */
+@import '../../../styles/tokens.css';
 
 /* --- Banner de login (substitui os botões) --- */
 #ati-login-banner {
@@ -9,9 +7,9 @@
   gap: 10px;
   padding: 12px;
   margin: 8px;
-  background: rgba(0, 100, 255, 0.15);
-  border: 1px solid rgba(0, 100, 255, 0.3);
-  border-radius: 12px;
+  background: var(--accent-blue-hover);
+  border: 1px solid var(--accent-blue-border);
+  border-radius: var(--radius-md);
   width: calc(100% - 16px);
   box-sizing: border-box;
 }
@@ -30,29 +28,29 @@
 
 .ati-login-banner-text strong {
   font-size: 13px;
-  color: white;
+  color: var(--text-white);
 }
 
 .ati-login-banner-text span {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-muted);
 }
 
 .ati-login-banner-btn {
   padding: 6px 14px;
-  background: rgb(0, 100, 255);
-  color: white;
+  background: var(--accent-blue);
+  color: var(--text-on-accent);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 12px;
   font-weight: bold;
   flex-shrink: 0;
-  transition: background 0.2s;
+  transition: all 0.2s ease;
 }
 
 .ati-login-banner-btn:hover {
-  background: rgb(0, 60, 255);
+  background: hsl(217, 91%, 50%);
 }
 
 /* --- Overlay do modal de login --- */
@@ -67,25 +65,27 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  backdrop-filter: var(--blur-intensity);
 }
 
 /* --- Modal de login --- */
 .ati-login-modal {
-  background: #1e1e1e;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
   width: 360px;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-glass-glow);
+  font-family: var(--font-main);
 }
 
 .ati-login-modal-header {
   padding: 16px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border-glass);
   font-size: 15px;
   font-weight: bold;
-  color: white;
+  color: var(--text-white);
 }
 
 .ati-login-modal-body {
@@ -103,37 +103,38 @@
 
 .ati-login-field label {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-muted);
   font-weight: 500;
 }
 
 .ati-login-field input {
   padding: 10px 12px;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
-  color: white;
+  background: var(--bg-input);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  color: var(--text-white);
   font-size: 14px;
   outline: none;
   transition: border-color 0.2s;
 }
 
 .ati-login-field input:focus {
-  border-color: rgb(0, 100, 255);
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px var(--accent-blue-hover);
 }
 
 .ati-login-error {
   padding: 8px 12px;
-  background: rgba(220, 53, 69, 0.2);
-  border: 1px solid rgba(220, 53, 69, 0.4);
-  border-radius: 8px;
-  color: #ff6b7a;
+  background: var(--bg-danger-subtle);
+  border: 1px solid var(--border-danger-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--color-danger);
   font-size: 12px;
 }
 
 .ati-login-modal-footer {
   padding: 16px 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--border-glass);
   display: flex;
   justify-content: flex-end;
   gap: 10px;
@@ -142,35 +143,40 @@
 .ati-login-btn-cancel {
   padding: 8px 16px;
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  color: rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
   cursor: pointer;
   font-size: 13px;
   transition: all 0.2s;
 }
 
 .ati-login-btn-cancel:hover {
-  background: rgba(255, 255, 255, 0.07);
+  background: var(--bg-overlay-hover);
+  color: var(--text-grey);
 }
 
 .ati-login-btn-submit {
   padding: 8px 20px;
-  background: rgb(0, 100, 255);
+  background: linear-gradient(135deg, var(--accent-blue) 0%, hsl(230, 90%, 65%) 100%);
   border: none;
-  border-radius: 8px;
-  color: white;
+  border-radius: var(--radius-sm);
+  color: var(--text-on-accent);
   cursor: pointer;
   font-size: 13px;
   font-weight: bold;
-  transition: background 0.2s;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 100, 255, 0.25);
 }
 
 .ati-login-btn-submit:hover {
-  background: rgb(0, 60, 255);
+  box-shadow: 0 6px 18px rgba(0, 100, 255, 0.35);
+  transform: translateY(-1px);
 }
 
 .ati-login-btn-submit:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }

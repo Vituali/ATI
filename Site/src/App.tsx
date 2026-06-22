@@ -5,6 +5,7 @@ import { Login, Register, Home, ErrorPage, ExtensionModal } from './pages'
 import { useUser, UserProfile } from './hooks'
 import { canAccess, Section, Setor, getSetorLabel, logout, db, auth, syncWithExtension, performSSOLogin } from './services'
 import { Sidebar, Footer, LoadingOverlay, ToastContainer, UserPanel, BugReportModal, ErrorBoundary } from './components'
+import { MessageSquare, ClipboardList, Key, FileEdit, RefreshCw, MessageCircle, Sparkles } from 'lucide-react'
 import { ref, onValue } from 'firebase/database'
 import './App.css'
 import { useRegisterSW } from 'virtual:pwa-register/react'
@@ -142,7 +143,7 @@ export default function App() {
     if (unreadRooms.length > 0) {
       // Exemplo: (1) 💬 FINANCEIRO! | ATI
       const nomesSalas = unreadRooms.map((s) => getSetorLabel(s).toUpperCase()).join(', ')
-      document.title = `(${unreadRooms.length}) 💬 ${nomesSalas} | ${baseTitle}`
+      document.title = `(${unreadRooms.length}) ${nomesSalas} | ${baseTitle}`
       if (favicon) favicon.href = `${baseUrl}favicon-unread.svg`
 
       // PWA: Define badge vermelho com número de novas mensagens no ícone da barra de tarefas
@@ -197,13 +198,13 @@ export default function App() {
       if (type === 'ATI_EXTENSION_TO_SITE') {
         // 1. Se a ponte estiver pronta, o site envia o login se já tiver
         if (action === 'BRIDGE_READY') {
-          console.log('SSO: 🟠 Ponte detectada. Sincronizando...')
+          console.log('SSO: [LARANJA] Ponte detectada. Sincronizando...')
           if (auth.currentUser) syncWithExtension(auth.currentUser)
         }
 
         // 2. Se a extensão mandou a sessão e o site está deslogado, tenta login reverso
         if (action === 'SSO_SESSION_DATA' && session) {
-          console.log('SSO: 🔵 Dados recebidos da extensão. Verificando auto-login...')
+          console.log('SSO: [AZUL] Dados recebidos da extensão. Verificando auto-login...')
           if (!auth.currentUser) {
             performSSOLogin(session)
           }
@@ -248,12 +249,12 @@ export default function App() {
     }
 
     const availableTabs = [
-      { id: 'chat_interno' as Section, label: 'Chat', icon: '💬' },
-      { id: 'modelos_os' as Section, label: 'O.S.', icon: '📋' },
-      { id: 'senhas' as Section, label: 'Senhas', icon: '🔑' },
-      { id: 'anotacoes' as Section, label: 'Notas', icon: '📝' },
-      { id: 'conversor' as Section, label: 'Conversor', icon: '🔄' },
-      { id: 'respostas_rapidas' as Section, label: 'Respostas', icon: '🗨️' },
+      { id: 'chat_interno' as Section, label: 'Chat', icon: <MessageSquare size={20} /> },
+      { id: 'modelos_os' as Section, label: 'O.S.', icon: <ClipboardList size={20} /> },
+      { id: 'senhas' as Section, label: 'Senhas', icon: <Key size={20} /> },
+      { id: 'anotacoes' as Section, label: 'Notas', icon: <FileEdit size={20} /> },
+      { id: 'conversor' as Section, label: 'Conversor', icon: <RefreshCw size={20} /> },
+      { id: 'respostas_rapidas' as Section, label: 'Respostas', icon: <MessageCircle size={20} /> },
     ].filter((tab) => canAccess(user.role, user.setor, tab.id))
 
     const activeEmbedSection = availableTabs.some((t) => t.id === embedSection) ? embedSection : availableTabs[0]?.id || 'chat_interno'
@@ -360,7 +361,7 @@ export default function App() {
         <div className="pwa-toast-container">
           <div className="pwa-toast-content">
             <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-              <span className="pwa-toast-icon">✨</span>
+              <span className="pwa-toast-icon"><Sparkles size={20} strokeWidth={2} /></span>
               <div className="pwa-toast-message">
                 <strong>Nova Versão Disponível!</strong>
                 <p>O sistema foi atualizado para otimizar seus atendimentos.</p>

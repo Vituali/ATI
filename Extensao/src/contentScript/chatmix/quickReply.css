@@ -1,113 +1,116 @@
-/* =================================================================== */
-/* == QUICK REPLY — Respostas rápidas acima do textarea             == */
-/* =================================================================== */
-
-@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600&display=swap');
+@import '../../styles/tokens.css';
 
 #ati-quick-reply-container {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 8px 12px;
-  font-family: 'DM Sans', sans-serif;
-  background: rgba(0, 0, 0, 0.03);
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  gap: 8px;
+  padding: 10px 14px;
+  font-family: var(--font-main);
+  background: var(--bg-glass);
+  border-top: 1px solid var(--btn-glass-border-neon);
+  backdrop-filter: blur(12px);
 }
 
 html.dark #ati-quick-reply-container {
-  background: rgba(0, 0, 0, 0.15);
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(15, 15, 20, 0.7);
+  border-top: 1px solid var(--btn-glass-border-neon);
 }
 
 /* --- Abas de categoria --- */
 .ati-qr-tabs {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   flex-wrap: wrap;
+  margin-bottom: 4px;
 }
 
 .ati-qr-tab {
-  padding: 3px 10px;
+  padding: 4px 12px;
   border-radius: 20px;
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 600;
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-main);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  background: rgba(0, 100, 255, 0.05);
-  color: rgb(0, 80, 200);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-overlay-subtle);
+  color: var(--text-grey);
 }
 
 html.dark .ati-qr-tab {
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(0, 100, 255, 0.2);
-  color: rgb(100, 160, 255);
+  border: 1px solid var(--border-glass);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-grey);
 }
 
 .ati-qr-tab:hover {
-  background: rgba(0, 100, 255, 0.1);
-  color: rgb(0, 60, 160);
+  background: var(--bg-overlay-hover);
+  color: var(--text-white);
+  transform: translateY(-1px);
 }
 
 html.dark .ati-qr-tab:hover {
-  background: rgba(255, 255, 255, 0.07);
-  color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--btn-glass-border-neon-hover);
+  color: #ffffff;
 }
 
 .ati-qr-tab--active {
-  background: rgba(0, 100, 255, 0.15);
-  border-color: rgba(0, 100, 255, 0.4);
-  color: rgb(0, 80, 200);
+  background: var(--accent-blue-hover) !important;
+  border-color: var(--accent-blue-border) !important;
+  color: var(--accent-blue) !important;
 }
 
 html.dark .ati-qr-tab--active {
-  background: rgba(0, 100, 255, 0.2);
-  border-color: rgba(0, 100, 255, 0.4);
-  color: rgb(100, 160, 255);
+  background: rgba(0, 229, 255, 0.08) !important;
+  border-color: var(--btn-glass-border-neon-hover) !important;
+  color: #00e5ff !important;
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.2);
 }
 
 /* --- Botões de resposta --- */
 .ati-qr-buttons {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: 6px;
 }
 
 .ati-qr-btn {
-  padding: 5px 11px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-family: 'DM Sans', sans-serif;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: var(--font-main);
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: left;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  background: rgba(255, 255, 255, 0.8);
-  color: rgba(0, 0, 0, 0.7);
+  border: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.85);
+  color: rgba(0, 0, 0, 0.8);
 }
 
 html.dark .ati-qr-btn {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.75);
+  border: 1px solid var(--btn-glass-border-neon);
+  background: var(--btn-glass-bg);
+  color: var(--btn-glass-text);
 }
 
 .ati-qr-btn:hover {
-  background: rgba(0, 100, 255, 0.1);
-  border-color: rgba(0, 100, 255, 0.35);
-  color: rgb(0, 60, 160);
+  background: var(--accent-blue-hover);
+  border-color: var(--accent-blue-border);
+  color: var(--text-white);
+  transform: translateY(-1px);
 }
 
 html.dark .ati-qr-btn:hover {
-  background: rgba(0, 100, 255, 0.2);
-  border-color: rgba(0, 100, 255, 0.35);
-  color: white;
+  background: var(--btn-glass-bg-hover);
+  border-color: var(--btn-glass-border-neon-hover);
+  color: var(--btn-glass-text-hover);
+  box-shadow: var(--btn-glass-glow);
 }
 
 .ati-qr-btn:active {
@@ -117,7 +120,7 @@ html.dark .ati-qr-btn:hover {
 /* --- Loading / erro --- */
 .ati-qr-loading {
   font-size: 11px;
-  color: rgba(0, 0, 0, 0.4);
+  color: var(--text-muted);
   font-style: italic;
   padding: 4px 2px;
   display: flex;
@@ -126,27 +129,25 @@ html.dark .ati-qr-btn:hover {
 }
 
 html.dark .ati-qr-loading {
-  color: rgba(255, 255, 255, 0.25);
+  color: var(--text-muted);
 }
 
 .ati-qr-loading::before {
   content: '';
   width: 10px;
   height: 10px;
-  border: 1.5px solid rgba(0, 0, 0, 0.1);
-  border-top-color: rgb(0, 100, 255);
+  border: 1.5px solid var(--border-subtle);
+  border-top-color: var(--accent-blue);
   border-radius: 50%;
   animation: ati-spin 0.7s linear infinite;
   flex-shrink: 0;
 }
 
 html.dark .ati-qr-loading::before {
-  border: 1.5px solid rgba(255, 255, 255, 0.1);
-  border-top-color: rgb(0, 100, 255);
+  border: 1.5px solid var(--border-glass);
+  border-top-color: var(--accent-blue);
 }
 
 @keyframes ati-spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }

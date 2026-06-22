@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import './Senhas.css'
 import { getCredentials, isAdminUser } from '../../services/credentials'
+import { Check, ClipboardList, Key, Settings, Globe } from 'lucide-react'
 
 interface Credencial {
   label: string
@@ -47,12 +48,12 @@ function ItemCopiavel({ label, valor, link }: ItemCopiavel) {
           </a>
         ) : (
           <span className={`senha-valor copiavel ${copiado ? 'copiado' : ''}`} onClick={handleCopiar} title="Clique para copiar">
-            {copiado ? '✅ Copiado!' : valor}
+            {copiado ? <><Check size={14} strokeWidth={2} /> Copiado!</> : valor}
           </span>
         )}
         {!link && (
           <button className="senha-copiar-btn" onClick={handleCopiar} title="Copiar">
-            {copiado ? '✅' : '📋'}
+            {copiado ? <Check size={16} strokeWidth={2} /> : <ClipboardList size={16} strokeWidth={2} />}
           </button>
         )}
       </div>
@@ -83,7 +84,7 @@ export default function Senhas() {
     return (
       <div className="senhas-page">
         <div className="senhas-header">
-          <h1 className="senhas-titulo">🔑 Senhas de Equipamentos</h1>
+          <h1 className="senhas-titulo"><Key size={20} strokeWidth={2} /> Senhas de Equipamentos</h1>
           <p className="senhas-subtitulo">Acesso rápido aos logins e senhas. Clique para copiar.</p>
         </div>
         <div style={{ textAlign: 'center', padding: '2rem', opacity: 0.6 }}>Carregando credenciais...</div>
@@ -95,7 +96,7 @@ export default function Senhas() {
     return (
       <div className="senhas-page">
         <div className="senhas-header">
-          <h1 className="senhas-titulo">🔑 Senhas de Equipamentos</h1>
+          <h1 className="senhas-titulo"><Key size={20} strokeWidth={2} /> Senhas de Equipamentos</h1>
           <p className="senhas-subtitulo">Acesso rápido aos logins e senhas. Clique para copiar.</p>
         </div>
         <div className="senhas-grid">
@@ -103,7 +104,7 @@ export default function Senhas() {
             <p style={{ opacity: 0.6 }}>Nenhuma credencial configurada no momento.</p>
             {isAdmin && (
               <p style={{ marginTop: '1rem', fontSize: '0.85rem', opacity: 0.5 }}>
-                ⚙️ Configure as credenciais no nó <code>credenciais</code> do Firebase Realtime Database.
+                <Settings size={16} strokeWidth={2} /> Configure as credenciais no nó <code>credenciais</code> do Firebase Realtime Database.
               </p>
             )}
           </div>
@@ -115,7 +116,7 @@ export default function Senhas() {
   return (
     <div className="senhas-page">
       <div className="senhas-header">
-        <h1 className="senhas-titulo">🔑 Senhas de Equipamentos</h1>
+        <h1 className="senhas-titulo"><Key size={20} strokeWidth={2} /> Senhas de Equipamentos</h1>
         <p className="senhas-subtitulo">Acesso rápido aos logins e senhas. Clique para copiar.</p>
       </div>
 
@@ -136,7 +137,7 @@ export default function Senhas() {
         {sites.length > 0 && (
           <div className="senhas-card">
             <h3 className="senhas-card-titulo">
-              <span>🌐</span> Sites Importantes
+              <span><Globe size={20} strokeWidth={2} /></span> Sites Importantes
             </h3>
             <div className="senhas-lista">
               {sites.map((site, i) => (

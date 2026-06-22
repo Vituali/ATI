@@ -6,6 +6,7 @@ import { useUser } from '../../hooks/useUser'
 import './RespostasRapidas.css'
 import LoadingOverlay from '../../components/ui/LoadingOverlay'
 import Modal from '../../components/ui/Modal'
+import { MessageCircle, Save, Check, ClipboardList, Pencil, Trash2, X, Plus, ArrowLeft } from 'lucide-react'
 
 // ---------------------------------------------------------------
 // TIPOS
@@ -341,8 +342,8 @@ export default function RespostasRapidas() {
   return (
     <div className="respostas-rapidas-page">
       <div className="respostas-rapidas-header">
-        <h1 className="respostas-rapidas-titulo">🗨️ Respostas Rápidas</h1>
-        {salvando && <span className="respostas-rapidas-salvando">💾 Salvando...</span>}
+        <h1 className="respostas-rapidas-titulo"><MessageCircle size={20} strokeWidth={2} /> Respostas Rápidas</h1>
+        {salvando && <span className="respostas-rapidas-salvando"><Save size={16} strokeWidth={2} /> Salvando...</span>}
       </div>
 
       <div className="respostas-rapidas-card">
@@ -407,16 +408,16 @@ export default function RespostasRapidas() {
             </div>
             <div className="respostas-rapidas-acoes">
               <button className="btn-copiar" onClick={handleCopiar} disabled={copiado}>
-                {copiado ? '✅ Copiado!' : '📋 Copiar'}
+                {copiado ? <><Check size={16} strokeWidth={2} /> Copiado!</> : <><ClipboardList size={16} strokeWidth={2} /> Copiar</>}
               </button>
               <button className="btn-editar" onClick={abrirModalEditar}>
-                ✏️ Editar
+                <Pencil size={16} strokeWidth={2} /> Editar
               </button>
               <button className="btn-apagar" onClick={handleApagar}>
-                🗑️ Apagar
+                <Trash2 size={16} strokeWidth={2} /> Apagar
               </button>
               <button className="btn-limpar" onClick={handleLimpar}>
-                ✕ Limpar
+                <X size={16} strokeWidth={2} /> Limpar
               </button>
             </div>
           </div>
@@ -426,7 +427,7 @@ export default function RespostasRapidas() {
         {!reordenandoCats && (
           <div className="respostas-rapidas-add-wrapper">
             <button className="btn-adicionar" onClick={abrirModalNovo}>
-              ➕ Nova resposta
+              <Plus size={16} strokeWidth={2} /> Nova resposta
             </button>
           </div>
         )}
@@ -452,7 +453,7 @@ export default function RespostasRapidas() {
       )}
 
       {/* MODAL */}
-      <Modal aberto={modalAberto} onFechar={() => setModalAberto(false)} titulo={modalModo === 'novo' ? '➕ Nova Resposta' : '✏️ Editar Resposta'} largura="520px">
+      <Modal aberto={modalAberto} onFechar={() => setModalAberto(false)} titulo={modalModo === 'novo' ? 'Nova Resposta' : 'Editar Resposta'} largura="520px">
         <div className="respostas-rapidas-grupo">
           <label htmlFor="respostas-rapidas-modal-subcat">Categoria</label>
           {!modalNovaCat ? (
@@ -473,7 +474,7 @@ export default function RespostasRapidas() {
             <div className="modal-row">
               <input id="respostas-rapidas-modal-new-cat" name="subCategory" type="text" placeholder="Nome da nova categoria" value={modalForm.subCategory} onChange={(e) => setModalForm({ ...modalForm, subCategory: e.target.value })} autoFocus />
               <button className="btn-nova-cat" onClick={() => setModalNovaCat(false)}>
-                ← Voltar
+                <ArrowLeft size={16} strokeWidth={2} /> Voltar
               </button>
             </div>
           )}
@@ -492,7 +493,7 @@ export default function RespostasRapidas() {
 
         <div className="modal-acoes">
           <button className="btn-copiar" onClick={handleModalSalvar} disabled={!modalForm.title || !modalForm.text || !modalForm.subCategory}>
-            💾 Salvar
+            <Save size={16} strokeWidth={2} /> Salvar
           </button>
           <button className="btn-limpar" onClick={() => setModalAberto(false)}>
             Cancelar

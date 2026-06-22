@@ -5,6 +5,7 @@
 // ---------------------------------------------------------------
 
 import { logout } from '../../services/auth'
+import { Lock, User, Ban, Antenna, AlertTriangle, Lightbulb } from 'lucide-react'
 import './ErrorPage.css'
 
 interface ErrorPageProps {
@@ -13,7 +14,7 @@ interface ErrorPageProps {
 
 // Tipos de erro conhecidos com conteúdo personalizado
 interface ErrorContent {
-  icon: string
+  icon: React.ReactNode
   titulo: string
   descricao: string
   dica: string
@@ -27,7 +28,7 @@ function resolveErrorContent(message: string): ErrorContent {
 
   if (msg.includes('inativa')) {
     return {
-      icon: '🔒',
+      icon: <Lock size={32} strokeWidth={2} />,
       titulo: 'Conta inativa',
       descricao: 'Sua conta foi desativada pelo administrador do sistema.',
       dica: 'Entre em contato com o administrador para reativar seu acesso.',
@@ -38,7 +39,7 @@ function resolveErrorContent(message: string): ErrorContent {
 
   if (msg.includes('perfil não encontrado') || msg.includes('banco de dados')) {
     return {
-      icon: '👤',
+      icon: <User size={32} strokeWidth={2} />,
       titulo: 'Perfil não encontrado',
       descricao: 'Sua conta foi autenticada, mas os dados de perfil não estão no banco.',
       dica: 'Isso pode acontecer após um cadastro incompleto. Contate o administrador informando seu e-mail.',
@@ -49,7 +50,7 @@ function resolveErrorContent(message: string): ErrorContent {
 
   if (msg.includes('permiss') || msg.includes('403')) {
     return {
-      icon: '⛔',
+      icon: <Ban size={32} strokeWidth={2} />,
       titulo: 'Sem permissão',
       descricao: 'Você não tem autorização para acessar este recurso.',
       dica: 'Solicite ao administrador que verifique sua role e setor.',
@@ -60,7 +61,7 @@ function resolveErrorContent(message: string): ErrorContent {
 
   if (msg.includes('rede') || msg.includes('network') || msg.includes('fetch')) {
     return {
-      icon: '📡',
+      icon: <Antenna size={32} strokeWidth={2} />,
       titulo: 'Erro de conexão',
       descricao: 'Não foi possível conectar ao servidor.',
       dica: 'Verifique sua conexão com a internet e tente novamente.',
@@ -71,7 +72,7 @@ function resolveErrorContent(message: string): ErrorContent {
 
   // Erro genérico
   return {
-    icon: '⚠️',
+    icon: <AlertTriangle size={32} strokeWidth={2} />,
     titulo: 'Algo deu errado',
     descricao: message || 'Ocorreu um erro inesperado no sistema.',
     dica: 'Se o problema persistir, contate o administrador do sistema.',
@@ -101,7 +102,7 @@ export default function ErrorPage({ message }: ErrorPageProps) {
           <p className="error-descricao">{content.descricao}</p>
 
           <div className="error-dica">
-            <span className="error-dica-icon">💡</span>
+            <span className="error-dica-icon"><Lightbulb size={20} strokeWidth={2} /></span>
             <p>{content.dica}</p>
           </div>
 

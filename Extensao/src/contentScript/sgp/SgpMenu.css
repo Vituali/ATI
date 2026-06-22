@@ -13,27 +13,38 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: #0064ff;
-  color: white;
-  border: none;
+  background: var(--btn-glass-bg);
+  color: #00e5ff; /* Cyan neon color for the 3 dots in dark mode */
+  border: 1.5px solid var(--btn-glass-border-neon);
   cursor: pointer;
-  box-shadow: 0 4px 15px rgba(0, 100, 255, 0.4);
+  box-shadow: var(--btn-glass-glow);
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: all;
   z-index: 1000000;
+  backdrop-filter: blur(10px);
 }
 
 .ati-sgp-toggle:hover {
-  transform: scale(1.1);
-  background: #0056dd;
+  transform: scale(1.1) translateY(-2px);
+  background: var(--btn-glass-bg-hover);
+  border-color: var(--btn-glass-border-neon-hover);
+  color: var(--btn-glass-text-hover);
+  box-shadow: var(--btn-glass-glow);
 }
 
 .ati-sgp-toggle.active {
-  background: #222;
+  background: #111;
+  color: #ff5252; /* red X when active/open */
+  border-color: rgba(255, 82, 82, 0.45);
   transform: rotate(90deg);
+  box-shadow: 0 4px 15px rgba(255, 82, 82, 0.25);
+}
+
+html:not(.dark) .ati-sgp-toggle {
+  color: var(--text-on-accent);
 }
 
 /* Popover Menu SGP */

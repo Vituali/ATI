@@ -12,7 +12,7 @@
   min-height: calc(100vh - 150px);
   padding: 2rem;
   overflow: hidden;
-  background: rgba(17, 14, 25, 0.3);
+  background: var(--bg-black, rgba(17, 14, 25, 0.3));
 }
 
 .jefferson-page::after {
@@ -76,7 +76,7 @@
 .jeff-title {
   font-size: 2rem;
   font-weight: 800;
-  color: #c084fc; /* Roxo claro gótico */
+  color: var(--color-purple-hover); /* Roxo claro gótico */
   margin: 0 0 6px 0;
   text-shadow: 0 0 10px rgba(192, 132, 252, 0.3);
   letter-spacing: -0.5px;
@@ -84,7 +84,7 @@
 
 .jeff-subtitle {
   font-size: 0.95rem;
-  color: var(--text-grey, #a1a1aa);
+  color: var(--text-grey);
   margin: 0;
 }
 
@@ -106,12 +106,12 @@
   position: relative;
   z-index: 2;
   background: rgba(30, 27, 41, 0.95);
-  border: 1px solid rgba(192, 132, 252, 0.2);
-  border-radius: var(--radius-lg, 12px);
+  border: 1px solid var(--border-purple-subtle);
+  border-radius: var(--radius-lg);
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  box-shadow: var(--shadow-glass-glow, 0 8px 32px 0 rgba(0, 0, 0, 0.37));
 }
 
 .jeff-card.img-card {
@@ -123,7 +123,7 @@
 .jeff-img-wrapper {
   width: 100%;
   aspect-ratio: 1;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
   border: 2px solid rgba(192, 132, 252, 0.3);
   box-shadow: 0 0 20px rgba(192, 132, 252, 0.1);
@@ -146,8 +146,8 @@
 
 .jeff-img-caption {
   font-size: 0.75rem;
-  color: #a1a1aa;
-  font-family: var(--font-mono, monospace);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
 }
 
 /* Control Card */
@@ -160,13 +160,13 @@
 .jeff-card-title {
   font-size: 1.15rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-white);
   margin: 0;
 }
 
 .jeff-desc {
   font-size: 0.88rem;
-  color: #a1a1aa;
+  color: var(--text-grey);
   margin: 0;
 }
 
@@ -184,7 +184,7 @@
   border-radius: 50%;
   border: 1px solid rgba(192, 132, 252, 0.4);
   background: rgba(192, 132, 252, 0.08);
-  color: #c084fc;
+  color: var(--color-purple-hover);
   font-size: 1.5rem;
   font-weight: bold;
   cursor: pointer;
@@ -210,7 +210,7 @@
   font-size: 2.25rem;
   font-weight: 800;
   color: #fff;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
   min-width: 60px;
   text-align: center;
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
@@ -297,7 +297,7 @@
 
 .goth-checkbox-label input {
   cursor: pointer;
-  accent-color: #a855f7;
+  accent-color: var(--color-purple);
 }
 
 .goth-result-box {
@@ -347,7 +347,7 @@
 .goth-type-item {
   background: rgba(20, 15, 30, 0.6);
   border: 1px solid rgba(168, 85, 247, 0.15);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 1rem;
   display: flex;
   flex-direction: column;
@@ -385,7 +385,7 @@
   gap: 10px;
   background: rgba(0, 0, 0, 0.25);
   border: 1px solid rgba(192, 132, 252, 0.15);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 12px;
   margin-bottom: 1.2rem;
 }
@@ -411,7 +411,7 @@
 
 .jeff-form-label {
   font-size: 0.72rem;
-  color: #a1a1aa;
+  color: var(--text-muted);
 }
 
 .jeff-form-input {
@@ -484,7 +484,7 @@
   align-items: center;
   background: rgba(192, 132, 252, 0.03);
   border: 1px solid rgba(192, 132, 252, 0.12);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 10px 12px;
   transition: all 0.2s;
 }
@@ -551,7 +551,7 @@
   display: flex;
   gap: 10px;
   font-size: 0.7rem;
-  color: #a1a1aa;
+  color: var(--text-muted);
   margin-top: 1px;
   flex-wrap: wrap;
 }
@@ -588,13 +588,13 @@
 }
 
 .jeff-countdown.safe {
-  color: #a1a1aa;
+  color: var(--text-muted);
 }
 
 .jeff-btn-delete {
   background: transparent;
   border: none;
-  color: #ef4444;
+  color: var(--color-danger);
   font-size: 0.85rem;
   padding: 4px 8px;
   cursor: pointer;
@@ -613,9 +613,9 @@
 .jeff-empty-state {
   text-align: center;
   padding: 20px;
-  color: #888;
+  color: var(--text-muted);
   font-size: 0.75rem;
   border: 1px dashed rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.01);
 }

@@ -15,6 +15,7 @@ import PainelAvisos from '../../components/app/PainelAvisos'
 import { useUser } from '../../hooks/useUser'
 import type { UserProfile } from '../../hooks/useUser'
 import { useNotification } from '../../hooks/useNotification'
+import { ArrowUp, ArrowDown, Shield, Save, Users, Megaphone, Bug, ClipboardList, RefreshCw } from 'lucide-react'
 
 // ---------------------------------------------------------------
 // TIPOS
@@ -235,7 +236,7 @@ export default function Admin() {
   // Ícone de ordenação no cabeçalho
   function sortIcon(field: SortField) {
     if (sortField !== field) return <span className="admin-sort-icon">↕</span>
-    return <span className="admin-sort-icon active">{sortAsc ? '↑' : '↓'}</span>
+    return <span className="admin-sort-icon active">{sortAsc ? <ArrowUp size={14} strokeWidth={2} /> : <ArrowDown size={14} strokeWidth={2} />}</span>
   }
 
   // ---------------------------------------------------------------
@@ -249,15 +250,15 @@ export default function Admin() {
       {/* Cabeçalho */}
       <div className="admin-header">
         <div>
-          <h1 className="admin-titulo">🛡️ Painel Admin</h1>
+          <h1 className="admin-titulo"><Shield size={20} strokeWidth={2} /> Painel Admin</h1>
           <p className="admin-subtitulo">Gerencie usuários, roles e setores</p>
         </div>
         <div className="admin-header-acoes">
           <button className="admin-btn-refresh" onClick={carregarAtendentes}>
-            ↻ Atualizar
+            <RefreshCw size={16} strokeWidth={2} /> Atualizar
           </button>
           <button className="admin-btn-salvar-todos" onClick={handleSalvarTodos} disabled={salvandoTodos || loading}>
-            {salvandoTodos ? `Salvando ${listaFiltrada.length}...` : `💾 Salvar todos (${listaFiltrada.length})`}
+            {salvandoTodos ? `Salvando ${listaFiltrada.length}...` : <><Save size={16} strokeWidth={2} /> Salvar todos ({listaFiltrada.length})</>}
           </button>
         </div>
       </div>
@@ -265,13 +266,13 @@ export default function Admin() {
       {/* Abas de Navegação Admin */}
       <div className="admin-abas">
         <button className={`admin-aba ${abaAdmin === 'usuarios' ? 'ativa' : ''}`} onClick={() => setAbaAdmin('usuarios')}>
-          👥 Usuários
+          <Users size={16} strokeWidth={2} /> Usuários
         </button>
         <button className={`admin-aba ${abaAdmin === 'avisos' ? 'ativa' : ''}`} onClick={() => setAbaAdmin('avisos')}>
-          📢 Avisos
+          <Megaphone size={16} strokeWidth={2} /> Avisos
         </button>
         <button className={`admin-aba ${abaAdmin === 'bugs' ? 'ativa' : ''}`} onClick={() => setAbaAdmin('bugs')} style={{ position: 'relative' }}>
-          🐛 Bugs Relatados
+          <Bug size={16} strokeWidth={2} /> Bugs Relatados
           {openBugsCount > 0 && <span className="admin-aba-badge">{openBugsCount}</span>}
         </button>
       </div>
@@ -375,7 +376,7 @@ export default function Admin() {
 
           {/* Resumo de permissões por setor */}
           <div className="admin-card">
-            <h2 className="admin-secao-titulo">📋 Resumo de Permissões por Setor</h2>
+            <h2 className="admin-secao-titulo"><ClipboardList size={18} strokeWidth={2} /> Resumo de Permissões por Setor</h2>
             <div className="admin-permissoes-grid">
               {SETORES.map((setor) => (
                 <div key={setor} className="admin-permissao-card">

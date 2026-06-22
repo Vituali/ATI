@@ -1,16 +1,12 @@
 @import './quickReply.css';
 @import './injectedchatmix.css';
 @import './injectedchatmix-legacy.css';
-:root {
-  --chatPrimary: rgb(0, 100, 255);
-  --chatHover: rgb(0, 60, 255);
-}
+@import '../../styles/tokens.css';
 
 /* =================================================================== */
 /* == BOTÕES DE AÇÃO (ATI)                                          == */
 /* =================================================================== */
 
-/* --- Container principal dos botões --- */
 #actionsContainerV2 {
   display: grid;
   grid-template-columns: 1fr 2fr;
@@ -22,29 +18,26 @@
 }
 
 /* =================================================================== */
-/* == MODAL DE HISTÓRICO CHATMIX (Apenas Maior e sem quebrar)       == */
+/* == MODAL DE HISTÓRICO CHATMIX                                    == */
 /* =================================================================== */
 
-/* O Modal de Histórico Nativo */
 .sm\:align-middle.sm\:max-w-lg.lg\:max-w-3xl {
   max-width: 95vw !important;
-  width: auto !important; /* Estica pra acompanhar o filho */
-  min-width: 800px !important; /* Já abre lindo */
+  width: auto !important;
+  min-width: 800px !important;
 }
 
-/* A CAIXA PAI TRAVADA EM 550PX - Colocamos o resize:both nela!! */
 .sm\:align-middle.sm\:max-w-lg.lg\:max-w-3xl .h-\[550px\] {
-  height: 90vh !important; /* Altura padrão */
+  height: 90vh !important;
   min-height: 300px !important;
   max-height: 90vh !important;
   max-width: 40vw !important;
-  resize: both !important; /* Estica pra todos os lados */
-  overflow: hidden !important; /* Pra alça de redimensionamento funcionar precisa disso */
+  resize: both !important;
+  overflow: hidden !important;
 }
 
-/* A Janela de Chat (Basta obedecer o tamanho do pai!) */
 .sm\:align-middle.sm\:max-w-lg.lg\:max-w-3xl .overflow-y-scroll {
-  flex: 1 !important; /* Pega tudo que tiver de altura livre */
+  flex: 1 !important;
   height: 100% !important;
   min-width: 100% !important;
 }
@@ -53,38 +46,36 @@
 .action-btn {
   padding: 14px 0;
   font-size: 15px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: linear-gradient(145deg, rgba(0, 100, 255, 0.9), rgba(0, 60, 255, 0.9));
-  color: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--btn-glass-border-neon);
+  background: var(--btn-glass-bg);
+  color: var(--btn-glass-text);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  transition: all 0.18s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
 }
 
-/* --- Hover: escurece e sobe levemente --- */
 .action-btn:hover {
-  transform: translateY(-3px) scale(1.02);
-  box-shadow:
-    0 8px 18px rgba(0, 60, 255, 0.45),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px) scale(1.02);
+  background: var(--btn-glass-bg-hover);
+  border-color: var(--btn-glass-border-neon-hover);
+  color: var(--btn-glass-text-hover);
+  box-shadow: var(--btn-glass-glow);
 }
 
 .action-btn i,
 .action-btn span.icon {
   width: 22px;
   height: 22px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--bg-overlay-hover);
   border-radius: 6px;
-
   font-size: 12px;
 }
 
@@ -92,7 +83,6 @@
   transform: scale(0.95);
 }
 
-/* --- Estado desabilitado (durante carregamento) --- */
 .action-btn:disabled {
   cursor: not-allowed;
   opacity: 1;
@@ -102,38 +92,32 @@
 /* == FEEDBACK VISUAL DOS BOTÕES                                    == */
 /* =================================================================== */
 
-/* --- Sucesso: verde com brilho --- */
 .action-btn--success {
-  background-color: #28a745 !important;
-  box-shadow: 0 0 15px #28a745 !important;
+  background-color: var(--color-success) !important;
+  box-shadow: 0 0 15px var(--color-success) !important;
 }
 
-/* --- Erro: vermelho com brilho --- */
 .action-btn--error {
-  background-color: #dc3545 !important;
-  box-shadow: 0 0 15px #dc3545 !important;
+  background-color: var(--color-danger) !important;
+  box-shadow: 0 0 15px var(--color-danger) !important;
 }
 
 /* =================================================================== */
 /* == SPINNER DE CARREGAMENTO                                       == */
 /* =================================================================== */
 
-/* --- Bolinha girando que aparece ao clicar --- */
 .spinner {
   width: 12px;
   height: 12px;
-  border: 3px solid white;
-  border-top-color: transparent; /* cria o efeito de arco incompleto */
+  border: 3px solid var(--text-on-accent);
+  border-top-color: transparent;
   border-radius: 50%;
   display: inline-block;
   animation: spin 0.6s linear infinite;
 }
 
-/* --- Animação de rotação --- */
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
 /* =================================================================== */
@@ -146,11 +130,11 @@
   left: 50%;
   transform: translateX(-50%);
   z-index: 999999;
-  background: #ff4d4f;
-  color: white;
+  background: var(--color-danger);
+  color: var(--text-on-accent);
   padding: 16px 24px;
-  border-radius: 12px;
-  font-family: sans-serif;
+  border-radius: var(--radius-md);
+  font-family: var(--font-main);
   font-size: 14px;
   font-weight: 600;
   box-shadow: 0 10px 30px rgba(255, 77, 79, 0.4);
@@ -194,7 +178,7 @@
   bottom: 24px;
   right: 24px;
   display: flex;
-  flex-direction: column-reverse; /* Toasts novos em baixo */
+  flex-direction: column-reverse;
   gap: 12px;
   z-index: 1000000;
   pointer-events: none;
@@ -204,31 +188,31 @@
   pointer-events: auto;
   min-width: 280px;
   max-width: 400px;
-  background: #1f1f1f;
-  color: white;
+  background: var(--bg-panel);
+  color: var(--text-white);
   padding: 14px 18px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: flex-start;
   gap: 12px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-main);
   font-size: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-glass);
   animation: ati-toast-slide-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   transition: all 0.3s ease;
 }
 
 .ati-toast--error {
-  border-left: 5px solid #ff4d4f;
+  border-left: 5px solid var(--color-danger);
 }
 
 .ati-toast--success {
-  border-left: 5px solid #52c41a;
+  border-left: 5px solid var(--color-success);
 }
 
 .ati-toast--info {
-  border-left: 5px solid #1890ff;
+  border-left: 5px solid var(--accent-blue);
 }
 
 .ati-toast-icon {
@@ -259,20 +243,20 @@
 }
 
 /* =================================================================== */
-/* == ALERTA DE CHATS COM MAIS DE 1 HORA                              == */
+/* == ALERTA DE CHATS COM MAIS DE 1 HORA                            == */
 /* =================================================================== */
 
 .ati-time-overdue {
-  color: #ef4444 !important; /* red-500 */
+  color: var(--color-danger) !important;
   font-weight: bold !important;
 }
 
 html.dark .ati-time-overdue {
-  color: #f87171 !important; /* red-400 */
+  color: var(--color-danger-hover) !important;
 }
 
 .ati-time-warning {
-  color: #f59e0b !important; /* amber-500 */
+  color: var(--color-warning) !important;
   display: inline-flex !important;
   align-items: center !important;
   font-size: 11px !important;
@@ -281,15 +265,8 @@ html.dark .ati-time-overdue {
 }
 
 @keyframes atiPulse {
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.5;
-    transform: scale(0.95);
-  }
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.95); }
 }
 
 /* =================================================================== */
@@ -317,11 +294,11 @@ html.dark .ati-time-overdue {
   left: 0;
   min-width: 140px;
   width: 100%;
-  background: rgba(18, 18, 22, 0.96);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  background: var(--bg-panel);
+  backdrop-filter: var(--blur-intensity);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-glass-glow);
   z-index: 9999;
   flex-direction: column;
   padding: 6px;
@@ -345,7 +322,6 @@ html.dark .ati-time-overdue {
   }
 }
 
-/* Itens de menu dentro do dropdown */
 .ati-dropdown-menu .action-btn {
   padding: 10px 12px;
   font-size: 13px;
@@ -353,11 +329,11 @@ html.dark .ati-time-overdue {
   background: transparent;
   border: none;
   width: 100%;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 }
 
 .ati-dropdown-menu .action-btn:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--bg-overlay-hover);
   transform: none;
   box-shadow: none;
 }

@@ -9,6 +9,7 @@ import { clearDraft, loadDraft, saveDraft } from './osDraft'
 import { SGP_IP_35, SGP_IP_53 } from '../../../background/sgp/constants'
 import { currentChatId } from '../state'
 import { processDynamicPlaceholders, buildTemplatesHTML, OsTemplate } from './osModalTypes'
+import { icon } from '../../../utils/iconSvgs'
 import { createModal, buildOsModalBodyHTML } from './osModalUI'
 import { loadSgpData, populateTechnicians } from './osModalSgp'
 import { setupDraftSaving, setupOsCheckbox, setupTemplateButtons, setupPeriodoChangeListener } from './osModalHandlers'
@@ -41,9 +42,9 @@ export async function showOSModal(allTemplates: OsTemplate[], extractChatFn: () 
       bodyHTML: buildOsModalBodyHTML(templatesHTML),
       footerButtons: [
         { text: 'Cancelar', className: 'main-btn--cancel', value: 'cancel' },
-        { text: '⚙️ Trocar SGP', className: 'main-btn--change-sgp', value: 'change_sgp' },
-        { text: 'Copiar', className: 'main-btn--confirm', value: 'copy' },
-        { text: 'Preencher no SGP', className: 'main-btn--sgp', value: 'fill_sgp', disabled: true },
+        { text: `${icon.settings} Trocar SGP`, className: 'main-btn--change-sgp', value: 'change_sgp' },
+        { text: `${icon.clipboardList} Copiar`, className: 'main-btn--confirm', value: 'copy' },
+        { text: `${icon.rocket} Preencher no SGP`, className: 'main-btn--sgp', value: 'fill_sgp', disabled: true },
       ],
     }
 

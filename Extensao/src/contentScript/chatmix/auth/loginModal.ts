@@ -5,6 +5,7 @@
 import { loginWithEmail } from './login'
 import { UserSession } from './session'
 import './login.css'
+import { icon } from '../../../utils/iconSvgs'
 
 // Callback chamado após login bem sucedido
 type OnLoginSuccess = (session: UserSession) => void
@@ -17,7 +18,7 @@ export function injectLoginBanner(onLoginSuccess: OnLoginSuccess): void {
   const banner = document.createElement('div')
   banner.id = 'ati-login-banner'
   banner.innerHTML = `
-    <div class="ati-login-banner-icon">🔒</div>
+    <div class="ati-login-banner-icon">${icon.lock}</div>
     <div class="ati-login-banner-text">
       <strong>Extensão ATI</strong>
       <span>Faça login para usar o sistema</span>
@@ -49,7 +50,7 @@ function openLoginModal(onLoginSuccess: OnLoginSuccess): void {
   overlay.innerHTML = `
     <div class="ati-login-modal">
       <div class="ati-login-modal-header">
-        <span>🔐 Login — Extensão ATI</span>
+        <span>${icon.lock} Login — Extensão ATI</span>
       </div>
       <div class="ati-login-modal-body">
         <div class="ati-login-field">

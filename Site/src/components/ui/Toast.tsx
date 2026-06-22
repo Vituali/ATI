@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import './Toast.css'
 import { Notification, useNotification } from '../../hooks/useNotification'
+import { CheckCircle, AlertTriangle, XCircle, HelpCircle, X, Info } from 'lucide-react'
 
 /**
  * Propriedades do componente Toast (Contêiner) em Português
@@ -40,12 +41,12 @@ function ToastItem({ item, aoRemover }: { item: Notification; aoRemover: (id: st
     }, 300) // Tempo da animação fade-out no CSS
   }
 
-  const icons = {
-    success: '✅',
-    info: 'ℹ️',
-    warning: '⚠️',
-    error: '❌',
-    confirm: '❓',
+  const icons: Record<string, React.ReactNode> = {
+    success: <CheckCircle size={20} strokeWidth={2} />,
+    info: <Info size={20} strokeWidth={2} />,
+    warning: <AlertTriangle size={20} strokeWidth={2} />,
+    error: <XCircle size={20} strokeWidth={2} />,
+    confirm: <HelpCircle size={20} strokeWidth={2} />,
   }
 
   return (
@@ -69,7 +70,7 @@ function ToastItem({ item, aoRemover }: { item: Notification; aoRemover: (id: st
 
       {type !== 'confirm' && (
         <button className="toast-close" onClick={() => fechar(false)} aria-label="Fechar">
-          ✕
+          <X size={20} strokeWidth={2} />
         </button>
       )}
     </div>

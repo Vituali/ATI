@@ -10,6 +10,7 @@ import { db } from '../../services/firebase'
 import { useUser } from '../../hooks/useUser'
 import { getSetorLabel, type Setor } from '../../services/permissions'
 import { useNotification } from '../../hooks/useNotification'
+import { Globe, Wrench, DollarSign, Headphones, Handshake, MessageSquare, Trash2, ArrowRight } from 'lucide-react'
 import './ChatInterno.css'
 
 interface Mensagem {
@@ -23,12 +24,12 @@ interface Mensagem {
   avatarUrl?: string
 }
 
-const ROOM_ICONS: Record<string, string> = {
-  geral: '🌐',
-  ti: '🛠️',
-  financeiro: '💰',
-  suporte: '🎧',
-  comercial: '🤝',
+const ROOM_ICONS: Record<string, React.ReactNode> = {
+  geral: <Globe size={18} strokeWidth={2} />,
+  ti: <Wrench size={18} strokeWidth={2} />,
+  financeiro: <DollarSign size={18} strokeWidth={2} />,
+  suporte: <Headphones size={18} strokeWidth={2} />,
+  comercial: <Handshake size={18} strokeWidth={2} />,
 }
 
 function formatarHorario(ts: number): string {
@@ -213,7 +214,7 @@ export default function ChatInterno({ unreadRooms = [] }: ChatProps) {
       {/* Cabeçalho */}
       <div className="ci-header">
         <div className="ci-header-info">
-          <span className="ci-header-icon">{ROOM_ICONS[activeRoom] || '💬'}</span>
+          <span className="ci-header-icon">{ROOM_ICONS[activeRoom] || <MessageSquare size={18} strokeWidth={2} />}</span>
           <div>
             <h1 className="ci-titulo">Chat Interno</h1>
             <p className="ci-subtitulo">Sala: {getSetorLabel(activeRoom)}</p>
@@ -222,7 +223,7 @@ export default function ChatInterno({ unreadRooms = [] }: ChatProps) {
         <div className="ci-header-acoes">
           {isPrivileged && mensagens.length > 0 && (
             <button className="ci-btn-limpar" onClick={limparSala} title="Limpar mensagens dessa sala">
-              🗑️ Limpar
+              <Trash2 size={16} strokeWidth={2} /> Limpar
             </button>
           )}
           <div className="ci-badge-online">
@@ -289,7 +290,7 @@ export default function ChatInterno({ unreadRooms = [] }: ChatProps) {
           <div className={`ci-char-counter ${texto.length >= 500 ? 'limit' : ''}`}>{texto.length}/500</div>
         </div>
         <button className="ci-btn-enviar" onClick={enviar} disabled={!texto.trim() || enviando} aria-label="Enviar mensagem">
-          {enviando ? '⏳' : '➤'}
+          {enviando ? '...' : <ArrowRight size={20} strokeWidth={2} />}
         </button>
       </div>
     </div>

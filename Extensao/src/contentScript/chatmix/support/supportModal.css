@@ -1,5 +1,7 @@
+@import '../../../styles/tokens.css';
+
 /* =================================================================== */
-/* == MODAL DE SUPORTE — Estilização Premium Glassmorphism            == */
+/* == MODAL DE SUPORTE — Estilização Premium Glassmorphism           == */
 /* =================================================================== */
 
 .ati-support-modal-overlay {
@@ -13,53 +15,43 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  backdrop-filter: blur(10px);
+  backdrop-filter: var(--blur-intensity);
   animation: support-fade-in 0.25s ease-out;
 }
 
 .ati-support-modal {
-  background: linear-gradient(135deg, #121216 0%, #0d0d10 100%);
-  color: #f3f4f6;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
+  background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-black) 100%);
+  color: var(--text-main);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
   width: 92%;
   max-width: 580px;
   max-height: 85vh;
   display: flex;
   flex-direction: column;
-  box-shadow:
-    0 24px 70px rgba(0, 0, 0, 0.8),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  font-family: 'DM Sans', sans-serif;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  font-family: var(--font-main);
   overflow: hidden;
   animation: support-scale-up 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes support-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes support-scale-up {
-  from {
-    transform: scale(0.95) translateY(10px);
-  }
-  to {
-    transform: scale(1) translateY(0);
-  }
+  from { transform: scale(0.95) translateY(10px); }
+  to { transform: scale(1) translateY(0); }
 }
 
 /* --- Header --- */
 .ati-support-modal-header {
   padding: 18px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--border-glass);
   font-size: 16px;
   font-weight: 600;
-  color: white;
+  color: var(--text-white);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -71,15 +63,16 @@
   gap: 10px;
 }
 
-.ati-support-modal-title::before {
-  content: '🛠️';
-  font-size: 18px;
+.ati-support-modal-title .support-header-icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
 }
 
 .ati-support-modal-close {
   background: transparent;
   border: none;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-muted);
   cursor: pointer;
   font-size: 20px;
   line-height: 1;
@@ -92,8 +85,8 @@
 }
 
 .ati-support-modal-close:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: white;
+  background: var(--bg-overlay-hover);
+  color: var(--text-white);
   transform: rotate(90deg);
 }
 
@@ -132,10 +125,10 @@
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #3b82f6;
-  border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+  color: var(--accent-blue);
+  border-bottom: 1px solid var(--accent-blue-border);
   padding-bottom: 6px;
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-mono);
 }
 
 /* --- Grid de Informações do Cliente --- */
@@ -146,38 +139,38 @@
 }
 
 .ati-support-info-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
+  background: var(--bg-overlay-subtle);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
   padding: 12px 14px;
   transition: all 0.2s;
 }
 
 .ati-support-info-card:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.08);
+  background: var(--bg-overlay-hover);
+  border-color: var(--border-glass);
 }
 
 .ati-support-info-label {
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-muted);
   margin-bottom: 4px;
 }
 
 .ati-support-info-value {
   font-size: 13px;
   font-weight: 500;
-  color: #f3f4f6;
+  color: var(--text-main);
   word-break: break-all;
 }
 
 /* --- OLT Info & Conexão --- */
 .ati-support-olt-box {
-  background: rgba(59, 130, 246, 0.04);
-  border: 1px solid rgba(59, 130, 246, 0.1);
-  border-radius: 12px;
+  background: var(--accent-blue-hover);
+  border: 1px solid var(--accent-blue-border);
+  border-radius: var(--radius-md);
   padding: 16px;
 }
 
@@ -187,7 +180,7 @@
   align-items: center;
   margin-bottom: 12px;
   padding-bottom: 8px;
-  border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+  border-bottom: 1px dashed var(--border-glass);
 }
 
 .ati-support-olt-title {
@@ -207,21 +200,21 @@
 }
 
 .ati-support-status-badge--online {
-  background: rgba(34, 197, 94, 0.15);
-  color: #4ade80;
-  border: 1px solid rgba(34, 197, 94, 0.3);
+  background: var(--bg-success-subtle);
+  color: var(--color-success);
+  border: 1px solid var(--border-success-subtle);
 }
 
 .ati-support-status-badge--offline {
-  background: rgba(239, 68, 68, 0.15);
-  color: #f87171;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: var(--bg-danger-subtle);
+  color: var(--color-danger);
+  border: 1px solid var(--border-danger-subtle);
 }
 
 .status-dot-pulsing {
   width: 7px;
   height: 7px;
-  background-color: #22c55e;
+  background-color: var(--color-success);
   border-radius: 50%;
   display: inline-block;
   box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
@@ -231,7 +224,7 @@
 .status-dot-offline {
   width: 7px;
   height: 7px;
-  background-color: #ef4444;
+  background-color: var(--color-danger);
   border-radius: 50%;
   display: inline-block;
 }
@@ -242,17 +235,17 @@
   align-items: flex-start;
   text-align: left;
   padding: 14px 18px !important;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.03) !important;
-  border-radius: 10px;
+  border: 1px solid var(--border-glass);
+  background: var(--bg-overlay-subtle) !important;
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: all 0.2s ease-in-out;
   width: 100%;
 }
 
 .ati-contract-item-btn:hover {
-  background: rgba(59, 130, 246, 0.08) !important;
-  border-color: rgba(59, 130, 246, 0.4);
+  background: var(--accent-blue-hover) !important;
+  border-color: var(--accent-blue-border);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
 }
@@ -278,12 +271,12 @@
   gap: 10px;
   margin-bottom: 14px;
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
 }
 
 .ati-support-olt-details span strong {
-  color: #f3f4f6;
-  font-family: 'Space Mono', monospace;
+  color: var(--text-main);
+  font-family: var(--font-mono);
 }
 
 /* Optics grid */
@@ -294,9 +287,9 @@
 }
 
 .ati-support-optics-card {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  border-radius: 8px;
+  background: var(--bg-overlay-subtle);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
   padding: 10px;
   text-align: center;
 }
@@ -304,18 +297,18 @@
 .ati-support-optics-label {
   font-size: 9px;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-muted);
   margin-bottom: 4px;
 }
 
 .ati-support-optics-value {
   font-size: 14px;
   font-weight: 700;
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-mono);
 }
 
 .ati-support-optics-value--good {
-  color: #4ade80;
+  color: var(--color-success);
 }
 
 .ati-support-optics-value--info {
@@ -333,21 +326,21 @@
   padding: 12px 14px;
   font-size: 13px;
   font-weight: 500;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.04);
-  color: #e5e7eb;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-glass);
+  background: var(--bg-overlay-subtle);
+  color: var(--text-grey);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   transition: all 0.2s;
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-main);
 }
 
 .ati-support-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--bg-overlay-hover);
   border-color: rgba(255, 255, 255, 0.12);
   transform: translateY(-2px);
 }
@@ -357,20 +350,20 @@
 }
 
 .ati-support-btn--reset {
-  color: #f87171;
-  background: rgba(239, 68, 68, 0.08);
-  border-color: rgba(239, 68, 68, 0.2);
+  color: var(--color-danger);
+  background: var(--bg-danger-subtle);
+  border-color: var(--border-danger-subtle);
 }
 
 .ati-support-btn--reset:hover {
-  background: rgba(239, 68, 68, 0.15);
-  border-color: rgba(239, 68, 68, 0.35);
+  background: var(--bg-danger-subtle-hover);
+  border-color: var(--border-danger-subtle);
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
 }
 
 .ati-support-btn--command-send {
-  color: #facc15;
-  background: rgba(234, 179, 8, 0.08);
+  color: var(--color-warning);
+  background: var(--bg-warning-subtle);
   border-color: rgba(234, 179, 8, 0.2);
 }
 
@@ -381,21 +374,21 @@
 }
 
 .ati-support-btn--command-remove {
-  color: #a855f7;
-  background: rgba(168, 85, 247, 0.08);
-  border-color: rgba(168, 85, 247, 0.2);
+  color: var(--color-purple-hover);
+  background: var(--bg-purple-subtle);
+  border-color: var(--border-purple-subtle);
 }
 
 .ati-support-btn--command-remove:hover {
-  background: rgba(168, 85, 247, 0.15);
-  border-color: rgba(168, 85, 247, 0.35);
+  background: var(--bg-purple-subtle-hover);
+  border-color: var(--border-purple-subtle);
   box-shadow: 0 4px 12px rgba(168, 85, 247, 0.15);
 }
 
 .ati-support-btn--sgp-contract {
   color: #60a5fa;
-  background: rgba(59, 130, 246, 0.08);
-  border-color: rgba(59, 130, 246, 0.2);
+  background: var(--accent-blue-hover);
+  border-color: var(--accent-blue-border);
 }
 
 .ati-support-btn--sgp-contract:hover {
@@ -407,17 +400,17 @@
 /* --- Footer --- */
 .ati-support-modal-footer {
   padding: 16px 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid var(--border-glass);
   display: flex;
   justify-content: flex-end;
 }
 
 .ati-support-close-btn {
   padding: 9px 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  background: var(--bg-overlay-subtle);
+  color: var(--text-grey);
   font-weight: 500;
   font-size: 13px;
   cursor: pointer;
@@ -425,8 +418,8 @@
 }
 
 .ati-support-close-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
+  background: var(--bg-overlay-hover);
+  color: var(--text-white);
 }
 
 /* =================================================================== */
@@ -584,4 +577,200 @@ html:not(.dark) .ati-contract-item-btn {
 html:not(.dark) .ati-contract-item-btn:hover {
   background: rgba(59, 130, 246, 0.04) !important;
   border-color: rgba(59, 130, 246, 0.3);
+}
+
+/* =================================================================== */
+/* == ROLAGEM E ROLAGEM DE CONTÊINERES (ATI)                         == */
+/* =================================================================== */
+
+.ati-support-modal-body::-webkit-scrollbar,
+.ati-diag-container::-webkit-scrollbar,
+.ati-support-contracts-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ati-support-modal-body::-webkit-scrollbar-track,
+.ati-diag-container::-webkit-scrollbar-track,
+.ati-support-contracts-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ati-support-modal-body::-webkit-scrollbar-thumb,
+.ati-diag-container::-webkit-scrollbar-thumb,
+.ati-support-contracts-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+.ati-support-modal-body::-webkit-scrollbar-thumb:hover,
+.ati-diag-container::-webkit-scrollbar-thumb:hover,
+.ati-support-contracts-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.ati-support-modal-body,
+.ati-diag-container,
+.ati-support-contracts-list {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+/* Compatibilidade do scrollbar no modo claro */
+html:not(.dark) .ati-support-modal-body::-webkit-scrollbar-thumb,
+html:not(.dark) .ati-diag-container::-webkit-scrollbar-thumb,
+html:not(.dark) .ati-support-contracts-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+html:not(.dark) .ati-support-modal-body::-webkit-scrollbar-thumb:hover,
+html:not(.dark) .ati-diag-container::-webkit-scrollbar-thumb:hover,
+html:not(.dark) .ati-support-contracts-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+html:not(.dark) .ati-support-modal-body,
+html:not(.dark) .ati-diag-container,
+html:not(.dark) .ati-support-contracts-list {
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+}
+
+/* =================================================================== */
+/* == LINHAS DE DIAGNÓSTICO (FRIENDLY EXPLANATION)                    == */
+/* =================================================================== */
+
+.ati-diag-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  color: var(--text-main);
+  transition: all 0.2s ease;
+}
+
+.ati-diag-line:hover {
+  transform: translateX(3px);
+}
+
+.ati-diag-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.ati-diag-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.ati-diag-text {
+  flex-grow: 1;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* Estilos de tipo/gravidade */
+.ati-diag-warn {
+  border-color: rgba(251, 146, 60, 0.2);
+  background: rgba(251, 146, 60, 0.05);
+}
+.ati-diag-warn .ati-diag-icon {
+  background: rgba(251, 146, 60, 0.12);
+  color: #fb923c;
+}
+
+.ati-diag-alert {
+  border-color: rgba(248, 113, 113, 0.2);
+  background: rgba(248, 113, 113, 0.05);
+}
+.ati-diag-alert .ati-diag-icon {
+  background: rgba(248, 113, 113, 0.12);
+  color: #f87171;
+}
+
+.ati-diag-energy {
+  border-color: rgba(168, 85, 247, 0.2);
+  background: rgba(168, 85, 247, 0.05);
+}
+.ati-diag-energy .ati-diag-icon {
+  background: rgba(168, 85, 247, 0.12);
+  color: #c084fc;
+}
+
+.ati-diag-offline {
+  border-color: rgba(156, 163, 175, 0.2);
+  background: rgba(156, 163, 175, 0.05);
+}
+.ati-diag-offline .ati-diag-icon {
+  background: rgba(156, 163, 175, 0.12);
+  color: #9ca3af;
+}
+
+.ati-diag-dormant {
+  border-color: rgba(56, 189, 248, 0.2);
+  background: rgba(56, 189, 248, 0.05);
+}
+.ati-diag-dormant .ati-diag-icon {
+  background: rgba(56, 189, 248, 0.12);
+  color: #38bdf8;
+}
+
+.ati-diag-ok {
+  border-color: rgba(74, 222, 128, 0.2);
+  background: rgba(74, 222, 128, 0.05);
+}
+.ati-diag-ok .ati-diag-icon {
+  background: rgba(74, 222, 128, 0.12);
+  color: #4ade80;
+}
+
+.ati-diag-info {
+  border-color: rgba(96, 165, 250, 0.2);
+  background: rgba(96, 165, 250, 0.05);
+}
+.ati-diag-info .ati-diag-icon {
+  background: rgba(96, 165, 250, 0.12);
+  color: #60a5fa;
+}
+
+/* Adaptação de cores de diagnóstico em Modo Claro */
+html:not(.dark) .ati-diag-line {
+  background: rgba(0, 0, 0, 0.01);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+
+html:not(.dark) .ati-diag-warn {
+  border-color: rgba(245, 158, 11, 0.2);
+  background: rgba(245, 158, 11, 0.03);
+}
+html:not(.dark) .ati-diag-alert {
+  border-color: rgba(239, 68, 68, 0.2);
+  background: rgba(239, 68, 68, 0.03);
+}
+html:not(.dark) .ati-diag-energy {
+  border-color: rgba(147, 51, 234, 0.2);
+  background: rgba(147, 51, 234, 0.03);
+}
+html:not(.dark) .ati-diag-offline {
+  border-color: rgba(107, 114, 128, 0.2);
+  background: rgba(107, 114, 128, 0.03);
+}
+html:not(.dark) .ati-diag-dormant {
+  border-color: rgba(2, 132, 199, 0.2);
+  background: rgba(2, 132, 199, 0.03);
+}
+html:not(.dark) .ati-diag-ok {
+  border-color: rgba(22, 163, 74, 0.2);
+  background: rgba(22, 163, 74, 0.03);
+}
+html:not(.dark) .ati-diag-info {
+  border-color: rgba(37, 99, 235, 0.2);
+  background: rgba(37, 99, 235, 0.03);
 }

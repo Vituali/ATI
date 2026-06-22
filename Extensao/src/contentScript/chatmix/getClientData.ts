@@ -12,11 +12,11 @@ export async function getClientData(): Promise<ClientData> {
 
   // Cache: se é o mesmo chat e já tem CPF, retorna imediato
   if (chatId && lastExtractedData.chatId === chatId && lastExtractedData.data?.cpfCnpj) {
-    log('⚡ Dados recuperados do cache de sessão.')
+    log('[Rápido] Dados recuperados do cache de sessão.')
     return lastExtractedData.data
   }
 
-  log('🔍 Extraindo dados do DOM...')
+  log('[Busca] Extraindo dados do DOM...')
 
   // Nome e telefone do header do painel direito
   let rawName = ''

@@ -1,5 +1,5 @@
 // pages/Register.tsx
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { register } from '../../services/auth'
 import './Auth_shared.css'
 
@@ -9,6 +9,10 @@ interface RegisterProps {
 }
 
 export default function Register({ onLogin, onGoToLogin }: RegisterProps) {
+  useEffect(() => {
+    document.title = 'ATI - Cadastro'
+  }, [])
+
   const [username, setUsername] = useState('')
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
@@ -43,7 +47,7 @@ export default function Register({ onLogin, onGoToLogin }: RegisterProps) {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <h1 className="auth-titulo">🤖 ATI</h1>
+        <h1 className="auth-titulo">ATI</h1>
         <p className="auth-subtitulo">Criar nova conta</p>
 
         <form onSubmit={handleSubmit} className="auth-form">

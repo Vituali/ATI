@@ -16,13 +16,16 @@ import {
   Globe,
   Sun,
   Moon,
-  Eye,
-  EyeOff,
   Skull,
   CupSoda,
-  Ghost,
   Dices,
-  Folder
+  Folder,
+  BookOpen,
+  Home,
+  User,
+  Menu,
+  ChevronDown,
+  ChevronRight
 } from 'lucide-react'
 
 export type { Section }
@@ -30,6 +33,7 @@ export type { Section }
 interface SidebarProps {
   role: Role
   setor: Setor
+  customAllowedSections?: Section[]
   activeSection: Section
   onSelectSection: (section: Section) => void
   onOpenUserModal: () => void
@@ -57,11 +61,10 @@ interface NavGroup {
 
 const NAV_ITEMS: NavGroup[] = [
   {
-    id: 'ferramentas',
-    label: 'Ferramentas',
+    id: 'operacao',
+    label: 'Operação',
     icon: <Wrench size={20} strokeWidth={2.2} />,
     items: [
-      { section: 'anotacoes', icon: <ClipboardList size={20} strokeWidth={2.2} />, label: 'Anotações' },
       { section: 'respostas_rapidas', icon: <MessageSquare size={20} strokeWidth={2.2} />, label: 'Respostas Rápidas' },
       { section: 'modelos_os', icon: <FileText size={20} strokeWidth={2.2} />, label: 'Modelos O.S.' },
       { section: 'conversor', icon: <RefreshCw size={20} strokeWidth={2.2} />, label: 'Conversor' },
@@ -69,17 +72,35 @@ const NAV_ITEMS: NavGroup[] = [
     ],
   },
   {
-    id: 'controle',
-    label: 'Controle',
+    id: 'meu_espaco',
+    label: 'Meu Espaço',
+    icon: <User size={20} strokeWidth={2.2} />,
+    items: [
+      { section: 'anotacoes', icon: <ClipboardList size={20} strokeWidth={2.2} />, label: 'Anotações' },
+      { section: 'biblioteca', icon: <BookOpen size={20} strokeWidth={2.2} />, label: 'Minha Biblioteca' },
+    ],
+  },
+  {
+    id: 'gestao',
+    label: 'Gestão',
     icon: <Sliders size={20} strokeWidth={2.2} />,
     items: [
       { section: 'relatorios', icon: <BarChart3 size={20} strokeWidth={2.2} />, label: 'Relatórios' },
       { section: 'admin', icon: <Shield size={20} strokeWidth={2.2} />, label: 'Admin' },
     ],
   },
+  {
+    id: 'secretos',
+    label: 'Secretos',
+    icon: <Skull size={20} strokeWidth={2.2} />,
+    items: [
+      { section: 'jefferson', icon: <CupSoda size={20} strokeWidth={2.2} />, label: 'Goticas & Monster' },
+      { section: 'heli', icon: <Dices size={20} strokeWidth={2.2} />, label: 'Ordem Paranormal' },
+    ],
+  },
 ]
 
-export default function Sidebar({ role, setor, activeSection, onSelectSection, onOpenUserModal, onOpenExtensionModal, onOpenSettings, theme, userName, avatarUrl, hasUnreadChat }: SidebarProps) {
+export default function Sidebar({ role, setor, customAllowedSections, activeSection, onSelectSection, onOpenUserModal, onOpenExtensionModal, onOpenSettings, theme, userName, avatarUrl, hasUnreadChat }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(() => {
     return localStorage.getItem('ati-sidebar-expanded') === 'true'
   })
@@ -89,13 +110,10 @@ export default function Sidebar({ role, setor, activeSection, onSelectSection, o
       try {
         return JSON.parse(saved)
       } catch {
-        return ['ferramentas']
+        return ['operacao', 'meu_espaco']
       }
     }
-    return ['ferramentas']
-  })
-  const [debugMode, setDebugMode] = useState(() => {
-    return localStorage.getItem('ati-debug-jefferson') === 'true'
+    return ['operacao', 'meu_espaco']
   })
 
   const toggleGroup = (id: string) => {
@@ -106,31 +124,10 @@ export default function Sidebar({ role, setor, activeSection, onSelectSection, o
     })
   }
 
-  const isJefferson = userName.toLowerCase().includes('jefferson') || (role === 'admin' && debugMode)
-  const isHeli = userName.toLowerCase().includes('heli') || (role === 'admin' && debugMode)
-
   const groups = NAV_ITEMS.map((group) => ({
     ...group,
-    items: group.items.filter((item) => canAccess(role, setor, item.section)),
+    items: group.items.filter((item) => canAccess(role, setor, item.section, customAllowedSections)),
   })).filter((group) => group.items.length > 0)
-
-  if (isJefferson) {
-    groups.push({
-      id: 'jefferson',
-      label: 'Área Secreta',
-      icon: <Skull size={20} strokeWidth={2.2} />,
-      items: [{ section: 'jefferson', icon: <CupSoda size={20} strokeWidth={2.2} />, label: 'Goticas & Monster' }],
-    })
-  }
-
-  if (isHeli) {
-    groups.push({
-      id: 'heli',
-      label: 'Área de RPG',
-      icon: <Ghost size={20} strokeWidth={2.2} />,
-      items: [{ section: 'heli', icon: <Dices size={20} strokeWidth={2.2} />, label: 'Ordem Paranormal' }],
-    })
-  }
 
   return (
     <aside className={`sidebar ${isOpen ? 'expanded' : ''}`}>
@@ -142,10 +139,19 @@ export default function Sidebar({ role, setor, activeSection, onSelectSection, o
             return nextVal
           })
         }}>
-          ☰
+          <Menu size={22} />
         </button>
 
-        {canAccess(role, setor, 'chat_interno') && (
+        {canAccess(role, setor, 'home', customAllowedSections) && (
+          <button className={`sidebar-button ${activeSection === 'home' ? 'active' : ''}`} onClick={() => onSelectSection('home')} title="Home">
+            <span className="icon">
+              <Home size={20} strokeWidth={2.2} />
+            </span>
+            <span className="text">Home</span>
+          </button>
+        )}
+
+        {canAccess(role, setor, 'chat_interno', customAllowedSections) && (
           <button className={`sidebar-button chat-highlight ${activeSection === 'chat_interno' ? 'active' : ''}`} onClick={() => onSelectSection('chat_interno')} title="Chat Interno">
             <span className="icon">
               <MessageCircle size={20} strokeWidth={2.2} />
@@ -164,7 +170,7 @@ export default function Sidebar({ role, setor, activeSection, onSelectSection, o
                   <span className="icon">{group.icon || <Folder size={20} strokeWidth={2.2} />}</span>
                   {group.label && <span className="group-text text">{group.label}</span>}
                 </div>
-                <span className={`chevron-icon text ${isGroupOpen ? 'open' : ''}`}>{isGroupOpen ? '▾' : '▹'}</span>
+                <span className={`chevron-icon text ${isGroupOpen ? 'open' : ''}`}>{isGroupOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}</span>
               </button>
 
               <div className="sidebar-group-items">
@@ -193,20 +199,6 @@ export default function Sidebar({ role, setor, activeSection, onSelectSection, o
           <div className="sidebar-avatar">{avatarUrl ? <img src={avatarUrl} alt="" className="sidebar-avatar-img" /> : <span className="sidebar-avatar-init">{userName.charAt(0).toUpperCase()}</span>}</div>
           <span className="text">{userName}</span>
         </button>
-        {role === 'admin' && (
-          <button
-            className="bottom-toggle theme-toggle"
-            onClick={() => {
-              const nextVal = !debugMode
-              setDebugMode(nextVal)
-              localStorage.setItem('ati-debug-jefferson', nextVal ? 'true' : 'false')
-            }}
-            title={debugMode ? 'Ocultar abas secretas' : 'Exibir abas secretas'}
-          >
-            <span className="icon">{debugMode ? <EyeOff size={20} strokeWidth={2.2} /> : <Eye size={20} strokeWidth={2.2} />}</span>
-            <span className="text">{debugMode ? 'Ocultar Secretas' : 'Ver Secretas'}</span>
-          </button>
-        )}
         <button className="bottom-toggle theme-toggle" onClick={onOpenSettings} title={theme === 'dark' ? 'Ativar Modo Claro' : 'Ativar Modo Escuro'}>
           <span className="icon">{theme === 'dark' ? <Sun size={20} strokeWidth={2.2} /> : <Moon size={20} strokeWidth={2.2} />}</span>
           <span className="text">{theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}</span>

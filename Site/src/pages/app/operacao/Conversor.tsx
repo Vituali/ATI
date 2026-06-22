@@ -6,9 +6,9 @@
 // ---------------------------------------------------------------
 
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { useUser } from '../../hooks/useUser'
+import { useUser } from '../../../hooks/useUser'
 import './Conversor.css'
-import LoadingOverlay from '../../components/ui/LoadingOverlay'
+import LoadingOverlay from '../../../components/ui/LoadingOverlay'
 import { FileText, FolderOpen, User, MapPin, Flag, Phone, Package, CreditCard, PartyPopper, Landmark, DollarSign, Pen, ArrowLeft, Check, ClipboardList } from 'lucide-react'
 
 // ---------------------------------------------------------------

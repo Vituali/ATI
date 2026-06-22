@@ -1,12 +1,12 @@
 // pages/RespostasRapidas.tsx
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { ref, get, set } from 'firebase/database'
-import { db } from '../../services/firebase'
-import { useUser } from '../../hooks/useUser'
+import { db } from '../../../services/firebase'
+import { useUser } from '../../../hooks/useUser'
 import './RespostasRapidas.css'
-import LoadingOverlay from '../../components/ui/LoadingOverlay'
-import Modal from '../../components/ui/Modal'
-import { MessageCircle, Save, Check, ClipboardList, Pencil, Trash2, X, Plus, ArrowLeft } from 'lucide-react'
+import LoadingOverlay from '../../../components/ui/LoadingOverlay'
+import Modal from '../../../components/ui/Modal'
+import { MessageCircle, Save, Check, ClipboardList, Pencil, Trash2, X, Plus, ArrowLeft, ArrowUpDown, GripVertical } from 'lucide-react'
 
 // ---------------------------------------------------------------
 // TIPOS
@@ -352,7 +352,7 @@ export default function RespostasRapidas() {
           <div className="respostas-rapidas-label-row">
             <label htmlFor="respostas-rapidas-subcat-sel">Categoria</label>
             <button className={`btn-reordenar-cats ${reordenandoCats ? 'ativo' : ''}`} onClick={() => setReordenandoCats((v) => !v)} title="Reordenar categorias">
-              ↕ {reordenandoCats ? 'Concluir' : 'Reordenar'}
+              <ArrowUpDown size={14} /> {reordenandoCats ? 'Concluir' : 'Reordenar'}
             </button>
           </div>
 
@@ -371,7 +371,7 @@ export default function RespostasRapidas() {
             <ul className="respostas-rapidas-cats-drag-lista">
               {catsOrdenadas.map((sc, i) => (
                 <li key={sc} className="respostas-rapidas-cats-drag-item" draggable onDragStart={() => handleCatDragStart(i)} onDragOver={(e) => handleCatDragOver(e, i)} onDragEnd={handleCatDragEnd}>
-                  <span className="respostas-rapidas-reorder-handle">⠿</span>
+                  <span className="respostas-rapidas-reorder-handle"><GripVertical size={16} /></span>
                   <span className="respostas-rapidas-cats-drag-nome">{sc}</span>
                   <span className="respostas-rapidas-cats-drag-count">{respostas.filter((r) => r.subCategory === sc).length} respostas</span>
                 </li>
@@ -437,13 +437,13 @@ export default function RespostasRapidas() {
       {subCatSel && !reordenandoCats && respostasDaCat.length > 1 && (
         <div className="respostas-rapidas-card">
           <h2 className="respostas-rapidas-reorder-titulo">
-            ↕ Reordenar — <span>{subCatSel}</span>
+            <ArrowUpDown size={14} /> Reordenar — <span>{subCatSel}</span>
           </h2>
           <p className="respostas-rapidas-reorder-dica">Arraste para reordenar</p>
           <ul className="respostas-rapidas-reorder-lista">
             {respostasDaCat.map((r) => (
               <li key={r._idx} className="respostas-rapidas-reorder-item" draggable onDragStart={() => handleRespostaDragStart(r._idx)} onDragOver={(e) => handleRespostaDragOver(e, r._idx)} onDragEnd={handleRespostaDragEnd}>
-                <span className="respostas-rapidas-reorder-handle">⠿</span>
+                <span className="respostas-rapidas-reorder-handle"><GripVertical size={16} /></span>
                 <span className="respostas-rapidas-reorder-nome">{r.title}</span>
                 <span className="respostas-rapidas-reorder-cat">{r.subCategory}</span>
               </li>

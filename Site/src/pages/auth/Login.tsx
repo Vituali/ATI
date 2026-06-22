@@ -1,5 +1,5 @@
 // pages/Login.tsx
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { login } from '../../services/auth'
 import './Auth_shared.css'
 
@@ -11,6 +11,10 @@ interface LoginProps {
 }
 
 export default function Login({ onLogin, onGoToRegister }: LoginProps) {
+  useEffect(() => {
+    document.title = 'ATI - Login'
+  }, [])
+
   // Aceita username OU email — igual ao site original
   const [usernameOrEmail, setUsernameOrEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -46,7 +50,7 @@ export default function Login({ onLogin, onGoToRegister }: LoginProps) {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <h1 className="auth-titulo">🤖 ATI</h1>
+        <h1 className="auth-titulo">ATI</h1>
         <p className="auth-subtitulo">Auxiliar de Atendimentos</p>
 
         <form onSubmit={handleSubmit} className="auth-form">

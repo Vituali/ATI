@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Sparkles, Skull, Lightbulb, Dices, Droplets, Shield, Scroll } from 'lucide-react'
 import './HeliRPG.css'
 
 interface RollEntry {
@@ -192,7 +193,7 @@ export default function HeliRPG() {
   return (
     <div className="heli-rpg-page">
       <div className="heli-header">
-        <h1 className="heli-title">🔮 Iniciação Paranormal do Heli</h1>
+        <h1 className="heli-title"><Sparkles size={20} /> Iniciação Paranormal do Heli</h1>
         <p className="heli-subtitle">Ordo Realitas — Setor de Contenção de Cancelamentos</p>
       </div>
 
@@ -201,7 +202,7 @@ export default function HeliRPG() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           {/* Card de Atributos */}
           <div className="heli-card">
-            <h2 className="heli-card-title">☠️ Atributos do Agente</h2>
+            <h2 className="heli-card-title"><Skull size={18} /> Atributos do Agente</h2>
             <div className="attributes-grid">
               <div className="attribute-box" onClick={() => rollAttribute('Força', forca)}>
                 <span className="attr-name">FOR</span>
@@ -268,12 +269,12 @@ export default function HeliRPG() {
                 </div>
               </div>
             </div>
-            <p style={{ fontSize: '0.75rem', color: '#888', margin: 0, textAlign: 'center' }}>💡 Clique no atributo para rolar os dados (Nd20) e pegar o maior!</p>
+            <p style={{ fontSize: '0.75rem', color: '#888', margin: 0, textAlign: 'center' }}><Lightbulb size={16} /> Clique no atributo para rolar os dados (Nd20) e pegar o maior!</p>
           </div>
 
           {/* Rolador Genérico */}
           <div className="heli-card">
-            <h2 className="heli-card-title">🎲 Rolador de Dados Avulsos</h2>
+            <h2 className="heli-card-title"><Dices size={18} /> Rolador de Dados Avulsos</h2>
             <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '1rem' }}>
               <label style={{ fontSize: '0.85rem', color: '#aaa' }}>Quantidade:</label>
               <input
@@ -320,7 +321,7 @@ export default function HeliRPG() {
 
           {/* Card de Rituais */}
           <div className="heli-card">
-            <h2 className="heli-card-title">🩸 Rituais do Outro Lado</h2>
+            <h2 className="heli-card-title"><Droplets size={18} /> Rituais do Outro Lado</h2>
             <div className="rituals-list">
               {RITUAIS.map((ritual) => (
                 <div key={ritual.name} className={`ritual-item ${ritual.element}`} onClick={ritual.roll}>
@@ -339,7 +340,7 @@ export default function HeliRPG() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           {/* Card de Ficha e Status */}
           <div className="heli-card">
-            <h2 className="heli-card-title">🛡️ Status do Investigador</h2>
+            <h2 className="heli-card-title"><Shield size={18} /> Status do Investigador</h2>
 
             <div className="agent-status-section">
               {/* PV */}
@@ -463,7 +464,7 @@ export default function HeliRPG() {
 
           {/* Histórico de Rolagens */}
           <div className="heli-card roll-history-card">
-            <h2 className="heli-card-title">📜 Registro do Outro Lado</h2>
+            <h2 className="heli-card-title"><Scroll size={18} /> Registro do Outro Lado</h2>
             <div className="roll-history-container">
               {historico.length === 0 ? (
                 <div className="roll-history-empty">Nenhuma manifestação paranormal registrada... Rola os dados!</div>

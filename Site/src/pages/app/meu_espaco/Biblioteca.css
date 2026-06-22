@@ -1,0 +1,1351 @@
+/* =============================================
+   ANIMES.CSS — Minha Biblioteca Pro Max
+   Design System: glassmorphism + gradient accents
+   ============================================= */
+
+/* ---- KEYFRAMES ---- */
+@keyframes animes-fadeUp {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes animes-slideIn {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes animes-pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(108, 99, 255, 0.15); }
+  50% { box-shadow: 0 0 20px rgba(108, 99, 255, 0.3); }
+}
+
+@keyframes animes-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ---- LAYOUT ---- */
+.animes-page {
+  padding: 2rem;
+  max-width: 1440px;
+  margin: 0 auto;
+  min-height: calc(100vh - 120px);
+  animation: animes-fadeUp 0.4s ease-out;
+}
+
+/* ---- HEADER ---- */
+.animes-header {
+  margin-bottom: 1.5rem;
+}
+
+.animes-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.animes-title {
+  font-size: 1.65rem;
+  font-weight: 700;
+  margin: 0;
+  background: var(--gradient-text, linear-gradient(135deg, #ffffff, #94a3b8));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.02em;
+}
+
+/* ---- STATS BAR ---- */
+.animes-stats-bar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.animes-stat-item {
+  font-size: 0.78rem;
+  color: var(--text-muted, #94a3b8);
+  padding: 0.3rem 0.75rem;
+  background: var(--bg-glass, rgba(30, 41, 59, 0.5));
+  border: 1px solid var(--border-glass, rgba(255,255,255,0.06));
+  border-radius: 100px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.2s ease;
+}
+
+.animes-stat-item:hover {
+  border-color: rgba(255,255,255,0.12);
+  transform: translateY(-1px);
+}
+
+.animes-stat-item.completo {
+  color: var(--color-success, #22c55e);
+  background: var(--bg-success-subtle, rgba(34, 197, 94, 0.08));
+  border-color: var(--border-success-subtle, rgba(34, 197, 94, 0.15));
+}
+
+.animes-stat-item.acompanhando {
+  color: var(--accent-blue, #60a5fa);
+  background: var(--accent-blue-hover, rgba(59, 130, 246, 0.08));
+  border-color: var(--accent-blue-border, rgba(59, 130, 246, 0.15));
+}
+
+.animes-stat-item.nao_iniciado {
+  color: var(--color-purple, #a78bfa);
+  background: var(--bg-purple-subtle, rgba(168, 85, 247, 0.08));
+  border-color: var(--border-purple-subtle, rgba(168, 85, 247, 0.15));
+}
+
+/* ---- TOOLBAR ---- */
+.animes-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.animes-tabs {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+  padding: 0.25rem;
+  background: var(--bg-segment-control, rgba(0,0,0,0.2));
+  border-radius: 10px;
+}
+
+.animes-tab {
+  padding: 0.4rem 0.85rem;
+  border: none;
+  background: transparent;
+  color: var(--text-muted, #94a3b8);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.animes-tab:hover {
+  color: var(--text-grey, #cbd5e1);
+  background: var(--bg-segment-btn-hover, rgba(255,255,255,0.03));
+}
+
+.animes-tab.active {
+  background: var(--bg-segment-active, rgba(99, 102, 241, 0.12));
+  color: var(--text-segment-active, #818cf8);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.animes-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.animes-filter-select {
+  padding: 0.4rem 0.75rem 0.4rem 0.6rem;
+  border: 1px solid var(--border-glass, rgba(255,255,255,0.06));
+  border-radius: 8px;
+  background: var(--bg-glass, rgba(30, 41, 59, 0.5));
+  color: var(--text-grey, #cbd5e1);
+  font-size: 0.8rem;
+  outline: none;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.2s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 1.6rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='%2394a3b8'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.55rem center;
+}
+
+.animes-filter-select:hover {
+  border-color: rgba(255,255,255,0.12);
+}
+
+.animes-filter-select:focus {
+  border-color: var(--accent-blue, #60a5fa);
+  box-shadow: 0 0 0 3px var(--accent-blue-hover, rgba(59, 130, 246, 0.1));
+}
+
+.animes-search {
+  min-width: 170px;
+}
+
+.animes-search-input {
+  width: 100%;
+  padding: 0.4rem 0.75rem 0.4rem 2rem;
+  border: 1px solid var(--border-glass, rgba(255,255,255,0.06));
+  border-radius: 8px;
+  background: var(--bg-glass, rgba(30, 41, 59, 0.5));
+  color: var(--text-grey, #cbd5e1);
+  font-size: 0.82rem;
+  outline: none;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.2s ease;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='%2364748b'%3E%3Ccircle cx='6' cy='6' r='4.5' stroke='%2364748b' stroke-width='1.5' fill='none'/%3E%3Cpath d='M9.5 9.5l3.5 3.5' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 0.6rem center;
+}
+
+.animes-search-input:hover {
+  border-color: rgba(255,255,255,0.12);
+}
+
+.animes-search-input:focus {
+  border-color: var(--accent-blue, #60a5fa);
+  box-shadow: 0 0 0 3px var(--accent-blue-hover, rgba(59, 130, 246, 0.1));
+}
+
+.animes-search-input::placeholder {
+  color: var(--text-muted, #64748b);
+}
+
+/* ---- BUTTONS ---- */
+.animes-btn {
+  padding: 0.5rem 1.1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.animes-btn-primary {
+  background: var(--gradient-primary, linear-gradient(135deg, #3b82f6, #6366f1));
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.25);
+}
+
+.animes-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+  filter: brightness(1.08);
+}
+
+.animes-btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+}
+
+.animes-btn-secondary {
+  background: var(--bg-glass, rgba(30, 41, 59, 0.5));
+  color: var(--text-grey, #cbd5e1);
+  border: 1px solid var(--border-glass, rgba(255,255,255,0.06));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.animes-btn-secondary:hover {
+  border-color: rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.04);
+}
+
+.animes-btn-small {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.74rem;
+  border-radius: 8px;
+  font-weight: 600;
+  white-space: nowrap;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  box-sizing: border-box;
+}
+
+.animes-btn-plus {
+  background: rgba(59, 130, 246, 0.08);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.04);
+}
+
+.animes-btn-plus:hover {
+  background: rgba(59, 130, 246, 0.18);
+  border-color: rgba(59, 130, 246, 0.4);
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+  color: #ffffff;
+}
+
+.animes-btn-complete {
+  background: rgba(34, 197, 94, 0.06);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.18);
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.04);
+}
+
+.animes-btn-complete:hover {
+  background: rgba(34, 197, 94, 0.16);
+  border-color: rgba(34, 197, 94, 0.35);
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
+  color: #ffffff;
+}
+
+/* ---- FORM ---- */
+.animes-form {
+  background: var(--bg-glass, rgba(30, 41, 59, 0.6));
+  border: 1px solid var(--border-glass, rgba(255,255,255,0.06));
+  border-radius: 14px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-glass-glow, 0 8px 32px rgba(0,0,0,0.3));
+  animation: animes-fadeUp 0.3s ease-out;
+}
+
+.animes-form-title {
+  margin: 0 0 1.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-main, #f1f5f9);
+}
+
+.animes-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+}
+
+.animes-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.animes-form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.animes-form-group label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted, #94a3b8);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.animes-form-group input,
+.animes-form-group select,
+.animes-form-group textarea {
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--border-glass, rgba(255,255,255,0.06));
+  border-radius: 8px;
+  background: var(--bg-input, rgba(0,0,0,0.25));
+  color: var(--text-grey, #cbd5e1);
+  font-size: 0.85rem;
+  outline: none;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.animes-form-group input:hover,
+.animes-form-group select:hover,
+.animes-form-group textarea:hover {
+  border-color: rgba(255,255,255,0.12);
+}
+
+.animes-form-group input:focus,
+.animes-form-group select:focus,
+.animes-form-group textarea:focus {
+  border-color: var(--accent-blue, #60a5fa);
+  box-shadow: 0 0 0 3px var(--accent-blue-hover, rgba(59, 130, 246, 0.1));
+}
+
+.animes-form-group textarea {
+  resize: vertical;
+  min-height: 52px;
+}
+
+.animes-form-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+  justify-content: flex-end;
+}
+
+/* ---- STAR RATING (form) ---- */
+.animes-stars {
+  display: flex;
+  gap: 0.2rem;
+  padding: 0.25rem 0;
+}
+
+.animes-star {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: rgba(255,255,255,0.08);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0;
+  line-height: 1;
+}
+
+.animes-star.filled {
+  color: #fbbf24;
+  text-shadow: 0 0 12px rgba(251, 191, 36, 0.4);
+}
+
+.animes-star:hover {
+  transform: scale(1.3);
+}
+
+.animes-star:hover ~ .animes-star {
+  color: rgba(255,255,255,0.08);
+}
+
+/* ---- LOADING / EMPTY ---- */
+.animes-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  color: var(--text-muted, #64748b);
+  font-size: 0.9rem;
+  gap: 0.75rem;
+}
+
+.animes-loading::before {
+  content: '';
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-glass, rgba(255,255,255,0.06));
+  border-top-color: var(--accent-blue, #60a5fa);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.animes-empty {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--text-muted, #64748b);
+  animation: animes-fadeUp 0.4s ease-out;
+  background: var(--bg-glass, rgba(30, 41, 59, 0.3));
+  border: 1px solid var(--border-glass, rgba(255,255,255,0.04));
+  border-radius: 16px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.animes-empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.animes-empty p {
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+  color: var(--text-grey, #cbd5e1);
+  font-weight: 600;
+}
+
+.animes-empty-sub {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-muted, #64748b);
+  margin-bottom: 1.5rem;
+}
+
+/* ---- COLUMNS LAYOUT (Cascade) ---- */
+.animes-columns {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+.animes-column {
+  background: var(--bg-glass, rgba(30, 41, 59, 0.4));
+  border: 1px solid var(--border-glass, rgba(255,255,255,0.04));
+  border-radius: 14px;
+  overflow: hidden;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+  transition: border-color 0.3s ease;
+}
+
+.animes-column.completo {
+  border-top: 3px solid;
+  border-image: linear-gradient(90deg, #22c55e, #4ade80) 1;
+  border-image-slice: 1;
+  border-top-style: solid;
+  border-top-width: 3px;
+}
+
+.animes-column.acompanhando {
+  border-top: 3px solid;
+  border-image: linear-gradient(90deg, #3b82f6, #818cf8) 1;
+  border-image-slice: 1;
+  border-top-style: solid;
+  border-top-width: 3px;
+}
+
+.animes-column.nao_iniciado {
+  border-top: 3px solid;
+  border-image: linear-gradient(90deg, #a855f7, #d8b4fe) 1;
+  border-image-slice: 1;
+  border-top-style: solid;
+  border-top-width: 3px;
+}
+
+.animes-column-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--border-glass, rgba(255,255,255,0.04));
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--text-main, #f1f5f9);
+  background: rgba(0,0,0,0.1);
+}
+
+.animes-column-icon {
+  font-size: 1rem;
+}
+
+.animes-column-title {
+  flex: 1;
+}
+
+.animes-column-count {
+  background: rgba(0,0,0,0.2);
+  padding: 0.12rem 0.5rem;
+  border-radius: 100px;
+  font-size: 0.74rem;
+  color: var(--text-muted, #94a3b8);
+  font-weight: 500;
+  min-width: 24px;
+  text-align: center;
+}
+
+.animes-column-list {
+  padding: 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.animes-column-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.animes-column-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.animes-column-list::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.06);
+  border-radius: 10px;
+}
+
+.animes-column-empty {
+  text-align: center;
+  padding: 1.75rem 1rem;
+  color: var(--text-muted, #475569);
+  font-size: 0.82rem;
+}
+
+/* ---- CARDS ---- */
+.animes-card {
+  background: var(--bg-card, rgba(30, 41, 59, 0.5));
+  border: 1px solid var(--border-glass, rgba(255,255,255,0.04));
+  border-radius: 10px;
+  padding: 0.75rem;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: animes-fadeUp 0.35s ease-out both;
+  position: relative;
+}
+
+.animes-card:nth-child(1) { animation-delay: 0s; }
+.animes-card:nth-child(2) { animation-delay: 0.04s; }
+.animes-card:nth-child(3) { animation-delay: 0.08s; }
+.animes-card:nth-child(4) { animation-delay: 0.12s; }
+.animes-card:nth-child(5) { animation-delay: 0.16s; }
+.animes-card:nth-child(n+6) { animation-delay: 0.2s; }
+
+.animes-card-ongoing {
+  border-left: 3px solid var(--accent-blue, #3b82f6);
+}
+
+.animes-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  opacity: 0;
+  background: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(99, 102, 241, 0.04), transparent 60%);
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.animes-card:hover {
+  border-color: rgba(255,255,255,0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+}
+
+.animes-card:hover::before {
+  opacity: 1;
+}
+
+/* Layout do Poster (TVShow Time Style) */
+.animes-card.has-poster {
+  display: flex;
+  gap: 0.85rem;
+  align-items: stretch;
+  padding: 0.65rem;
+}
+
+.animes-card-poster {
+  width: 76px;
+  min-height: 108px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+.animes-card-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+  transition: transform 0.3s ease;
+}
+
+.animes-card:hover .animes-card-poster img {
+  transform: scale(1.05);
+}
+
+.animes-card-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Mouse tracking glow */
+.animes-card {
+  --mouse-x: 50%;
+  --mouse-y: 50%;
+}
+
+/* ---- CARD HEADER ---- */
+.animes-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.35rem;
+}
+
+.animes-card-type {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.1rem 0.45rem;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.animes-type-manhwa {
+  background: rgba(108, 99, 255, 0.15);
+  color: #8b83ff;
+  box-shadow: inset 0 0 0 1px rgba(108, 99, 255, 0.15);
+}
+
+.animes-type-manga {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  box-shadow: inset 0 0 0 1px rgba(239, 68, 68, 0.15);
+}
+
+.animes-type-manhua {
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbbf24;
+  box-shadow: inset 0 0 0 1px rgba(251, 191, 36, 0.15);
+}
+
+.animes-type-webtoon {
+  background: rgba(34, 197, 94, 0.12);
+  color: #22c55e;
+  box-shadow: inset 0 0 0 1px rgba(34, 197, 94, 0.15);
+}
+
+.animes-type-serie {
+  background: rgba(59, 130, 246, 0.12);
+  color: #60a5fa;
+  box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.15);
+}
+
+.animes-type-filme {
+  background: rgba(236, 72, 153, 0.12);
+  color: #f472b6;
+  box-shadow: inset 0 0 0 1px rgba(236, 72, 153, 0.15);
+}
+
+.animes-card-actions {
+  display: flex;
+  gap: 0.15rem;
+  opacity: 0;
+  transform: translateX(4px);
+  transition: all 0.2s ease;
+}
+
+.animes-card:hover .animes-card-actions {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.animes-action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.15rem 0.3rem;
+  font-size: 0.82rem;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+  line-height: 1;
+  opacity: 0.6;
+}
+
+.animes-action-btn:hover {
+  background: rgba(255,255,255,0.04);
+  opacity: 1;
+  transform: scale(1.15);
+}
+
+.animes-action-btn.delete:hover {
+  background: var(--bg-danger-subtle, rgba(255, 82, 82, 0.08));
+}
+
+/* ---- CARD BODY ---- */
+.animes-card-title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  margin: 0 0 0.3rem;
+  line-height: 1.3;
+  color: var(--text-main, #f1f5f9);
+}
+
+.animes-card-chapter {
+  font-size: 0.78rem;
+  color: var(--text-muted, #94a3b8);
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+/* ---- PROGRESS BAR ---- */
+.animes-progress-bar {
+  position: relative;
+  height: 20px;
+  background: rgba(0,0,0,0.25);
+  border-radius: 100px;
+  margin: 0.45rem 0;
+  overflow: hidden;
+}
+
+.animes-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1, #3b82f6, #6366f1);
+  background-size: 200% 100%;
+  border-radius: 100px;
+  transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: animes-shimmer 2s linear infinite;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), 0 0 12px rgba(99, 102, 241, 0.3);
+}
+
+.animes-progress-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.63rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+  letter-spacing: 0.02em;
+}
+
+/* ---- RATING STARS (on card) ---- */
+.animes-card-rating {
+  display: flex;
+  gap: 0.05rem;
+  margin-bottom: 0.2rem;
+}
+
+.animes-star-display {
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: rgba(255,255,255,0.06);
+  transition: all 0.15s ease;
+  user-select: none;
+  line-height: 1;
+}
+
+.animes-star-display.filled {
+  color: #fbbf24;
+  text-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
+}
+
+.animes-star-display:hover {
+  transform: scale(1.25);
+}
+
+/* ---- CARD NOTES & LAST READ ---- */
+.animes-card-notes {
+  font-size: 0.76rem;
+  color: var(--text-muted, #94a3b8);
+  margin-bottom: 0.2rem;
+  font-style: italic;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.animes-card-lastread {
+  font-size: 0.68rem;
+  color: var(--text-muted, #64748b);
+  margin-bottom: 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* ---- CARD FOOTER ---- */
+.animes-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-glass, rgba(255,255,255,0.03));
+  flex-wrap: wrap;
+}
+
+.animes-status-select {
+  padding: 0.35rem 1.6rem 0.35rem 0.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background: rgba(30, 41, 59, 0.6);
+  color: var(--text-grey, #cbd5e1);
+  font-size: 0.74rem;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+  margin-left: auto;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='%2394a3b8'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.55rem center;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.animes-status-select:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(30, 41, 59, 0.85);
+  transform: translateY(-0.5px);
+}
+
+.animes-status-select:focus {
+  border-color: var(--accent-blue, #60a5fa);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* ---- MAIN TABS (Meus Itens / Catalogo) ---- */
+.animes-main-tabs {
+  display: flex;
+  gap: 0.3rem;
+  margin-bottom: 1rem;
+  padding: 0.25rem;
+  background: var(--bg-segment-control, rgba(0,0,0,0.2));
+  border-radius: 10px;
+  width: fit-content;
+}
+
+.animes-main-tab {
+  padding: 0.45rem 1rem;
+  border: none;
+  background: transparent;
+  color: var(--text-muted, #94a3b8);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.animes-main-tab:hover {
+  color: var(--text-grey, #cbd5e1);
+  background: var(--bg-segment-btn-hover, rgba(255,255,255,0.03));
+}
+
+.animes-main-tab.active {
+  background: var(--bg-segment-active, rgba(99, 102, 241, 0.12));
+  color: var(--text-segment-active, #818cf8);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.animes-main-tab-badge {
+  background: rgba(99, 102, 241, 0.2);
+  padding: 0.05rem 0.45rem;
+  border-radius: 100px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+/* ---- CATALOG GRID ---- */
+.animes-catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+  animation: animes-fadeUp 0.4s ease-out;
+}
+
+.animes-catalog-card {
+  display: flex;
+  gap: 0.85rem;
+  background: var(--bg-card, rgba(30, 41, 59, 0.5));
+  border: 1px solid var(--border-glass, rgba(255,255,255,0.04));
+  border-radius: 12px;
+  padding: 0.75rem;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: animes-fadeUp 0.35s ease-out both;
+  position: relative;
+  overflow: hidden;
+}
+
+.animes-catalog-card:nth-child(1) { animation-delay: 0s; }
+.animes-catalog-card:nth-child(2) { animation-delay: 0.04s; }
+.animes-catalog-card:nth-child(3) { animation-delay: 0.08s; }
+.animes-catalog-card:nth-child(4) { animation-delay: 0.12s; }
+.animes-catalog-card:nth-child(n+5) { animation-delay: 0.16s; }
+
+.animes-catalog-card {
+  cursor: pointer;
+}
+
+.animes-catalog-card:hover {
+  border-color: rgba(255,255,255,0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+}
+
+.animes-catalog-poster {
+  width: 100px;
+  min-height: 140px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+.animes-catalog-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+  transition: transform 0.3s ease;
+}
+
+.animes-catalog-card:hover .animes-catalog-poster img {
+  transform: scale(1.05);
+}
+
+.animes-catalog-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.animes-catalog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.animes-catalog-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.3;
+  color: var(--text-main, #f1f5f9);
+}
+
+.animes-catalog-description {
+  font-size: 0.78rem;
+  color: var(--text-muted, #94a3b8);
+  line-height: 1.5;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.animes-catalog-meta {
+  margin-top: auto;
+}
+
+.animes-catalog-avg-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+  margin-bottom: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.animes-catalog-rating-info {
+  font-size: 0.72rem;
+  color: var(--text-muted, #94a3b8);
+  margin-left: 0.45rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.animes-catalog-actions {
+  margin-top: 0.35rem;
+}
+
+.animes-catalog-added {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  color: var(--color-success, #22c55e);
+  font-weight: 600;
+  padding: 0.35rem 0;
+}
+
+/* ---- CATALOG AVG RATING INLINE ON PERSONAL CARDS ---- */
+.animes-card-catalog-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+  margin-bottom: 0.15rem;
+  opacity: 0.8;
+}
+
+.animes-card-catalog-rating-label {
+  font-size: 0.62rem;
+  color: var(--text-muted, #94a3b8);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-right: 0.25rem;
+  font-weight: 600;
+}
+
+.animes-card-catalog-rating-info {
+  font-size: 0.65rem;
+  color: var(--text-muted, #94a3b8);
+  margin-left: 0.2rem;
+}
+
+.animes-star-display.small {
+  font-size: 0.75rem;
+}
+
+/* ---- FORM CHECKBOX ---- */
+.animes-form-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--text-muted, #94a3b8);
+  margin-top: 0.5rem;
+  cursor: pointer;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* ---- CATALOG DETAIL MODAL ---- */
+.animes-catalog-detail {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+}
+
+.animes-catalog-detail-poster {
+  width: 160px;
+  min-height: 220px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.animes-catalog-detail-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.animes-catalog-detail-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.animes-catalog-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.animes-catalog-detail-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-main, #f1f5f9);
+  line-height: 1.3;
+}
+
+.animes-catalog-detail-desc {
+  font-size: 0.85rem;
+  color: var(--text-grey, #cbd5e1);
+  line-height: 1.6;
+  display: flex;
+  gap: 0.4rem;
+  align-items: flex-start;
+  opacity: 0.9;
+}
+
+.animes-catalog-detail-desc svg {
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+.animes-catalog-detail-rating {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-glass, rgba(255,255,255,0.04));
+}
+
+.animes-catalog-detail-avg {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.animes-catalog-detail-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted, #94a3b8);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.animes-catalog-detail-stars {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  flex-wrap: wrap;
+}
+
+.animes-catalog-detail-avg-num {
+  font-size: 0.8rem;
+  color: var(--text-muted, #94a3b8);
+  margin-left: 0.4rem;
+  font-weight: 600;
+}
+
+.animes-catalog-detail-users {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.animes-catalog-detail-user {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.animes-catalog-detail-user-name {
+  font-size: 0.78rem;
+  color: var(--text-grey, #cbd5e1);
+  font-weight: 500;
+  min-width: 70px;
+}
+
+.animes-catalog-detail-user-stars {
+  display: flex;
+  gap: 0.05rem;
+}
+
+.animes-catalog-detail-actions {
+  margin-top: 0.25rem;
+}
+
+@media (max-width: 500px) {
+  .animes-catalog-detail {
+    flex-direction: column;
+  }
+  .animes-catalog-detail-poster {
+    width: 100%;
+    max-height: 260px;
+  }
+}
+
+/* ---- FORM CHECKBOX ---- */
+.animes-form-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent-blue, #60a5fa);
+  cursor: pointer;
+}
+
+/* ---- RESPONSIVE ---- */
+@media (max-width: 900px) {
+  .animes-page {
+    padding: 1rem 0.75rem;
+    min-height: calc(100vh - 100px);
+  }
+
+  .animes-title-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+  }
+
+  .animes-title {
+    font-size: 1.35rem;
+  }
+
+  .animes-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.85rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .animes-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0.3rem;
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .animes-tabs::-webkit-scrollbar {
+    display: none; /* Safari/Chrome */
+  }
+
+  .animes-tab {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .animes-toolbar-right {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .animes-filter-select {
+    flex: 1;
+    min-width: 120px;
+    font-size: 0.85rem;
+    padding: 0.5rem 1.8rem 0.5rem 0.75rem;
+  }
+
+  .animes-search {
+    width: 100%;
+  }
+
+  .animes-search-input {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.75rem 0.5rem 2.2rem;
+  }
+
+  .animes-form-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .animes-form {
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+
+  /* Make actions always visible on mobile/touch screens since hover isn't natural */
+  .animes-card-actions {
+    opacity: 0.9;
+    transform: translateX(0);
+  }
+
+  .animes-card-title {
+    font-size: 0.95rem;
+  }
+
+  .animes-btn {
+    padding: 0.6rem 1.2rem;
+  }
+
+  .animes-btn-small {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.75rem;
+  }
+}
+
+@media (hover: none) {
+  .animes-card-actions {
+    opacity: 0.9;
+    transform: translateX(0);
+  }
+}

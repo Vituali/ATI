@@ -1,9 +1,9 @@
 // App.tsx
 import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
-import { RespostasRapidas, ModelosOS, Conversor, Senhas, Admin, ChatInterno, Anotacoes, Relatorios, Jefferson, HeliRPG } from './pages/lazy'
+import { RespostasRapidas, ModelosOS, Conversor, Senhas, Admin, ChatInterno, Anotacoes, Relatorios, Jefferson, HeliRPG, Biblioteca } from './pages/lazy'
 import { Login, Register, Home, ErrorPage, ExtensionModal } from './pages'
 import { useUser, UserProfile } from './hooks'
-import { canAccess, Section, Setor, getSetorLabel, logout, db, auth, syncWithExtension, performSSOLogin } from './services'
+import { canAccess, Section, Setor, getSectionLabel, logout, db, auth, syncWithExtension, performSSOLogin } from './services'
 import { Sidebar, Footer, LoadingOverlay, ToastContainer, UserPanel, BugReportModal, ErrorBoundary } from './components'
 import { MessageSquare, ClipboardList, Key, FileEdit, RefreshCw, MessageCircle, Sparkles } from 'lucide-react'
 import { ref, onValue } from 'firebase/database'
@@ -97,6 +97,8 @@ export default function App() {
           return <Jefferson />
         case 'heli':
           return <HeliRPG />
+        case 'biblioteca':
+          return <Biblioteca />
       }
     },
     [setCurrentSection, unreadRooms],
@@ -134,36 +136,28 @@ export default function App() {
     return () => unsubscribe()
   }, [user, currentSection])
 
-  // Document Title, Favicon e Badge PWA para mensagens do chat
+  // Document Title, Favicon e Badge PWA — dinâmico por seção + notificações
   useEffect(() => {
-    const baseTitle = 'ATI — Auxiliar de Atendimento'
+    const sectionLabel = getSectionLabel(currentSection)
     const favicon = document.getElementById('favicon') as HTMLLinkElement
     const baseUrl = import.meta.env.BASE_URL || '/ati/'
 
     if (unreadRooms.length > 0) {
-      // Exemplo: (1) 💬 FINANCEIRO! | ATI
-      const nomesSalas = unreadRooms.map((s) => getSetorLabel(s).toUpperCase()).join(', ')
-      document.title = `(${unreadRooms.length}) ${nomesSalas} | ${baseTitle}`
+      document.title = `ATI - ${sectionLabel} (${unreadRooms.length})`
       if (favicon) favicon.href = `${baseUrl}favicon-unread.svg`
 
-      // PWA: Define badge vermelho com número de novas mensagens no ícone da barra de tarefas
       if ('setAppBadge' in navigator) {
-        ;(navigator as any).setAppBadge(unreadRooms.length).catch((err: any) => {
-          console.error('Erro ao definir badge do PWA:', err)
-        })
+        ;(navigator as any).setAppBadge(unreadRooms.length).catch(() => {})
       }
     } else {
-      document.title = baseTitle
+      document.title = `ATI - ${sectionLabel}`
       if (favicon) favicon.href = `${baseUrl}favicon.svg`
 
-      // PWA: Limpa o badge do ícone da barra de tarefas
       if ('clearAppBadge' in navigator) {
-        ;(navigator as any).clearAppBadge().catch((err: any) => {
-          console.error('Erro ao limpar badge do PWA:', err)
-        })
+        ;(navigator as any).clearAppBadge().catch(() => {})
       }
     }
-  }, [unreadRooms])
+  }, [unreadRooms, currentSection])
 
   // Altera a classe no body e salva no localStorage para persistir
   useEffect(() => {
@@ -255,7 +249,7 @@ export default function App() {
       { id: 'anotacoes' as Section, label: 'Notas', icon: <FileEdit size={20} /> },
       { id: 'conversor' as Section, label: 'Conversor', icon: <RefreshCw size={20} /> },
       { id: 'respostas_rapidas' as Section, label: 'Respostas', icon: <MessageCircle size={20} /> },
-    ].filter((tab) => canAccess(user.role, user.setor, tab.id))
+    ].filter((tab) => canAccess(user.role, user.setor, tab.id, user.customAllowedSections))
 
     const activeEmbedSection = availableTabs.some((t) => t.id === embedSection) ? embedSection : availableTabs[0]?.id || 'chat_interno'
 
@@ -305,7 +299,7 @@ export default function App() {
   }
 
   // Se a seção não é permitida para role+setor, volta pra home
-  const safeSection: Section = canAccess(user.role, user.setor, currentSection) ? currentSection : 'home'
+  const safeSection: Section = canAccess(user.role, user.setor, currentSection, user.customAllowedSections) ? currentSection : 'home'
 
   return (
     <>
@@ -330,7 +324,7 @@ export default function App() {
       )}
 
       <div className={`app-layout fade-in ${bgUrl ? 'has-custom-bg' : ''}`}>
-        <Sidebar role={user.role} setor={user.setor} activeSection={safeSection} onSelectSection={setCurrentSection} onOpenUserModal={() => setUserPanelAberto(true)} onOpenExtensionModal={() => setExtensaoModalAberto(true)} onOpenSettings={toggleTheme} theme={theme} userName={user.nomeCompleto.split(' ')[0]} avatarUrl={user.avatarUrl} hasUnreadChat={unreadRooms.length > 0} />
+        <Sidebar role={user.role} setor={user.setor} customAllowedSections={user.customAllowedSections} activeSection={safeSection} onSelectSection={setCurrentSection} onOpenUserModal={() => setUserPanelAberto(true)} onOpenExtensionModal={() => setExtensaoModalAberto(true)} onOpenSettings={toggleTheme} theme={theme} userName={user.nomeCompleto.split(' ')[0]} avatarUrl={user.avatarUrl} hasUnreadChat={unreadRooms.length > 0} />
         <div className="main-wrapper">
           <main className={`main-content ${safeSection === 'chat_interno' ? 'compact-padding' : ''}`}>
             <ErrorBoundary key={safeSection}>

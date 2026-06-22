@@ -1,10 +1,11 @@
 // pages/app/Anotacoes.tsx
 import { useState, useEffect } from 'react'
-import { db } from '../../services/firebase'
+import { db } from '../../../services/firebase'
 import { ref, onValue, push, remove, update } from 'firebase/database'
-import { useUser } from '../../hooks/useUser'
-import { useNotification } from '../../hooks/useNotification'
-import Modal from '../../components/ui/Modal'
+import { Plus, FolderOpen, CheckCircle, Trash2 } from 'lucide-react'
+import { useUser } from '../../../hooks/useUser'
+import { useNotification } from '../../../hooks/useNotification'
+import Modal from '../../../components/ui/Modal'
 import './Anotacoes.css'
 
 interface Task {
@@ -153,7 +154,7 @@ export default function Anotacoes() {
           <p>Organize suas tarefas e lembretes do dia a dia.</p>
         </div>
         <button className="an-btn-novo" onClick={() => abrirModal()}>
-          <span>➕</span> Nova Nota
+          <Plus size={16} /> Nova Nota
         </button>
       </header>
 
@@ -167,7 +168,7 @@ export default function Anotacoes() {
       <div className="an-grid">
         {notasFiltradas.length === 0 && !loading && (
           <div className="an-empty">
-            <span className="an-empty-icon">📂</span>
+                <span className="an-empty-icon"><FolderOpen size={48} /></span>
             <p>Nenhuma nota encontrada.</p>
           </div>
         )}
@@ -205,7 +206,7 @@ export default function Anotacoes() {
                 <span>{new Date(nota.timestamp).toLocaleDateString()}</span>
                 {totalTasks > 0 && (
                   <span>
-                    ✅ {doneTasks}/{totalTasks}
+                    <CheckCircle size={14} /> {doneTasks}/{totalTasks}
                   </span>
                 )}
               </div>
@@ -270,12 +271,12 @@ export default function Anotacoes() {
                     <textarea id={`task-text-${idx}`} name={`task-text-${idx}`} className={`an-task-input ${task.completed ? 'completed' : ''}`} value={task.text} onChange={(e) => updateTaskText(idx, e.target.value)} placeholder="Item da tarefa..." />
                   </div>
                   <button className="an-btn-remove-task" onClick={() => removeTask(idx)} title="Remover tarefa">
-                    🗑️
+                    <Trash2 size={14} />
                   </button>
                 </div>
               ))}
               <button className="an-btn-add-task" onClick={addTask}>
-                <span>➕</span> Adicionar tarefa
+                <Plus size={16} /> Adicionar tarefa
               </button>
             </div>
 

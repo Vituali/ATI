@@ -4,6 +4,7 @@
 // Mostra boas-vindas, perfil completo (incluindo SGP) e atalhos rápidos.
 // ---------------------------------------------------------------
 
+import { Home as HomeIcon, MessageCircle, Notebook, MessageSquare, FileEdit, FileText, Key, BarChart3, Shield, Heart, Dices, Hand, Timer, User, Monitor, ExternalLink, Zap, BookOpen } from 'lucide-react'
 import { UserProfile } from '../../hooks/useUser'
 import { isPendente, getSetorLabel, getRoleLabel, getAllowedSections, Section } from '../../services/permissions'
 import './Home.css'
@@ -21,69 +22,75 @@ function getSaudacao(): string {
   return 'Boa noite'
 }
 
-const SECTION_META: Record<Section, { icon: string; label: string; desc: string; color: string }> = {
+const SECTION_META: Record<Section, { icon: React.ReactNode; label: string; desc: string; color: string }> = {
   home: {
-    icon: '🏠',
+    icon: <HomeIcon size={18} />,
     label: 'Home',
     desc: 'Página inicial',
     color: '#64b5f6',
   },
   chat_interno: {
-    icon: '💬',
+    icon: <MessageCircle size={18} />,
     label: 'Chat Interno',
     desc: 'Chat interno',
     color: '#4dd0e1',
   },
   anotacoes: {
-    icon: '📓',
+    icon: <Notebook size={18} />,
     label: 'Minhas Anotações',
     desc: 'Notas pessoais, rascunhos e lembretes rápidos',
     color: '#ff8a65',
   },
   respostas_rapidas: {
-    icon: '🗨️',
+    icon: <MessageSquare size={18} />,
     label: 'Respostas Rápidas',
     desc: 'Respostas rápidas e categorizadas para atendimentos',
     color: '#4dd0e1',
   },
   modelos_os: {
-    icon: '📝',
+    icon: <FileEdit size={18} />,
     label: 'Modelos de O.S.',
     desc: 'Templates de ordens de serviço para o SGP',
     color: '#aed581',
   },
   conversor: {
-    icon: '📄',
+    icon: <FileText size={18} />,
     label: 'Conversor de Aditivo',
     desc: 'Extrai dados de PDFs de aditivo e gera O.S. formatada',
     color: '#ffb74d',
   },
   senhas: {
-    icon: '🔑',
+    icon: <Key size={18} />,
     label: 'Senhas',
     desc: 'Logins e acessos rápidos a equipamentos e sistemas',
     color: '#f06292',
   },
   relatorios: {
-    icon: '📊',
+    icon: <BarChart3 size={18} />,
     label: 'Relatórios',
     desc: 'Visão gerencial e indicadores de atendimento',
     color: '#ba68c8',
   },
   admin: {
-    icon: '🛡️',
+    icon: <Shield size={18} />,
     label: 'Admin',
     desc: 'Gerenciamento de usuários, roles e setores',
     color: '#0064ff',
   },
+  biblioteca: {
+    icon: <BookOpen size={18} />,
+    label: 'Minha Biblioteca',
+    desc: 'Catálogo e progresso de leitura de manhwas, mangás e séries',
+    color: '#818cf8',
+  },
   jefferson: {
-    icon: '🖤',
+    icon: <Heart size={18} />,
     label: 'Goticas & Monster',
     desc: 'Página pessoal do Jefferson',
     color: '#9c27b0',
   },
   heli: {
-    icon: '🎲',
+    icon: <Dices size={18} />,
     label: 'Ordem Paranormal',
     desc: 'RPG de texto',
     color: '#e91e63',
@@ -112,7 +119,7 @@ export default function Home({ user, onSelectSection }: HomeProps) {
         </div>
         <div className="home-hero-text">
           <h1 className="home-titulo">
-            {getSaudacao()}, <span className="home-nome-accent">{primeiroNome}</span>! 👋
+            {getSaudacao()}, <span className="home-nome-accent">{primeiroNome}</span>! <Hand size={18} />
           </h1>
           <p className="home-subtitulo">Bem-vindo ao ATI — Auxiliar de Atendimentos</p>
           <div className="home-hero-badges">
@@ -126,7 +133,7 @@ export default function Home({ user, onSelectSection }: HomeProps) {
       {/* ── Aviso de setor pendente ── */}
       {pendente && (
         <div className="home-aviso">
-          <span className="home-aviso-icon">⏳</span>
+          <span className="home-aviso-icon"><Timer size={18} /></span>
           <div>
             <strong>Acesso pendente</strong>
             <p>
@@ -141,7 +148,7 @@ export default function Home({ user, onSelectSection }: HomeProps) {
         {/* Card de Perfil */}
         <div className="home-card">
           <div className="home-card-header">
-            <span className="home-card-icon">👤</span>
+            <span className="home-card-icon"><User size={18} /></span>
             <h2 className="home-card-titulo">Seu Perfil</h2>
           </div>
           <div className="home-info-grid">
@@ -169,7 +176,7 @@ export default function Home({ user, onSelectSection }: HomeProps) {
         {/* Card SGP */}
         <div className="home-card home-card-sgp">
           <div className="home-card-header">
-            <span className="home-card-icon">🖥️</span>
+            <span className="home-card-icon"><Monitor size={18} /></span>
             <h2 className="home-card-titulo">SGP</h2>
           </div>
           <div className="home-info-grid" style={{ gridTemplateColumns: '1fr' }}>
@@ -179,26 +186,26 @@ export default function Home({ user, onSelectSection }: HomeProps) {
                 <span className="home-info-valor mono">@{user.sgpUsername}</span>
               ) : (
                 <span className="home-info-sgp-vazio">
-                  Não configurado — <span className="home-info-sgp-dica">edite no painel de perfil 👤</span>
+                  Não configurado — <span className="home-info-sgp-dica">edite no painel de perfil <User size={14} /></span>
                 </span>
               )}
             </div>
             <div className="home-info-item">
               <span className="home-info-label">Antigo SGP</span>
               <a href="https://sgp.atiinternet.com.br/admin/" target="_blank" rel="noopener noreferrer" className="home-sgp-link">
-                sgp.atiinternet.com.br ↗
+                sgp.atiinternet.com.br <ExternalLink size={14} />
               </a>
             </div>
             <div className="home-info-item">
               <span className="home-info-label">Antigo SGP IP</span>
               <a href="http://201.158.20.35:8000/admin/" target="_blank" rel="noopener noreferrer" className="home-sgp-link">
-                201.158.20.35:8000 ↗
+                201.158.20.35:8000 <ExternalLink size={14} />
               </a>
             </div>
             <div className="home-info-item">
               <span className="home-info-label">Novo SGP</span>
               <a href="http://201.158.20.53:8000/" target="_blank" rel="noopener noreferrer" className="home-sgp-link">
-                201.158.20.53:8000 ↗
+                201.158.20.53:8000 <ExternalLink size={14} />
               </a>
             </div>
           </div>
@@ -209,7 +216,7 @@ export default function Home({ user, onSelectSection }: HomeProps) {
       {!pendente && acessos.length > 0 && (
         <div className="home-card">
           <div className="home-card-header">
-            <span className="home-card-icon">⚡</span>
+            <span className="home-card-icon"><Zap size={18} /></span>
             <h2 className="home-card-titulo">Acesso rápido</h2>
           </div>
           <p className="home-card-desc">Use a barra lateral ou clique nos atalhos abaixo para navegar pelo sistema.</p>

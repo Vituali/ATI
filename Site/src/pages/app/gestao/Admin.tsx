@@ -7,15 +7,15 @@
 
 import { useState, useEffect } from 'react'
 import { ref, get, set, update } from 'firebase/database'
-import { db } from '../../services/firebase'
-import { Role, Setor, Section, getRoleLabel, getSetorLabel, getSetorPermissions, getSectionLabel } from '../../services/permissions'
+import { db } from '../../../services/firebase'
+import { Role, Setor, Section, getRoleLabel, getSetorLabel, getSetorPermissions, getSectionLabel } from '../../../services/permissions'
 import './Admin.css'
-import LoadingOverlay from '../../components/ui/LoadingOverlay'
-import PainelAvisos from '../../components/app/PainelAvisos'
-import { useUser } from '../../hooks/useUser'
-import type { UserProfile } from '../../hooks/useUser'
-import { useNotification } from '../../hooks/useNotification'
-import { ArrowUp, ArrowDown, Shield, Save, Users, Megaphone, Bug, ClipboardList, RefreshCw } from 'lucide-react'
+import LoadingOverlay from '../../../components/ui/LoadingOverlay'
+import PainelAvisos from '../../../components/app/PainelAvisos'
+import { useUser } from '../../../hooks/useUser'
+import type { UserProfile } from '../../../hooks/useUser'
+import { useNotification } from '../../../hooks/useNotification'
+import { ArrowUp, ArrowDown, ArrowUpDown, Shield, Save, Users, Megaphone, Bug, ClipboardList, RefreshCw, Circle } from 'lucide-react'
 
 // ---------------------------------------------------------------
 // TIPOS
@@ -30,6 +30,7 @@ interface Atendente {
   setor: Setor
   status: 'ativo' | 'inativo'
   sgpUsername?: string
+  customAllowedSections?: Section[]
 }
 
 type SortField = 'username' | 'sgpUsername' | 'nomeCompleto' | 'setor' | 'role' | 'status'
@@ -40,7 +41,7 @@ type SortField = 'username' | 'sgpUsername' | 'nomeCompleto' | 'setor' | 'role' 
 
 const ROLES: Role[] = ['usuario', 'supervisor', 'moderador', 'admin']
 const SETORES: Setor[] = ['geral', 'ti', 'financeiro', 'suporte', 'comercial']
-const SECTIONS: Section[] = ['home', 'respostas_rapidas', 'chat_interno', 'anotacoes', 'modelos_os', 'conversor', 'senhas', 'relatorios', 'admin']
+const SECTIONS: Section[] = ['home', 'respostas_rapidas', 'chat_interno', 'anotacoes', 'modelos_os', 'conversor', 'senhas', 'relatorios', 'admin', 'jefferson', 'heli', 'biblioteca']
 
 const STATUS_LABEL: Record<string, string> = {
   ativo: 'Ativo',
@@ -54,6 +55,7 @@ const STATUS_LABEL: Record<string, string> = {
 export default function Admin() {
   const [atendentes, setAtendentes] = useState<Atendente[]>([])
   const [loading, setLoading] = useState(true)
+  const [atendentePermissoes, setAtendentePermissoes] = useState<Atendente | null>(null)
 
   const [salvando, setSalvando] = useState<string | null>(null)
   const [busca, setBusca] = useState('')
@@ -94,6 +96,7 @@ export default function Admin() {
           setor: d.setor ?? 'ti',
           status: d.status ?? 'ativo',
           sgpUsername: d.sgpUsername ?? d.sgpusername ?? '',
+          customAllowedSections: d.customAllowedSections || [],
         })
       })
 
@@ -157,6 +160,7 @@ export default function Admin() {
         setor: atendente.setor,
         status: atendente.status,
         sgpUsername: atendente.sgpUsername || null,
+        customAllowedSections: atendente.customAllowedSections || [],
       })
       // Mantém uid_index sincronizado com a role
       await set(ref(db, `uid_index/${atendente.uid}/role`), atendente.role)
@@ -189,6 +193,7 @@ export default function Admin() {
           setor: atendente.setor,
           status: atendente.status,
           sgpUsername: atendente.sgpUsername || null,
+          customAllowedSections: atendente.customAllowedSections || [],
         })
         await set(ref(db, `uid_index/${atendente.uid}/role`), atendente.role)
       } catch {
@@ -235,7 +240,7 @@ export default function Admin() {
 
   // Ícone de ordenação no cabeçalho
   function sortIcon(field: SortField) {
-    if (sortField !== field) return <span className="admin-sort-icon">↕</span>
+    if (sortField !== field) return <span className="admin-sort-icon"><ArrowUpDown size={14} /></span>
     return <span className="admin-sort-icon active">{sortAsc ? <ArrowUp size={14} strokeWidth={2} /> : <ArrowDown size={14} strokeWidth={2} />}</span>
   }
 
@@ -360,11 +365,16 @@ export default function Admin() {
                           </select>
                         </td>
 
-                        {/* Botão salvar */}
+                        {/* Botão salvar / Ações */}
                         <td>
-                          <button className="admin-btn-salvar" onClick={() => handleSalvar(atendente)} disabled={salvando === atendente.username}>
-                            {salvando === atendente.username ? '...' : 'Salvar'}
-                          </button>
+                          <div className="admin-actions-cell">
+                            <button className="admin-btn-salvar" onClick={() => handleSalvar(atendente)} disabled={salvando === atendente.username}>
+                              {salvando === atendente.username ? '...' : 'Salvar'}
+                            </button>
+                            <button className="admin-btn-permissoes" onClick={() => setAtendentePermissoes(atendente)} title="Permissões Especiais (páginas extras)">
+                              Extras ({atendente.customAllowedSections?.length || 0})
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -386,7 +396,7 @@ export default function Admin() {
                       const tem = getSetorPermissions(section).includes(setor)
                       return (
                         <li key={section} className={`admin-permissao-item ${tem ? 'ok' : 'nok'}`}>
-                          <span className="admin-permissao-dot">{tem ? '●' : '○'}</span>
+                          <span className="admin-permissao-dot"><Circle size={10} fill={tem ? 'currentColor' : 'none'} /></span>
                           {getSectionLabel(section)}
                         </li>
                       )
@@ -445,6 +455,46 @@ export default function Admin() {
               </table>
             </div>
           )}
+        </div>
+      )}
+      {atendentePermissoes && (
+        <div className="admin-modal-backdrop" onClick={() => setAtendentePermissoes(null)}>
+          <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="admin-modal-header">
+              <h3 className="admin-modal-title">Permissões Especiais</h3>
+              <button className="admin-modal-close" onClick={() => setAtendentePermissoes(null)}>&times;</button>
+            </div>
+            <div className="admin-modal-content">
+              <p className="admin-modal-subtitle">Selecione as páginas que <strong>{atendentePermissoes.nomeCompleto}</strong> pode acessar, além do seu setor/role padrão:</p>
+              <div className="admin-permissions-list">
+                {SECTIONS.map((sec) => {
+                  const isChecked = atendentePermissoes.customAllowedSections?.includes(sec) || false
+                  return (
+                    <label key={sec} className="admin-permission-checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => {
+                          const current = atendentePermissoes.customAllowedSections || []
+                          const next = isChecked ? current.filter((s) => s !== sec) : [...current, sec]
+                          setAtendentePermissoes({ ...atendentePermissoes, customAllowedSections: next })
+                        }}
+                      />
+                      <span>{getSectionLabel(sec)}</span>
+                    </label>
+                  )
+                })}
+              </div>
+            </div>
+            <div className="admin-modal-footer">
+              <button className="admin-btn-modal-cancel" onClick={() => setAtendentePermissoes(null)}>Cancelar</button>
+              <button className="admin-btn-modal-save" onClick={() => {
+                setAtendentes((prev) => prev.map((a) => a.username === atendentePermissoes.username ? atendentePermissoes : a))
+                handleSalvar(atendentePermissoes)
+                setAtendentePermissoes(null)
+              }}>Salvar</button>
+            </div>
+          </div>
         </div>
       )}
     </div>

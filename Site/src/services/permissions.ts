@@ -2,7 +2,7 @@
 
 export type Role = 'usuario' | 'supervisor' | 'moderador' | 'admin'
 export type Setor = 'geral' | 'ti' | 'financeiro' | 'suporte' | 'comercial'
-export type Section = 'home' | 'respostas_rapidas' | 'chat_interno' | 'anotacoes' | 'modelos_os' | 'conversor' | 'senhas' | 'relatorios' | 'admin' | 'jefferson' | 'heli'
+export type Section = 'home' | 'respostas_rapidas' | 'chat_interno' | 'anotacoes' | 'modelos_os' | 'conversor' | 'senhas' | 'relatorios' | 'admin' | 'jefferson' | 'heli' | 'biblioteca'
 
 // ---------------------------------------------------------------
 // PERMISSÕES POR ROLE
@@ -19,6 +19,7 @@ export const ROLE_PERMISSIONS: Record<Section, Role[]> = {
   admin: ['admin'],
   jefferson: ['usuario', 'supervisor', 'moderador', 'admin'],
   heli: ['usuario', 'supervisor', 'moderador', 'admin'],
+  biblioteca: ['admin'],
 }
 
 // ---------------------------------------------------------------
@@ -38,6 +39,7 @@ export const SETOR_PERMISSIONS: Record<Section, Setor[]> = {
   admin: ['ti'],
   jefferson: ['geral', 'ti', 'financeiro', 'suporte', 'comercial'],
   heli: ['geral', 'ti', 'financeiro', 'suporte', 'comercial'],
+  biblioteca: ['ti'],
 }
 
 // ---------------------------------------------------------------
@@ -53,9 +55,8 @@ export function getRolePermissions(section: Section): Role[] {
     case 'conversor':
     case 'senhas':
       return ['usuario', 'supervisor', 'moderador', 'admin']
-    case 'jefferson':
-    case 'heli':
-      return ['usuario', 'supervisor', 'moderador', 'admin']
+    case 'biblioteca':
+      return ['admin']
     case 'relatorios':
       return ['supervisor', 'moderador', 'admin']
     case 'admin':
@@ -80,9 +81,8 @@ export function getSetorPermissions(section: Section): Setor[] {
       return ['ti', 'suporte', 'comercial']
     case 'senhas':
       return ['ti', 'suporte']
-    case 'jefferson':
-    case 'heli':
-      return ['geral', 'ti', 'financeiro', 'suporte', 'comercial']
+    case 'biblioteca':
+      return ['ti']
     case 'admin':
       return ['ti']
     default:
@@ -93,8 +93,12 @@ export function getSetorPermissions(section: Section): Setor[] {
 // ---------------------------------------------------------------
 // FUNÇÃO PRINCIPAL
 // ---------------------------------------------------------------
-export function canAccess(role: Role, setor: Setor, section: Section): boolean {
+export function canAccess(role: Role, setor: Setor, section: Section, customAllowedSections?: Section[]): boolean {
   if (role === 'admin') return true
+
+  if (customAllowedSections && customAllowedSections.includes(section)) {
+    return true
+  }
 
   const roleOk = getRolePermissions(section).includes(role)
   const setorOk = getSetorPermissions(section).includes(setor)
@@ -103,7 +107,7 @@ export function canAccess(role: Role, setor: Setor, section: Section): boolean {
 }
 
 export function getAllowedSections(role: Role, setor: Setor): Section[] {
-  const allSections: Section[] = ['home', 'respostas_rapidas', 'chat_interno', 'anotacoes', 'modelos_os', 'conversor', 'senhas', 'relatorios', 'admin']
+  const allSections: Section[] = ['home', 'respostas_rapidas', 'chat_interno', 'anotacoes', 'modelos_os', 'conversor', 'senhas', 'relatorios', 'admin', 'biblioteca', 'jefferson', 'heli']
   return allSections.filter((section) => canAccess(role, setor, section))
 }
 
@@ -181,6 +185,7 @@ export const SECTION_LABEL: Record<Section, string> = {
   admin: 'Admin',
   jefferson: 'Goticas & Monster',
   heli: 'Ordem Paranormal',
+  biblioteca: 'Minha Biblioteca',
 }
 
 export function getSectionLabel(section: string): string {
@@ -205,6 +210,8 @@ export function getSectionLabel(section: string): string {
       return 'Admin'
     case 'heli':
       return 'Ordem Paranormal'
+    case 'biblioteca':
+      return 'Minha Biblioteca'
     default:
       return section
   }

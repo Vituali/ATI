@@ -1,8 +1,9 @@
 // pages/app/Relatorios.tsx
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { ref, onValue, set } from 'firebase/database'
-import { db } from '../../services/firebase'
-import LoadingOverlay from '../../components/ui/LoadingOverlay'
+import { BarChart3, Settings, CheckCircle, AlertCircle, XCircle, Zap, Trash2, ArrowUp, ArrowDown, Calendar, RefreshCw } from 'lucide-react'
+import { db } from '../../../services/firebase'
+import LoadingOverlay from '../../../components/ui/LoadingOverlay'
 import './Relatorios.css'
 
 interface RegistroPotencia {
@@ -320,18 +321,18 @@ export default function Relatorios() {
     <div className="relatorios-page">
       <div className="relatorios-header flex-header">
         <div>
-          <h1 className="relatorios-titulo">📊 Relatórios de Potência</h1>
+          <h1 className="relatorios-titulo"><BarChart3 size={20} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 8 }} /> Relatórios de Potência</h1>
           <p className="relatorios-subtitulo">Análise em tempo real dos sinais coletados do SGP</p>
         </div>
         <button className="rel-btn-config" onClick={() => setExibirConfig(!exibirConfig)}>
-          ⚙️ Configurar Limites
+          <Settings size={16} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} /> Configurar Limites
         </button>
       </div>
 
       {/* Formulário de Configuração de Limites */}
       {exibirConfig && (
         <form className="rel-config-panel" onSubmit={salvarLimites}>
-          <h3 className="rel-config-title">⚙️ Configurações de Limites de Sinal (dBm)</h3>
+          <h3 className="rel-config-title"><Settings size={16} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} /> Configurações de Limites de Sinal (dBm)</h3>
           <p className="rel-config-desc">Defina as faixas de classificação dos sinais de fibra da rede.</p>
           <div className="rel-config-grid">
             <div className="rel-config-group">
@@ -378,7 +379,7 @@ export default function Relatorios() {
         </div>
 
         <div className="rel-metrica-card excelente clickable" onClick={() => setFiltroSinal('excelente')}>
-          <span className="rel-metrica-icon">🟢</span>
+          <span className="rel-metrica-icon"><CheckCircle size={14} className="rel-icon-green" /></span>
           <div className="rel-metrica-info">
             <span className="rel-metrica-valor">{metricas.excelente}</span>
             <span className="rel-metrica-label">
@@ -388,7 +389,7 @@ export default function Relatorios() {
         </div>
 
         <div className="rel-metrica-card atencao clickable" onClick={() => setFiltroSinal('atencao')}>
-          <span className="rel-metrica-icon">🟡</span>
+          <span className="rel-metrica-icon"><AlertCircle size={14} className="rel-icon-yellow" /></span>
           <div className="rel-metrica-info">
             <span className="rel-metrica-valor">{metricas.atencao}</span>
             <span className="rel-metrica-label">
@@ -398,7 +399,7 @@ export default function Relatorios() {
         </div>
 
         <div className="rel-metrica-card critico clickable" onClick={() => setFiltroSinal('critico')}>
-          <span className="rel-metrica-icon">🔴</span>
+          <span className="rel-metrica-icon"><XCircle size={14} className="rel-icon-red" /></span>
           <div className="rel-metrica-info">
             <span className="rel-metrica-valor">{metricas.critico}</span>
             <span className="rel-metrica-label">Crítico (&lt; {thresholds.minAtencao})</span>
@@ -406,7 +407,7 @@ export default function Relatorios() {
         </div>
 
         <div className="rel-metrica-card media">
-          <span className="rel-metrica-icon">⚡</span>
+          <span className="rel-metrica-icon"><Zap size={16} /></span>
           <div className="rel-metrica-info">
             <span className="rel-metrica-valor">{metricas.mediaRx}</span>
             <span className="rel-metrica-label">Média do Sinal RX</span>
@@ -419,9 +420,9 @@ export default function Relatorios() {
         <input type="text" placeholder="Buscar por OLT, Login, Bairro, PON..." value={busca} onChange={(e) => setBusca(e.target.value)} className="rel-busca-input" />
         <select value={filtroSinal} onChange={(e: any) => setFiltroSinal(e.target.value)} className="rel-select-filtro">
           <option value="todos">Todos os Sinais</option>
-          <option value="excelente">Excelente (🟢)</option>
-          <option value="atencao">Atenção (🟡)</option>
-          <option value="critico">Crítico (🔴)</option>
+          <option value="excelente">Excelente</option>
+          <option value="atencao">Atenção</option>
+          <option value="critico">Crítico</option>
         </select>
 
         <select value={filtroStatus} onChange={(e: any) => setFiltroStatus(e.target.value)} className="rel-select-filtro">
@@ -465,7 +466,7 @@ export default function Relatorios() {
             setExibirDataColeta(false)
           }}
         >
-          🧹 Limpar
+          <Trash2 size={16} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} /> Limpar
         </button>
       </div>
 
@@ -478,7 +479,7 @@ export default function Relatorios() {
             <thead>
               <tr>
                 <th onClick={() => handleSort('contrato')} className="sortable">
-                  Contrato {ordenacao?.coluna === 'contrato' ? (ordenacao.direcao === 'asc' ? '🔼' : '🔽') : ''}
+                  Contrato {ordenacao?.coluna === 'contrato' ? (ordenacao.direcao === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />) : ''}
                 </th>
                 <th>Login (PPPoE)</th>
                 <th>OLT</th>
@@ -486,7 +487,7 @@ export default function Relatorios() {
                 <th>PON</th>
                 {exibirVlan && <th>VLAN</th>}
                 <th onClick={() => handleSort('rx')} className="sortable">
-                  Sinal RX {ordenacao?.coluna === 'rx' ? (ordenacao.direcao === 'asc' ? '🔼' : '🔽') : ''}
+                  Sinal RX {ordenacao?.coluna === 'rx' ? (ordenacao.direcao === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />) : ''}
                 </th>
                 {exibirSinalTx && <th>Sinal TX</th>}
                 {exibirRxOlt && <th>RX OLT</th>}
@@ -494,11 +495,11 @@ export default function Relatorios() {
                 <th>Bairro</th>
                 {exibirDataColeta && (
                   <th onClick={() => handleSort('dataColeta')} className="sortable">
-                    Data Coleta {ordenacao?.coluna === 'dataColeta' ? (ordenacao.direcao === 'asc' ? '🔼' : '🔽') : ''}
+                    Data Coleta {ordenacao?.coluna === 'dataColeta' ? (ordenacao.direcao === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />) : ''}
                   </th>
                 )}
                 <th onClick={() => handleSort('status')} className="sortable">
-                  Status {ordenacao?.coluna === 'status' ? (ordenacao.direcao === 'asc' ? '🔼' : '🔽') : ''}
+                  Status {ordenacao?.coluna === 'status' ? (ordenacao.direcao === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />) : ''}
                 </th>
               </tr>
             </thead>
@@ -527,7 +528,7 @@ export default function Relatorios() {
                     {exibirVlan && <td className="font-mono">{reg.vlan || '-'}</td>}
                     <td>
                       <span className={`rel-badge-sinal ${classif.classe}`}>
-                        {reg.rx} {classif.label.startsWith('Excelente') ? '🟢' : classif.classe === 'atencao' ? '🟡' : '🔴'}
+                        {reg.rx} {classif.label.startsWith('Excelente') ? <CheckCircle size={14} className="rel-icon-green" /> : classif.classe === 'atencao' ? <AlertCircle size={14} className="rel-icon-yellow" /> : <XCircle size={14} className="rel-icon-red" />}
                       </span>
                     </td>
                     {exibirSinalTx && <td className="font-mono">{reg.tx || '-'}</td>}
@@ -559,7 +560,7 @@ export default function Relatorios() {
                         </select>
                         {reg.status === 'Ausente (Retorno)' && reg.retornoData && (
                           <div className="rel-status-retorno" title={reg.retornoData}>
-                            📅 {reg.retornoData}
+                            <Calendar size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} /> {reg.retornoData}
                           </div>
                         )}
                       </div>
@@ -576,7 +577,7 @@ export default function Relatorios() {
       {registrosFiltrados.length > itensExibidos && (
         <div className="rel-paginacao">
           <button className="rel-btn-loadmore" onClick={() => setItensExibidos((prev) => prev + 50)}>
-            🔄 Carregar Mais (+50)
+            <RefreshCw size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} /> Carregar Mais (+50)
           </button>
           <span className="rel-paginacao-info">
             Exibindo <strong>{Math.min(itensExibidos, registrosFiltrados.length)}</strong> de <strong>{registrosFiltrados.length}</strong> registros

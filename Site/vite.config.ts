@@ -17,7 +17,7 @@ export default defineConfig({
         "chat_bg.png"
       ],
       manifest: {
-        name: "ATI - Auxiliar de Atendimento",
+        name: "ATI",
         short_name: "ATI",
         description: "Sistema auxiliar de atendimentos técnicos e suporte.",
         theme_color: "#1a1a1a",

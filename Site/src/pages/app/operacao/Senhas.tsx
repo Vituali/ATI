@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import './Senhas.css'
-import { getCredentials, isAdminUser } from '../../services/credentials'
-import { Check, ClipboardList, Key, Settings, Globe } from 'lucide-react'
+import { getCredentials, isAdminUser } from '../../../services/credentials'
+import { Check, ClipboardList, Key, Settings, Globe, ExternalLink } from 'lucide-react'
 
 interface Credencial {
   label: string
@@ -143,7 +143,7 @@ export default function Senhas() {
               {sites.map((site, i) => (
                 <div key={i} className="senha-item">
                   <a href={site.link} target="_blank" rel="noopener noreferrer" className="senha-site-link">
-                    {site.label} ↗
+                    {site.label} <ExternalLink size={14} />
                   </a>
                 </div>
               ))}

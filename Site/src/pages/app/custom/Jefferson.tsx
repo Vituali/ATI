@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Ghost, Zap, Cat, CupSoda, Lightbulb, Sparkles, Heart, Sprout, Droplets, AlertTriangle, Wine, Plus, Trash2, FlaskConical, Circle } from 'lucide-react'
 import './Jefferson.css'
 
 const FRASES_GOTICAS = [
@@ -26,15 +27,15 @@ const FRASES_GOTICAS = [
 
 const ARCHETYPES = [
   {
-    title: '🦇 Gótica Tradicional (Bauhaus Goth)',
+    title: <><Ghost size={16} /> Gótica Tradicional (Bauhaus Goth)</>,
     desc: 'Escuta rock gótico dos anos 80, trabalha de sobretudo preto mesmo no calor de 35°C e resolve problemas de roteador recitando poemas de Edgar Allan Poe.',
   },
   {
-    title: '⚡ Cyber Goth (Futurista do TI)',
+    title: <><Zap size={16} /> Cyber Goth (Futurista do TI)</>,
     desc: 'Cabelos neon, roupas de vinil e máscaras de gás. Configura redes e subredes IP no ritmo de música eletrônica industrial e só responde chamados via CLI.',
   },
   {
-    title: '🐈 Gótica Suave (Lana Del Goth)',
+    title: <><Cat size={16} /> Gótica Suave (Lana Del Goth)</>,
     desc: 'Usa delineado discreto de gatinho e roupas pretas leves. Ouve indie melancólico enquanto tranquiliza clientes furiosos com a internet lenta com uma calma paranormal.',
   },
 ]
@@ -91,13 +92,13 @@ export default function Jefferson() {
     return [
       {
         id: '1',
-        name: 'Gótica do Suporte 🦇',
+        name: 'Gótica do Suporte',
         lastPeriod: p1Date.toISOString().split('T')[0],
         cycleDays: 28,
       },
       {
         id: '2',
-        name: 'Ruiva do Monster 🥤',
+        name: 'Ruiva do Monster',
         lastPeriod: p2Date.toISOString().split('T')[0],
         cycleDays: 30,
       },
@@ -132,10 +133,10 @@ export default function Jefferson() {
   const scorePercent = Math.round((activeCount * 100) / 8)
 
   const getScoreMessage = (score: number) => {
-    if (score === 0) return '🕯️ Sem essência das trevas. Coloque uma música triste!'
-    if (score < 40) return '🔮 Iniciante das sombras. Delineador básico em progresso.'
-    if (score < 80) return '🖤 Gótica Suave confirmada. O Monster branco já faz efeito.'
-    return '🦇 GÓTICA SUPREMA DAS TREVAS! Jefferson aprova 100%.'
+    if (score === 0) return <><Lightbulb size={14} /> Sem essência das trevas. Coloque uma música triste!</>
+    if (score < 40) return <><Sparkles size={14} /> Iniciante das sombras. Delineador básico em progresso.</>
+    if (score < 80) return <><Heart size={14} /> Gótica Suave confirmada. O Monster branco já faz efeito.</>
+    return <><Ghost size={14} /> GÓTICA SUPREMA DAS TREVAS! Jefferson aprova 100%.</>
   }
 
   // Lógica Avançada do Ciclo Menstrual
@@ -200,7 +201,7 @@ export default function Jefferson() {
 
   const getProfileStatus = (lastPeriod: string, cycleDays: number) => {
     const adjustedStart = getAdjustedLastPeriod(lastPeriod, cycleDays)
-    if (!adjustedStart) return { name: 'Normal', class: 'normal', badge: '🌱 Normal' }
+    if (!adjustedStart) return { name: 'Normal', class: 'normal', badge: <><Sprout size={14} /> Normal</> }
 
     const today = new Date()
     today.setHours(0, 0, 0, 0)
@@ -214,18 +215,18 @@ export default function Jefferson() {
     const tpm = getTpmRange(lastPeriod, cycleDays)
 
     if (todayTime >= start.getTime() && todayTime <= endMenstrual.getTime()) {
-      return { name: 'Menstruação', class: 'menstrual', badge: '🩸 Menstruação' }
+      return { name: 'Menstruação', class: 'menstrual', badge: <><Droplets size={14} /> Menstruação</> }
     }
 
     if (fertile && todayTime >= fertile.start.getTime() && todayTime <= fertile.end.getTime()) {
-      return { name: 'Período Fértil', class: 'fertile', badge: '⚠️ Período Fértil' }
+      return { name: 'Período Fértil', class: 'fertile', badge: <><AlertTriangle size={14} /> Período Fértil</> }
     }
 
     if (tpm && todayTime >= tpm.start.getTime() && todayTime <= tpm.end.getTime()) {
-      return { name: 'TPM', class: 'tpm', badge: '🍷 Período TPM' }
+      return { name: 'TPM', class: 'tpm', badge: <><Wine size={14} /> TPM</> }
     }
 
-    return { name: 'Normal', class: 'normal', badge: '🌱 Normal' }
+    return { name: 'Normal', class: 'normal', badge: <><Sprout size={14} /> Normal</> }
   }
 
   const addProfile = (e: React.FormEvent) => {
@@ -263,11 +264,11 @@ export default function Jefferson() {
             animationDuration: `${bat.duration}s`,
           }}
         >
-          🦇
+          <Ghost size={16} />
         </div>
       ))}
       <div className="jeff-header">
-        <h1 className="jeff-title">🦇 Área Secreta do Jefferson</h1>
+        <h1 className="jeff-title"><Ghost size={18} /> Área Secreta do Jefferson</h1>
         <p className="jeff-subtitle">Goticas & Monster Branco: O Templo Supremo</p>
       </div>
 
@@ -283,7 +284,7 @@ export default function Jefferson() {
         {/* Card Interativo */}
         <div className="jeff-card ctrl-card">
           <div className="jeff-section">
-            <h2 className="jeff-card-title">🥤 Contador de Monster (Sem Açúcar)</h2>
+            <h2 className="jeff-card-title"><CupSoda size={18} /> Contador de Monster (Sem Açúcar)</h2>
             <p className="jeff-desc">Acompanhe a sua cota diária de energia das trevas:</p>
             <div className="jeff-counter-wrap">
               <button className="counter-btn minus" onClick={() => setContador((prev) => Math.max(0, prev - 1))}>
@@ -294,25 +295,25 @@ export default function Jefferson() {
                 +
               </button>
             </div>
-            <span className="counter-msg">{contador === 0 ? '⚠️ Nível de energia crítico. Compre um Monster!' : contador <= 2 ? '🟢 Energia sob controle.' : contador <= 4 ? '🟡 Cuidado com a taquicardia!' : '🔴 Modo Deus das Trevas ativado.'}</span>
+            <span className="counter-msg">{contador === 0 ? <><AlertTriangle size={14} /> Nível de energia crítico. Compre um Monster!</> : contador <= 2 ? <><Circle size={14} color="#22c55e" /> Energia sob controle.</> : contador <= 4 ? <><Circle size={14} color="#eab308" /> Cuidado com a taquicardia!</> : <><Circle size={14} color="#ef4444" /> Modo Deus das Trevas ativado.</>}</span>
           </div>
 
           <div className="jeff-divider" />
 
           <div className="jeff-section">
-            <h2 className="jeff-card-title">🕯️ Sabedoria Obscura</h2>
+            <h2 className="jeff-card-title"><Lightbulb size={18} /> Sabedoria Obscura</h2>
             <div className="jeff-quote-box">
               <p className="jeff-quote">"{frase}"</p>
             </div>
             <button className="jeff-btn-gerar" onClick={gerarNovaFrase}>
-              ⚡ Invocar Nova Frase
+              <Zap size={16} /> Invocar Nova Frase
             </button>
           </div>
         </div>
 
         {/* Card Calculadora Gótica */}
         <div className="jeff-card">
-          <h2 className="jeff-card-title">🐈 Calculadora de Afinidade Gótica</h2>
+          <h2 className="jeff-card-title"><Cat size={18} /> Calculadora de Afinidade Gótica</h2>
           <p className="jeff-desc" style={{ marginBottom: '1rem' }}>
             Selecione os itens presentes na sua rotina:
           </p>
@@ -362,7 +363,7 @@ export default function Jefferson() {
 
         {/* Card Agendador de Ciclo Menstrual (Novo!) */}
         <div className="jeff-card">
-          <h2 className="jeff-card-title">🩸 Monitorador de Ciclos das Trevas</h2>
+          <h2 className="jeff-card-title"><Droplets size={18} /> Monitorador de Ciclos das Trevas</h2>
           <p className="jeff-desc" style={{ marginBottom: '1rem' }}>
             Saiba quando o humor gótico vai atingir o limite crítico e quando tomar cuidado:
           </p>
@@ -383,7 +384,7 @@ export default function Jefferson() {
                 <input type="number" min={20} max={45} value={newCycleDays} onChange={(e) => setNewCycleDays(Number(e.target.value) || 28)} className="jeff-form-input" required />
               </div>
               <button type="submit" className="jeff-btn-add">
-                ➕ Adicionar
+                <Plus size={16} /> Adicionar
               </button>
             </div>
           </form>
@@ -438,9 +439,9 @@ export default function Jefferson() {
                       </div>
                     </div>
                     <div className="jeff-profile-right">
-                      <div className={`jeff-countdown ${countdownClass}`}>{remaining !== null && (remaining > 0 ? `Faltam ${remaining} d` : remaining === 0 ? 'É HOJE! 🩸' : `Atrasada ${Math.abs(remaining)} d`)}</div>
+                      <div className={`jeff-countdown ${countdownClass}`}>{remaining !== null && (remaining > 0 ? `Faltam ${remaining} d` : remaining === 0 ? <><Droplets size={14} /> É HOJE!</> : `Atrasada ${Math.abs(remaining)} d`)}</div>
                       <button className="jeff-btn-delete" onClick={() => deleteProfile(profile.id)} title="Remover Gótica" type="button">
-                        🗑️
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </div>
@@ -454,7 +455,7 @@ export default function Jefferson() {
 
         {/* Card Pré-Treino (Sempre Visível) */}
         <div className="jeff-card img-card">
-          <h2 className="jeff-card-title">🧪 Suplementação das Trevas</h2>
+          <h2 className="jeff-card-title"><FlaskConical size={18} /> Suplementação das Trevas</h2>
           <div className="jeff-img-wrapper" style={{ maxHeight: '250px' }}>
             <img src="/ati/sangue_gotica.png" alt="Pré-treino Sangue de Gótica" className="jeff-main-img" style={{ objectFit: 'contain', height: '100%', width: 'auto' }} />
           </div>
@@ -468,7 +469,7 @@ export default function Jefferson() {
 
         {/* Card Guia das Góticas do Suporte (Novo!) */}
         <div className="jeff-card goth-archetypes-card">
-          <h2 className="jeff-card-title">🖤 Arquétipos de Góticas no Suporte de TI</h2>
+          <h2 className="jeff-card-title"><Heart size={18} /> Arquétipos de Góticas no Suporte de TI</h2>
           <p className="jeff-desc">Tipos comuns de entidades góticas encontradas na escala 6x1:</p>
 
           <div className="goth-types-grid">

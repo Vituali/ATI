@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { onAuthStateChanged, User } from 'firebase/auth'
 import { ref, get, update, onValue } from 'firebase/database'
 import { auth, db } from '../services/firebase'
-import { Role, Setor } from '../services/permissions'
+import { Role, Setor, Section } from '../services/permissions'
 import { syncWithExtension } from '../services/auth'
 
 export interface UserProfile {
@@ -17,6 +17,7 @@ export interface UserProfile {
   sgpUsername?: string
   avatarUrl?: string
   customBg?: string
+  customAllowedSections?: Section[]
 }
 
 interface UseUserReturn {
@@ -46,6 +47,7 @@ async function fetchProfileWithRetry(uid: string, tentativas = 5, delay = 800): 
             sgpUsername: data.sgpUsername ?? undefined,
             avatarUrl: data.avatarUrl ?? undefined,
             customBg: data.customBg ?? undefined,
+            customAllowedSections: data.customAllowedSections || [],
           }
         }
       })
@@ -114,6 +116,7 @@ export function useUser(): UseUserReturn {
               sgpUsername: data.sgpUsername ?? undefined,
               avatarUrl: data.avatarUrl ?? undefined,
               customBg: data.customBg ?? undefined,
+              customAllowedSections: data.customAllowedSections || [],
             })
           }
         })

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { ref, get } from 'firebase/database'
 import { db } from '../../services'
+import { Rocket, Sparkles, Bot, Zap, ExternalLink } from 'lucide-react'
 import Modal from '../../components/ui/Modal'
 import './Extension.css'
 
@@ -33,7 +34,7 @@ export default function ExtensionModal({ aberto, onFechar }: ExtensionModalProps
   }, [aberto])
 
   return (
-    <Modal aberto={aberto} onFechar={onFechar} titulo="🚀 Extensão ATI" largura="520px">
+    <Modal aberto={aberto} onFechar={onFechar} titulo={<><Rocket size={24} /> Extensão ATI</>} largura="520px">
       <div className="extension-modal-content">
         <div className="extension-preview-container">
           <img src="./extension_preview.png" alt="Preview da Extensão ATI" className="extension-preview-img" />
@@ -50,13 +51,13 @@ export default function ExtensionModal({ aberto, onFechar }: ExtensionModalProps
 
           <ul className="extension-features">
             <li>
-              ✨ <strong>Preenchimento Automático:</strong> Gere O.S. com um clique.
+              <Sparkles size={16} /> <strong>Preenchimento Automático:</strong> Gere O.S. com um clique.
             </li>
             <li>
-              🤖 <strong>Chat Integrado:</strong> Respostas rápidas em qualquer aba.
+              <Bot size={16} /> <strong>Chat Integrado:</strong> Respostas rápidas em qualquer aba.
             </li>
             <li>
-              ⚡ <strong>Produtividade:</strong> Atalhos exclusivos para o dia a dia.
+              <Zap size={16} /> <strong>Produtividade:</strong> Atalhos exclusivos para o dia a dia.
             </li>
           </ul>
         </div>
@@ -68,7 +69,7 @@ export default function ExtensionModal({ aberto, onFechar }: ExtensionModalProps
               Agora não
             </button>
             <a href={extensionUrl} target="_blank" rel="noopener noreferrer" className="btn-install" onClick={onFechar}>
-              Instalar Extensão ↗
+              Instalar Extensão <ExternalLink size={14} />
             </a>
           </div>
         </div>

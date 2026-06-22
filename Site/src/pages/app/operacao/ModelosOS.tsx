@@ -1,11 +1,11 @@
 // pages/ModelosOS.tsx
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { ref, get, set, remove } from 'firebase/database'
-import { db } from '../../services/firebase'
-import { useUser } from '../../hooks/useUser'
+import { db } from '../../../services/firebase'
+import { useUser } from '../../../hooks/useUser'
 import './ModelosOS.css'
-import Modal from '../../components/ui/Modal'
-import LoadingOverlay from '../../components/ui/LoadingOverlay'
+import Modal from '../../../components/ui/Modal'
+import LoadingOverlay from '../../../components/ui/LoadingOverlay'
 import { FileEdit, Save, Plus, Trash2, ArrowLeft, X, Pencil } from 'lucide-react'
 
 // ---------------------------------------------------------------

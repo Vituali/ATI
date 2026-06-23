@@ -25,7 +25,8 @@ import {
   User,
   Menu,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Download
 } from 'lucide-react'
 
 export type { Section }
@@ -38,11 +39,14 @@ interface SidebarProps {
   onSelectSection: (section: Section) => void
   onOpenUserModal: () => void
   onOpenExtensionModal: () => void
+  onOpenInstallModal: () => void
   onOpenSettings: () => void
   theme: 'dark' | 'light'
   userName: string
   avatarUrl?: string
   hasUnreadChat: boolean
+  isOpen: boolean
+  onToggle: () => void
 }
 
 interface NavItem {
@@ -100,10 +104,7 @@ const NAV_ITEMS: NavGroup[] = [
   },
 ]
 
-export default function Sidebar({ role, setor, customAllowedSections, activeSection, onSelectSection, onOpenUserModal, onOpenExtensionModal, onOpenSettings, theme, userName, avatarUrl, hasUnreadChat }: SidebarProps) {
-  const [isOpen, setIsOpen] = useState(() => {
-    return localStorage.getItem('ati-sidebar-expanded') === 'true'
-  })
+export default function Sidebar({ role, setor, customAllowedSections, activeSection, onSelectSection, onOpenUserModal, onOpenExtensionModal, onOpenInstallModal, onOpenSettings, theme, userName, avatarUrl, hasUnreadChat, isOpen, onToggle }: SidebarProps) {
   const [openGroups, setOpenGroups] = useState<string[]>(() => {
     const saved = localStorage.getItem('ati-sidebar-open-groups')
     if (saved) {
@@ -132,13 +133,7 @@ export default function Sidebar({ role, setor, customAllowedSections, activeSect
   return (
     <aside className={`sidebar ${isOpen ? 'expanded' : ''}`}>
       <div className="sidebar-nav">
-        <button className="toggle-sidebar" aria-label="Abrir ou fechar menu lateral" onClick={() => {
-          setIsOpen((prev) => {
-            const nextVal = !prev
-            localStorage.setItem('ati-sidebar-expanded', nextVal ? 'true' : 'false')
-            return nextVal
-          })
-        }}>
+        <button className="toggle-sidebar" aria-label="Abrir ou fechar menu lateral" onClick={onToggle}>
           <Menu size={22} />
         </button>
 
@@ -191,6 +186,11 @@ export default function Sidebar({ role, setor, customAllowedSections, activeSect
         <button className="sidebar-button" onClick={onOpenExtensionModal} title="Extensão">
           <span className="icon"><Globe size={20} strokeWidth={2.2} /></span>
           <span className="text">Extensão</span>
+        </button>
+
+        <button className="sidebar-button install-sidebar-btn" onClick={onOpenInstallModal} title="Instalar Aplicativo">
+          <span className="icon"><Download size={20} strokeWidth={2.2} /></span>
+          <span className="text">Instalar App</span>
         </button>
       </div>
 

@@ -10,8 +10,10 @@
   width: 100%;
   box-sizing: border-box;
   min-height: calc(100vh - 150px);
+  min-height: calc(100dvh - 150px);
   padding: 2rem;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   background: var(--bg-black, rgba(17, 14, 25, 0.3));
 }
 
@@ -328,6 +330,39 @@
 @media (max-width: 768px) {
   .goth-archetypes-card {
     grid-column: span 1;
+  }
+
+  .jefferson-page {
+    padding: 1rem;
+  }
+
+  .jeff-title {
+    font-size: 1.5rem;
+  }
+
+  .jeff-subtitle {
+    font-size: 0.85rem;
+  }
+
+  .jeff-card {
+    padding: 1rem;
+  }
+
+  .jeff-card-title {
+    font-size: 1rem;
+  }
+
+  .goth-calc-checkboxes {
+    grid-template-columns: 1fr;
+  }
+
+  .jeff-counter-wrap {
+    gap: 1rem;
+  }
+
+  .counter-val {
+    font-size: 1.8rem;
+    min-width: 50px;
   }
 }
 

@@ -541,3 +541,63 @@
   background: var(--bg-card);
   border-color: var(--accent-blue-border);
 }
+
+@media (max-width: 768px) {
+  .modelos-os-page {
+    gap: 1rem;
+  }
+
+  .modelos-os-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .modelos-os-titulo {
+    font-size: 1.4rem;
+  }
+
+  .modelos-os-header-acoes {
+    width: 100%;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .modelos-os-btn-novo {
+    width: 100%;
+    text-align: center;
+  }
+
+  .modelos-os-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .modelos-os-busca,
+  .modelos-os-filtro-cat {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .modelos-os-card {
+    padding: 14px 16px;
+  }
+
+  .modelos-os-card-header {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .modelos-os-card-titulo {
+    font-size: 14px;
+  }
+
+  .modelos-os-card-acoes {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .modelos-os-keyword-input-row {
+    flex-direction: column;
+  }
+}

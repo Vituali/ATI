@@ -4,6 +4,7 @@
   color: var(--text-main);
   font-family: var(--font-main);
   min-height: calc(100vh - 150px);
+  min-height: calc(100dvh - 150px);
   width: 100%;
   box-sizing: border-box;
   padding: 1.5rem;
@@ -12,7 +13,7 @@
   border-radius: var(--radius-md);
   border: 1px solid rgba(139, 0, 0, 0.25);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
-  overflow-x: hidden;
+  overflow-x: visible;
 }
 
 /* Efeito Paranormal de névoa / glow */
@@ -106,6 +107,46 @@
 @media (max-width: 480px) {
   .attributes-grid {
     grid-template-columns: repeat(3, 1fr);
+  }
+
+  .heli-rpg-page {
+    padding: 1rem;
+  }
+
+  .heli-title {
+    font-size: 1.5rem;
+  }
+
+  .heli-subtitle {
+    font-size: 0.85rem;
+  }
+
+  .heli-card {
+    padding: 1rem;
+  }
+
+  .dice-buttons {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .nex-control-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .nex-input-wrap {
+    justify-content: center;
+  }
+
+  .roll-history-container {
+    max-height: 300px;
+    min-height: 180px;
+  }
+
+  .roll-entry-result {
+    font-size: 1.2rem;
   }
 }
 

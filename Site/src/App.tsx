@@ -4,7 +4,7 @@ import { RespostasRapidas, ModelosOS, Conversor, Senhas, Admin, ChatInterno, Ano
 import { Login, Register, Home, ErrorPage, ExtensionModal } from './pages'
 import { useUser, UserProfile } from './hooks'
 import { canAccess, Section, Setor, getSectionLabel, logout, db, auth, syncWithExtension, performSSOLogin } from './services'
-import { Sidebar, Footer, LoadingOverlay, ToastContainer, UserPanel, BugReportModal, ErrorBoundary } from './components'
+import { Sidebar, Footer, LoadingOverlay, ToastContainer, UserPanel, BugReportModal, ErrorBoundary, InstallModal } from './components'
 import { MessageSquare, ClipboardList, Key, FileEdit, RefreshCw, MessageCircle, Sparkles } from 'lucide-react'
 import { ref, onValue } from 'firebase/database'
 import './App.css'
@@ -52,12 +52,50 @@ export default function App() {
     }
     return (localStorage.getItem('ati-active-embed-section') as Section) || 'chat_interno'
   })
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    return localStorage.getItem('ati-sidebar-expanded') === 'true'
+  })
+
+  const toggleSidebar = () => {
+    setSidebarOpen((prev) => {
+      const next = !prev
+      localStorage.setItem('ati-sidebar-expanded', next ? 'true' : 'false')
+      return next
+    })
+  }
+
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     return (localStorage.getItem('ati-theme') as 'dark' | 'light') || 'dark'
   })
   const [userPanelAberto, setUserPanelAberto] = useState(false)
   const [extensaoModalAberto, setExtensaoModalAberto] = useState(false)
   const [bugModalAberto, setBugModalAberto] = useState(false)
+  const [installModalAberto, setInstallModalAberto] = useState(false)
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
+  const [showInstallToast, setShowInstallToast] = useState(false)
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault()
+      setDeferredPrompt(e)
+      const hasSeenToast = localStorage.getItem('ati-pwa-install-toast-seen') === 'true'
+      if (!hasSeenToast) {
+        setShowInstallToast(true)
+      }
+    }
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+  }, [])
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return
+    deferredPrompt.prompt()
+    const { outcome } = await deferredPrompt.userChoice
+    console.log(`PWA: Escolha de instalação do usuário: ${outcome}`)
+    setDeferredPrompt(null)
+    setShowInstallToast(false)
+  }
+
   const [localBg, setLocalBg] = useState(() => localStorage.getItem('ati-custom-bg') || '')
   const bgUrl = user?.customBg !== undefined ? user.customBg : localBg
 
@@ -324,7 +362,13 @@ export default function App() {
       )}
 
       <div className={`app-layout fade-in ${bgUrl ? 'has-custom-bg' : ''}`}>
-        <Sidebar role={user.role} setor={user.setor} customAllowedSections={user.customAllowedSections} activeSection={safeSection} onSelectSection={setCurrentSection} onOpenUserModal={() => setUserPanelAberto(true)} onOpenExtensionModal={() => setExtensaoModalAberto(true)} onOpenSettings={toggleTheme} theme={theme} userName={user.nomeCompleto.split(' ')[0]} avatarUrl={user.avatarUrl} hasUnreadChat={unreadRooms.length > 0} />
+        <Sidebar role={user.role} setor={user.setor} customAllowedSections={user.customAllowedSections} activeSection={safeSection} onSelectSection={(section) => { setCurrentSection(section); if (window.innerWidth <= 768) setSidebarOpen(false) }} onOpenUserModal={() => setUserPanelAberto(true)} onOpenExtensionModal={() => setExtensaoModalAberto(true)} onOpenInstallModal={() => setInstallModalAberto(true)} onOpenSettings={toggleTheme} theme={theme} userName={user.nomeCompleto.split(' ')[0]} avatarUrl={user.avatarUrl} hasUnreadChat={unreadRooms.length > 0} isOpen={sidebarOpen} onToggle={toggleSidebar} />
+        {/* Mobile overlay when sidebar is open */}
+        {sidebarOpen && <div className="mobile-sidebar-overlay" onClick={toggleSidebar} />}
+        {/* Mobile hamburger button */}
+        <button className="mobile-menu-btn" onClick={() => { toggleSidebar(); if (window.innerWidth <= 768) window.scrollTo({ top: 0, behavior: 'smooth' }) }} aria-label="Abrir menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
         <div className="main-wrapper">
           <main className={`main-content ${safeSection === 'chat_interno' ? 'compact-padding' : ''}`}>
             <ErrorBoundary key={safeSection}>
@@ -349,6 +393,8 @@ export default function App() {
 
       <ExtensionModal aberto={extensaoModalAberto} onFechar={() => setExtensaoModalAberto(false)} />
 
+      <InstallModal aberto={installModalAberto} onFechar={() => setInstallModalAberto(false)} deferredPrompt={deferredPrompt} onInstallClick={handleInstallClick} />
+
       <ToastContainer />
 
       {needRefresh && (
@@ -366,6 +412,28 @@ export default function App() {
                 Atualizar Agora
               </button>
               <button className="pwa-btn-close" onClick={() => setNeedRefresh(false)}>
+                Depois
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showInstallToast && (
+        <div className="pwa-toast-container pwa-toast-install">
+          <div className="pwa-toast-content">
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              <span className="pwa-toast-icon"><Sparkles size={20} strokeWidth={2} /></span>
+              <div className="pwa-toast-message">
+                <strong>Instalar Aplicativo!</strong>
+                <p>Instale o ATI no seu dispositivo para acesso rápido e modo offline.</p>
+              </div>
+            </div>
+            <div className="pwa-toast-actions">
+              <button className="pwa-btn-reload" onClick={() => { setInstallModalAberto(true); setShowInstallToast(false); localStorage.setItem('ati-pwa-install-toast-seen', 'true'); }}>
+                Instalar
+              </button>
+              <button className="pwa-btn-close" onClick={() => { setShowInstallToast(false); localStorage.setItem('ati-pwa-install-toast-seen', 'true'); }}>
                 Depois
               </button>
             </div>

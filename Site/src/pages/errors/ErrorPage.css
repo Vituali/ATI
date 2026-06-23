@@ -4,6 +4,7 @@
 
 .error-page {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -151,4 +152,22 @@
 
 .error-btn:active {
   transform: translateY(0);
+}
+
+@media (max-width: 480px) {
+  .error-card {
+    padding: 1.5rem;
+  }
+
+  .error-titulo {
+    font-size: 1.2rem;
+  }
+
+  .error-icon {
+    font-size: 2.5rem;
+  }
+
+  .error-descricao {
+    font-size: 13px;
+  }
 }

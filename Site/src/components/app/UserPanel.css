@@ -473,3 +473,30 @@
   color: var(--text-white);
   border: 1px solid var(--border-glass);
 }
+
+@media (max-width: 768px) {
+  .up-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .up-tabs {
+    overflow-x: auto;
+  }
+
+  .up-tab {
+    flex: none;
+    white-space: nowrap;
+  }
+
+  .up-info-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .up-info-valor {
+    text-align: left;
+    width: 100%;
+  }
+}

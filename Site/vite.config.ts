@@ -20,6 +20,7 @@ export default defineConfig({
         name: "ATI",
         short_name: "ATI",
         description: "Sistema auxiliar de atendimentos técnicos e suporte.",
+        lang: "pt-br",
         theme_color: "#1a1a1a",
         background_color: "#1a1a1a",
         display: "standalone",
@@ -37,13 +38,13 @@ export default defineConfig({
             src: "icon-192.png",
             sizes: "192x192",
             type: "image/png",
-            purpose: "any"
+            purpose: "any maskable"
           },
           {
             src: "icon-512.png",
             sizes: "512x512",
             type: "image/png",
-            purpose: "any"
+            purpose: "any maskable"
           }
         ]
       },

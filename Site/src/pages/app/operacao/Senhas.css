@@ -167,3 +167,37 @@
   text-decoration: underline;
   filter: brightness(1.2);
 }
+
+@media (max-width: 768px) {
+  .senhas-page {
+    gap: 1rem;
+  }
+
+  .senhas-titulo {
+    font-size: 1.4rem;
+  }
+
+  .senhas-subtitulo {
+    font-size: 12px;
+  }
+
+  .senhas-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .senhas-card {
+    padding: 16px;
+  }
+
+  .senha-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .senha-valor-wrapper {
+    justify-content: flex-start;
+    width: 100%;
+  }
+}

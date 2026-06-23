@@ -734,6 +734,20 @@
   .conv-action-cards-grid {
     grid-template-columns: 1fr;
   }
+  .conv-inline {
+    grid-template-columns: 1fr;
+  }
+  .conv-client-hero {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .conv-hero-item {
+    min-width: 0;
+  }
+  .conv-dropzone {
+    padding: 3rem 1rem;
+    min-height: 220px;
+  }
 }
 
 .conv-input-hidden {

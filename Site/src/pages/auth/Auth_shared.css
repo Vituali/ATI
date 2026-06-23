@@ -4,6 +4,7 @@
 
 .auth-page {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -220,4 +221,35 @@
 .auth-link-btn:hover {
   text-decoration: underline;
   color: var(--accent-blue);
+}
+
+/* ── Mobile Small ── */
+@media (max-width: 480px) {
+  .auth-page {
+    padding: 0.75rem;
+  }
+
+  .auth-card {
+    padding: 1.5rem 1.25rem;
+    max-width: 100%;
+  }
+
+  .auth-titulo {
+    font-size: 1.4rem;
+  }
+
+  .auth-subtitulo {
+    font-size: 12px;
+  }
+
+  .auth-grupo input,
+  .auth-grupo select {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .auth-btn {
+    padding: 11px;
+    font-size: 13px;
+  }
 }

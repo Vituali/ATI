@@ -30,6 +30,7 @@
   max-width: 1440px;
   margin: 0 auto;
   min-height: calc(100vh - 120px);
+  min-height: calc(100dvh - 120px);
   animation: animes-fadeUp 0.4s ease-out;
 }
 
@@ -97,6 +98,180 @@
   color: var(--color-purple, #a78bfa);
   background: var(--bg-purple-subtle, rgba(168, 85, 247, 0.08));
   border-color: var(--border-purple-subtle, rgba(168, 85, 247, 0.15));
+}
+
+/* ---- TYPE FILTER TABS ---- */
+.animes-type-tabs {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+  padding: 0.25rem;
+  background: var(--bg-segment-control, rgba(0,0,0,0.2));
+  border-radius: 10px;
+  overflow-x: auto;
+}
+
+.animes-type-tab {
+  padding: 0.35rem 0.7rem;
+  border: none;
+  background: transparent;
+  color: var(--text-muted, #94a3b8);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.animes-type-tab:hover {
+  color: var(--text-grey, #cbd5e1);
+  background: var(--bg-segment-btn-hover, rgba(255,255,255,0.03));
+}
+
+.animes-type-tab.active {
+  background: var(--bg-segment-active, rgba(99, 102, 241, 0.12));
+  color: var(--text-segment-active, #818cf8);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.animes-type-tab-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+/* ---- RELEASE STATUS ---- */
+.animes-release-status-group {
+  display: flex;
+  gap: 0.3rem;
+  padding: 0.2rem;
+  background: var(--bg-segment-control, rgba(0,0,0,0.2));
+  border-radius: 10px;
+  width: fit-content;
+}
+
+.animes-release-status-btn {
+  padding: 0.35rem 0.8rem;
+  border: none;
+  background: transparent;
+  color: var(--text-muted, #94a3b8);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.animes-release-status-btn:hover {
+  color: var(--text-grey, #cbd5e1);
+  background: var(--bg-segment-btn-hover, rgba(255,255,255,0.03));
+}
+
+.animes-release-status-btn.active {
+  background: var(--bg-segment-active, rgba(99, 102, 241, 0.12));
+  color: var(--text-segment-active, #818cf8);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.animes-card-release-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: 100px;
+  margin-top: 0.3rem;
+  width: fit-content;
+}
+
+.animes-card-release-badge.ongoing {
+  color: var(--accent-blue, #60a5fa);
+  background: var(--accent-blue-hover, rgba(59, 130, 246, 0.1));
+  border: 1px solid var(--accent-blue-border, rgba(59, 130, 246, 0.15));
+}
+
+.animes-card-release-badge.discontinued {
+  color: var(--color-warning, #f59e0b);
+  background: var(--bg-warning-subtle, rgba(245, 158, 11, 0.08));
+  border: 1px solid var(--border-warning-subtle, rgba(245, 158, 11, 0.15));
+}
+
+.animes-card-release-day {
+  font-size: 0.7rem;
+  color: var(--accent-green, #22c55e);
+  margin-top: 0.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* ---- SEASONS MANAGER ---- */
+.animes-seasons-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.5rem;
+  background: var(--bg-glass, rgba(0,0,0,0.15));
+  border-radius: 8px;
+}
+
+.animes-season-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.animes-season-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-grey, #cbd5e1);
+  min-width: 2rem;
+}
+
+.animes-season-input {
+  width: 80px;
+  padding: 0.25rem 0.4rem;
+  border: 1px solid var(--border-glass, rgba(255,255,255,0.06));
+  border-radius: 6px;
+  background: var(--bg-glass, rgba(30, 41, 59, 0.5));
+  color: var(--text-grey, #cbd5e1);
+  font-size: 0.78rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.animes-season-input:focus {
+  border-color: var(--accent-blue, #60a5fa);
+}
+
+.animes-season-remove {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  line-height: 1;
+  transition: background 0.2s;
+}
+
+.animes-season-remove:hover {
+  background: rgba(239, 68, 68, 0.3);
+}
+
+.animes-season-add {
+  margin-top: 0.2rem;
+  align-self: flex-start;
 }
 
 /* ---- TOOLBAR ---- */
@@ -477,38 +652,39 @@
 }
 
 .animes-column {
+  position: relative;
   background: var(--bg-glass, rgba(30, 41, 59, 0.4));
   border: 1px solid var(--border-glass, rgba(255,255,255,0.04));
   border-radius: 14px;
-  overflow: hidden;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   box-shadow: 0 4px 24px rgba(0,0,0,0.15);
   transition: border-color 0.3s ease;
 }
 
-.animes-column.completo {
-  border-top: 3px solid;
-  border-image: linear-gradient(90deg, #22c55e, #4ade80) 1;
-  border-image-slice: 1;
-  border-top-style: solid;
-  border-top-width: 3px;
+.animes-column.completo::before,
+.animes-column.acompanhando::before,
+.animes-column.nao_iniciado::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: 14px 14px 0 0;
+  z-index: 1;
 }
 
-.animes-column.acompanhando {
-  border-top: 3px solid;
-  border-image: linear-gradient(90deg, #3b82f6, #818cf8) 1;
-  border-image-slice: 1;
-  border-top-style: solid;
-  border-top-width: 3px;
+.animes-column.completo::before {
+  background: linear-gradient(90deg, #22c55e, #4ade80);
 }
 
-.animes-column.nao_iniciado {
-  border-top: 3px solid;
-  border-image: linear-gradient(90deg, #a855f7, #d8b4fe) 1;
-  border-image-slice: 1;
-  border-top-style: solid;
-  border-top-width: 3px;
+.animes-column.acompanhando::before {
+  background: linear-gradient(90deg, #3b82f6, #818cf8);
+}
+
+.animes-column.nao_iniciado::before {
+  background: linear-gradient(90deg, #a855f7, #d8b4fe);
 }
 
 .animes-column-header {
@@ -591,6 +767,15 @@
 
 .animes-card-ongoing {
   border-left: 3px solid var(--accent-blue, #3b82f6);
+}
+
+.animes-card.is-up-to-date {
+  border-left: 3px solid var(--color-success, #22c55e);
+  background: var(--bg-success-subtle, rgba(34, 197, 94, 0.04));
+}
+
+.animes-card.is-up-to-date .animes-progress-fill {
+  background: var(--gradient-success, linear-gradient(135deg, #22c55e, #4ade80));
 }
 
 .animes-card::before {
@@ -933,6 +1118,151 @@
   font-weight: 600;
 }
 
+/* ---- CATEGORY GRID ---- */
+.animes-category-grid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 0;
+  animation: animes-fadeUp 0.5s ease-out;
+}
+
+.animes-category-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+  background: var(--gradient-text, linear-gradient(135deg, #ffffff, #94a3b8));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-align: center;
+}
+
+.animes-category-subtitle {
+  color: var(--text-muted, #94a3b8);
+  font-size: 0.9rem;
+  margin: 0 0 2rem;
+  text-align: center;
+}
+
+.animes-category-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+  width: 100%;
+  max-width: 900px;
+}
+
+.animes-category-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 2rem 1rem;
+  background: var(--bg-card, rgba(30, 41, 59, 0.5));
+  border: 1px solid var(--border-glass, rgba(255,255,255,0.06));
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: animes-fadeUp 0.4s ease-out both;
+  min-height: 140px;
+  position: relative;
+  overflow: hidden;
+}
+
+.animes-category-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(99, 102, 241, 0.08), transparent 60%);
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+
+.animes-category-card:hover::before {
+  opacity: 1;
+}
+
+.animes-category-card:nth-child(1) { animation-delay: 0s; }
+.animes-category-card:nth-child(2) { animation-delay: 0.04s; }
+.animes-category-card:nth-child(3) { animation-delay: 0.08s; }
+.animes-category-card:nth-child(4) { animation-delay: 0.12s; }
+.animes-category-card:nth-child(5) { animation-delay: 0.16s; }
+.animes-category-card:nth-child(6) { animation-delay: 0.20s; }
+.animes-category-card:nth-child(7) { animation-delay: 0.24s; }
+.animes-category-card:nth-child(8) { animation-delay: 0.28s; }
+.animes-category-card:nth-child(9) { animation-delay: 0.32s; }
+
+.animes-category-card:hover {
+  border-color: rgba(255,255,255,0.12);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.3);
+}
+
+.animes-category-card:active {
+  transform: scale(0.97);
+}
+
+.animes-category-card-icon {
+  font-size: 2.8rem;
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.animes-category-card-icon svg {
+  width: 2.4rem;
+  height: 2.4rem;
+}
+
+.animes-category-card-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-grey, #cbd5e1);
+}
+
+.animes-category-card-all {
+  border: 2px dashed var(--border-glass, rgba(255,255,255,0.1));
+  background: var(--bg-glass, rgba(30, 41, 59, 0.3));
+  max-width: 160px;
+}
+
+.animes-category-card-all:hover {
+  border-color: rgba(99, 102, 241, 0.4);
+  border-style: solid;
+}
+
+.animes-category-all-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+  width: 100%;
+}
+
+/* ---- CATALOG HEADER BAR ---- */
+.animes-catalog-header-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.animes-catalog-header-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-primary, #f1f5f9);
+  margin-right: auto;
+}
+
+.animes-catalog-header-search {
+  flex: 0 1 280px;
+}
+
 /* ---- CATALOG GRID ---- */
 .animes-catalog-grid {
   display: grid;
@@ -993,6 +1323,21 @@
   transform: scale(1.05);
 }
 
+.animes-catalog-poster-seasons {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  color: #e0e0e0;
+  font-size: 0.7rem;
+  padding: 1.2rem 0.4rem 0.35rem;
+  text-align: center;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+}
+
 .animes-catalog-body {
   flex: 1;
   min-width: 0;
@@ -1022,6 +1367,7 @@
   margin: 0;
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -1166,6 +1512,62 @@
   opacity: 0.5;
 }
 
+.animes-catalog-detail-seasons,
+.animes-catalog-detail-latest {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-glass, rgba(255,255,255,0.04));
+}
+
+.animes-catalog-detail-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted, #94a3b8);
+}
+
+.animes-catalog-detail-season-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.animes-catalog-detail-season-badge {
+  font-size: 0.78rem;
+  padding: 0.2rem 0.5rem;
+  background: var(--bg-glass, rgba(30, 41, 59, 0.5));
+  border: 1px solid var(--border-glass, rgba(255,255,255,0.06));
+  border-radius: 6px;
+  color: var(--text-grey, #cbd5e1);
+}
+
+.animes-catalog-detail-total {
+  font-size: 0.8rem;
+  color: var(--accent-blue, #60a5fa);
+  font-weight: 500;
+}
+
+.animes-catalog-detail-latest-ep {
+  font-size: 0.9rem;
+  color: var(--text-main, #f1f5f9);
+  font-weight: 600;
+}
+
+.animes-catalog-seasons-info {
+  font-size: 0.72rem;
+  color: var(--text-muted, #94a3b8);
+  margin-top: 0.25rem;
+}
+
+.animes-catalog-latest-ep {
+  font-size: 0.72rem;
+  color: var(--accent-green, #22c55e);
+  margin-top: 0.15rem;
+}
+
 .animes-catalog-detail-rating {
   display: flex;
   flex-direction: column;
@@ -1252,7 +1654,11 @@
 @media (max-width: 900px) {
   .animes-page {
     padding: 1rem 0.75rem;
+    max-width: 100%;
     min-height: calc(100vh - 100px);
+    min-height: calc(100dvh - 100px);
+    box-sizing: border-box;
+    overflow-x: hidden;
   }
 
   .animes-title-row {
@@ -1266,6 +1672,17 @@
     font-size: 1.35rem;
   }
 
+  .animes-main-tabs {
+    width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
+  }
+
+  .animes-main-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
   .animes-toolbar {
     flex-direction: column;
     align-items: stretch;
@@ -1276,7 +1693,6 @@
   .animes-tabs {
     flex-wrap: nowrap;
     overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
     padding: 0.3rem;
     scrollbar-width: none; /* Firefox */
   }
@@ -1341,11 +1757,338 @@
     padding: 0.4rem 0.8rem;
     font-size: 0.75rem;
   }
+
+  /* Responsive Columns Grid for Personal Items */
+  .animes-columns {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .animes-column {
+    overflow: visible !important;
+  }
+
+  .animes-column-list {
+    max-height: none !important;
+    overflow-y: visible !important;
+  }
+
+  /* Catalog Category Realignment on mobile */
+  .animes-category-cards {
+    grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)) !important;
+    gap: 0.35rem !important;
+  }
+
+  .animes-category-card {
+    min-height: 80px !important;
+    padding: 0.65rem 0.35rem !important;
+    border-radius: 10px !important;
+  }
+
+  .animes-category-card-icon svg {
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+  }
+
+  .animes-category-card-label {
+    font-size: 0.72rem !important;
+  }
+
+  .animes-category-card-all {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  .animes-category-all-row {
+    padding: 0 1rem;
+    box-sizing: border-box;
+  }
+
+  /* Fixed horizontal scrolling tabs for type filters */
+  .animes-type-tabs {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    scrollbar-width: none;
+    padding: 0.35rem;
+  }
+  .animes-type-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Catalog Grid alignment for mobile screen */
+  .animes-catalog-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Ensure card displays correctly with poster on small viewport */
+  .animes-card.has-poster,
+  .animes-catalog-card {
+    padding: 0.5rem;
+    gap: 0.75rem;
+  }
+
+  .animes-card-poster {
+    width: 64px !important;
+    min-height: 90px !important;
+  }
+  
+  .animes-catalog-poster {
+    width: 80px !important;
+    min-height: 110px !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .animes-columns {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1100px) {
+  .animes-columns {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 @media (hover: none) {
   .animes-card-actions {
     opacity: 0.9;
     transform: translateX(0);
+  }
+}
+
+/* ── MOBILE SCREENS (≤768px) ── */
+@media (max-width: 768px) {
+  .animes-page {
+    padding: 0.75rem 0.5rem !important;
+    max-width: 100%;
+    min-height: calc(100vh - 80px);
+    min-height: calc(100dvh - 80px);
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  .animes-columns {
+    width: 100%;
+  }
+
+  .animes-category-cards {
+    width: 100% !important;
+  }
+
+  .animes-title {
+    font-size: 1.1rem;
+  }
+
+  .animes-title-row {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .animes-stats-bar {
+    gap: 0.3rem;
+  }
+
+  .animes-stat-item {
+    font-size: 0.68rem;
+    padding: 0.2rem 0.5rem;
+  }
+
+  .animes-main-tabs {
+    width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
+  }
+
+  .animes-main-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .animes-main-tab {
+    font-size: 0.78rem;
+    padding: 0.35rem 0.75rem;
+    white-space: nowrap;
+  }
+
+  .animes-type-tab {
+    font-size: 0.72rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .animes-type-tab-icon {
+    font-size: 0.85rem;
+  }
+
+  .animes-tab {
+    font-size: 0.78rem;
+    padding: 0.35rem 0.65rem;
+  }
+
+  .animes-card.has-poster,
+  .animes-catalog-card {
+    padding: 0.4rem;
+    gap: 0.5rem;
+  }
+
+  .animes-card-poster {
+    width: 52px !important;
+    min-height: 72px !important;
+  }
+
+  .animes-catalog-poster {
+    width: 64px !important;
+    min-height: 90px !important;
+  }
+
+  .animes-card-title {
+    font-size: 0.85rem;
+  }
+
+  .animes-card-chapter {
+    font-size: 0.72rem;
+  }
+
+  .animes-card-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.4rem;
+  }
+
+  .animes-status-select {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .animes-btn {
+    padding: 0.45rem 0.9rem;
+    font-size: 0.78rem;
+  }
+
+  .animes-btn-small {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.7rem;
+  }
+
+  .animes-filter-select {
+    font-size: 0.78rem;
+    padding: 0.4rem 1.6rem 0.4rem 0.6rem;
+    min-width: 100px;
+  }
+
+  .animes-search-input {
+    font-size: 0.78rem;
+    padding: 0.4rem 0.6rem 0.4rem 1.8rem;
+  }
+
+  .animes-column-header {
+    padding: 0.6rem 0.75rem;
+    font-size: 0.82rem;
+  }
+
+  .animes-column-list {
+    padding: 0.4rem;
+  }
+
+  .animes-column {
+    overflow: visible !important;
+  }
+
+  .animes-column-list {
+    max-height: none !important;
+    overflow-y: visible !important;
+  }
+
+  .animes-category-grid {
+    padding: 1rem 0.5rem;
+  }
+
+  .animes-category-title {
+    font-size: 1.2rem;
+  }
+
+  .animes-category-subtitle {
+    font-size: 0.78rem;
+  }
+
+  .animes-category-cards {
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)) !important;
+    gap: 0.35rem !important;
+  }
+
+  .animes-category-card {
+    min-height: 68px !important;
+    padding: 0.5rem 0.25rem !important;
+  }
+
+  .animes-category-card-all {
+    max-width: 100% !important;
+  }
+
+  .animes-category-all-row {
+    padding: 0 0.5rem;
+  }
+
+  .animes-catalog-grid {
+    gap: 0.5rem;
+  }
+
+  .animes-catalog-card {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .animes-catalog-poster {
+    width: 100% !important;
+    min-height: 120px !important;
+    max-height: 160px !important;
+  }
+
+  .animes-catalog-title {
+    font-size: 0.85rem;
+  }
+
+  .animes-catalog-description {
+    font-size: 0.72rem;
+  }
+
+  .animes-catalog-header-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .animes-catalog-header-title {
+    font-size: 1rem;
+    margin-right: 0;
+  }
+
+  .animes-catalog-header-search {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .animes-catalog-avg-rating {
+    flex-wrap: wrap;
+  }
+
+  .animes-form {
+    padding: 1rem;
+  }
+
+  .animes-form-title {
+    font-size: 0.9rem;
+  }
+
+  .animes-form-actions {
+    flex-direction: column;
+  }
+
+  .animes-form-actions .animes-btn {
+    width: 100%;
   }
 }

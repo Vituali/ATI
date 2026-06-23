@@ -165,3 +165,17 @@
 .btn-install:active {
   transform: translateY(0);
 }
+
+@media (max-width: 768px) {
+  .extension-actions {
+    flex-direction: column;
+  }
+
+  .extension-info h3 {
+    font-size: 1.1rem;
+  }
+
+  .extension-info p {
+    font-size: 0.88rem;
+  }
+}

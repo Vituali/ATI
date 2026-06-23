@@ -611,6 +611,7 @@
   justify-content: center;
   padding: 1rem;
   animation: admin-fade-in 0.25s ease-out;
+  overscroll-behavior: none;
 }
 
 .admin-modal {
@@ -775,4 +776,156 @@
   background: var(--bg-overlay-hover);
   color: var(--text-white);
   border-color: var(--text-muted);
+}
+
+/* ============================================================
+   MOBILE RESPONSIVENESS (max-width: 768px)
+   ============================================================ */
+@media (max-width: 768px) {
+  .admin-page {
+    gap: 1.25rem;
+  }
+
+  .admin-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .admin-titulo {
+    font-size: 1.5rem;
+  }
+
+  .admin-header-acoes {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .admin-btn-refresh,
+  .admin-btn-salvar-todos {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .admin-abas {
+    width: 100%;
+    display: flex;
+    overflow-x: auto;
+    padding: 3px;
+  }
+
+  .admin-aba {
+    flex: 1;
+    text-align: center;
+    justify-content: center;
+    padding: 8px 10px;
+    font-size: 12.5px;
+  }
+
+  .admin-card {
+    padding: 1rem;
+  }
+
+  .admin-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .admin-busca {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .admin-contador {
+    text-align: right;
+    font-size: 11px;
+  }
+
+  /* Table Horizontal Scrolling Enforcement */
+  .admin-tabela-wrapper {
+    margin: 0 -0.5rem;
+    padding: 0 0.5rem;
+    overflow-x: auto;
+  }
+
+  .admin-tabela {
+    display: table;
+  }
+
+  .admin-tabela th,
+  .admin-tabela td {
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+
+  /* Set explicit min-widths to prevent squashing */
+  .admin-tabela th:nth-child(1),
+  .admin-tabela td:nth-child(1) { /* Usuário */
+    min-width: 130px;
+  }
+
+  .admin-tabela th:nth-child(2),
+  .admin-tabela td:nth-child(2) { /* Usuário SGP */
+    min-width: 110px;
+  }
+
+  .admin-tabela th:nth-child(3),
+  .admin-tabela td:nth-child(3) { /* Nome */
+    min-width: 130px;
+  }
+
+  .admin-tabela th:nth-child(4),
+  .admin-tabela td:nth-child(4) { /* Setor */
+    min-width: 100px;
+  }
+
+  .admin-tabela th:nth-child(5),
+  .admin-tabela td:nth-child(5) { /* Role */
+    min-width: 100px;
+  }
+
+  .admin-tabela th:nth-child(6),
+  .admin-tabela td:nth-child(6) { /* Status */
+    min-width: 90px;
+  }
+
+  .admin-tabela th:nth-child(7),
+  .admin-tabela td:nth-child(7) { /* Ações */
+    min-width: 120px;
+  }
+
+  /* Inputs and selects sizing in table */
+  .admin-input,
+  .admin-select {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  .admin-btn-salvar,
+  .admin-btn-permissoes {
+    padding: 6px 8px;
+    font-size: 11px;
+    min-width: unset;
+  }
+
+  .admin-actions-cell {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  /* Permissions Modal / Details */
+  .admin-permissoes-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .admin-permissao-card {
+    padding: 1rem;
+  }
 }

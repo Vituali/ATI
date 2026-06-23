@@ -17,3 +17,11 @@
 .footer p {
   margin: 0;
 }
+
+@media (max-width: 768px) {
+  .footer {
+    padding: 12px;
+    font-size: 10px;
+    text-align: center;
+  }
+}

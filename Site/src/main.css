@@ -9,8 +9,13 @@
   padding: 0;
 }
 
+html {
+  touch-action: manipulation;
+}
+
 body {
   min-height: 100vh;
+  min-height: 100dvh;
   background-color: var(--bg-dark);
   color: var(--text-main);
   font-family: var(--font-main);
@@ -22,6 +27,7 @@ body {
 
 #root {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }
@@ -50,6 +56,13 @@ body {
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--border-subtle) transparent;
+}
+
+/* Prevent iOS zoom on input focus */
+@media (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
 }
 
 /* --- REUSABLE LOADING COMPONENT --- */
@@ -120,11 +133,9 @@ body {
 @keyframes fade-in {
   from {
     opacity: 0;
-    transform: translateY(6px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 

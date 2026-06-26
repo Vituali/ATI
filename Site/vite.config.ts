@@ -27,13 +27,8 @@ export default defineConfig({
         orientation: "any",
         scope: "/ati/",
         start_url: "/ati/",
+        prefer_related_applications: false,
         icons: [
-          {
-            src: "favicon.svg",
-            sizes: "any",
-            type: "image/svg+xml",
-            purpose: "any maskable"
-          },
           {
             src: "icon-192.png",
             sizes: "192x192",

@@ -158,8 +158,10 @@ export function ItemModal({
       <form onSubmit={handleFormSubmit} style={{ margin: 0, padding: 0 }}>
         <div className="animes-form-grid">
           <div className="animes-form-group">
-            <label>Título *</label>
+            <label htmlFor="item-titulo">Título *</label>
             <input
+              id="item-titulo"
+              name="itemTitulo"
               type="text"
               value={formTitle}
               onChange={(e) => setFormTitle(e.target.value)}
@@ -168,8 +170,8 @@ export function ItemModal({
             />
           </div>
           <div className="animes-form-group">
-            <label>Tipo</label>
-            <select value={formType} onChange={(e) => setFormType(e.target.value as TipoMidia)}>
+            <label htmlFor="item-tipo">Tipo</label>
+            <select id="item-tipo" name="itemTipo" value={formType} onChange={(e) => setFormType(e.target.value as TipoMidia)}>
               {TIPO_OPTIONS.map((t) => (
                 <option key={t.value} value={t.value}>
                   {t.label}
@@ -178,8 +180,8 @@ export function ItemModal({
             </select>
           </div>
           <div className="animes-form-group">
-            <label>Status</label>
-            <select value={formStatus} onChange={(e) => setFormStatus(e.target.value as LeituraStatus)}>
+            <label htmlFor="item-status">Status</label>
+            <select id="item-status" name="itemStatus" value={formStatus} onChange={(e) => setFormStatus(e.target.value as LeituraStatus)}>
               {STATUS_OPTIONS.map((s) => (
                 <option key={s.value} value={s.value}>
                   {s.label}
@@ -190,8 +192,10 @@ export function ItemModal({
           {['serie', 'anime', 'dorama'].includes(formType) ? (
             <>
               <div className="animes-form-group">
-                <label>Temporada</label>
+                <label htmlFor="item-temporada">Temporada</label>
                 <input
+                  id="item-temporada"
+                  name="itemTemporada"
                   type="number"
                   min={0}
                   value={formSeason ?? ''}
@@ -200,8 +204,10 @@ export function ItemModal({
                 />
               </div>
               <div className="animes-form-group">
-                <label>Episódio</label>
+                <label htmlFor="item-episodio">Episódio</label>
                 <input
+                  id="item-episodio"
+                  name="itemEpisodio"
                   type="number"
                   min={0}
                   value={formEpisode ?? ''}
@@ -216,6 +222,8 @@ export function ItemModal({
                     <div key={i} className="animes-season-row">
                       <span className="animes-season-label">T{s.number}</span>
                       <input
+                        id={`item-season-${i}`}
+                        name={`itemSeason${i}`}
                         type="number"
                         min={0}
                         className="animes-season-input"
@@ -245,8 +253,8 @@ export function ItemModal({
                 </div>
               </div>
               <div className="animes-form-group">
-                <label>Dia de lançamento</label>
-                <select value={formReleaseDay} onChange={(e) => setFormReleaseDay(e.target.value)}>
+                <label htmlFor="item-dia-lancamento">Dia de lançamento</label>
+                <select id="item-dia-lancamento" name="itemDiaLancamento" value={formReleaseDay} onChange={(e) => setFormReleaseDay(e.target.value)}>
                   <option value="">—</option>
                   {RELEASE_DAYS.map((d) => (
                     <option key={d} value={d}>
@@ -259,8 +267,10 @@ export function ItemModal({
           ) : formType === 'livro' ? (
             <>
               <div className="animes-form-group">
-                <label>Página atual</label>
+                <label htmlFor="item-pagina-atual">Página atual</label>
                 <input
+                  id="item-pagina-atual"
+                  name="itemPaginaAtual"
                   type="number"
                   min={0}
                   value={formCurrentPage ?? ''}
@@ -269,8 +279,10 @@ export function ItemModal({
                 />
               </div>
               <div className="animes-form-group">
-                <label>Total de páginas</label>
+                <label htmlFor="item-total-paginas">Total de páginas</label>
                 <input
+                  id="item-total-paginas"
+                  name="itemTotalPaginas"
                   type="number"
                   min={0}
                   value={formTotalPages ?? ''}
@@ -282,8 +294,10 @@ export function ItemModal({
           ) : formType === 'filme' ? (
             <>
               <div className="animes-form-group">
-                <label>Parte / Sequência (ex: 1, 2...)</label>
+                <label htmlFor="item-parte">Parte / Sequência (ex: 1, 2...)</label>
                 <input
+                  id="item-parte"
+                  name="itemParte"
                   type="number"
                   min={1}
                   value={formEpisode ?? ''}
@@ -292,8 +306,10 @@ export function ItemModal({
                 />
               </div>
               <div className="animes-form-group">
-                <label>Minutos assistidos</label>
+                <label htmlFor="item-minutos-assistidos">Minutos assistidos</label>
                 <input
+                  id="item-minutos-assistidos"
+                  name="itemMinutosAssistidos"
                   type="number"
                   min={0}
                   value={formChapterNum ?? ''}
@@ -302,8 +318,10 @@ export function ItemModal({
                 />
               </div>
               <div className="animes-form-group">
-                <label>Duração em minutos</label>
+                <label htmlFor="item-duracao">Duração em minutos</label>
                 <input
+                  id="item-duracao"
+                  name="itemDuracao"
                   type="number"
                   min={0}
                   value={formTotalChapters ?? ''}
@@ -315,8 +333,10 @@ export function ItemModal({
           ) : formType === 'jogo' ? null : (
             <>
               <div className="animes-form-group">
-                <label>Capítulo</label>
+                <label htmlFor="item-capitulo">Capítulo</label>
                 <input
+                  id="item-capitulo"
+                  name="itemCapitulo"
                   type="number"
                   min={0}
                   value={formChapterNum ?? ''}
@@ -325,8 +345,10 @@ export function ItemModal({
                 />
               </div>
               <div className="animes-form-group">
-                <label>Total de capítulos</label>
+                <label htmlFor="item-total-capitulos">Total de capítulos</label>
                 <input
+                  id="item-total-capitulos"
+                  name="itemTotalCapitulos"
                   type="number"
                   min={0}
                   value={formTotalChapters ?? ''}
@@ -362,8 +384,10 @@ export function ItemModal({
             <StarRating value={formRating} onChange={setFormRating} />
           </div>
           <div className="animes-form-group full-width">
-            <label>URL da Imagem (Poster)</label>
+            <label htmlFor="item-url-imagem">URL da Imagem (Poster)</label>
             <input
+              id="item-url-imagem"
+              name="itemUrlImagem"
               type="url"
               value={formImageUrl}
               onChange={(e) => setFormImageUrl(e.target.value)}
@@ -371,8 +395,10 @@ export function ItemModal({
             />
           </div>
           <div className="animes-form-group full-width">
-            <label>Notas</label>
+            <label htmlFor="item-notas">Notas</label>
             <textarea
+              id="item-notas"
+              name="itemNotas"
               value={formNotes}
               onChange={(e) => setFormNotes(e.target.value)}
               placeholder="Notas pessoais..."
@@ -381,10 +407,12 @@ export function ItemModal({
           </div>
           {canManageCatalog && (
             <div className="animes-form-group full-width">
-              <label>
+              <label htmlFor="item-descricao">
                 <Info size={12} /> Descrição / Sinopse
               </label>
               <textarea
+                id="item-descricao"
+                name="itemDescricao"
                 value={formDescription}
                 onChange={(e) => setFormDescription(e.target.value)}
                 placeholder="Sinopse da obra..."
@@ -393,6 +421,8 @@ export function ItemModal({
               {(!editEntry || !isAlreadyInCatalog) && (
                 <label className="animes-form-checkbox">
                   <input
+                    id="item-add-catalog"
+                    name="itemAddCatalog"
                     type="checkbox"
                     checked={addToCatalog}
                     onChange={(e) => setAddToCatalog(e.target.checked)}

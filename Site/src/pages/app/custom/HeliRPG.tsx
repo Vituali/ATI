@@ -276,8 +276,10 @@ export default function HeliRPG() {
           <div className="heli-card">
             <h2 className="heli-card-title"><Dices size={18} /> Rolador de Dados Avulsos</h2>
             <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '1rem' }}>
-              <label style={{ fontSize: '0.85rem', color: '#aaa' }}>Quantidade:</label>
+              <label htmlFor="heli-quantidade" style={{ fontSize: '0.85rem', color: '#aaa' }}>Quantidade:</label>
               <input
+                id="heli-quantidade"
+                name="heliQuantidade"
                 type="number"
                 min={1}
                 max={20}

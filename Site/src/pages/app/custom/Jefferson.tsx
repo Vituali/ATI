@@ -321,35 +321,35 @@ export default function Jefferson() {
           <div className="goth-calc-section">
             <div className="goth-calc-checkboxes">
               <label className="goth-checkbox-label">
-                <input type="checkbox" checked={calcItems.vestePreto} onChange={() => toggleCalcItem('vestePreto')} />
+                <input id="goth-veste-preto" name="gothVestePreto" type="checkbox" checked={calcItems.vestePreto} onChange={() => toggleCalcItem('vestePreto')} />
                 <span>Veste roupas pretas</span>
               </label>
               <label className="goth-checkbox-label">
-                <input type="checkbox" checked={calcItems.coturno} onChange={() => toggleCalcItem('coturno')} />
+                <input id="goth-coturno" name="gothCoturno" type="checkbox" checked={calcItems.coturno} onChange={() => toggleCalcItem('coturno')} />
                 <span>Usa coturno pesado</span>
               </label>
               <label className="goth-checkbox-label">
-                <input type="checkbox" checked={calcItems.monsterBranco} onChange={() => toggleCalcItem('monsterBranco')} />
+                <input id="goth-monster-branco" name="gothMonsterBranco" type="checkbox" checked={calcItems.monsterBranco} onChange={() => toggleCalcItem('monsterBranco')} />
                 <span>Bebe Monster Branco</span>
               </label>
               <label className="goth-checkbox-label">
-                <input type="checkbox" checked={calcItems.eyeliner} onChange={() => toggleCalcItem('eyeliner')} />
+                <input id="goth-eyeliner" name="gothEyeliner" type="checkbox" checked={calcItems.eyeliner} onChange={() => toggleCalcItem('eyeliner')} />
                 <span>Delineador gatinho</span>
               </label>
               <label className="goth-checkbox-label">
-                <input type="checkbox" checked={calcItems.choker} onChange={() => toggleCalcItem('choker')} />
+                <input id="goth-choker" name="gothChoker" type="checkbox" checked={calcItems.choker} onChange={() => toggleCalcItem('choker')} />
                 <span>Usa gargantilha/choker</span>
               </label>
               <label className="goth-checkbox-label">
-                <input type="checkbox" checked={calcItems.arrastao} onChange={() => toggleCalcItem('arrastao')} />
+                <input id="goth-arrastao" name="gothArrastao" type="checkbox" checked={calcItems.arrastao} onChange={() => toggleCalcItem('arrastao')} />
                 <span>Usa meia-calça arrastão</span>
               </label>
               <label className="goth-checkbox-label" style={{ gridColumn: 'span 2' }}>
-                <input type="checkbox" checked={calcItems.metalPlaylist} onChange={() => toggleCalcItem('metalPlaylist')} />
+                <input id="goth-metal-playlist" name="gothMetalPlaylist" type="checkbox" checked={calcItems.metalPlaylist} onChange={() => toggleCalcItem('metalPlaylist')} />
                 <span>Playlist de Metal/Goth Rock ativa</span>
               </label>
               <label className="goth-checkbox-label" style={{ gridColumn: 'span 2' }}>
-                <input type="checkbox" checked={calcItems.preTreinoSangue} onChange={() => toggleCalcItem('preTreinoSangue')} />
+                <input id="goth-pre-treino-sangue" name="gothPreTreinoSangue" type="checkbox" checked={calcItems.preTreinoSangue} onChange={() => toggleCalcItem('preTreinoSangue')} />
                 <span>Toma pré-treino sabor Sangue de Gótica (3x mais potente, 6 meses grátis!)</span>
               </label>
             </div>
@@ -372,16 +372,16 @@ export default function Jefferson() {
           <form onSubmit={addProfile} className="jeff-cycle-form">
             <div className="jeff-form-row">
               <div className="jeff-form-group">
-                <label className="jeff-form-label">Nome:</label>
-                <input type="text" placeholder="Nome da Gótica..." value={newName} onChange={(e) => setNewName(e.target.value)} className="jeff-form-input" required />
+                <label className="jeff-form-label" htmlFor="jeff-nome">Nome:</label>
+                <input id="jeff-nome" name="jeffNome" type="text" placeholder="Nome da Gótica..." value={newName} onChange={(e) => setNewName(e.target.value)} className="jeff-form-input" required />
               </div>
               <div className="jeff-form-group">
-                <label className="jeff-form-label">Última Menstruação:</label>
-                <input type="date" value={newLastPeriod} onChange={(e) => setNewLastPeriod(e.target.value)} className="jeff-form-input" required />
+                <label className="jeff-form-label" htmlFor="jeff-ultima-menstruacao">Última Menstruação:</label>
+                <input id="jeff-ultima-menstruacao" name="jeffUltimaMenstruacao" type="date" value={newLastPeriod} onChange={(e) => setNewLastPeriod(e.target.value)} className="jeff-form-input" required />
               </div>
               <div className="jeff-form-group small">
-                <label className="jeff-form-label">Ciclo (Dias):</label>
-                <input type="number" min={20} max={45} value={newCycleDays} onChange={(e) => setNewCycleDays(Number(e.target.value) || 28)} className="jeff-form-input" required />
+                <label className="jeff-form-label" htmlFor="jeff-ciclo">Ciclo (Dias):</label>
+                <input id="jeff-ciclo" name="jeffCiclo" type="number" min={20} max={45} value={newCycleDays} onChange={(e) => setNewCycleDays(Number(e.target.value) || 28)} className="jeff-form-input" required />
               </div>
               <button type="submit" className="jeff-btn-add">
                 <Plus size={16} /> Adicionar

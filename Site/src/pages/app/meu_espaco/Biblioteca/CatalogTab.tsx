@@ -460,8 +460,10 @@ export function CatalogTab({
             <form onSubmit={handleEditSave} style={{ margin: 0, padding: 0 }}>
               <div className="animes-form-grid">
                 <div className="animes-form-group full-width">
-                  <label>Descrição / Sinopse</label>
+                  <label htmlFor="catalog-descricao">Descrição / Sinopse</label>
                   <textarea
+                    id="catalog-descricao"
+                    name="catalogDescricao"
                     value={catalogEditDescription}
                     onChange={(e) => setCatalogEditDescription(e.target.value)}
                     placeholder="Sinopse da obra..."
@@ -476,6 +478,8 @@ export function CatalogTab({
                         <div key={i} className="animes-season-row">
                           <span className="animes-season-label">T{s.number}</span>
                           <input
+                            id={`catalog-season-${i}`}
+                            name={`catalogSeason${i}`}
                             type="number"
                             min={0}
                             className="animes-season-input"
@@ -523,8 +527,10 @@ export function CatalogTab({
                 {['serie', 'anime', 'dorama'].includes(catalogEditEntry.type) && (
                   <>
                     <div className="animes-form-group">
-                      <label>Último ep lançado - Temporada</label>
+                      <label htmlFor="catalog-ultima-temporada">Último ep lançado - Temporada</label>
                       <input
+                        id="catalog-ultima-temporada"
+                        name="catalogUltimaTemporada"
                         type="number"
                         min={1}
                         value={catalogEditLatestSeason}
@@ -532,8 +538,10 @@ export function CatalogTab({
                       />
                     </div>
                     <div className="animes-form-group">
-                      <label>Último ep lançado - Episódio</label>
+                      <label htmlFor="catalog-ultimo-episodio">Último ep lançado - Episódio</label>
                       <input
+                        id="catalog-ultimo-episodio"
+                        name="catalogUltimoEpisodio"
                         type="number"
                         min={0}
                         value={catalogEditLatestEpisode}
@@ -565,8 +573,10 @@ export function CatalogTab({
                 )}
                 {catalogEditEntry.type === 'livro' && (
                   <div className="animes-form-group full-width">
-                    <label>Total de páginas</label>
+                    <label htmlFor="catalog-total-paginas">Total de páginas</label>
                     <input
+                      id="catalog-total-paginas"
+                      name="catalogTotalPaginas"
                       type="number"
                       min={0}
                       value={catalogEditTotalPages ?? ''}
@@ -577,8 +587,10 @@ export function CatalogTab({
                 )}
                 {catalogEditEntry.type === 'filme' && (
                   <div className="animes-form-group full-width">
-                    <label>Duração em minutos</label>
+                    <label htmlFor="catalog-duracao">Duração em minutos</label>
                     <input
+                      id="catalog-duracao"
+                      name="catalogDuracao"
                       type="number"
                       min={0}
                       value={catalogEditDuration ?? ''}
@@ -589,8 +601,10 @@ export function CatalogTab({
                 )}
                 {['manhwa', 'manga', 'manhua', 'webtoon'].includes(catalogEditEntry.type) && (
                   <div className="animes-form-group full-width">
-                    <label>Total de capítulos</label>
+                    <label htmlFor="catalog-total-capitulos">Total de capítulos</label>
                     <input
+                      id="catalog-total-capitulos"
+                      name="catalogTotalCapitulos"
                       type="number"
                       min={0}
                       value={catalogEditTotalChapters ?? ''}
@@ -651,8 +665,6 @@ export function CatalogTab({
             <span className="animes-category-card-label">{t.label}</span>
           </button>
         ))}
-      </div>
-      <div className="animes-category-all-row">
         <button
           className="animes-category-card animes-category-card-all"
           onClick={() => setCatalogCategory('todos')}

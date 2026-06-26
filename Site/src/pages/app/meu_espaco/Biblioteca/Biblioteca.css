@@ -1194,6 +1194,7 @@
 .animes-category-card:nth-child(7) { animation-delay: 0.24s; }
 .animes-category-card:nth-child(8) { animation-delay: 0.28s; }
 .animes-category-card:nth-child(9) { animation-delay: 0.32s; }
+.animes-category-card:nth-child(10) { animation-delay: 0.36s; }
 
 .animes-category-card:hover {
   border-color: rgba(255,255,255,0.12);
@@ -1228,19 +1229,11 @@
 .animes-category-card-all {
   border: 2px dashed var(--border-glass, rgba(255,255,255,0.1));
   background: var(--bg-glass, rgba(30, 41, 59, 0.3));
-  max-width: 160px;
 }
 
 .animes-category-card-all:hover {
   border-color: rgba(99, 102, 241, 0.4);
   border-style: solid;
-}
-
-.animes-category-all-row {
-  display: flex;
-  justify-content: center;
-  margin-top: 1rem;
-  width: 100%;
 }
 
 /* ---- CATALOG HEADER BAR ---- */
@@ -1800,11 +1793,6 @@
     width: 100% !important;
   }
 
-  .animes-category-all-row {
-    padding: 0 1rem;
-    box-sizing: border-box;
-  }
-
   /* Fixed horizontal scrolling tabs for type filters */
   .animes-type-tabs {
     flex-wrap: nowrap !important;
@@ -2026,10 +2014,6 @@
 
   .animes-category-card-all {
     max-width: 100% !important;
-  }
-
-  .animes-category-all-row {
-    padding: 0 0.5rem;
   }
 
   .animes-catalog-grid {

@@ -42,9 +42,14 @@ export default function App() {
   const isEmbed = params.get('mode') === 'embed'
 
   const [authScreen, setAuthScreen] = useState<AuthScreen>('login')
-  const [currentSection, setCurrentSection] = useState<Section>(() => {
+  const getInitialSection = (): Section => {
+    const path = window.location.pathname.replace(/^\/ati\/?/, '').replace(/\/$/, '')
+    const validSections: Section[] = ['home', 'respostas_rapidas', 'chat_interno', 'anotacoes', 'modelos_os', 'conversor', 'senhas', 'relatorios', 'admin', 'jefferson', 'heli', 'biblioteca']
+    if (path && validSections.includes(path as Section)) return path as Section
     return (localStorage.getItem('ati-active-section') as Section) || 'home'
-  })
+  }
+
+  const [currentSection, setCurrentSection] = useState<Section>(getInitialSection)
   const [embedSection, setEmbedSection] = useState<Section>(() => {
     const sec = params.get('section') as Section
     if (sec && ['chat_interno', 'modelos_os', 'senhas', 'anotacoes', 'conversor', 'respostas_rapidas'].includes(sec)) {
@@ -208,6 +213,35 @@ export default function App() {
     localStorage.setItem('ati-active-section', currentSection)
   }, [currentSection])
 
+  // Sincroniza a URL com a seção atual
+  const isFirstRender = useRef(true)
+
+  useEffect(() => {
+    const path = currentSection === 'home' ? '/ati/' : `/ati/${currentSection}`
+    if (window.location.pathname !== path) {
+      if (isFirstRender.current) {
+        isFirstRender.current = false
+        window.history.replaceState({ section: currentSection }, '', path)
+      } else {
+        window.history.pushState({ section: currentSection }, '', path)
+      }
+    } else {
+      isFirstRender.current = false
+    }
+  }, [currentSection])
+
+  // Navegação pelo histórico (botão voltar/avançar do navegador)
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname.replace(/^\/ati\/?/, '').replace(/\/$/, '')
+      const validSections: Section[] = ['home', 'respostas_rapidas', 'chat_interno', 'anotacoes', 'modelos_os', 'conversor', 'senhas', 'relatorios', 'admin', 'jefferson', 'heli', 'biblioteca']
+      const section = path && validSections.includes(path as Section) ? (path as Section) : 'home'
+      setCurrentSection(section)
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
   useEffect(() => {
     localStorage.setItem('ati-active-embed-section', embedSection)
   }, [embedSection])
@@ -366,7 +400,7 @@ export default function App() {
         {/* Mobile overlay when sidebar is open */}
         {sidebarOpen && <div className="mobile-sidebar-overlay" onClick={toggleSidebar} />}
         {/* Mobile hamburger button */}
-        <button className="mobile-menu-btn" onClick={() => { toggleSidebar(); if (window.innerWidth <= 768) window.scrollTo({ top: 0, behavior: 'smooth' }) }} aria-label="Abrir menu">
+        <button className="mobile-menu-btn" onClick={toggleSidebar} aria-label="Abrir menu">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </button>
         <div className="main-wrapper">

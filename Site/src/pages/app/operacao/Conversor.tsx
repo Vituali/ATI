@@ -431,7 +431,7 @@ export default function Conversor() {
               </button>
             </div>
           )}
-          <input ref={fileInputRef} type="file" accept="application/pdf" className="conv-input-hidden" onChange={handleFileChange} />
+          <input ref={fileInputRef} type="file" accept="application/pdf" className="conv-input-hidden" onChange={handleFileChange} id="conv-pdf-input" name="convPdf" />
         </div>
 
         {erro && <p className="conv-erro">{erro}</p>}

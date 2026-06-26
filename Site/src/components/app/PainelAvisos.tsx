@@ -169,16 +169,16 @@ export default function PainelAvisos({ user }: PainelAvisosProps) {
           <h3 className="admin-secao-titulo">{editandoId ? <><Pencil size={16} strokeWidth={2} /> Editar Aviso</> : <><FileEdit size={16} strokeWidth={2} /> Novo Aviso</>}</h3>
           <div className="up-section" style={{ padding: '0' }}>
             <div className="up-grupo">
-              <label>Título do Aviso</label>
-              <input className="admin-input" type="text" value={form.titulo} onChange={(e) => setForm({ ...form, titulo: e.target.value })} placeholder="Ex: Manutenção no SGP hoje" />
+              <label htmlFor="aviso-titulo">Título do Aviso</label>
+              <input id="aviso-titulo" name="avisoTitulo" className="admin-input" type="text" value={form.titulo} onChange={(e) => setForm({ ...form, titulo: e.target.value })} placeholder="Ex: Manutenção no SGP hoje" />
             </div>
             <div className="up-grupo">
-              <label>Corpo do Aviso</label>
-              <textarea className="admin-input" style={{ minHeight: '100px', fontFamily: 'inherit' }} value={form.corpo} onChange={(e) => setForm({ ...form, corpo: e.target.value })} placeholder="Descreva o aviso em detalhes..." />
+              <label htmlFor="aviso-corpo">Corpo do Aviso</label>
+              <textarea id="aviso-corpo" name="avisoCorpo" className="admin-input" style={{ minHeight: '100px', fontFamily: 'inherit' }} value={form.corpo} onChange={(e) => setForm({ ...form, corpo: e.target.value })} placeholder="Descreva o aviso em detalhes..." />
             </div>
             <div className="up-grupo">
-              <label>Tipo / Gravidade</label>
-              <select className="admin-select" value={form.tipo} onChange={(e) => setForm({ ...form, tipo: e.target.value as Aviso['tipo'] })}>
+              <label htmlFor="aviso-tipo">Tipo / Gravidade</label>
+              <select id="aviso-tipo" name="avisoTipo" className="admin-select" value={form.tipo} onChange={(e) => setForm({ ...form, tipo: e.target.value as Aviso['tipo'] })}>
                 <option value="info">Info (Azul)</option>
                 <option value="warning">Warning (Amarelo)</option>
                 <option value="danger">Danger (Vermelho)</option>

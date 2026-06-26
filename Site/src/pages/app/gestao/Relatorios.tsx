@@ -336,18 +336,18 @@ export default function Relatorios() {
           <p className="rel-config-desc">Defina as faixas de classificação dos sinais de fibra da rede.</p>
           <div className="rel-config-grid">
             <div className="rel-config-group">
-              <label>Limite Sinal Máximo Excelente (Saturação)</label>
-              <input type="number" step="0.1" value={inputMaxExc} onChange={(e) => setInputMaxExc(e.target.value)} required />
+              <label htmlFor="rel-max-exc">Limite Sinal Máximo Excelente (Saturação)</label>
+              <input id="rel-max-exc" name="relMaxExc" type="number" step="0.1" value={inputMaxExc} onChange={(e) => setInputMaxExc(e.target.value)} required />
               <span>Sinais maiores que este limite são marcados como Atenção (Forte). Ex: {inputMaxExc} dBm</span>
             </div>
             <div className="rel-config-group">
-              <label>Limite Sinal Mínimo Excelente</label>
-              <input type="number" step="0.1" value={inputMinExc} onChange={(e) => setInputMinExc(e.target.value)} required />
+              <label htmlFor="rel-min-exc">Limite Sinal Mínimo Excelente</label>
+              <input id="rel-min-exc" name="relMinExc" type="number" step="0.1" value={inputMinExc} onChange={(e) => setInputMinExc(e.target.value)} required />
               <span>Sinais entre Excelente Mínimo e Máximo são marcados como Excelente.</span>
             </div>
             <div className="rel-config-group">
-              <label>Limite Sinal Mínimo Atenção / Início do Crítico</label>
-              <input type="number" step="0.1" value={inputMinAt} onChange={(e) => setInputMinAt(e.target.value)} required />
+              <label htmlFor="rel-min-at">Limite Sinal Mínimo Atenção / Início do Crítico</label>
+              <input id="rel-min-at" name="relMinAt" type="number" step="0.1" value={inputMinAt} onChange={(e) => setInputMinAt(e.target.value)} required />
               <span>Sinais abaixo deste valor são classificados como Críticos.</span>
             </div>
           </div>
@@ -417,15 +417,15 @@ export default function Relatorios() {
 
       {/* Filtros */}
       <div className="rel-filtros-bar">
-        <input type="text" placeholder="Buscar por OLT, Login, Bairro, PON..." value={busca} onChange={(e) => setBusca(e.target.value)} className="rel-busca-input" />
-        <select value={filtroSinal} onChange={(e: any) => setFiltroSinal(e.target.value)} className="rel-select-filtro">
+        <input id="rel-busca" name="busca" type="text" placeholder="Buscar por OLT, Login, Bairro, PON..." value={busca} onChange={(e) => setBusca(e.target.value)} className="rel-busca-input" />
+        <select id="rel-filtro-sinal" name="filtroSinal" value={filtroSinal} onChange={(e: any) => setFiltroSinal(e.target.value)} className="rel-select-filtro">
           <option value="todos">Todos os Sinais</option>
           <option value="excelente">Excelente</option>
           <option value="atencao">Atenção</option>
           <option value="critico">Crítico</option>
         </select>
 
-        <select value={filtroStatus} onChange={(e: any) => setFiltroStatus(e.target.value)} className="rel-select-filtro">
+        <select id="rel-filtro-status" name="filtroStatus" value={filtroStatus} onChange={(e: any) => setFiltroStatus(e.target.value)} className="rel-select-filtro">
           <option value="todos">Todos os Status</option>
           <option value="Não Verificado">Não Verificado</option>
           <option value="Em Andamento">Em Andamento</option>
@@ -436,19 +436,19 @@ export default function Relatorios() {
         {/* Checkboxes para exibir colunas adicionais */}
         <div className="rel-colunas-toggles">
           <label className="rel-toggle-label">
-            <input type="checkbox" checked={exibirVlan} onChange={(e) => setExibirVlan(e.target.checked)} />
+            <input id="rel-exibir-vlan" name="exibirVlan" type="checkbox" checked={exibirVlan} onChange={(e) => setExibirVlan(e.target.checked)} />
             VLAN
           </label>
           <label className="rel-toggle-label">
-            <input type="checkbox" checked={exibirSinalTx} onChange={(e) => setExibirSinalTx(e.target.checked)} />
+            <input id="rel-exibir-sinal-tx" name="exibirSinalTx" type="checkbox" checked={exibirSinalTx} onChange={(e) => setExibirSinalTx(e.target.checked)} />
             Sinal TX
           </label>
           <label className="rel-toggle-label">
-            <input type="checkbox" checked={exibirRxOlt} onChange={(e) => setExibirRxOlt(e.target.checked)} />
+            <input id="rel-exibir-rx-olt" name="exibirRxOlt" type="checkbox" checked={exibirRxOlt} onChange={(e) => setExibirRxOlt(e.target.checked)} />
             RX OLT
           </label>
           <label className="rel-toggle-label">
-            <input type="checkbox" checked={exibirDataColeta} onChange={(e) => setExibirDataColeta(e.target.checked)} />
+            <input id="rel-exibir-data-coleta" name="exibirDataColeta" type="checkbox" checked={exibirDataColeta} onChange={(e) => setExibirDataColeta(e.target.checked)} />
             Data Coleta
           </label>
         </div>

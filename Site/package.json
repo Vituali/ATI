@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host",
-    "build": "vite build",
+    "build": "vite build && node -e \"require('fs').copyFileSync('build/index.html', 'build/404.html')\"",
     "lint": "eslint .",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,css,html,json}\"",
     "preview": "vite preview",

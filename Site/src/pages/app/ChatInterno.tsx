@@ -286,7 +286,7 @@ export default function ChatInterno({ unreadRooms = [] }: ChatProps) {
       {/* Input de envio */}
       <div className="ci-input-area">
         <div className="ci-input-wrapper">
-          <textarea ref={inputRef} className="ci-input" placeholder={`Falar em ${getSetorLabel(activeRoom)}…`} value={texto} onChange={(e) => setTexto(e.target.value)} onKeyDown={handleKeyDown} rows={1} maxLength={500} />
+          <textarea id="ci-input-mensagem" name="ciMensagem" ref={inputRef} className="ci-input" placeholder={`Falar em ${getSetorLabel(activeRoom)}…`} value={texto} onChange={(e) => setTexto(e.target.value)} onKeyDown={handleKeyDown} rows={1} maxLength={500} />
           <div className={`ci-char-counter ${texto.length >= 500 ? 'limit' : ''}`}>{texto.length}/500</div>
         </div>
         <button className="ci-btn-enviar" onClick={enviar} disabled={!texto.trim() || enviando} aria-label="Enviar mensagem">

@@ -443,7 +443,7 @@ export default function Admin() {
                       </td>
                       <td>{b.descricao}</td>
                       <td>
-                        <select className={`admin-select status-${b.status === 'aberto' ? 'inativo' : 'ativo'}`} value={b.status} onChange={(e) => handleStatusBug(b.id, e.target.value)}>
+                        <select name={`bugStatus-${b.id}`} className={`admin-select status-${b.status === 'aberto' ? 'inativo' : 'ativo'}`} value={b.status} onChange={(e) => handleStatusBug(b.id, e.target.value)}>
                           <option value="aberto">Aberto</option>
                           <option value="em andamento">Em Andamento</option>
                           <option value="resolvido">Resolvido</option>
@@ -472,6 +472,8 @@ export default function Admin() {
                   return (
                     <label key={sec} className="admin-permission-checkbox-label">
                       <input
+                        id={`perm-${sec}`}
+                        name={`perm-${sec}`}
                         type="checkbox"
                         checked={isChecked}
                         onChange={() => {

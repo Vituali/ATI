@@ -42,7 +42,7 @@ Os arquivos gerados para teste em tempo de execução estarão localizados em `b
 1. Acesse `chrome://extensions/` no Google Chrome.
 2. Ative o **Modo do desenvolvedor** (canto superior direito).
 3. Clique em **Carregar expandida** (_Load unpacked_).
-4. Selecione a pasta `Extensao/build`.
+4. Selecione a pasta `Extension/build`.
 
 ---
 

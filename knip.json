@@ -1,0 +1,51 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "workspaces": {
+    ".": {
+      "entry": ["package.json"]
+    },
+    "Extension": {
+      "entry": [
+        "vite.config.ts",
+        "src/manifest.ts",
+        "src/background/index.ts",
+        "src/contentScript/chatmix/index.ts",
+        "src/contentScript/sgp/fillForm.tsx",
+        "src/contentScript/sso/bridge.ts",
+        "src/popup/main.tsx",
+        "src/popup/Popup.tsx",
+        "src/zip.js",
+        "src/update-firebase-version.js"
+      ],
+      "project": ["src/**/*.{ts,tsx,js,cjs}"]
+    },
+    "Frontend": {
+      "entry": [
+        "vite.config.ts",
+        "index.html",
+        "src/main.tsx",
+        "src/App.tsx",
+        "src/pages/index.ts",
+        "src/pages/lazy.ts",
+        "src/services/index.ts",
+        "src/hooks/index.ts",
+        "src/components/index.ts",
+        "tools/convert-icons.js",
+        "tools/seed-credentials.js",
+        "tools/update_imports.js"
+      ],
+      "project": ["src/**/*.{ts,tsx,css}", "tools/*.js"]
+    }
+  },
+  "ignoreDependencies": [
+    "@types/chrome",
+    "@types/react",
+    "@types/react-dom",
+    "typescript",
+    "typescript-eslint",
+    "eslint-plugin-react-hooks",
+    "eslint-plugin-react-refresh",
+    "globals",
+    "prettier"
+  ]
+}

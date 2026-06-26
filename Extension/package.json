@@ -28,7 +28,6 @@
     "release": "npm run build && node src/zip.js && node src/update-firebase-version.js"
   },
   "dependencies": {
-    "firebase": "12.15.0",
     "lucide-react": "^1.21.0",
     "react": "19.2.7",
     "react-dom": "19.2.7"

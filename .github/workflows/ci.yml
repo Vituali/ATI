@@ -12,8 +12,8 @@ jobs:
           node-version: 20
           cache: 'npm'
           cache-dependency-path: |
-            Extensao/package-lock.json
-            Site/package-lock.json
+            Extension/package-lock.json
+            Frontend/package-lock.json
 
       - name: Criar .env com secrets do GitHub
         run: |
@@ -27,28 +27,28 @@ jobs:
           VITE_FIREBASE_APP_ID=${{ secrets.FIREBASE_APP_ID }}
           EOF
 
-      # ── Extensão ──────────────────────────────────
-      - name: Extensao — Instalar dependências
-        working-directory: Extensao
+      # ── Extension ──────────────────────────────────
+      - name: Extension — Instalar dependências
+        working-directory: Extension
         run: npm ci
 
-      - name: Extensao — Lint
-        working-directory: Extensao
+      - name: Extension — Lint
+        working-directory: Extension
         run: npm run lint
 
-      - name: Extensao — Build
-        working-directory: Extensao
+      - name: Extension — Build
+        working-directory: Extension
         run: npm run build
 
-      # ── Site ──────────────────────────────────────
-      - name: Site — Instalar dependências
-        working-directory: Site
+      # ── Frontend ──────────────────────────────────
+      - name: Frontend — Instalar dependências
+        working-directory: Frontend
         run: npm ci
 
-      - name: Site — Lint
-        working-directory: Site
+      - name: Frontend — Lint
+        working-directory: Frontend
         run: npm run lint
 
-      - name: Site — Build
-        working-directory: Site
+      - name: Frontend — Build
+        working-directory: Frontend
         run: npm run build

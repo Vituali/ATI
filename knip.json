@@ -15,7 +15,8 @@
         "src/popup/main.tsx",
         "src/popup/Popup.tsx",
         "src/zip.js",
-        "src/update-firebase-version.js"
+        "src/update-firebase-version.js",
+        "src/contentScript/sgp/sgpFill.js"
       ],
       "project": ["src/**/*.{ts,tsx,js,cjs}"]
     },

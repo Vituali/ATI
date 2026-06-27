@@ -1,6 +1,4 @@
-import { ref, get } from 'firebase/database'
-import { db } from './firebase'
-import { auth } from './firebase'
+import { api } from './api'
 
 interface Credencial {
   label: string
@@ -25,37 +23,24 @@ export async function getCredentials(): Promise<{ grupos: GrupoSenha[]; sites: C
   }
 
   try {
-    const snap = await get(ref(db, 'credenciais'))
-    if (snap.exists()) {
-      const data = snap.val()
-      cachedData = {
-        grupos: data.grupos ?? [],
-        sites: data.sites ?? [],
-      }
-      lastFetch = now
-      return cachedData
+    const data: any = await api.get('/api/config/credenciais')
+    const valor = data?.valor || data
+    cachedData = {
+      grupos: valor.grupos ?? [],
+      sites: valor.sites ?? [],
     }
-  } catch (e) {
-    console.warn('Erro ao buscar credenciais do Firebase, usando fallback vazio:', e)
+    lastFetch = now
+    return cachedData
+  } catch {
+    if (cachedData) return cachedData
+    return { grupos: [], sites: [] }
   }
-
-  return { grupos: [], sites: [] }
 }
 
 export async function isAdminUser(): Promise<boolean> {
-  const user = auth.currentUser
-  if (!user) return false
   try {
-    const snap = await get(ref(db, 'atendentes'))
-    if (!snap.exists()) return false
-    let isAdmin = false
-    snap.forEach((child) => {
-      const data = child.val()
-      if (data.uid === user.uid && data.role === 'admin') {
-        isAdmin = true
-      }
-    })
-    return isAdmin
+    const me = await api.get('/api/atendentes/me') as any
+    return me.role === 'admin'
   } catch {
     return false
   }

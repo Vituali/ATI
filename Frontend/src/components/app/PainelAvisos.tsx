@@ -1,7 +1,6 @@
 // components/PainelAvisos.tsx
 import { useState, useEffect } from 'react'
-import { ref, get, push, update, remove } from 'firebase/database'
-import { db } from '../../services/firebase'
+import { api } from '../../services/api'
 import { UserProfile } from '../../hooks/useUser'
 import LoadingOverlay from '../ui/LoadingOverlay'
 import { useNotification } from '../../hooks/useNotification'
@@ -43,14 +42,16 @@ export default function PainelAvisos({ user }: PainelAvisosProps) {
   async function carregarAvisos() {
     setLoading(true)
     try {
-      const snap = await get(ref(db, 'avisos'))
-      const lista: Aviso[] = []
-      if (snap.exists()) {
-        snap.forEach((child) => {
-          lista.push({ id: child.key!, ...(child.val() as Omit<Aviso, 'id'>) })
-        })
-      }
-      // Ordenar: ativos primeiro, depois por data decrescente
+      const data: any[] = await api.get('/api/avisos')
+      const lista: Aviso[] = data.map((a: any) => ({
+        id: a.id,
+        titulo: a.titulo,
+        corpo: a.texto,
+        tipo: a.tipo as Aviso['tipo'],
+        criadoPor: a.autor?.nomeCompleto || user.username,
+        timestamp: new Date(a.createdAt).getTime(),
+        ativo: a.ativo,
+      }))
       lista.sort((a, b) => {
         if (a.ativo !== b.ativo) return a.ativo ? -1 : 1
         return b.timestamp - a.timestamp
@@ -71,22 +72,17 @@ export default function PainelAvisos({ user }: PainelAvisosProps) {
 
     try {
       if (editandoId) {
-        // Editar
-        await update(ref(db, `avisos/${editandoId}`), {
+        await api.patch(`/api/avisos/${editandoId}`, {
           titulo: form.titulo.trim(),
-          corpo: form.corpo.trim(),
+          texto: form.corpo.trim(),
           tipo: form.tipo,
         })
         notify('Aviso atualizado com sucesso!', 'success')
       } else {
-        // Novo
-        await push(ref(db, 'avisos'), {
+        await api.post('/api/avisos', {
           titulo: form.titulo.trim(),
-          corpo: form.corpo.trim(),
+          texto: form.corpo.trim(),
           tipo: form.tipo,
-          criadoPor: user.username,
-          timestamp: Date.now(),
-          ativo: true,
         })
         notify('Novo aviso criado!', 'success')
       }
@@ -101,7 +97,7 @@ export default function PainelAvisos({ user }: PainelAvisosProps) {
 
   async function toggleAtivo(aviso: Aviso) {
     try {
-      await update(ref(db, `avisos/${aviso.id}`), { ativo: !aviso.ativo })
+      await api.patch(`/api/avisos/${aviso.id}`, { ativo: !aviso.ativo })
       notify(aviso.ativo ? 'Aviso desativado.' : 'Aviso ativado!', 'success')
       carregarAvisos()
     } catch (e: any) {
@@ -114,7 +110,7 @@ export default function PainelAvisos({ user }: PainelAvisosProps) {
     if (!confirmacao) return
 
     try {
-      await remove(ref(db, `avisos/${id}`))
+      await api.del(`/api/avisos/${id}`)
       notify('Aviso excluído permanentemente.', 'success')
       carregarAvisos()
     } catch (e: any) {

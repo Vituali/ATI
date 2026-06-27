@@ -3,10 +3,10 @@ import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
 import { RespostasRapidas, ModelosOS, Conversor, Senhas, Admin, ChatInterno, Anotacoes, Relatorios, Jefferson, HeliRPG, Biblioteca } from './pages/lazy'
 import { Login, Register, Home, ErrorPage, ExtensionModal } from './pages'
 import { useUser, UserProfile } from './hooks'
-import { canAccess, Section, Setor, getSectionLabel, logout, db, auth, syncWithExtension, performSSOLogin } from './services'
+import { canAccess, Section, Setor, getSectionLabel, logout, auth, syncWithExtension, performSSOLogin } from './services'
 import { Sidebar, Footer, LoadingOverlay, ToastContainer, UserPanel, BugReportModal, ErrorBoundary, InstallModal } from './components'
 import { MessageSquare, ClipboardList, Key, FileEdit, RefreshCw, MessageCircle, Sparkles } from 'lucide-react'
-import { ref, onValue } from 'firebase/database'
+import { api } from './services/api'
 import './App.css'
 import { useRegisterSW } from 'virtual:pwa-register/react'
 
@@ -147,36 +147,36 @@ export default function App() {
     [setCurrentSection, unreadRooms],
   )
 
-  // Notificações em real-time + limpa ao entrar no chat
+  // Notificações em tempo real (polling) + limpa ao entrar no chat
   useEffect(() => {
     if (!user) return
 
     if (currentSection === 'chat_interno') {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setUnreadRooms([])
       lastSeenRef.current = Date.now()
       localStorage.setItem('lastSeenChat', lastSeenRef.current.toString())
       return
     }
 
-    const q = ref(db, 'chat/meta')
-    const unsubscribe = onValue(q, (snap) => {
-      if (!snap.exists()) return
+    const checkUnread = async () => {
+      try {
+        const salas: any[] = await api.get('/api/chat/salas')
+        const salasComNovasMsgs: Setor[] = []
 
-      const salasComNovasMsgs: Setor[] = []
-      snap.forEach((roomMetaSnap) => {
-        const meta = roomMetaSnap.child('ultimaMensagem').val()
-        const room = roomMetaSnap.key as Setor
-
-        if (meta && meta.autor !== user.username && meta.timestamp > lastSeenRef.current) {
-          salasComNovasMsgs.push(room)
+        for (const sala of salas) {
+          const meta = sala.ultimaMensagem
+          if (meta && meta.autor !== user.username && meta.timestamp > lastSeenRef.current) {
+            salasComNovasMsgs.push(sala.id as Setor)
+          }
         }
-      })
 
-      setUnreadRooms(salasComNovasMsgs)
-    })
+        setUnreadRooms(salasComNovasMsgs)
+      } catch { /* silencioso */ }
+    }
 
-    return () => unsubscribe()
+    checkUnread()
+    const interval = setInterval(checkUnread, 8000)
+    return () => clearInterval(interval)
   }, [user, currentSection])
 
   // Document Title, Favicon e Badge PWA — dinâmico por seção + notificações

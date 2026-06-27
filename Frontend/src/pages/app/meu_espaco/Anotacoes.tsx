@@ -1,10 +1,9 @@
 // pages/app/Anotacoes.tsx
 import { useState, useEffect } from 'react'
-import { db } from '../../../services/firebase'
-import { ref, onValue, push, remove, update } from 'firebase/database'
 import { Plus, FolderOpen, CheckCircle, Trash2 } from 'lucide-react'
 import { useUser } from '../../../hooks/useUser'
 import { useNotification } from '../../../hooks/useNotification'
+import { api } from '../../../services/api'
 import Modal from '../../../components/ui/Modal'
 import './Anotacoes.css'
 
@@ -31,27 +30,34 @@ export default function Anotacoes() {
   const [modalAberto, setModalAberto] = useState(false)
   const [filtro, setFiltro] = useState('')
 
-  // Firebase Listener
+  // Carregar notas
   useEffect(() => {
     if (!user) return
+    let cancelled = false
 
-    const path = `anotacoes/${user.username}`
-    const q = ref(db, path)
+    const carregar = async () => {
+      try {
+        const data = await api.get('/api/anotacoes') as any[]
+        if (cancelled) return
+        const lista: Nota[] = data.map((n: any) => ({
+          id: n.id,
+          titulo: n.titulo || '',
+          corpo: n.texto || '',
+          tasks: [],
+          status: n.concluido ? 'concluído' as const : 'pendente',
+          timestamp: new Date(n.createdAt).getTime(),
+        }))
+        setNotas(lista.sort((a, b) => b.timestamp - a.timestamp))
+      } catch (e) {
+        console.error(e)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
 
-    const unsubscribe = onValue(q, (snap) => {
-      const lista: Nota[] = []
-      snap.forEach((child) => {
-        lista.push({
-          id: child.key!,
-          ...(child.val() as Omit<Nota, 'id'>),
-        })
-      })
-      // Ordenar por data (mais recentes primeiro)
-      setNotas(lista.sort((a, b) => b.timestamp - a.timestamp))
-      setLoading(false)
-    })
-
-    return () => unsubscribe()
+    carregar()
+    const interval = setInterval(carregar, 30000)
+    return () => { cancelled = true; clearInterval(interval) }
   }, [user])
 
   const abrirModal = (nota?: Nota) => {
@@ -79,20 +85,16 @@ export default function Anotacoes() {
     if (!user || !editando || !editando.titulo.trim()) return
 
     try {
-      const path = `anotacoes/${user.username}`
       const data = {
         titulo: editando.titulo.trim(),
-        corpo: editando.corpo.trim(),
-        tasks: editando.tasks,
-        status: editando.status,
-        timestamp: editando.id ? editando.timestamp : Date.now(),
+        texto: editando.corpo.trim(),
       }
 
       if (editando.id) {
-        await update(ref(db, `${path}/${editando.id}`), data)
+        await api.patch(`/api/anotacoes/${editando.id}`, data)
         notify('Nota atualizada!', 'info')
       } else {
-        await push(ref(db, path), data)
+        await api.post('/api/anotacoes', data)
         notify('Nota criada com sucesso!', 'success')
       }
       fecharModal()
@@ -108,7 +110,7 @@ export default function Anotacoes() {
     if (!aceito) return
 
     try {
-      await remove(ref(db, `anotacoes/${user.username}/${editando.id}`))
+      await api.del(`/api/anotacoes/${editando.id}`)
       notify('Nota excluída.', 'info')
       fecharModal()
     } catch {

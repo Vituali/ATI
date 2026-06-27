@@ -2,12 +2,10 @@
 // ---------------------------------------------------------------
 // Painel de administração — gerencia usuários do sistema.
 // Só acessível para role "admin" (protegido no Sidebar + App).
-// Dados vêm do Firebase Realtime DB em /atendentes.
 // ---------------------------------------------------------------
 
 import { useState, useEffect } from 'react'
-import { ref, get, set, update } from 'firebase/database'
-import { db } from '../../../services/firebase'
+import { api } from '../../../services/api'
 import { Role, Setor, Section, getRoleLabel, getSetorLabel, getSetorPermissions, getSectionLabel } from '../../../services/permissions'
 import './Admin.css'
 import LoadingOverlay from '../../../components/ui/LoadingOverlay'
@@ -22,7 +20,8 @@ import { ArrowUp, ArrowDown, ArrowUpDown, Shield, Save, Users, Megaphone, Bug, C
 // ---------------------------------------------------------------
 
 interface Atendente {
-  username: string // chave do nó no banco
+  id: string
+  username: string
   uid: string
   email: string
   nomeCompleto: string
@@ -78,28 +77,19 @@ export default function Admin() {
   async function carregarAtendentes() {
     setLoading(true)
     try {
-      const snap = await get(ref(db, 'atendentes'))
-      if (!snap.exists()) {
-        setAtendentes([])
-        return
-      }
-
-      const lista: Atendente[] = []
-      snap.forEach((child) => {
-        const d = child.val()
-        lista.push({
-          username: child.key!,
-          uid: d.uid ?? '',
-          email: d.email ?? '',
-          nomeCompleto: d.nomeCompleto ?? '',
-          role: d.role ?? 'usuario',
-          setor: d.setor ?? 'ti',
-          status: d.status ?? 'ativo',
-          sgpUsername: d.sgpUsername ?? d.sgpusername ?? '',
-          customAllowedSections: d.customAllowedSections || [],
-        })
-      })
-
+      const data = await api.get('/api/atendentes')
+      const lista: Atendente[] = (data || []).map((d: any) => ({
+        id: d.id ?? '',
+        username: d.username ?? '',
+        uid: d.uid ?? '',
+        email: d.email ?? '',
+        nomeCompleto: d.nomeCompleto ?? '',
+        role: d.role ?? 'usuario',
+        setor: d.setor ?? 'ti',
+        status: d.status ?? 'ativo',
+        sgpUsername: d.sgpUsername ?? d.sgpusername ?? '',
+        customAllowedSections: d.customAllowedSections || [],
+      }))
       setAtendentes(lista)
     } catch (e: any) {
       notify('Erro ao carregar usuários: ' + e.message, 'error')
@@ -116,16 +106,8 @@ export default function Admin() {
   async function carregarBugs() {
     setCarregandoBugs(true)
     try {
-      const snap = await get(ref(db, 'bugs'))
-      if (snap.exists()) {
-        const list: any[] = []
-        snap.forEach((c) => {
-          list.push({ id: c.key, ...c.val() })
-        })
-        setBugs(list.reverse()) // Mais recentes primeiro
-      } else {
-        setBugs([])
-      }
+      const data = await api.get('/api/bugs')
+      setBugs((data || []).reverse()) // Mais recentes primeiro
     } catch (e) {
       console.error(e)
     } finally {
@@ -135,7 +117,7 @@ export default function Admin() {
 
   async function handleStatusBug(bugId: string, novoStatus: string) {
     try {
-      await set(ref(db, `bugs/${bugId}/status`), novoStatus)
+      await api.patch('/api/bugs/' + bugId, { status: novoStatus })
       setBugs((prev) => prev.map((b) => (b.id === bugId ? { ...b, status: novoStatus } : b)))
       notify('Status do bug atualizado com sucesso!', 'success')
     } catch (e: any) {
@@ -152,18 +134,14 @@ export default function Admin() {
   async function handleSalvar(atendente: Atendente) {
     setSalvando(atendente.username)
     try {
-      await update(ref(db, `atendentes/${atendente.username}`), {
-        uid: atendente.uid,
-        email: atendente.email,
-        nomeCompleto: atendente.nomeCompleto,
+      await api.patch('/api/atendentes/' + atendente.id, {
         role: atendente.role,
         setor: atendente.setor,
         status: atendente.status,
+        nomeCompleto: atendente.nomeCompleto,
         sgpUsername: atendente.sgpUsername || null,
         customAllowedSections: atendente.customAllowedSections || [],
       })
-      // Mantém uid_index sincronizado com a role
-      await set(ref(db, `uid_index/${atendente.uid}/role`), atendente.role)
       notify('Usuário atualizado com sucesso!', 'success')
     } catch (e: any) {
       notify('Erro ao salvar: ' + e.message, 'error')
@@ -185,17 +163,14 @@ export default function Admin() {
 
     for (const atendente of listaFiltrada) {
       try {
-        await update(ref(db, `atendentes/${atendente.username}`), {
-          uid: atendente.uid,
-          email: atendente.email,
-          nomeCompleto: atendente.nomeCompleto,
+        await api.patch('/api/atendentes/' + atendente.id, {
           role: atendente.role,
           setor: atendente.setor,
           status: atendente.status,
+          nomeCompleto: atendente.nomeCompleto,
           sgpUsername: atendente.sgpUsername || null,
           customAllowedSections: atendente.customAllowedSections || [],
         })
-        await set(ref(db, `uid_index/${atendente.uid}/role`), atendente.role)
       } catch {
         erros++
       }

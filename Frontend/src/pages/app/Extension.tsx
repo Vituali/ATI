@@ -1,7 +1,6 @@
 // components/ExtensionModal.tsx
 import { useState, useEffect } from 'react'
-import { ref, get } from 'firebase/database'
-import { db } from '../../services'
+import { api } from '../../services/api'
 import { Rocket, Sparkles, Bot, Zap, ExternalLink } from 'lucide-react'
 import Modal from '../../components/ui/Modal'
 import './Extension.css'
@@ -19,18 +18,14 @@ export default function ExtensionModal({ aberto, onFechar }: ExtensionModalProps
   useEffect(() => {
     if (!aberto) return
 
-    get(ref(db, 'config/extension'))
-      .then((snap) => {
-        if (snap.exists()) {
-          const data = snap.val()
-          if (data.minVersion) {
-            setVersion(`v${data.minVersion}`)
-          }
+    api.get('/api/config/extension')
+      .then((data: any) => {
+        const valor = data?.valor || data
+        if (valor?.minVersion) {
+          setVersion(`v${valor.minVersion}`)
         }
       })
-      .catch((err) => {
-        console.warn('Erro ao buscar versão da extensão:', err)
-      })
+      .catch(() => {})
   }, [aberto])
 
   return (

@@ -20,6 +20,13 @@
       ],
       "project": ["src/**/*.{ts,tsx,js,cjs}"]
     },
+    "Backend": {
+      "entry": [
+        "src/index.ts",
+        "src/app.ts"
+      ],
+      "project": ["src/**/*.ts"]
+    },
     "Frontend": {
       "entry": [
         "vite.config.ts",

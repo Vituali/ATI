@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { ref, push, serverTimestamp } from 'firebase/database'
-import { db } from '../../services/firebase'
+import { api } from '../../services/api'
 import Modal from './Modal'
 import { UserProfile } from '../../hooks/useUser'
 import { CheckCircle } from 'lucide-react'
@@ -12,7 +11,7 @@ interface BugReportModalProps {
   user: UserProfile | null
 }
 
-export default function BugReportModal({ aberto, onFechar, user }: BugReportModalProps) {
+export default function BugReportModal({ aberto, onFechar }: BugReportModalProps) {
   const [titulo, setTitulo] = useState('')
   const [descricao, setDescricao] = useState('')
   const [enviando, setEnviando] = useState(false)
@@ -30,13 +29,7 @@ export default function BugReportModal({ aberto, onFechar, user }: BugReportModa
     setErro('')
 
     try {
-      await push(ref(db, 'bugs'), {
-        titulo,
-        descricao,
-        autor: user?.nomeCompleto || user?.username || 'Anônimo',
-        timestamp: serverTimestamp(),
-        status: 'aberto',
-      })
+      await api.post('/api/bugs', { descricao: `${titulo}\n\n${descricao}`, pagina: window.location.pathname })
       setSucesso(true)
       setTimeout(() => {
         setSucesso(false)

@@ -7,8 +7,8 @@
 
 import { useState } from 'react'
 import { updatePassword, updateProfile, updateEmail, verifyBeforeUpdateEmail, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth'
-import { ref, update, get, set, remove } from 'firebase/database'
-import { auth, db } from '../../services/firebase'
+import { auth } from '../../services/firebase'
+import { api } from '../../services/api'
 import Modal from '../ui/Modal'
 import { UserProfile } from '../../hooks/useUser'
 import { getRoleLabel, getSetorLabel } from '../../services/permissions'
@@ -74,7 +74,7 @@ export default function UserPanel({ user, aberto, onFechar, onLogout, bgUrl, onB
       if (firebaseUser) {
         await updateProfile(firebaseUser, { displayName: nomeTrimmed })
       }
-      await update(ref(db, `atendentes/${user.username}`), {
+      await api.patch('/api/atendentes/me', {
         nomeCompleto: nomeTrimmed,
         sgpUsername: sgpTrimmed || null,
         avatarUrl: avatarUrlForm.trim() || null,
@@ -119,22 +119,15 @@ export default function UserPanel({ user, aberto, onFechar, onLogout, bgUrl, onB
       const credential = EmailAuthProvider.credential(firebaseUser.email, senhaConfirm)
       await reauthenticateWithCredential(firebaseUser, credential)
 
-      // 0) Verificar se o e-mail já existe no banco de dados (para outro usuário)
+      // 0) Verificar se o e-mail já existe
       if (emailChanged) {
-        const atendentesSnap = await get(ref(db, 'atendentes'))
-        if (atendentesSnap.exists()) {
-          let emailExiste = false
-          atendentesSnap.forEach((child) => {
-            if (child.key !== user.username && child.child('email').val() === emailTrimmed) {
-              emailExiste = true
-            }
-          })
-          if (emailExiste) {
-            showFeedback(setFeedbackConta, 'Este e-mail já está sendo usado por outro atendente.', 'erro')
-            setSenhaConfirm('')
-            setSalvandoConta(false)
-            return
-          }
+        const all: any[] = await api.get('/api/atendentes')
+        const emailExiste = all.some((a: any) => a.id !== user.id && a.email === emailTrimmed)
+        if (emailExiste) {
+          showFeedback(setFeedbackConta, 'Este e-mail já está sendo usado por outro atendente.', 'erro')
+          setSenhaConfirm('')
+          setSalvandoConta(false)
+          return
         }
       }
 
@@ -150,8 +143,7 @@ export default function UserPanel({ user, aberto, onFechar, onLogout, bgUrl, onB
           // Fallback para updateEmail se as regras de negócio permitirem (raro hoje em dia)
           try {
             await updateEmail(firebaseUser, emailTrimmed)
-            // Se logrou êxito direto, atualiza no banco agora
-            await update(ref(db, `atendentes/${user.username}`), { email: emailTrimmed })
+            await api.patch('/api/atendentes/me', { email: emailTrimmed })
           } catch (updateErr: any) {
             console.error('Erro na troca de email:', updateErr)
             throw updateErr
@@ -159,52 +151,15 @@ export default function UserPanel({ user, aberto, onFechar, onLogout, bgUrl, onB
         }
       }
 
-      // 2) Migrar Username (chave do banco)
+      // 2) Migrar Username
       if (usernameChanged) {
-        // Verifica se já existe
-        const checkSnap = await get(ref(db, `atendentes/${usernameTrimmed}`))
-        if (checkSnap.exists()) {
+        const all: any[] = await api.get('/api/atendentes')
+        if (all.some((a: any) => a.username === usernameTrimmed)) {
           showFeedback(setFeedbackConta, 'Este username já está em uso.', 'erro')
           return
         }
 
-        // Lê os dados atuais do usuário
-        const currentSnap = await get(ref(db, `atendentes/${user.username}`))
-        const currentData = currentSnap.val()
-
-        // Migra dados associados ao username antigo
-        const [respostasSnap, catOrdemSnap, modelosSnap] = await Promise.all([get(ref(db, `respostas/${user.username}`)), get(ref(db, `categorias_ordem/${user.username}`)), get(ref(db, `modelos_os/${user.username}`))])
-
-        // 1) Primeiro cria o novo registro de atendente (chave principal de permissão)
-        // Se o email está pendente de verificação, mantemos o email antigo no banco para não quebrar o login via username
-        await set(ref(db, `atendentes/${usernameTrimmed}`), {
-          ...currentData,
-          email: emailPendente ? user.email : emailChanged ? emailTrimmed : currentData.email,
-          username: usernameTrimmed,
-          migradoEm: Date.now(),
-        })
-
-        // Atualiza uid_index com o novo username
-        await set(ref(db, `uid_index/${currentData.uid}/username`), usernameTrimmed)
-
-        // Delay para propagação de regras do Firebase RTDB (ajuda a evitar Permission Denied imediato)
-        await new Promise((resolve) => setTimeout(resolve, 800))
-
-        // 2) Tenta migrar dados secundários um a um
-        const migrarNo = async (pathRaiz: string, snap: any) => {
-          if (!snap.exists()) return
-          try {
-            await set(ref(db, `${pathRaiz}/${usernameTrimmed}`), snap.val())
-            await remove(ref(db, `${pathRaiz}/${user.username}`))
-          } catch (error) {
-            console.error(`Erro ao migrar ${pathRaiz}:`, error)
-          }
-        }
-
-        await Promise.all([migrarNo('respostas', respostasSnap), migrarNo('categorias_ordem', catOrdemSnap), migrarNo('modelos_os', modelosSnap), migrarNo('anotacoes', await get(ref(db, `anotacoes/${user.username}`)))])
-
-        // 3) Remove o registro de atendente antigo por último
-        await remove(ref(db, `atendentes/${user.username}`))
+        await api.patch('/api/atendentes/me', { username: usernameTrimmed })
       }
 
       setSenhaConfirm('')

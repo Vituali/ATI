@@ -1,12 +1,11 @@
 // pages/ChatInterno.tsx
 // ---------------------------------------------------------------
 // Chat interno com salas por setor.
-// Usa Firebase Realtime Database: /chat/salas/{room}/mensagens
+// Usa API REST para mensagens e perfis.
 // ---------------------------------------------------------------
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
-import { ref, push, onValue, query, orderByChild, limitToLast, set } from 'firebase/database'
-import { db } from '../../services/firebase'
+import { api } from '../../services/api'
 import { useUser } from '../../hooks/useUser'
 import { getSetorLabel, type Setor } from '../../services/permissions'
 import { useNotification } from '../../hooks/useNotification'
@@ -16,12 +15,12 @@ import './ChatInterno.css'
 interface Mensagem {
   id: string
   autor: string
-  nomeCompleto: string
-  setor: string // Setor do autor (badge)
-  room?: string // Sala de destino (novo)
+  autorNome: string
+  autorSetor: string
   texto: string
   timestamp: number
-  avatarUrl?: string
+  room?: string
+  autorAvatar?: string
 }
 
 const ROOM_ICONS: Record<string, React.ReactNode> = {
@@ -66,24 +65,36 @@ export default function ChatInterno({ unreadRooms = [] }: ChatProps) {
     localStorage.setItem('lastChatRoom', activeRoom)
   }, [activeRoom])
 
-  // Gerencia a conexão com o Firebase (Sempre escutando a sala correta)
+  // Polling de mensagens a cada 5s
   useEffect(() => {
-    const path = `chat/salas/${activeRoom}/mensagens`
+    const fetchMessages = async () => {
+      try {
+        const data = await api.get(`/api/chat/salas/${activeRoom}/mensagens`)
+        const items = Array.isArray(data) ? data : data?.mensagens ?? []
+        const lista: Mensagem[] = items.map((item: any) => ({
+          id: item.id || item._id,
+          autor: item.autor,
+          autorNome: item.autorNome,
+          autorSetor: item.autorSetor,
+          autorAvatar: item.autorAvatar,
+          texto: item.texto,
+          timestamp:
+            item.createdAt
+              ? typeof item.createdAt === 'number'
+                ? item.createdAt
+                : new Date(item.createdAt).getTime()
+              : item.timestamp || Date.now(),
+          room: activeRoom,
+        }))
+        setMensagens(lista)
+      } catch (e) {
+        console.error('Erro ao buscar mensagens:', e)
+      }
+    }
 
-    const q = query(ref(db, path), orderByChild('timestamp'), limitToLast(100))
-
-    const unsubscribe = onValue(q, (snap) => {
-      const lista: Mensagem[] = []
-      snap.forEach((child) => {
-        lista.push({
-          id: child.key!,
-          ...(child.val() as Omit<Mensagem, 'id'>),
-        })
-      })
-      setMensagens(lista)
-    })
-
-    return () => unsubscribe()
+    fetchMessages()
+    const interval = setInterval(fetchMessages, 5000)
+    return () => clearInterval(interval)
   }, [activeRoom])
 
   // Auto-scroll robusto
@@ -102,13 +113,17 @@ export default function ChatInterno({ unreadRooms = [] }: ChatProps) {
     }
   }, [mensagens, profiles, activeRoom])
 
-  // Sincroniza perfis
+  // Carrega perfis dos atendentes
   useEffect(() => {
-    const aRef = ref(db, 'atendentes')
-    const unsubscribe = onValue(aRef, (snap) => {
-      if (snap.exists()) setProfiles(snap.val())
-    })
-    return () => unsubscribe()
+    const fetchProfiles = async () => {
+      try {
+        const data = await api.get('/api/atendentes')
+        setProfiles(data || {})
+      } catch (e) {
+        console.error('Erro ao buscar perfis:', e)
+      }
+    }
+    fetchProfiles()
   }, [])
 
   const enviar = useCallback(async () => {
@@ -131,21 +146,8 @@ export default function ChatInterno({ unreadRooms = [] }: ChatProps) {
     setEnviando(true)
 
     try {
-      const now = Date.now()
-      await push(ref(db, `chat/salas/${activeRoom}/mensagens`), {
-        autor: user.username,
-        nomeCompleto: user.nomeCompleto,
-        setor: user.setor,
-        room: activeRoom,
+      await api.post(`/api/chat/salas/${activeRoom}/mensagens`, {
         texto: texto.trim(),
-        timestamp: now,
-        avatarUrl: user.avatarUrl ?? null,
-      })
-
-      // Correção 6: Gravar meta da última mensagem
-      await set(ref(db, `chat/meta/${activeRoom}/ultimaMensagem`), {
-        autor: user.username,
-        timestamp: now,
       })
 
       setTexto('')
@@ -167,7 +169,7 @@ export default function ChatInterno({ unreadRooms = [] }: ChatProps) {
     if (!confirmacao) return
 
     try {
-      await set(ref(db, `chat/salas/${activeRoom}/mensagens`), null)
+      await api.del(`/api/chat/salas/${activeRoom}/mensagens`)
       notify(`Histórico da sala ${activeRoom} limpo com sucesso!`, 'info')
     } catch (e) {
       console.error('Erro ao limpar sala:', e)
@@ -256,19 +258,19 @@ export default function ChatInterno({ unreadRooms = [] }: ChatProps) {
         )}
 
         {grupos.map(({ msg, isOwn, showHeader }) => {
-          const avatarUrl = profiles[msg.autor]?.avatarUrl
+          const avatarUrl = msg.autorAvatar || profiles[msg.autor]?.avatarUrl
 
           return (
             <div key={msg.id} className={`ci-balao-wrap ${isOwn ? 'right' : 'left'}`}>
               {showHeader && !isOwn && (
                 <div className="ci-autor-info">
-                  <span className="ci-autor-nome">{msg.nomeCompleto}</span>
-                  <span className="ci-autor-setor">{getSetorLabel(msg.setor)}</span>
+                  <span className="ci-autor-nome">{msg.autorNome}</span>
+                  <span className="ci-autor-setor">{getSetorLabel(msg.autorSetor)}</span>
                 </div>
               )}
 
               <div className="ci-balao-conteudo">
-                {showHeader && <div className="ci-avatar">{avatarUrl ? <img src={avatarUrl} alt="" className="ci-avatar-img" /> : msg.nomeCompleto.charAt(0).toUpperCase()}</div>}
+                {showHeader && <div className="ci-avatar">{avatarUrl ? <img src={avatarUrl} alt="" className="ci-avatar-img" /> : msg.autorNome.charAt(0).toUpperCase()}</div>}
                 {!showHeader && <div className="ci-avatar-spacer" />}
 
                 <div className={`ci-balao ${isOwn ? 'own' : 'other'}`}>

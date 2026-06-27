@@ -19,6 +19,8 @@
     "release:extension": "npm run clean:extension && npm run release --prefix \"Extension\"",
     "lint:extension": "npm run lint --prefix \"Extension\"",
     "format:extension": "npm run format --prefix \"Extension\"",
+    "// --- API (FASTIFY) ---": "",
+    "dev:api": "npm run dev --prefix \"Backend\"",
     "// --- FRONTEND ---": "",
     "dev:site": "npm run dev --prefix \"Frontend\"",
     "clean:site": "node -e \"const {rmSync,existsSync}=require('fs');if(existsSync('Frontend/build'))rmSync('Frontend/build',{recursive:true,force:true});\"",

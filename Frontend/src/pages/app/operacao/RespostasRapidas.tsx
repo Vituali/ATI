@@ -1,8 +1,7 @@
 // pages/RespostasRapidas.tsx
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import { ref, get, set } from 'firebase/database'
-import { db } from '../../../services/firebase'
 import { useUser } from '../../../hooks/useUser'
+import { api } from '../../../services/api'
 import './RespostasRapidas.css'
 import LoadingOverlay from '../../../components/ui/LoadingOverlay'
 import Modal from '../../../components/ui/Modal'
@@ -28,15 +27,6 @@ function aplicarMarcadores(texto: string): string {
   const saudacao = h >= 5 && h < 12 ? 'Bom dia' : h >= 12 && h < 18 ? 'Boa tarde' : 'Boa noite'
   const despedida = h >= 5 && h < 12 ? 'Tenha um ótimo dia' : h >= 12 && h < 18 ? 'Tenha uma ótima tarde' : 'Tenha uma ótima noite'
   return texto.replace(/\[saudacao\]/gi, saudacao).replace(/\[despedida\]/gi, despedida)
-}
-
-function parseArrayFirebase(val: any): Resposta[] {
-  if (!val) return []
-  if (Array.isArray(val)) return val.filter(Boolean) as Resposta[]
-  return Object.entries(val)
-    .sort((a, b) => Number(a[0]) - Number(b[0]))
-    .map(([, value]) => value)
-    .filter(Boolean) as Resposta[]
 }
 
 async function copiar(texto: string): Promise<boolean> {
@@ -99,14 +89,23 @@ export default function RespostasRapidas() {
     ;(async () => {
       setLoading(true)
       try {
-        const [snapRespostas, snapOrdem] = await Promise.all([get(ref(db, `respostas/${user.username}`)), get(ref(db, `categorias_ordem/${user.username}`))])
+        const [respostas, catOrdem] = await Promise.all([
+          api.get('/api/respostas').catch(() => []),
+          api.get('/api/respostas/categorias-ordem').catch(() => ({ ordem: [] })),
+        ])
         if (cancelled) return
 
-        const lista = parseArrayFirebase(snapRespostas.val())
+        const lista: Resposta[] = (respostas as any[]).map((r: any) => ({
+          category: r.category || 'quick_reply',
+          subCategory: r.subCategory || '',
+          title: r.title || '',
+          text: r.text || '',
+        }))
         setRespostas(lista)
 
-        if (snapOrdem.exists()) {
-          setOrdemCats(snapOrdem.val() as string[])
+        const ordemArr = (catOrdem as any).ordem || []
+        if (ordemArr.length > 0) {
+          setOrdemCats(ordemArr)
         } else {
           setOrdemCats([...new Set(lista.map((r) => r.subCategory))])
         }
@@ -131,7 +130,7 @@ export default function RespostasRapidas() {
       if (!user) return
       setSalvando(true)
       try {
-        await set(ref(db, `respostas/${user.username}`), lista)
+        await api.put('/api/respostas/batch', { items: lista })
       } catch (e) {
         console.error(e)
       } finally {
@@ -145,7 +144,7 @@ export default function RespostasRapidas() {
     async (ordem: string[]) => {
       if (!user) return
       try {
-        await set(ref(db, `categorias_ordem/${user.username}`), ordem)
+        await api.put('/api/respostas/categorias-ordem', { ordem })
       } catch (e) {
         console.error(e)
       }

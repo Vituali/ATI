@@ -1,8 +1,7 @@
 // pages/app/Relatorios.tsx
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { ref, onValue, set } from 'firebase/database'
 import { BarChart3, Settings, CheckCircle, AlertCircle, XCircle, Zap, Trash2, ArrowUp, ArrowDown, Calendar, RefreshCw } from 'lucide-react'
-import { db } from '../../../services/firebase'
+import { api } from '../../../services/api'
 import LoadingOverlay from '../../../components/ui/LoadingOverlay'
 import './Relatorios.css'
 
@@ -87,53 +86,44 @@ export default function Relatorios() {
   const [inputMinAt, setInputMinAt] = useState('-25')
 
   useEffect(() => {
-    // 1. Ouvinte para as potências
-    const potenciasRef = ref(db, 'historico_potencias')
-    const unsubscribePotencias = onValue(
-      potenciasRef,
-      (snapshot) => {
-        const lista: RegistroPotencia[] = []
-        const agora = Date.now()
-        const seteDias = 7 * 24 * 60 * 60 * 1000
+    let cancelled = false
 
-        if (snapshot.exists()) {
-          snapshot.forEach((child) => {
-            const val = child.val() as Omit<RegistroPotencia, 'id'>
-            const id = child.key!
-            let status = val.status || 'Não Verificado'
-            const refTime = val.statusUpdatedAt || val.dataColeta
+    async function carregar() {
+      try {
+        const [potencias, thresholdsCfg] = await Promise.all([
+          api.get('/api/potencias?limit=1000').catch(() => []),
+          api.get('/api/config/potencia_thresholds').catch(() => null),
+        ])
+        if (cancelled) return
 
-            // Se status for "Feito" e passou 7 dias, zera para "Não Verificado"
-            if (status === 'Feito' && refTime && agora - refTime > seteDias) {
-              status = 'Não Verificado'
-              set(ref(db, `historico_potencias/${id}/status`), 'Não Verificado')
-              set(ref(db, `historico_potencias/${id}/statusUpdatedAt`), agora)
-            }
+        const lista: RegistroPotencia[] = (potencias as any[]).map((p: any) => ({
+          id: p.id,
+          olt: p.olt || '',
+          pon: p.pon || '',
+          vlan: p.vlan || '',
+          rx: p.rx || '',
+          tx: p.tx || '',
+          rxOlt: p.rxOlt || '',
+          login: p.login || '',
+          contrato: p.contrato || '',
+          nome: p.nome || '',
+          bairro: p.bairro || '',
+          endereco: p.endereco || '',
+          status: p.status || 'Não Verificado',
+          statusUpdatedAt: p.statusUpdatedAt ? new Date(p.statusUpdatedAt).getTime() : undefined,
+          retornoData: p.retornoData || undefined,
+          servicoId: p.servicoId || undefined,
+          contratoId: p.contratoId || undefined,
+          serviceUrl: p.serviceUrl || undefined,
+          dataColeta: new Date(p.dataColeta).getTime(),
+          coletadoPor: p.coletadoPor || '',
+        }))
 
-            lista.push({
-              ...val,
-              id,
-              status,
-            })
-          })
-        }
         lista.sort((a, b) => b.dataColeta - a.dataColeta)
         setRegistros(lista)
-        setLoading(false)
-      },
-      (error) => {
-        console.error('Erro ao carregar potências do banco:', error)
-        setLoading(false)
-      },
-    )
 
-    // 2. Ouvinte para a configuração de limites
-    const configRef = ref(db, 'config/potencia_thresholds')
-    const unsubscribeConfig = onValue(
-      configRef,
-      (snapshot) => {
-        if (snapshot.exists()) {
-          const val = snapshot.val()
+        if (thresholdsCfg) {
+          const val = (thresholdsCfg as any).valor || thresholdsCfg
           const loaded = {
             maxExcelente: Number(val.maxExcelente ?? -15),
             minExcelente: Number(val.minExcelente ?? -20),
@@ -144,19 +134,18 @@ export default function Relatorios() {
           setInputMinExc(String(loaded.minExcelente))
           setInputMinAt(String(loaded.minAtencao))
         }
-      },
-      (error) => {
-        console.error('Erro ao carregar limites do banco:', error)
-      },
-    )
-
-    return () => {
-      unsubscribePotencias()
-      unsubscribeConfig()
+      } catch (e) {
+        console.error('Erro ao carregar dados:', e)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
     }
+
+    carregar()
+    const interval = setInterval(carregar, 30000)
+    return () => { cancelled = true; clearInterval(interval) }
   }, [])
 
-  // Salvar limites no Firebase Realtime DB
   const salvarLimites = async (e: React.FormEvent) => {
     e.preventDefault()
     setSalvandoConfig(true)
@@ -166,7 +155,7 @@ export default function Relatorios() {
         minExcelente: Number(inputMinExc),
         minAtencao: Number(inputMinAt),
       }
-      await set(ref(db, 'config/potencia_thresholds'), newThresholds)
+      await api.put('/api/config/potencia_thresholds', { valor: newThresholds })
       setThresholds(newThresholds)
       setExibirConfig(false)
     } catch (err) {
@@ -179,13 +168,10 @@ export default function Relatorios() {
 
   // Atualiza status do cliente e salva data de retorno se necessário
   const atualizarStatus = useCallback(async (id: string, novoStatus: string, dataRetorno?: string) => {
-    const statusUpdatedAt = Date.now()
     const retornoData = novoStatus === 'Ausente (Retorno)' ? dataRetorno || '' : ''
 
     try {
-      await set(ref(db, `historico_potencias/${id}/status`), novoStatus)
-      await set(ref(db, `historico_potencias/${id}/statusUpdatedAt`), statusUpdatedAt)
-      await set(ref(db, `historico_potencias/${id}/retornoData`), retornoData)
+      await api.patch(`/api/potencias/${id}`, { status: novoStatus, retornoData })
     } catch (e) {
       console.error('Erro ao atualizar status:', e)
       alert('Erro ao atualizar status.')

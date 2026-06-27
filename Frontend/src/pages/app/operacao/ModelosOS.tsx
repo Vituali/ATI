@@ -1,8 +1,7 @@
 // pages/ModelosOS.tsx
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import { ref, get, set, remove } from 'firebase/database'
-import { db } from '../../../services/firebase'
 import { useUser } from '../../../hooks/useUser'
+import { api } from '../../../services/api'
 import './ModelosOS.css'
 import Modal from '../../../components/ui/Modal'
 import LoadingOverlay from '../../../components/ui/LoadingOverlay'
@@ -50,11 +49,6 @@ function normalizarChave(txt: string): string {
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]/g, '')
     .trim()
-}
-
-function parseModelosFirebase(val: any): ModeloOS[] {
-  if (!val) return []
-  return Object.values(val) as ModeloOS[]
 }
 
 // ---------------------------------------------------------------
@@ -110,16 +104,13 @@ export default function ModelosOS() {
 
     ;(async () => {
       try {
-        const [snapModelos, snapCache35, snapCache53] = await Promise.all([get(ref(db, `modelos_os/${user.username}`)), get(ref(db, 'sgp_cache/occurrenceTypes')), get(ref(db, 'sgp_cache_53/occurrenceTypes'))])
+        const modelosData = await api.get('/api/modelos-os').catch(() => [])
         if (cancelled) return
 
-        setModelos(parseModelosFirebase(snapModelos.val()))
+        setModelos(modelosData as any[])
 
-        const raw35 = snapCache35.exists() ? snapCache35.val() : []
-        const list35 = (Array.isArray(raw35) ? raw35.filter(Boolean) : Object.values(raw35)) as OccurrenceType[]
-
-        const raw53 = snapCache53.exists() ? snapCache53.val() : []
-        const list53 = (Array.isArray(raw53) ? raw53.filter(Boolean) : Object.values(raw53)) as OccurrenceType[]
+        const list35: OccurrenceType[] = []
+        const list53: OccurrenceType[] = []
 
         const mergedMap = new Map<string, UnifiedOccurrenceType>()
 
@@ -181,7 +172,21 @@ export default function ModelosOS() {
       if (!user) return
       setSalvando(true)
       try {
-        await set(ref(db, `modelos_os/${user.username}/${modelo.id}`), modelo)
+        const existente = await api.get(`/api/modelos-os`).catch(() => []) as any[]
+        const found = existente.find((m: any) => m.id === modelo.id)
+        if (found) {
+          await api.patch(`/api/modelos-os/${modelo.id}`, {
+            title: modelo.title,
+            text: modelo.text,
+            category: modelo.category,
+            occurrenceTypeId: modelo.occurrenceTypeId,
+            occurrenceTypeName: modelo.occurrenceTypeName,
+            occurrenceTypeId53: modelo.occurrenceTypeId_53,
+            keywords: modelo.keywords,
+          })
+        } else {
+          await api.post('/api/modelos-os', modelo)
+        }
       } catch (e) {
         console.error(e)
       } finally {
@@ -195,7 +200,7 @@ export default function ModelosOS() {
     async (id: string) => {
       if (!user) return
       try {
-        await remove(ref(db, `modelos_os/${user.username}/${id}`))
+        await api.del(`/api/modelos-os/${id}`)
         setModelos((prev) => prev.filter((m) => m.id !== id))
       } catch (e) {
         console.error(e)

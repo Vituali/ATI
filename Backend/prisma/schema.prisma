@@ -1,0 +1,304 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ========================
+// USUÁRIOS & SESSÕES
+// ========================
+
+model Atendente {
+  id                    String    @id @default(uuid())
+  username              String    @unique
+  nomeCompleto          String
+  email                 String    @unique
+  uid                   String    @unique
+  role                  String    @default("usuario")
+  setor                 String    @default("geral")
+  status                String    @default("ativo")
+  sgpUsername           String?
+  avatarUrl             String?
+  customBg              String?
+  customAllowedSections String[]
+  ultimoAcesso          DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  modelosOs      ModeloOS[]
+  quickReplies   QuickReply[]
+  categoriaOrdem CategoriaOrdem?
+  anotacoes      Anotacao[]
+  mensagens      Mensagem[]
+  sessoes        SessaoAtendente[]
+  avisosCriados  Aviso[]
+  bugsReportados BugReport[]
+  usoModelos     UsoTemplate[]
+  auditoria      AuditLog[]
+  leituras       LeituraMensagem[]
+
+  @@index([setor, status])
+  @@index([role])
+}
+
+model SessaoAtendente {
+  id          String    @id @default(uuid())
+  atendenteId String
+  loginAt     DateTime  @default(now())
+  logoutAt    DateTime?
+  ip          String?
+
+  atendente   Atendente @relation(fields: [atendenteId], references: [id], onDelete: Cascade)
+
+  @@index([atendenteId, loginAt])
+  @@index([loginAt])
+}
+
+// ========================
+// TEMPLATES DE O.S.
+// ========================
+
+model ModeloOS {
+  id                 String    @id @default(uuid())
+  atendenteId        String?
+  masterId           String?
+  isMaster           Boolean   @default(false)
+  category           String
+  title              String
+  text               String
+  occurrenceTypeId   String?
+  occurrenceTypeName String?
+  occurrenceTypeId53 String?
+  keywords           String[]
+  usoCount           Int       @default(0)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  atendente          Atendente?  @relation(fields: [atendenteId], references: [id], onDelete: Cascade)
+  usos               UsoTemplate[]
+
+  @@index([atendenteId, category])
+  @@index([isMaster])
+  @@index([masterId])
+}
+
+// ========================
+// RESPOSTAS RÁPIDAS
+// ========================
+
+model QuickReply {
+  id          String    @id @default(uuid())
+  atendenteId String?
+  masterId    String?
+  isMaster    Boolean   @default(false)
+  category    String    @default("quick_reply")
+  subCategory String
+  title       String
+  text        String
+  ordem       Int       @default(0)
+  usoCount    Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  atendente   Atendente?  @relation(fields: [atendenteId], references: [id], onDelete: Cascade)
+  usos        UsoTemplate[]
+
+  @@index([atendenteId, subCategory])
+  @@index([isMaster])
+  @@index([masterId])
+}
+
+model CategoriaOrdem {
+  id          String    @id @default(uuid())
+  atendenteId String    @unique
+  ordem       String[]
+
+  atendente   Atendente @relation(fields: [atendenteId], references: [id], onDelete: Cascade)
+}
+
+// ========================
+// ANOTAÇÕES
+// ========================
+
+model Anotacao {
+  id          String    @id @default(uuid())
+  atendenteId String
+  titulo      String?
+  texto       String
+  concluido   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  atendente   Atendente @relation(fields: [atendenteId], references: [id], onDelete: Cascade)
+}
+
+// ========================
+// CHAT INTERNO
+// ========================
+
+model ChatRoom {
+  id                String    @id
+  ultimaMensagem    Json?
+  ultimaAtualizacao DateTime  @default(now())
+
+  mensagens         Mensagem[]
+}
+
+model Mensagem {
+  id          String    @id @default(uuid())
+  atendenteId String
+  chatRoomId  String
+  texto       String
+  autorNome   String
+  autorSetor  String?
+  autorAvatar String?
+  createdAt   DateTime  @default(now())
+
+  atendente   Atendente         @relation(fields: [atendenteId], references: [id], onDelete: Cascade)
+  chatRoom    ChatRoom          @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
+  leituras    LeituraMensagem[]
+
+  @@index([chatRoomId, createdAt])
+  @@index([atendenteId, createdAt])
+  @@index([createdAt])
+}
+
+model LeituraMensagem {
+  mensagemId  String
+  atendenteId String
+  lidaEm      DateTime  @default(now())
+
+  mensagem    Mensagem  @relation(fields: [mensagemId], references: [id], onDelete: Cascade)
+  atendente   Atendente @relation(fields: [atendenteId], references: [id], onDelete: Cascade)
+
+  @@id([mensagemId, atendenteId])
+}
+
+// ========================
+// HISTÓRICO DE POTÊNCIAS
+// ========================
+
+model HistoricoPotencia {
+  id              String    @id @default(uuid())
+  olt             String
+  pon             String
+  vlan            String?
+  clienteId       String
+  rx              String?
+  tx              String?
+  rxOlt           String?
+  login           String?
+  contrato        String?
+  nome            String?
+  bairro          String?
+  endereco        String?
+  servicoId       String?
+  contratoId      String?
+  serviceUrl      String?
+  status          String?
+  statusUpdatedAt DateTime?
+  retornoData     DateTime?
+  coletadoPor     String?
+  dataColeta      DateTime  @default(now())
+  createdAt       DateTime  @default(now())
+
+  @@index([dataColeta, status])
+  @@index([clienteId, dataColeta])
+  @@index([coletadoPor, dataColeta])
+  @@index([dataColeta])
+}
+
+model ResumoPotenciaDiario {
+  id             String    @id @default(uuid())
+  data           DateTime
+  totalRegistros Int
+  statusNormal   Int
+  statusAlerta   Int
+  statusCritico  Int
+  coletadoPor    String?
+
+  @@unique([data, coletadoPor])
+  @@index([data])
+}
+
+// ========================
+// LOGS
+// ========================
+
+model UsoTemplate {
+  id           String    @id @default(uuid())
+  modeloOsId   String?
+  quickReplyId String?
+  atendenteId  String
+  usadoEm      DateTime  @default(now())
+
+  modeloOs     ModeloOS?   @relation(fields: [modeloOsId], references: [id], onDelete: SetNull)
+  quickReply   QuickReply? @relation(fields: [quickReplyId], references: [id], onDelete: SetNull)
+  atendente    Atendente   @relation(fields: [atendenteId], references: [id], onDelete: Cascade)
+
+  @@index([usadoEm])
+  @@index([modeloOsId, usadoEm])
+  @@index([quickReplyId, usadoEm])
+}
+
+model AuditLog {
+  id          String    @id @default(uuid())
+  atendenteId String
+  acao        String
+  entidade    String
+  entidadeId  String?
+  detalhes    Json?
+  createdAt   DateTime  @default(now())
+
+  atendente   Atendente @relation(fields: [atendenteId], references: [id], onDelete: Cascade)
+
+  @@index([atendenteId, createdAt])
+  @@index([acao, createdAt])
+  @@index([createdAt])
+}
+
+// ========================
+// AVISOS & BUGS
+// ========================
+
+model Aviso {
+  id          String    @id @default(uuid())
+  autorId     String
+  titulo      String
+  texto       String
+  tipo        String    @default("info")
+  ativo       Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  autor       Atendente @relation(fields: [autorId], references: [id], onDelete: Cascade)
+
+  @@index([ativo, createdAt])
+}
+
+model BugReport {
+  id          String    @id @default(uuid())
+  autorId     String
+  descricao   String
+  pagina      String?
+  status      String    @default("aberto")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  autor       Atendente @relation(fields: [autorId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+}
+
+// ========================
+// CONFIGURAÇÃO
+// ========================
+
+model Configuracao {
+  id    String @id @default(uuid())
+  chave String @unique
+  valor Json
+}

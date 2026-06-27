@@ -5,8 +5,7 @@
 // ---------------------------------------------------------------
 
 import { useEffect, useState } from 'react'
-import { ref, onValue, update } from 'firebase/database'
-import { db } from '../../services/firebase'
+import { api } from '../../services/api'
 import { UserProfile } from '../../hooks/useUser'
 import { AlertTriangle, TriangleAlert, X, Info } from 'lucide-react'
 import './AvisosHome.css'
@@ -47,26 +46,38 @@ export default function AvisosHome({ user }: AvisosHomeProps) {
   const isAdmin = user.role === 'admin'
 
   useEffect(() => {
-    const r = ref(db, 'avisos')
-    const unsub = onValue(r, (snap) => {
-      const lista: Aviso[] = []
-      snap.forEach((child) => {
-        const val = child.val() as Omit<Aviso, 'id'>
-        if (val.ativo) {
-          lista.push({ id: child.key!, ...val })
-        }
-      })
-      // Mais recentes primeiro
-      lista.sort((a, b) => b.timestamp - a.timestamp)
-      setAvisos(lista)
-    })
+    let cancelled = false
 
-    return () => unsub()
+    const carregar = async () => {
+      try {
+        const data: any[] = await api.get('/api/avisos')
+        if (cancelled) return
+        const lista: Aviso[] = data
+          .filter((a: any) => a.ativo)
+          .map((a: any) => ({
+            id: a.id,
+            titulo: a.titulo,
+            corpo: a.texto,
+            tipo: a.tipo as Aviso['tipo'],
+            criadoPor: a.autor?.nomeCompleto || '',
+            timestamp: new Date(a.createdAt).getTime(),
+            ativo: a.ativo,
+          }))
+        lista.sort((a, b) => b.timestamp - a.timestamp)
+        setAvisos(lista)
+      } catch (e) {
+        console.error('Erro ao carregar avisos:', e)
+      }
+    }
+
+    carregar()
+    const interval = setInterval(carregar, 30000)
+    return () => { cancelled = true; clearInterval(interval) }
   }, [])
 
   async function desativar(id: string) {
     try {
-      await update(ref(db, `avisos/${id}`), { ativo: false })
+      await api.patch(`/api/avisos/${id}`, { ativo: false })
     } catch (e) {
       console.error('Erro ao desativar aviso:', e)
     }

@@ -2,7 +2,7 @@
 
 <div align="center">
 
-<img src="Extensão/public/img/logo-128.png" alt="ATI Logo" width="100" />
+<img src="Extension/public/img/logo-128.png" alt="ATI Logo" width="100" />
 
 ### **Ecossistema moderno para automação e produtividade de atendimento de suporte integrado ao ChatMix e SGP.**
 
